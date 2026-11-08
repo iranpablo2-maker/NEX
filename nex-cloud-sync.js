@@ -17,6 +17,11 @@
   }
   let user = null, db = null, sdk = null, syncing = false, active = false, timer = null;
   const enabledKey = uid => 'nex_cloud_sync_enabled_' + uid;
+  const ownerKey = 'nex_cloud_local_owner_uid_v1';
+  function wrongAccount(){
+    try { const owner=localStorage.getItem(ownerKey);return !!(user && owner && owner!==user.uid); }
+    catch { return false; }
+  }
   const txt = value => { status.textContent = value; };
   const bridge = () => window.NEX_CLOUD_BRIDGE;
   const waitReady = () => new Promise((resolve, reject) => {
@@ -31,11 +36,12 @@
   const valid = a => a && typeof a.id === 'string' && /^[a-zA-Z0-9_-]{2,90}$/.test(a.id)
     && a.data && typeof a.data === 'object' && !Array.isArray(a.data);
   function accountUi() {
-    enable.disabled = !user || syncing;
-    syncButton.disabled = !user || !active || syncing;
+    enable.disabled = !user || syncing || wrongAccount();
+    syncButton.disabled = !user || !active || syncing || wrongAccount();
     enable.textContent = active ? 'Sincronização ativada' : 'Ativar sincronização';
     if (user && !active) txt('Conectado. Ative para levar suas fichas do PC ao celular.');
     if (!user) txt('Entre com Google para sincronizar suas fichas.');
+    if (wrongAccount()) txt('Este navegador já está vinculado a outra conta Google. Por segurança, a sincronização está bloqueada; faça um backup antes de trocar a conta.');
   }
   const isEnabled = () => user && localStorage.getItem(enabledKey(user.uid)) === '1';
   function errorMessage(err) {
@@ -49,7 +55,7 @@
     timer = setTimeout(() => { timer = null; void synchronize(false); }, 1800);
   }
   async function synchronize(manual) {
-    if (syncing || !user || !active || !sdk || !db) return;
+    if (syncing || !user || !active || !sdk || !db || wrongAccount()) return;
     syncing = true;
     accountUi();
     const uid = user.uid;
@@ -107,9 +113,10 @@
     }
   }
   enable.addEventListener('click', async () => {
-    if (!user || syncing || active) return;
+    if (!user || syncing || active || wrongAccount()) return;
     if (!confirm('Antes de ativar, baixe um backup de todas as fichas no menu Personagens. A sincronização enviará suas fichas para sua conta Google. Continuar?')) return;
     try {
+      localStorage.setItem(ownerKey, user.uid);
       localStorage.setItem(enabledKey(user.uid), '1');
       active = true;
       accountUi();
@@ -132,7 +139,7 @@
       db = fire.getFirestore(app);
       onAuthStateChanged(getAuth(app), nextUser => {
         user = nextUser;
-        try { active = !!isEnabled(); } catch { active = false; }
+        try { active = !wrongAccount() && !!isEnabled(); } catch { active = false; }
         accountUi();
         if (active) schedule();
       });
