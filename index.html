@@ -1775,7 +1775,7 @@ nex12Setup();
    if(!storageReady){toast('Aguarde a recuperação do armazenamento local.');return;}
    if(!agents.length){toast('Não há fichas para excluir.');return;}
    if(!confirm('Para começar com a lista vazia, baixe primeiro um backup completo das '+agents.length+' fichas. Baixar agora?'))return;
-   window.NEX17.backupAll();
+   if(window.NEX17.backupAll()!==true){toast('A limpeza foi cancelada: não foi possível gerar o backup.');return;}
    if(!confirm('O backup JSON foi salvo e conferido no seu aparelho? Cancele se o download falhou.'))return;
    if(prompt('Digite APAGAR para retirar TODAS as fichas deste navegador (não afeta outros aparelhos):')!=='APAGAR')return;
    if(!persist()){toast('A exclusão foi cancelada: o salvamento local não está disponível.');return;}
@@ -1791,15 +1791,35 @@ nex12Setup();
    let parsed;try{parsed=JSON.parse(await file.text());}catch{toast('Backup inválido: não é um JSON.');return;}
    if(parsed?.format!=='nex-backup-all'||!Array.isArray(parsed.agents)||!parsed.agents.length||parsed.agents.length>200||!parsed.agents.every(a=>a && typeof a.id==='string' && a.data && typeof a.data==='object' && !Array.isArray(a.data))){toast('Este arquivo não é um backup completo válido do NEX.');return;}
    if(!confirm('Restaurar '+parsed.agents.length+' fichas deste backup? As fichas atualmente abertas serão substituídas. Exporte suas fichas atuais antes de continuar.'))return;
-   // Restauração explícita autoriza recuperar IDs anteriormente excluídos.
-   try{restoreRemovedIds(parsed.agents.map(a=>a.id));}catch(e){toast('Não foi possível registrar a restauração com segurança.');return;}
-   agents=parsed.agents.map(a=>ensureAgentMeta({id:a.id,data:normalize(a.data),createdAt:a.createdAt,updatedAt:a.updatedAt}));
-   campaigns=Array.isArray(parsed.campaigns)?parsed.campaigns.slice(0,200):campaigns;
-   if(Array.isArray(parsed.homebrew))try{localStorage.setItem(HB_KEY,JSON.stringify(parsed.homebrew));}catch(e){console.warn(e);}
-   active=agents.some(a=>a.id===parsed.active)?parsed.active:agents[0].id;
-   state=normalize(JSON.parse(JSON.stringify(agents.find(a=>a.id===active).data)));
-   try{rehydrate();}catch(error){console.error(error);renderFields();}
-   if(persist()){try{localStorage.setItem(CAMP_KEY,JSON.stringify(campaigns));}catch(error){console.warn(error);}toast('Backup restaurado.');}else{toast('Backup carregado, mas este navegador não permite salvá-lo.');}
+   // Restaurar um backup é uma decisão explícita: os IDs daquele arquivo
+   // deixam de ser bloqueados, mas só se a restauração for realmente salva.
+   const previous={agents,campaigns,active,state,removed:new Set(removedAgentIds)};
+   let previousHomebrew=null;
+   try{previousHomebrew=localStorage.getItem(HB_KEY);}catch(error){}
+   try{
+     restoreRemovedIds(parsed.agents.map(a=>a.id));
+     agents=parsed.agents.map(a=>ensureAgentMeta({id:a.id,data:normalize(a.data),createdAt:a.createdAt,updatedAt:a.updatedAt}));
+     campaigns=Array.isArray(parsed.campaigns)?parsed.campaigns.slice(0,200):campaigns;
+     if(Array.isArray(parsed.homebrew))localStorage.setItem(HB_KEY,JSON.stringify(parsed.homebrew));
+     active=agents.some(a=>a.id===parsed.active)?parsed.active:agents[0].id;
+     state=normalize(JSON.parse(JSON.stringify(agents.find(a=>a.id===active).data)));
+     try{rehydrate();}catch(error){console.error(error);renderFields();}
+     if(!persist())throw new Error('Falha no salvamento da coleção restaurada');
+     const verified=JSON.parse(localStorage.getItem(AGENTS_KEY)||'null');
+     if(!Array.isArray(verified)||verified.length!==agents.length)throw new Error('Falha ao verificar a restauração');
+     localStorage.setItem(CAMP_KEY,JSON.stringify(campaigns));
+     toast('Backup restaurado.');
+   }catch(error){
+     console.error('NEX: restauração incompleta',error);
+     agents=previous.agents;campaigns=previous.campaigns;active=previous.active;state=previous.state;
+     try{
+       writeRemovedIds(previous.removed);
+       if(previousHomebrew===null)localStorage.removeItem(HB_KEY);
+       else localStorage.setItem(HB_KEY,previousHomebrew);
+       persist();
+     }catch(err){console.error('Falha ao reverter restauração',err);}
+     toast('Restauração não confirmada. As fichas anteriores foram mantidas.');
+   }
    renderAgents();renderCampaigns();
  });
 
