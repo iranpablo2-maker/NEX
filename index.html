@@ -1517,11 +1517,11 @@ nex12Setup();
    try {
      const serialized=JSON.stringify(agents);
      localStorage.setItem(AGENTS_KEY,serialized);
-     localStorage.setItem(ACTIVE_KEY,active);
+     localStorage.setItem(ACTIVE_KEY,active??'');
      // KEY is retained for compatibility, but is never the source of truth.
      try{localStorage.setItem(KEY,JSON.stringify(state));}catch(e){console.warn('Cópia legada não salva',e);}
      const reloaded=localStorage.getItem(AGENTS_KEY);
-     if(reloaded!==serialized || localStorage.getItem(ACTIVE_KEY)!==active)throw new Error('Armazenamento não confirmou gravação');
+     if(reloaded!==serialized || localStorage.getItem(ACTIVE_KEY)!==(active??''))throw new Error('Armazenamento não confirmou gravação');
      const committed=JSON.parse(reloaded).find(a=>a.id===active)?.data;
      if(entry && (!committed || JSON.stringify(committed)!==JSON.stringify(entry.data)))throw new Error('Verificação da ficha falhou');
      localStorage.setItem(LAST_WRITE_KEY,String(snapshot.savedAt));
