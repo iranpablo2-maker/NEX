@@ -1,4 +1,4 @@
-/* NEX AutoSync V3 — sincronização sem duplicação e com exclusões persistentes.
+/* NEX AutoSync V3.1 — NEX 2.0.41: proteção contra sobrescrita em conflitos.
  * Nova coleção users/{uid}/nex_v3, separada do legado.
  */
 (() => {
@@ -46,7 +46,8 @@
     const previous = JSON.parse(localStorage.getItem(key) || '[]');
     previous.push({date:new Date().toISOString(), id, local:clean(local), remote:clean(incoming)});
     // Não sobrescrever versões conflitantes sem garantir o arquivo de recuperação.
-    localStorage.setItem(key, JSON.stringify(previous.slice(-25)));
+    // Nunca descartar silenciosamente backups de conflitos anteriores.
+    localStorage.setItem(key, JSON.stringify(previous));
   }
   function persistAck() {
     try { localStorage.setItem(ackKey(currentUser.uid), JSON.stringify(ack)); }
@@ -76,22 +77,34 @@
         incoming[d.id] = {type:v.type,deleted:v.deleted,payload:clean(v.payload)};
       }
       const patch = [];
+      const conflicts = [];
       for (const [id, entry] of Object.entries(incoming)) {
         if (id !== 'campaigns' && id !== 'homebrew' && !/^agent-[A-Za-z0-9_-]{2,90}$/.test(id)) continue;
         const fingerprint = mark(entry);
-        const prior = Object.prototype.hasOwnProperty.call(ack,id) ? ack[id] : null;
+        const hasPrior = Object.prototype.hasOwnProperty.call(ack,id);
+        const prior = hasPrior ? ack[id] : null;
         const local = originalLocal[id] || null;
         const localFingerprint = mark(local);
-        if (fingerprint === prior) continue; // Alteração local ainda pendente.
+        if (fingerprint === prior) continue; // Sem atualização remota nova.
         if (localFingerprint !== fingerprint) {
-          if (local && localFingerprint !== prior && prior !== null) {
+          // Com alterações nos dois lados, NÃO substituir dados locais. Isso
+          // inclui o primeiro login em aparelho com cópia diferente.
+          if (local && localFingerprint !== prior) {
             safeArchive(id,local,entry);
-          } else if (local && prior === null && !entry.deleted) {
-            safeArchive(id,local,entry); // Primeiro acesso: conservar versão do PC.
+            conflicts.push(id);
+            continue;
           }
           patch.push({id,entry});
         }
         ack[id] = fingerprint;
+      }
+      if (conflicts.length) {
+        // O arquivo de recuperação já foi gravado. Mantém ambas as versões
+        // intactas e bloqueia envios até o usuário resolver o conflito.
+        paused = true;
+        setStatus('⚠ Conflito em ' + conflicts.join(', ') +
+          '. Nada foi sobrescrito. Exporte o backup completo neste aparelho antes de resolver a divergência.',true);
+        return;
       }
       if (mySession !== session) return;
       if (patch.length) bridge().apply(patch);
@@ -148,10 +161,11 @@
           return 'written';
         });
         if (result === 'changed-remotely') {
-          // Não sobrescrever outra versão: nova leitura resolverá o conflito.
+          // Outra sessão gravou primeiro. Interrompe este lote; uma nova
+          // leitura verifica divergências antes de qualquer escrita adicional.
           const latest = await fire.getDocsFromServer(fire.collection(db,'users',uid,'nex_v3'));
           await pullSnapshot(latest);
-          continue;
+          return;
         }
       }
     } catch(err) {
