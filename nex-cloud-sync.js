@@ -4,6 +4,15 @@
  */
 (() => {
   'use strict';
+  // V2.0.33 proteção: sincronização pausada para evitar replicação de conflitos.
+  // NÃO lê, envia, exclui nem modifica fichas locais ou remotas.
+  const pauseStatus=document.getElementById('nexCloudStatus');
+  const pauseEnable=document.getElementById('nexCloudEnable');
+  const pauseSync=document.getElementById('nexCloudSync');
+  if(pauseEnable){pauseEnable.disabled=true;pauseEnable.textContent='Sincronização pausada';}
+  if(pauseSync)pauseSync.disabled=true;
+  if(pauseStatus)pauseStatus.textContent='Sincronização temporariamente pausada para proteger suas fichas. Baixe um backup completo antes de qualquer limpeza.';
+  return;
   const $ = id => document.getElementById(id);
   const enable = $('nexCloudEnable');
   const syncButton = $('nexCloudSync');
