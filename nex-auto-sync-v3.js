@@ -15,7 +15,7 @@
   const archiveKey = uid => 'nex_sync_v3_recovery_' + uid;
   let fire, auth, db, currentUser = null, ack = {}, remote = {};
   let unsubscribe = null, timer = null, busy = false, ready = false, paused = false;
-  let session = 0;
+  let session = 0, pending = false, incomingQueue = Promise.resolve();
 
   // Hash de conteúdo: mudanças em ordem/propriedades não geram IDs novos.
   function hash(value) {
@@ -54,6 +54,7 @@
   }
   function schedule() {
     if (!ready || paused || !currentUser || timer) return;
+    if (busy) {pending = true; return;}
     timer = setTimeout(() => { timer = null; void pushChanges(); }, 1000);
   }
   function messageError(err) {
@@ -106,7 +107,8 @@
     }
   }
   async function pushChanges() {
-    if (!ready || busy || paused || !currentUser || !navigator.onLine) return;
+    if (!ready || paused || !currentUser || !navigator.onLine) return;
+    if (busy) {pending = true; return;}
     const mySession = session;
     busy = true;
     try {
@@ -157,6 +159,7 @@
       setStatus(messageError(err),true);
     } finally {
       busy = false;
+      if (pending) {pending=false;schedule();}
     }
   }
   window.addEventListener('nex-auto-local-change',schedule);
@@ -176,7 +179,7 @@
         session++;
         if (unsubscribe) {unsubscribe();unsubscribe=null;}
         if (timer) {clearTimeout(timer);timer=null;}
-        currentUser = u; ready=false; paused=false; busy=false; remote={}; ack={};
+        currentUser = u; ready=false; paused=false; busy=false; pending=false; remote={}; ack={}; incomingQueue=Promise.resolve();
         if (!u) {setStatus('Entre com Google para sincronizar automaticamente suas fichas, homebrews e campanhas.');return;}
         const owner = localStorage.getItem(OWNER_KEY);
         if (owner && owner !== u.uid) {
@@ -192,7 +195,9 @@
             if (!currentUser || currentUser.uid!==u.uid) return;
             if (!snapshot.metadata.fromCache) {
               if (!localStorage.getItem(OWNER_KEY)) localStorage.setItem(OWNER_KEY,u.uid);
-              void pullSnapshot(snapshot);
+              incomingQueue=incomingQueue.then(()=>pullSnapshot(snapshot)).catch(err=>{
+                paused=true;setStatus('A sincronização foi pausada: '+messageError(err),true);
+              });
             }
           },
           err => {paused=true;setStatus(messageError(err),true);}
