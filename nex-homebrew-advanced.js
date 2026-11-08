@@ -124,7 +124,7 @@ sheet.addEventListener('click',event=>{
  try{api().detach(button.dataset.nex51Detach);renderSheet();notice('Conteúdo removido da ficha.');}
  catch(error){console.error(error);notice('Não foi possível remover da ficha.');}
 });
-window.NEX51={renderLibrary,renderSheet,readLibrary};
+window.NEX51={renderLibrary,renderSheet,readLibrary:read};
 document.addEventListener('nex51-ready',renderLibrary);
 renderLibrary();
 })();
