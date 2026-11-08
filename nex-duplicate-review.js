@@ -1,4 +1,4 @@
-/* NEX 2.0.42 — análise manual de fichas repetidas, nunca apaga automaticamente. */
+/* NEX 2.0.46 — análise manual de fichas repetidas com proteção de dados. */
 (()=>{
  'use strict';
  const by=id=>document.getElementById(id);
@@ -24,7 +24,7 @@
    const all=b.read().agents||[];
    const bucket=new Map();
    all.forEach(a=>{if(!a?.id||!a.data)return;const k=key(a);if(!bucket.has(k))bucket.set(k,[]);bucket.get(k).push(a);});
-   groups=[...bucket.values()].filter(items=>items.length>1).map(items=>items.sort((a,b)=>(Date.parse(a.createdAt)||0)-(Date.parse(b.createdAt)||0)));
+   groups=[...bucket.values()].filter(items=>items.length>1).map(items=>items.sort((a,b)=>{const aCopy=/\(vers[aã]o preservada\)/i.test(a.data?.name||'')?1:0,bCopy=/\(vers[aã]o preservada\)/i.test(b.data?.name||'')?1:0;return aCopy-bCopy||((Date.parse(a.createdAt)||0)-(Date.parse(b.createdAt)||0));}));
    snapshot=new Map(all.map(a=>[a.id,JSON.stringify(a)]));
    return all;
  }
@@ -54,6 +54,7 @@
       }).join('')+'</section>';
    }).join('');
    html+='<p style="font-size:12px;color:#ffce9a">Nenhuma opção vem marcada. É obrigatório manter pelo menos uma ficha de cada grupo. Não existe remoção automática.</p>'+
+    '<button class="btn sm" type="button" id="nexDuplicateSelectIdentical">Selecionar apenas cópias idênticas</button> '+
     '<button class="btn primary sm" type="button" id="nexDuplicateDownload">1. Baixar backup completo</button>'+
     '<label style="display:block;margin-top:12px"><input id="nexDuplicateConfirmed" type="checkbox" disabled> Confirmei que o arquivo JSON do backup foi salvo no meu dispositivo.</label>'+
     '<label style="display:block;margin:12px 0">2. Para excluir as fichas marcadas, digite <strong>EXCLUIR</strong>: <input id="nexDuplicatePhrase" type="text" autocomplete="off" placeholder="EXCLUIR" style="max-width:150px"></label>'+
@@ -67,9 +68,26 @@
    mount.querySelectorAll('input').forEach(el=>el.addEventListener('change',update));
    by('nexDuplicatePhrase').addEventListener('input',update);
    by('nexDuplicateRefresh').onclick=redraw;
+   by('nexDuplicateSelectIdentical').onclick=()=>{
+     // Só marca a segunda versão quando o conteúdo é exatamente o mesmo,
+     // ignorando os sufixos adicionados pela antiga sincronização.
+     const duplicates=new Set();
+     for(const group of groups){
+       const seen=new Set();
+       for(const a of group){
+         const id=signature(a);
+         if(seen.has(id))duplicates.add(a.id);else seen.add(id);
+       }
+     }
+     mount.querySelectorAll('[data-nex-duplicate-id]').forEach(el=>{
+       el.checked=duplicates.has(el.dataset.nexDuplicateId);
+     });
+     feedback(duplicates.size?duplicates.size+' cópia(s) idêntica(s) selecionada(s). Confira antes de excluir.':'Não há cópias com conteúdo idêntico para selecionar.');
+     update();
+   };
    by('nexDuplicateDownload').onclick=()=>{
      try {window.NEX17.backupAll(); backupReady=true;by('nexDuplicateConfirmed').disabled=false;feedback('Verifique se o navegador baixou o arquivo JSON completo. Depois marque a confirmação.');update();}
-     catch(e){feedback('Não foi possível preparar o backup. Não exclua fichas.');}
+     catch(e){feedback('Não foi possível preparar o backup. Nenhuma exclusão será liberada.');}
    };
    by('nexDuplicateRemove').onclick=()=>{
      const ids=selected();
