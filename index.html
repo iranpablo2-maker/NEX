@@ -1613,33 +1613,48 @@ nex12Setup();
    }
  };
  // Edição local segura: nunca apaga sem seleção e prévia do estado atual.
- window.NEX_DUPLICATES_BRIDGE={
-   ready:()=>storageReady,
-   read:()=>{if(!storageReady)throw new Error('O carregamento local ainda não terminou');persist();return {agents:JSON.parse(JSON.stringify(agents))};},
-   remove:expected=>{
-     if(!storageReady||!Array.isArray(expected)||!expected.length)throw new Error('Nenhuma ficha selecionada');
-     if(new Set(expected.map(x=>x.id)).size!==expected.length)throw new Error('Seleção repetida');
-     persist(); // Captura alterações da ficha atualmente aberta antes de conferir os registros.
-     for(const item of expected){
-       const found=agents.find(a=>a.id===item.id);
-       if(!found||JSON.stringify(found)!==item.fingerprint)throw new Error('Uma das fichas mudou desde a análise. Atualize a lista antes de excluir.');
-     }
-     const removeIds=new Set(expected.map(x=>x.id));
-     if(removeIds.size>=agents.length)throw new Error('Não é permitido apagar todas as fichas nessa ferramenta');
-     const previous=agents.slice(),beforeActive=active,beforeState=state;
-     agents=agents.filter(a=>!removeIds.has(a.id));
+ // A remoção é uma operação local explícita e verificada. O registro de
+ // exclusões impede a volta da ficha por cópias antigas do IndexedDB.
+ function removeAgentsSafely(expected,allowEmpty=false){
+   if(!storageReady||!Array.isArray(expected)||!expected.length)throw new Error('Nenhuma ficha selecionada');
+   const ids=new Set(expected.map(x=>x.id));
+   if(ids.size!==expected.length||expected.some(x=>typeof x.id!=='string'))throw new Error('Seleção inválida');
+   if(!persist())throw new Error('Não foi possível salvar a coleção atual antes da exclusão');
+   for(const item of expected){
+     const found=agents.find(a=>a.id===item.id);
+     if(!found||JSON.stringify(found)!==item.fingerprint)throw new Error('Uma ficha foi alterada depois da análise. Atualize antes de excluir.');
+   }
+   if(!allowEmpty&&ids.size>=agents.length)throw new Error('Mantenha pelo menos uma ficha nessa ferramenta');
+   const oldAgents=agents,oldActive=active,oldState=state,oldRemoved=new Set(removedAgentIds);
+   const next=new Set(removedAgentIds);
+   for(const id of ids)next.add(id);
+   // Registrar primeiro a exclusão protege contra uma recuperação antiga.
+   writeRemovedIds(next);
+   try{
+     agents=agents.filter(a=>!ids.has(a.id));
      if(!agents.some(a=>a.id===active)){
        active=agents[0]?.id||null;
        state=active?normalize(JSON.parse(JSON.stringify(agents.find(a=>a.id===active).data))):normalize(defaults());
-       if(active)try{rehydrate();}catch(e){console.warn('NEX: recarregamento da ficha',e);}
+       if(active)try{rehydrate();}catch(e){console.warn('NEX: falha ao atualizar ficha após exclusão',e);}
      }
-     if(!persist()){
-       agents=previous;active=beforeActive;state=beforeState;
-       throw new Error('Falha ao confirmar o salvamento local; exclusão cancelada');
+     // persist() também agenda uma nova cópia no IndexedDB.
+     if(!persist())throw new Error('Não foi possível salvar a lista sem as fichas removidas');
+     const stored=JSON.parse(localStorage.getItem(AGENTS_KEY)||'null');
+     if(!Array.isArray(stored)||stored.length!==agents.length||stored.some(a=>ids.has(a.id))){
+       throw new Error('A verificação da exclusão local falhou');
      }
      renderAgents();
-     return removeIds.size;
+     return ids.size;
+   }catch(error){
+     agents=oldAgents;active=oldActive;state=oldState;
+     try{writeRemovedIds(oldRemoved);persist();}catch(e){console.error('NEX: falha ao reverter exclusão',e);}
+     throw error;
    }
+ }
+ window.NEX_DUPLICATES_BRIDGE={
+   ready:()=>storageReady,
+   read:()=>{if(!storageReady)throw new Error('O carregamento local ainda não terminou');persist();return {agents:JSON.parse(JSON.stringify(agents))};},
+   remove:expected=>removeAgentsSafely(expected,false)
  };
 
  // A nuvem está desligada. Cópias herdadas permanecem no armazenamento local,
@@ -1710,15 +1725,11 @@ nex12Setup();
    window.NEX17.backupAll();
    if(!confirm('O backup JSON foi salvo e conferido no seu aparelho? Cancele se o download falhou.'))return;
    if(prompt('Digite APAGAR para retirar TODAS as fichas deste navegador (não afeta outros aparelhos):')!=='APAGAR')return;
-   const oldAgents=agents.slice(),oldActive=active,oldState=state;
-   agents=[];active=null;state=normalize(defaults());
-   if(!persist()){
-     agents=oldAgents;active=oldActive;state=oldState;
-     toast('Não foi possível confirmar o salvamento local. Fichas mantidas.');
-     return;
-   }
-   renderAgents();visible('agents');
-   toast('Lista deste aparelho esvaziada. O backup permanece disponível.');
+   if(!persist()){toast('A exclusão foi cancelada: o salvamento local não está disponível.');return;}
+   try{
+     removeAgentsSafely(agents.map(a=>({id:a.id,fingerprint:JSON.stringify(a)})),true);
+     visible('agents');toast('Lista deste aparelho esvaziada. O backup permanece disponível.');
+   }catch(error){console.error('NEX: limpeza bloqueada',error);toast('Falha de armazenamento. Nenhuma limpeza foi confirmada.');}
  };
  $('agentsRestoreAll').onclick=()=>$('nexBackupAllInput').click();
  $('nexBackupAllInput').addEventListener('change',async event=>{
@@ -1856,14 +1867,13 @@ nex12Setup();
    if(b.dataset.openAgent){openAgent(b.dataset.openAgent);return;}
    if(b.dataset.copyAgent){const a=agents.find(x=>x.id===b.dataset.copyAgent);if(!a)return;const now=new Date().toISOString();const copy={id:createId(),createdAt:now,updatedAt:now,data:JSON.parse(JSON.stringify(a.data))};copy.data.name=(copy.data.name||'Agente')+' (cópia)';agents.unshift(copy);persist();renderAgents();return;}
    if(b.dataset.deleteAgent){
-     if(!confirm('Excluir esta ficha salva neste navegador?'))return;
-     agents=agents.filter(x=>x.id!==b.dataset.deleteAgent);
-     if(active===b.dataset.deleteAgent || !agents.some(a=>a.id===active)){
-       active=agents.length?agents[0].id:null;
-       state=active?normalize(JSON.parse(JSON.stringify(agents[0].data))):normalize(defaults());
-       if(active)rehydrate();
-     }
-     persist();renderAgents();return;
+     if(!persist()){toast('Não foi possível confirmar o salvamento. Exporte um backup.');return;}
+     const target=agents.find(x=>x.id===b.dataset.deleteAgent);
+     if(!target)return;
+     if(!confirm('Excluir a ficha "'+(target.data?.name||'Sem nome')+'" deste dispositivo? Para recuperá-la, será necessário restaurar um backup.'))return;
+     try{removeAgentsSafely([{id:target.id,fingerprint:JSON.stringify(target)}],true);toast('Ficha excluída deste dispositivo.');}
+     catch(error){console.error('NEX: exclusão bloqueada',error);toast('A exclusão foi bloqueada para proteger seus dados.');}
+     return;
    }
    if(b.dataset.removeCampaign){if(!confirm('Excluir esta campanha?'))return;campaigns=campaigns.filter(x=>x.id!==b.dataset.removeCampaign);localStorage.setItem(CAMP_KEY,JSON.stringify(campaigns));persist();renderCampaigns();}
  });
