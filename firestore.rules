@@ -1,0 +1,21 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Cada usuário só pode ler e editar as próprias fichas.
+    match /users/{userId}/characters/{characterId} {
+      function owner() {
+        return request.auth != null && request.auth.uid == userId;
+      }
+      allow read: if owner();
+      allow create, update: if owner()
+        && request.resource.data.keys().hasOnly(['id', 'data', 'createdAt', 'updatedAt', 'format'])
+        && request.resource.data.id == characterId
+        && request.resource.data.data is map
+        && request.resource.data.createdAt is string
+        && request.resource.data.updatedAt is string
+        && request.resource.data.format == 'nex-character-v1';
+      // Nesta fase excluir localmente NÃO exclui cópias na nuvem.
+      allow delete: if false;
+    }
+  }
+}
