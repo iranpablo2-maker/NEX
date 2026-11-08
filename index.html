@@ -1825,6 +1825,7 @@ nex12Setup();
 
  function renderCampaigns(){
    const list=$('campaignList');
+   const opened=new Set([...list.querySelectorAll('details[data-campaign-details][open]')].map(el=>el.dataset.campaignDetails));
    if(!campaigns.length){list.innerHTML='<p class="home-empty">Você ainda não cadastrou campanhas.</p>';return;}
    list.innerHTML=campaigns.map(c=>{
      const linked=Array.isArray(c.agentIds)?c.agentIds:[];
@@ -1842,7 +1843,7 @@ nex12Setup();
      ).join('')||'<li class="muted">Nenhuma sessão registrada.</li>';
      return '<article class="campaign-entry">'+
        '<h3>'+escapeHtml(c.name||'Campanha sem nome')+'</h3><p>'+escapeHtml(c.note||'Sem descrição.')+'</p>'+
-       '<details class="nex-campaign-details"><summary>Gerenciar personagens e sessões <small>· '+linked.length+' personagem(ns) · '+sessions.length+' sessão(ões)</small></summary>'+
+       '<details class="nex-campaign-details" data-campaign-details="'+escapeHtml(c.id)+'" '+(opened.has(c.id)?'open':'')+'><summary>Gerenciar personagens e sessões <small>· '+linked.length+' personagem(ns) · '+sessions.length+' sessão(ões)</small></summary>'+
        '<div class="nex-campaign-section"><h4>Personagens da campanha</h4><div class="nex-campaign-characters">'+linkedHtml+'</div>'+
        '<div class="nex-campaign-add-player"><select aria-label="Escolher personagem" data-campaign-agent-select="'+escapeHtml(c.id)+'">'+
        (choices?'<option value="">Escolha uma ficha existente</option>'+choices:'<option value="">Nenhuma ficha disponível</option>')+
