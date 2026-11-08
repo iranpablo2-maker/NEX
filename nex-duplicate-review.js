@@ -86,7 +86,7 @@
      update();
    };
    by('nexDuplicateDownload').onclick=()=>{
-     try {window.NEX17.backupAll(); backupReady=true;by('nexDuplicateConfirmed').disabled=false;feedback('Verifique se o navegador baixou o arquivo JSON completo. Depois marque a confirmação.');update();}
+     try {if(window.NEX17.backupAll()!==true){feedback('O backup não foi iniciado. Não é seguro excluir fichas.');return;} backupReady=true;by('nexDuplicateConfirmed').disabled=false;feedback('Verifique se o navegador baixou o arquivo JSON completo. Depois marque a confirmação.');update();}
      catch(e){feedback('Não foi possível preparar o backup. Nenhuma exclusão será liberada.');}
    };
    by('nexDuplicateRemove').onclick=()=>{
