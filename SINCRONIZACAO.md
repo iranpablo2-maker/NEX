@@ -1,28 +1,35 @@
-# NEX — Sincronização de fichas PC ↔ celular
+# NEX V2.0.37 — Sincronização automática (Firestore V3)
 
-## Antes de começar (obrigatório)
+## Primeiro: regras do Firebase (obrigatório)
 
-1. No Firebase Console do projeto **NEX RPG**, abra **Criação > Firestore Database** ou **Bancos de dados > Firestore Database**.
-2. Clique em **Criar banco de dados**, selecione a região desejada e escolha **modo de produção** (não use regras públicas de teste).
-3. Em **Firestore Database > Regras**, substitua o conteúdo pelas regras do arquivo **`firestore.rules`** deste repositório.
-4. Clique em **Publicar**. As regras permitem que somente o usuário autenticado leia e altere suas fichas.
-5. Em **Authentication**, mantenha **Google** habilitado e o domínio `iranpablo2-maker.github.io` autorizado.
+As regras publicadas no Firebase **não** são atualizadas automaticamente quando o arquivo do GitHub muda.
 
-## Como levar as fichas do computador para o celular
+1. Abra [Firestore > Regras](https://console.firebase.google.com/project/nex-rpg/firestore/databases/-default-/rules).
+2. Copie todo o conteúdo de [firestore.rules](https://github.com/iranpablo2-maker/NEX/blob/main/firestore.rules).
+3. Substitua as regras atuais, clique em **Publicar** e aguarde o resultado.
+4. Não libere acesso público. As regras restringem documentos ao UID autenticado.
 
-1. No computador, abra o NEX, entre com Google e clique em **Ativar sincronização**.
-2. **Antes do primeiro envio, baixe um backup de todas as fichas.** Este passo não apaga suas fichas locais.
-3. Espere aparecer **Sincronizado**. O NEX enviará as fichas ao Firestore por conta Google.
-4. No celular, abra o mesmo endereço HTTPS do NEX, entre com a **mesma conta Google** e clique em **Ativar sincronização**.
-5. O NEX baixará as fichas e fará o merge com as fichas locais, preservando dados existentes. Depois, ele tenta enviar as alterações feitas em cada dispositivo automaticamente enquanto estiver online.
-6. Se necessário, use **Sincronizar agora** para forçar a atualização entre dispositivos.
+## Como usar
 
-## Observações
+1. No PC, abra o [NEX](https://iranpablo2-maker.github.io/NEX/?v=2037), entre com a conta Google e **baixe o backup completo** pelo menu Personagens.
+2. Confira o indicador verde de nuvem. Na primeira vez o NEX envia automaticamente as fichas, campanhas e a biblioteca de homebrews.
+3. Abra o mesmo NEX no celular e entre com a **mesma conta**. A coleção aparece automaticamente.
+4. Novas edições e exclusões são sincronizadas sem precisar de um botão manual. Alterações feitas offline permanecem no armazenamento local e são enviadas ao reconectar.
 
-- A sincronização é opcional e vinculada à conta Google. Quem não ativar continua usando o salvamento local normal.
-- Fichas com retratos grandes podem ultrapassar o limite de tamanho de documento do Firestore e serão mantidas localmente, com aviso.
-- Em caso de conflito, o NEX preserva uma cópia adicional da versão divergente com um nome indicando conflito.
-- Excluir uma ficha local **não a exclui da nuvem** nesta primeira versão: ela pode reaparecer ao sincronizar. Isso evita perdas acidentais.
-- O banco de dados guarda fichas privadas por UID; **nunca** configure regras `allow read, write: if true`.
-- O GitHub Pages só hospeda o site. O Firebase Auth autentica usuários e o Cloud Firestore sincroniza as fichas.
-- Não inclua tokens, senhas ou credenciais de administrador em repositórios públicos. `firebaseConfig` é a configuração pública do cliente.
+## Como essa versão evita o erro anterior
+
+- A sincronização nova usa a coleção `users/{uid}/nex_v3`, separada das cópias e dos conflitos do primeiro sincronizador (`characters`).
+- Cada ficha tem um documento fixo `agent-<id>`; o nome não cria fichas extras.
+- A exclusão usa registro `deleted=true`; a versão apagada não é reenviada pelo celular como personagem novo.
+- Homebrews e campanhas têm documentos separados.
+- Cada edição tem controle de versão por comparação do conteúdo anterior antes de gravar.
+- Alterações incompatíveis não geram mais personagens automaticamente; a versão local conflitante é guardada no arquivo de recuperação do navegador, se houver espaço.
+- Fichas locais permanecem disponíveis se o Firestore falhar.
+
+## Limitações de segurança
+
+- O site e as regras precisam estar publicados antes do teste. GitHub Pages pode demorar para propagar alterações.
+- O Firestore limita o tamanho dos documentos. Fichas com retratos incorporados muito grandes poderão ficar apenas no dispositivo, com aviso.
+- Alterações simultâneas à mesma ficha em aparelhos diferentes precisam de validação adicional; mantenha backups.
+- A primeira conexão deve ser feita no PC que contém os dados principais. Conectar outro aparelho com fichas antigas do mesmo personagem pode gerar um conflito (guardado no arquivo de recuperação, não na lista de agentes).
+- O histórico anterior no caminho `characters` continua intocado; é um arquivo legado. Não ative o sincronizador antigo.
