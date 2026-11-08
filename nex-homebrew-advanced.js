@@ -40,7 +40,7 @@ mount.innerHTML=
 '<label class="nex51-choose">Adicionar à ficha<select id="nex51Target" aria-label="Selecionar personagem"><option value="">Selecione um personagem salvo</option></select></label>'+
 '<p class="nex51-tip">Os efeitos são descritivos e não alteram os cálculos automaticamente. A ficha guarda uma cópia do conteúdo recebido, mesmo se a biblioteca for editada ou apagada.</p>'+
 '<div id="nex51List" class="nex51-list"></div><p id="nex51Message" role="status" aria-live="polite"></p>';
-sheet.innerHTML='<details class="nex51-sheet" open><summary>Homebrews personalizados da ficha (<span id="nex51SheetCount">0</span>)</summary><div id="nex51SheetItems" class="nex51-list"></div></details>';
+sheet.innerHTML='<details class="nex51-sheet"><summary>Homebrews personalizados da ficha (<span id="nex51SheetCount">0</span>)</summary><div id="nex51SheetItems" class="nex51-list"></div></details>';
 function notice(text){$('nex51Message').textContent=text;}
 function typeField(){$('nex51Ritual').hidden=$('nex51Type').value!=='ritual';}
 function clearForm(){$('nex51Form').reset();$('nex51Edit').value='';$('nex51Submit').textContent='Salvar homebrew';typeField();}
