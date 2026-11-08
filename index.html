@@ -1844,8 +1844,8 @@ $('nexHomebrewFilter')?.addEventListener('input',()=>nex12RenderHomebrew());
    const file=event.target.files?.[0];event.target.value='';if(!file)return;
    if(file.size>12000000){toast('O backup ultrapassa o limite de 12 MB.');return;}
    let parsed;try{parsed=JSON.parse(await file.text());}catch{toast('Backup inválido: não é um JSON.');return;}
-   if(parsed?.format!=='nex-backup-all'||!Array.isArray(parsed.agents)||!parsed.agents.length||parsed.agents.length>200||!parsed.agents.every(a=>a && typeof a.id==='string' && a.data && typeof a.data==='object' && !Array.isArray(a.data))){toast('Este arquivo não é um backup completo válido do NEX.');return;}
-   if(!confirm('Restaurar '+parsed.agents.length+' fichas deste backup? As fichas atualmente abertas serão substituídas. Exporte suas fichas atuais antes de continuar.'))return;
+   if(parsed?.format!=='nex-backup-all'||!Array.isArray(parsed.agents)||parsed.agents.length>200||!parsed.agents.every(a=>a && typeof a.id==='string' && a.data && typeof a.data==='object' && !Array.isArray(a.data))){toast('Este arquivo não é um backup completo válido do NEX.');return;}
+   if(!confirm('Restaurar este backup com '+parsed.agents.length+' ficha(s)? A coleção atual será substituída. Exporte seus dados atuais antes de continuar.'))return;
    // Restaurar um backup é uma decisão explícita: os IDs daquele arquivo
    // deixam de ser bloqueados, mas só se a restauração for realmente salva.
    const previous={agents,campaigns,active,state,removed:new Set(removedAgentIds)};
@@ -1857,9 +1857,9 @@ $('nexHomebrewFilter')?.addEventListener('input',()=>nex12RenderHomebrew());
      campaigns=Array.isArray(parsed.campaigns)?parsed.campaigns.slice(0,200):campaigns;
      if(Array.isArray(parsed.homebrew))localStorage.setItem(HB_KEY,JSON.stringify(parsed.homebrew));
      if(Array.isArray(parsed.advancedHomebrew))localStorage.setItem('nex_homebrew_advanced_v2051',JSON.stringify(parsed.advancedHomebrew));
-     active=agents.some(a=>a.id===parsed.active)?parsed.active:agents[0].id;
-     state=normalize(JSON.parse(JSON.stringify(agents.find(a=>a.id===active).data)));
-     try{rehydrate();}catch(error){console.error(error);renderFields();}
+     active=agents.some(a=>a.id===parsed.active)?parsed.active:(agents[0]?.id||null);
+     state=active?normalize(JSON.parse(JSON.stringify(agents.find(a=>a.id===active).data))):normalize(defaults());
+     if(active){try{rehydrate();}catch(error){console.error(error);renderFields();}}else{renderFields();}
      if(!persist())throw new Error('Falha no salvamento da coleção restaurada');
      const verified=JSON.parse(localStorage.getItem(AGENTS_KEY)||'null');
      if(!Array.isArray(verified)||verified.length!==agents.length)throw new Error('Falha ao verificar a restauração');
