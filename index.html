@@ -892,6 +892,7 @@ html,body{background:#000!important;background-image:none!important}
 </style></head><body>
 <header class="topbar"><div class="topinner"><button type="button" id="n17MenuToggle" class="n17-menu-button" aria-expanded="false" aria-controls="n17Drawer" aria-label="Abrir menu">☰</button><div class="brand"><div class="brand-mark">◈</div><div><h1>NEX</h1><div class="subtitle">SISTEMA DE FICHAS · ORDEM PARANORMAL</div></div></div><div class="actions"><span id="nexGoogleIdentity" hidden></span><button class="btn sm" id="nexGoogleLogin" type="button">Entrar com Google</button><button class="btn sm" id="menuHeaderButton" type="button">⌂ Menu principal</button><button class="btn sm" id="newChar">＋ Nova ficha</button><button class="btn sm" id="importBtn">Importar</button><button class="btn sm" id="exportBtn">↓ Exportar</button><button class="btn sm primary" id="saveBtn">▣ Salvar ficha</button><input type="file" id="fileInput" accept="application/json,.json" hidden><span id="n17SaveIndicator" class="n17-save-indicator" aria-live="polite">Salvamento local</span></div></div></header>
 <div class="nex-google-status" id="nexGoogleStatus" role="status" aria-live="polite">Login Google em preparação. Suas fichas locais continuam funcionando.</div>
+<div id="nexAutoSyncStatus" style="background:#102016;color:#badacb;padding:9px 16px;text-align:center;font:12px Arial,sans-serif" role="status" aria-live="polite">Entre com Google para sincronizar automaticamente fichas, homebrews e campanhas.</div>
 <nav class="nex-ref-nav" aria-label="Navegação principal">
  <div class="nex-ref-nav-inner">
   <button type="button" data-nexnav="agents">Personagens</button>
@@ -1767,7 +1768,8 @@ nex12Setup();
  // Preserve compatibility with V1.2's original new-sheet and JSON import controls.
  $('newChar').addEventListener('click',e=>{e.preventDefault();e.stopImmediatePropagation();createAgent();},true);
  $('fileInput').addEventListener('change',()=>{setTimeout(()=>{try{rehydrate();persist();renderAgents();toast('Ficha importada para o personagem atual.');}catch(err){console.error('Erro após importar',err);toast('Confira o arquivo importado.');}},200);});
- window.NEX17={openHome:showHome,openAgents:showAgents,createAgent,openSheet:()=>{rehydrate();visible('sheet');},openCampaigns:()=>{renderCampaigns();visible('campaigns');},openHomebrew:showHomebrew,backupAll:()=>{try{persist();const data={format:'nex-backup-all',version:'1.8',exportedAt:new Date().toISOString(),agents,campaigns,homebrew:globalHomebrew(),active};const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});const link=document.createElement('a');link.href=URL.createObjectURL(blob);link.download='nex-backup-todas-fichas-'+new Date().toISOString().slice(0,10)+'.json';link.click();setTimeout(()=>URL.revokeObjectURL(link.href),1000);toast('Backup completo exportado.');}catch(err){console.error(err);toast('Falha ao exportar backup completo.');}}};
+ window.NEX17={openHome:showHome,openAgents:showAgents,createAgent,openSheet:()=>{rehydrate();visible('sheet');},openCampaigns:()=>{renderCampaigns();visible('campaigns');},openHomebrew:showHomebrew,backupAll:()=>{try{persist();const data={format:'nex-backup-all',version:'1.8',exportedAt:new Date().toISOString(),agents,campaigns,homebrew:globalHomebrew(),active,
+   syncRecovery:(()=>{try{const uid=localStorage.getItem('nex_sync_v3_account');return uid?JSON.parse(localStorage.getItem('nex_sync_v3_recovery_'+uid)||'[]'):[];}catch{return [];}})()};const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});const link=document.createElement('a');link.href=URL.createObjectURL(blob);link.download='nex-backup-todas-fichas-'+new Date().toISOString().slice(0,10)+'.json';link.click();setTimeout(()=>URL.revokeObjectURL(link.href),1000);toast('Backup completo exportado.');}catch(err){console.error(err);toast('Falha ao exportar backup completo.');}}};
  document.addEventListener('nex-homebrew-changed',()=>{try{const lib=state.homebrew||[];localStorage.setItem(HB_KEY,JSON.stringify(lib));for(const a of agents){a.data.homebrew=structuredClone(lib);}persist();}catch(e){console.error('Falha ao salvar biblioteca Homebrew',e);}});
  window.addEventListener('pagehide',()=>{try{persist();}catch(err){console.error(err);}});
  // Loading from the second store must finish BEFORE the first write.
@@ -2456,7 +2458,7 @@ update();
   save();e.currentTarget.reset();mode='mine';refreshSheet();
  });
 })();
-</script><div id="nexAutoSyncStatus" style="background:#102016;color:#badacb;padding:9px 16px;text-align:center;font:12px Arial,sans-serif" role="status" aria-live="polite">Entre com Google para sincronizar automaticamente fichas, homebrews e campanhas.</div>
+</script>
 <script src="firebase-config.js"></script>
 <script src="nex-google-login.js"></script>
 <script src="nex-auto-sync-v3.js?v=2037"></script>
