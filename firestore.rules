@@ -1,20 +1,37 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Cada usuário só pode ler e editar as próprias fichas.
+    function owned(userId) {
+      return request.auth != null && request.auth.uid == userId;
+    }
+
+    // Arquivo antigo: mantém regras restritas, mas o NEX novo não o utiliza.
     match /users/{userId}/characters/{characterId} {
-      function owner() {
-        return request.auth != null && request.auth.uid == userId;
-      }
-      allow read: if owner();
-      allow create, update: if owner()
-        && request.resource.data.keys().hasOnly(['id', 'data', 'createdAt', 'updatedAt', 'format'])
+      allow read: if owned(userId);
+      allow create, update: if owned(userId)
+        && request.resource.data.keys().hasOnly(['id','data','createdAt','updatedAt','format'])
         && request.resource.data.id == characterId
         && request.resource.data.data is map
         && request.resource.data.createdAt is string
         && request.resource.data.updatedAt is string
         && request.resource.data.format == 'nex-character-v1';
-      // Nesta fase excluir localmente NÃO exclui cópias na nuvem.
+      allow delete: if false;
+    }
+
+    // Nova sincronização automática separada, com registros de exclusão.
+    match /users/{userId}/nex_v3/{recordId} {
+      allow read: if owned(userId);
+      allow create, update: if owned(userId)
+        && request.resource.data.keys().hasOnly(['type','payload','deleted','updatedAt'])
+        && request.resource.data.type in ['agent','campaigns','homebrew']
+        && request.resource.data.deleted is bool
+        && request.resource.data.payload is map
+        && request.resource.data.updatedAt is timestamp
+        && (
+          (request.resource.data.type == 'agent' && recordId.matches('agent-[A-Za-z0-9_-]{2,90}'))
+          || (request.resource.data.type == 'campaigns' && recordId == 'campaigns')
+          || (request.resource.data.type == 'homebrew' && recordId == 'homebrew')
+        );
       allow delete: if false;
     }
   }
