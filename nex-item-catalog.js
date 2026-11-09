@@ -4,8 +4,9 @@
 const by=id=>document.getElementById(id);
 const escape=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const norm=s=>String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLocaleLowerCase('pt-BR');
-const sections=['Itens','Itens Homebrew','Armas','Munições','Proteções','Geral','Itens Amaldiçoados'];
-const mapCategory={'Itens':'Geral','Itens Homebrew':'Geral','Armas':'Arma','Munições':'Munição','Proteções':'Proteção','Geral':'Geral','Itens Amaldiçoados':'Item Amaldiçoado'};
+const sources=['Itens','Itens Homebrew'];
+const sections=['Armas','Munições','Proteções','Geral','Itens Amaldiçoados'];
+const mapCategory={'Armas':'Arma','Munições':'Munição','Proteções':'Proteção','Geral':'Geral','Itens Amaldiçoados':'Item Amaldiçoado'};
 const items=[];
 function put(name,section,description,stats,spaces){
  if(items.some(x=>norm(x.name)===norm(name)&&x.section===section))return;
@@ -70,7 +71,9 @@ function homebrewItems(){
 const style=document.createElement('style');
 style.id='nex-item-modal-styles';
 style.textContent=[
-'#sheetScreen #n16ItemFilters,#sheetScreen .nexv16-catalog{display:none!important}',
+'#sheetScreen .nexv16-catalog{display:none!important}',
+'#sheetScreen #n16ItemFilters{display:flex!important;flex-wrap:wrap;overflow:visible;gap:7px;margin:10px 0 14px}',
+'#sheetScreen #n16ItemFilters button{font-size:12px;padding:8px 12px}',
 '#nexItemModal[hidden]{display:none!important}',
 '#nexItemModal{position:fixed;inset:0;z-index:100030;display:grid;place-items:center;padding:12px;background:#000c;color:#fff;font-family:Arial,system-ui,sans-serif}',
 '#nexItemModal *{box-sizing:border-box}',
@@ -81,6 +84,10 @@ style.textContent=[
 '#nexItemModal .nex-item-tabs{display:flex;gap:23px;overflow-x:auto;white-space:nowrap;padding:0 18px;border-bottom:1px solid #414141}',
 '#nexItemModal .nex-item-tab{background:none;color:#c2bac8;border:0;border-bottom:2px solid transparent;padding:12px 0;font-size:14px}',
 '#nexItemModal .nex-item-tab[aria-selected="true"]{color:#fff;border-bottom-color:#aa39ef}',
+'#nexItemModal .nex-item-category-label{padding:11px 18px 0;color:#bd9bcd;font-size:11px;letter-spacing:.07em;font-weight:700}',
+'#nexItemModal .nex-item-categories{display:flex;gap:10px;overflow-x:auto;white-space:nowrap;padding:7px 18px 10px;scrollbar-width:thin}',
+'#nexItemModal .nex-item-category-button{border:1px solid #55415f;border-radius:3px;color:#d7c4e4;background:#181519;padding:7px 12px;font-size:12px}',
+'#nexItemModal .nex-item-category-button[aria-selected="true"]{border-color:#bd53ff;background:#7633a0;color:#fff}',
 '#nexItemModal .nex-item-search-wrap{padding:14px 16px 9px}',
 '#nexItemModal #nexItemModalSearch{width:100%;border:0;border-radius:3px;background:#101010;color:#fff;height:42px;padding:8px 13px;font-size:16px}',
 '#nexItemModal .nex-item-results{overflow-y:auto;flex:1;min-height:180px;padding:6px 16px 18px;overscroll-behavior:contain}',
@@ -104,33 +111,37 @@ document.head.appendChild(style);
 const modal=document.createElement('div');modal.id='nexItemModal';modal.hidden=true;
 modal.innerHTML='<section class="nex-item-dialog" role="dialog" aria-modal="true" aria-labelledby="nexItemModalTitle">'+
 '<div class="nex-item-top"><h2 id="nexItemModalTitle">Adicionar Itens</h2><button class="nex-item-close" type="button" aria-label="Fechar">×</button></div>'+
-'<div class="nex-item-tabs" role="tablist">'+sections.map((c,i)=>'<button type="button" class="nex-item-tab" role="tab" data-cat="'+escape(c)+'" aria-selected="'+String(i===0)+'">'+escape(c)+'</button>').join('')+'</div>'+
+'<div class="nex-item-tabs" role="tablist" aria-label="Tipo de item">'+sources.map((c,i)=>'<button type="button" class="nex-item-tab" role="tab" data-source="'+escape(c)+'" aria-selected="'+String(i===0)+'">'+escape(c)+'</button>').join('')+'</div>'+ 
+'<div class="nex-item-category-label">CATEGORIAS</div>'+ 
+'<div class="nex-item-categories" role="tablist" aria-label="Categorias de itens">'+sections.map((c,i)=>'<button type="button" class="nex-item-category-button" role="tab" data-cat="'+escape(c)+'" aria-selected="'+String(i===0)+'">'+escape(c)+'</button>').join('')+'</div>'+ 
 '<div class="nex-item-search-wrap"><input type="search" id="nexItemModalSearch" placeholder="⌕  Buscar" aria-label="Buscar itens"></div>'+
 '<div id="nexItemModalResults" class="nex-item-results" aria-live="polite"></div>'+ 
 '<div class="nex-item-footer"><button type="button" class="nex-item-custom">+ Criar item personalizado</button></div></section>';
 document.body.appendChild(modal);
 const search=by('nexItemModalSearch'),results=by('nexItemModalResults');
 const originalAddItem=by('addItem')?.onclick;
-let selected='Itens',lastFocus=null;
+let selectedSource='Itens',selected='Armas',lastFocus=null,renderedItems=[];
 function render(){
+ modal.querySelectorAll('[data-source]').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.source===selectedSource)));
  modal.querySelectorAll('[data-cat]').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.cat===selected)));
  const term=norm(search.value.trim());
- const visible=[...items,...homebrewItems()];
- const list=visible.filter(i=>(selected==='Itens'||selected==='Itens Homebrew'&&i.isHomebrew||i.section===selected)&&norm([i.name,i.description,i.subtitle,i.source,...i.stats.map(s=>s.join(' '))].join(' ')).includes(term));
+ const visible=selectedSource==='Itens'?items:homebrewItems();
+ const list=visible.filter(i=>i.section===selected&&norm([i.name,i.description,i.subtitle,i.source,...i.stats.map(s=>s.join(' '))].join(' ')).includes(term));
+ renderedItems=list;
  results.innerHTML=list.length?list.map(item=>{
-   const index=visible.indexOf(item);
+   const index=list.indexOf(item);
    return '<article class="nex-item-card" data-item-index="'+index+'"><div class="nex-item-card-header">'+
    '<button type="button" class="nex-item-expand" data-expand="'+index+'" aria-expanded="false" aria-label="Detalhes do item">⌄</button>'+
    '<div><span class="nex-item-name">'+escape(item.name)+'</span><span class="nex-item-desc">'+escape(item.subtitle||item.source||'Item')+'</span>'+
    '<div class="nex-item-meta">'+(item.stats.length?item.stats.map(m=>'<span><b>'+escape(m[0])+':</b> '+escape(m[1])+'</span>').join(''):'<span><b>Espaços:</b> '+item.spaces+'</span>')+'</div></div>'+
    '<button type="button" class="nex-item-plus" data-add="'+index+'" aria-label="Adicionar '+escape(item.name)+'">+</button></div>'+
    '<div class="nex-item-detail" hidden>'+escape((item.source?item.source+' · ':'')+(item.description||'Confira as estatísticas nas regras do livro.'))+'</div></article>';
- }).join(''):'<div class="nex-item-empty">'+(selected==='Itens Homebrew'?'Nenhum item homebrew cadastrado. Crie um na biblioteca Homebrew do NEX.':'Nenhum item encontrado nesta categoria.')+'</div>';
+ }).join(''):'<div class="nex-item-empty">'+(selectedSource==='Itens Homebrew'?'Nenhum item homebrew nesta categoria. Cadastre um na biblioteca Homebrew.':'Nenhum item encontrado nesta categoria.')+'</div>';
 }
-function open(){lastFocus=document.activeElement;selected='Itens';search.value='';render();modal.hidden=false;document.body.classList.add('nex-item-modal-open');search.focus();}
+function open(){lastFocus=document.activeElement;selectedSource='Itens';selected='Armas';search.value='';render();modal.hidden=false;document.body.classList.add('nex-item-modal-open');search.focus();}
 function close(){modal.hidden=true;document.body.classList.remove('nex-item-modal-open');lastFocus?.focus?.();}
 function add(index){
- const item=[...items,...homebrewItems()][index];if(!item)return;
+ const item=renderedItems[index];if(!item)return;
  if(!Array.isArray(state.items))state.items=[];
  if(state.items.length>=100){toast('Limite de 100 itens no inventário.');return;}
  state.items.push({id:'nexitem_'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,6),name:item.name,quantity:1,category:mapCategory[item.section],spaces:item.spaces,detail:[item.description,...item.stats.map(m=>m.join(': '))].filter(Boolean).join(' · ').slice(0,2000)});
@@ -141,6 +152,7 @@ modal.addEventListener('click',event=>{
  const button=event.target.closest('button');if(!button)return;
  if(button.classList.contains('nex-item-close')){close();return;}
  if(button.classList.contains('nex-item-custom')){close();if(typeof originalAddItem==='function')originalAddItem.call(by('addItem'),event);else{state.items.push({id:'manual_'+Date.now(),name:'Novo item',quantity:1,spaces:1,category:'Geral',detail:''});renderInventory();save();}return;}
+ if(button.dataset.source){selectedSource=button.dataset.source;search.value='';render();return;}
  if(button.dataset.cat){selected=button.dataset.cat;search.value='';render();return;}
  if(button.dataset.add!==undefined){add(Number(button.dataset.add));return;}
  if(button.dataset.expand!==undefined){
