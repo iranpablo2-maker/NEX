@@ -1156,52 +1156,49 @@ html,body{background:#000!important;background-image:none!important}
 </style>
 <style id="nex-skills-compact-select-v2059">
 
-/* Perícias: tabela original e seletor de treinamento pequeno, com seta nativa. */
+/* Restaurado do controle anterior: dropdown compacto roxo com seta visível. */
 #sheetScreen .nexv16-table-scroll{overflow-x:auto}
 #sheetScreen #skillsList{display:block}
 #sheetScreen .nexv16-skill-head,
 #sheetScreen .nexv16-skill-row{
  display:grid!important;
- grid-template-columns:minmax(120px,1fr) 42px 46px 52px 37px!important;
- gap:4px!important;align-items:center!important;min-width:310px!important
+ grid-template-columns:minmax(107px,1fr) 37px 42px 60px 42px!important;
+ min-width:300px!important;gap:3px!important;align-items:center!important
 }
-#sheetScreen .nexv16-skill-head{
- font-size:9px;font-weight:800;text-transform:uppercase;color:#9f99a7;
- padding:6px 2px;border-bottom:1px solid #3a3440
-}
-#sheetScreen .nexv16-skill-row{min-height:35px;padding:4px 2px;border-bottom:1px solid #27252a}
+#sheetScreen .nexv16-skill-row{min-height:35px!important;padding:3px 2px!important;border-bottom:1px solid #27252a}
 #sheetScreen .nexv16-skill-row .nexv16-skill-name{
- display:flex;gap:5px;align-items:center;min-width:0;font-size:11px;font-weight:600
+ display:flex!important;gap:5px!important;align-items:center!important;min-width:0;
+ font-size:11px;font-weight:600
 }
-#sheetScreen .nexv16-skill-name > span{
+#sheetScreen .nexv16-skill-name::before{display:none!important;content:none!important}
+#sheetScreen .nexv16-skill-name>span{
  min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap
 }
 #sheetScreen .nexv16-skill-row .nexv16-attr,
 #sheetScreen .nexv16-skill-row .nexv16-total{text-align:center;font-size:11px}
-#sheetScreen .nexv16-skill-row .nex-compact-training{
- appearance:menulist!important;-webkit-appearance:menulist!important;
- display:block!important;box-sizing:border-box!important;
- width:100%!important;min-width:0!important;height:28px!important;min-height:28px!important;
- margin:0!important;padding:2px 2px!important;text-align:center!important;text-align-last:center!important;
- border:1px solid #6b496e!important;border-radius:4px!important;
- background:#1b1720!important;color:#c78cff!important;
- font-size:11px!important;font-weight:700!important;line-height:1.2!important;
- cursor:pointer!important;color-scheme:dark
+#sheetScreen select.nex57-training-select{
+ -webkit-appearance:menulist!important;appearance:auto!important;
+ display:block!important;box-sizing:border-box!important;width:100%!important;min-width:0!important;
+ height:31px!important;min-height:31px!important;max-height:31px!important;
+ padding:3px 1px!important;margin:0!important;
+ border:1px solid #6b546e!important;border-radius:5px!important;
+ background:#251c2b!important;color:#f4e0fb!important;
+ font-weight:800!important;font-size:12px!important;text-align:center!important;text-align-last:center!important;
+ cursor:pointer!important;line-height:1.2!important;color-scheme:dark
 }
-#sheetScreen .nexv16-skill-row .nex-compact-training option{background:#17151b;color:#f1e5fa}
-#sheetScreen .nexv16-skill-row.trained .nex-compact-training{
- color:#9adfb1!important;border-color:#4e8460!important;background:#162018!important
+#sheetScreen select.nex57-training-select option{background:#251c2b!important;color:#fff!important}
+#sheetScreen .nexv16-skill-row.trained select.nex57-training-select{
+ color:#9ce2ad!important;border-color:#518d65!important;background:#17251d!important
 }
-#sheetScreen .nexv16-skill-row .nex-compact-training:focus-visible{
- outline:1px solid #bd88e9!important;outline-offset:1px
-}
+#sheetScreen select.nex57-training-select:focus-visible{outline:2px solid #be85f3!important;outline-offset:1px}
 #sheetScreen .nexv16-skill-row input[data-n16-other]{
- width:100%;min-width:0;padding:4px 0;border:0;border-bottom:1px solid #626168;
- border-radius:0;background:transparent;text-align:center;font-size:11px;color:#fff
+ width:100%!important;min-width:0!important;padding:4px 0!important;border:0!important;
+ border-bottom:1px solid #626168!important;border-radius:0!important;background:transparent!important;
+ text-align:center!important;font-size:11px!important;color:#fff!important
 }
 @media(max-width:750px){
- #sheetScreen .nexv16-skill-row{min-height:38px}
- #sheetScreen .nexv16-skill-row .nex-compact-training{height:30px!important;min-height:30px!important}
+ #sheetScreen .nexv16-skill-row{min-height:40px!important}
+ #sheetScreen select.nex57-training-select{height:34px!important;min-height:34px!important;max-height:34px!important}
 }
 
 </style>
@@ -1213,14 +1210,15 @@ html,body{background:#000!important;background-image:none!important}
 </style>
 <style id="nex-custom-d20-v2061">
 
-/* Mantém o dado branco enviado pelo usuário, mas menor e sem ocupar espaço extra. */
-#sheetScreen .nex-skill-dice-button{
- width:16px!important;height:16px!important;flex:0 0 16px!important;
- display:grid!important;place-items:center!important;padding:0!important;
- margin:0!important;border:0!important;background:transparent!important;border-radius:0!important
+/* Redimensionamento do dado fornecido pelo usuário, sem alterar o arquivo. */
+#sheetScreen button.nex-skill-dice-button{
+ width:16px!important;height:18px!important;min-width:16px!important;min-height:18px!important;
+ flex:0 0 16px!important;display:grid!important;place-items:center!important;
+ padding:0!important;margin:0!important;border:0!important;background:transparent!important;border-radius:0!important
 }
-#sheetScreen .nex-skill-dice-button img{
- display:block!important;width:15px!important;height:15px!important;
+#sheetScreen button.nex-skill-dice-button>img{
+ display:block!important;width:13px!important;height:15px!important;
+ max-width:13px!important;max-height:15px!important;
  object-fit:contain!important;mix-blend-mode:normal!important;pointer-events:none!important
 }
 
@@ -2498,7 +2496,7 @@ $('nexHomebrewFilter')?.addEventListener('input',()=>nex12RenderHomebrew());
      </div>
      <span class="nexv16-attr">(${n16SkillAttr[skill.attr]||n16SkillAttr[attr]||'INT'})</span>
      <span class="nexv16-total">(${total>=0?'+':''}${total})</span>
-     <select class="nex-compact-training" aria-label="Treinamento de ${escape(name)}" data-n16-train="${escape(name)}" title="Treino: 0, 5, 10 ou 15">
+     <select class="nex57-training-select" data-nex-skill-ui="compact-v2064" aria-label="Treinamento de ${escape(name)}" data-n16-train="${escape(name)}" title="Treino: 0, 5, 10 ou 15">
        ${[0,5,10,15].map(value=>`<option value="${value}" ${training===value?'selected':''}>${value}</option>`).join('')}
      </select>
      <input type="number" aria-label="Outros bônus de ${escape(name)}" data-n16-other="${escape(name)}" min="-99" max="99" value="${other}">
