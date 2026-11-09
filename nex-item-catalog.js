@@ -22,7 +22,7 @@ const basic={
  Proteções:['Proteção Leve','Proteção Pesada','Escudo'],
  Geral:['Algemas','Lanterna','Mochila','Binóculos','Corda','Kit de Medicina','Kit de Tecnologia','Componentes Ritualísticos','Rádio','Ferramentas','Câmera','Pé de Cabra']
 };
-for(const [section,names] of Object.entries(basic))for(const name of names)put(name,section,'Detalhes a conferir no livro de regras.',[],1);
+for(const [section,names] of Object.entries(basic)){if(section==='Armas'||section==='Munições')continue;for(const name of names)put(name,section,'Detalhes a conferir no livro de regras.',[],1);}
 for(const model of (typeof NEX12_CATALOG!=='undefined'?NEX12_CATALOG:[])){
  const name=model[0],kind=String(model[1]||''),desc=String(model[2]||'');
  const slug=norm(kind+' '+desc);
@@ -33,7 +33,7 @@ for(const model of (typeof NEX12_CATALOG!=='undefined'?NEX12_CATALOG:[])){
  if(existing){if(existing.description.startsWith('Detalhes a conferir'))existing.description=desc;continue}
  put(name,section,kind+'. '+desc,[['Espaços',String(spaces)]],spaces);
 }
-for(const record of window.NEX_ITEM_BOOKS||[]){
+for(const record of [...(window.NEX_ITEM_BOOKS||[]),...(window.NEX_BASE_WEAPONS||[])]){
  const item={name:record.name,section:record.section,description:record.description||'',stats:record.stats||[],spaces:record.spaces??1,source:record.source||'Livro de regras'};
  const existing=items.find(x=>norm(x.name)===norm(item.name)&&x.section===item.section);
  if(existing)Object.assign(existing,item);
