@@ -1748,7 +1748,7 @@ html,body{background:#000!important;background-image:none!important}
 <details class="nexv16-catalog"><summary>＋ Adicionar do catálogo</summary><div class="v12-grid"><div class="field"><label>Modelo</label><select id="catalogSelect" class="v12-select"></select></div><div class="field"><label>Adicionar</label><button class="btn primary" id="addCatalog">Adicionar ao inventário</button></div></div><p class="nex-sah-preview" id="nexItemTemplateDescription" aria-live="polite"></p></details>
 <div id="inventoryList" class="nexv16-list"></div>
 </section>
-<section class="view" id="notes"><p class="hint" style="padding:8px 0 12px">Estes campos são salvos junto à ficha atual. Para abrir outra versão do HTML, exporte e restaure um backup.</p><div class="stack"><div class="field"><label for="appearance">Aparência</label><textarea id="appearance" data-field="appearance" rows="3" placeholder="Descrição física e características do personagem"></textarea></div><div class="field"><label for="personality">Personalidade</label><textarea id="personality" data-field="personality" rows="3" placeholder="Traços, personalidade e ideais"></textarea></div><div class="field"><label for="objective">Objetivo</label><textarea id="objective" data-field="objective" rows="3" placeholder="Por que o personagem luta contra o paranormal?"></textarea></div><div class="field"><label for="backstory">História do personagem</label><textarea id="backstory" data-field="backstory" rows="6"></textarea></div><div class="field"><label for="notesText">Anotações</label><textarea id="notesText" data-field="notes" rows="5"></textarea></div><div class="field"><label for="abilities">Habilidades personalizadas</label><textarea id="abilities" data-field="abilities" rows="5"></textarea></div></div></section>
+<section class="view" id="notes"><div class="stack"><div class="field"><label for="appearance">Aparência</label><textarea id="appearance" data-field="appearance" rows="3" placeholder="Descrição física e características do personagem"></textarea></div><div class="field"><label for="personality">Personalidade</label><textarea id="personality" data-field="personality" rows="3" placeholder="Traços, personalidade e ideais"></textarea></div><div class="field"><label for="objective">Objetivo</label><textarea id="objective" data-field="objective" rows="3" placeholder="Por que o personagem luta contra o paranormal?"></textarea></div><div class="field"><label for="backstory">História do personagem</label><textarea id="backstory" data-field="backstory" rows="6"></textarea></div><div class="field"><label for="notesText">Anotações</label><textarea id="notesText" data-field="notes" rows="5"></textarea></div></div></section>
 
 <section class="view" id="rituals">
  <div class="right-head"><strong>Rituais do agente</strong><span class="v12-badge" id="ritualLimit">Círculo 1</span></div>
@@ -3066,9 +3066,27 @@ $('nexHomebrewFilter')?.addEventListener('input',()=>nex12RenderHomebrew());
    if(el.dataset.n16Other){const s=state.skills[el.dataset.n16Other];if(!s)return;s.other=Math.max(-99,Math.min(99,int(el.value)));save();drawSkills();}
    if(el.dataset.itemField){queueMicrotask(()=>{drawInventory();save();});}
  });
- $id('n16Prestige').addEventListener('input',e=>{ensure();state.n16.prestige=Math.max(0,int(e.target.value));rankSync();drawInventory();save();});
+ // Alterar os pontos promove/rebaixa automaticamente a patente.
+ $id('n16Prestige').addEventListener('input',e=>{
+   ensure();
+   state.n16.prestige=Math.max(0,int(e.target.value));
+   if(state.n16.prestige>0)state.n16.mundaneMode=false;
+   rankSync();drawInventory();save();
+ });
+ // Ao escolher uma patente, define exatamente o prestígio mínimo dela.
  $id('n16Rank').disabled=false;
- $id('n16Rank').addEventListener('change',e=>{ensure();state.n16.mundaneMode=e.target.value==='Mundano';rankSync();drawInventory();save();});
+ $id('n16Rank').addEventListener('change',e=>{
+   ensure();
+   const selected=e.target.value;
+   const mundane=selected==='Mundano';
+   const chosen=prestigeTiers.find(t=>t.rank===selected);
+   if(!mundane&&!chosen)return;
+   state.n16.mundaneMode=mundane;
+   state.n16.rank=selected;
+   state.n16.prestige=mundane?0:chosen.min;
+   $id('n16Prestige').value=state.n16.prestige;
+   rankSync();drawInventory();save();
+ });
  $id('n16Credit').addEventListener('change',e=>{if(!isMundane())return;state.n16.credit=e.target.value;save();});
  // Restore controls for the current character at startup.
  ensure();drawSkills();drawInventory();drawAbilities();$id('n16Prestige').value=state.n16.prestige;$id('n16Rank').value=state.n16.rank;$id('n16Credit').value=state.n16.credit;
