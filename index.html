@@ -1921,7 +1921,11 @@ const defaults=()=>({name:'Novo personagem',age:30,player:'',photo:'',resistance
 function load(){try{let raw=localStorage.getItem(KEY)||localStorage.getItem('arquivo_sombrio_v1');if(!raw)return defaults();return normalize(JSON.parse(raw));}catch(e){return defaults();}}
 function normalize(obj){const d=defaults();if(!obj||typeof obj!=='object'||Array.isArray(obj))return d;const result={...d,...obj};result.attributes=Object.fromEntries(Object.entries({...d.attributes,...(obj.attributes||{})}).map(([k,v])=>[k,clamp(int(v,1),0,9)]));result.skills={...d.skills,...(obj.skills||{})};result.attacks=Array.isArray(obj.attacks)?obj.attacks.slice(0,60):d.attacks;result.items=Array.isArray(obj.items)?obj.items.slice(0,100):d.items;result.nex=LEVELS.includes(int(result.nex,5))?int(result.nex,5):5;if(result.nex===0)result.class='Mundano';result.player=String(result.player||'');result.photo=String(result.photo||'');if(obj.autoRules===undefined)result.autoRules=true;if(obj.defenseBonus===undefined)result.defenseBonus=Math.max(0,int(obj.defense,10)-(10+int(result.attributes.agi,1)));return result;}
 let state=load();let log=[];let idCounter=Date.now();
-function maxValues(){if(int(state.nex)===0){return {pv:Math.max(0,8+int(state.attributes.vig)),pe:Math.max(0,1+int(state.attributes.pre)),san:8,bonus:0,peLimit:1};}const level=LEVELS.indexOf(int(state.nex,5));const steps=Math.max(0,level-1);const bonus=state.origin==='Ex-Militar'?level:0;const vig=int(state.attributes.vig),pre=int(state.attributes.pre);const rules=CLASS_RULES[state.class];if(rules&&state.autoRules!==false){return {pv:Math.max(0,rules.pv+vig+steps*(rules.pvStep+vig)+bonus),pe:Math.max(0,rules.pe+pre+steps*(rules.peStep+pre)),san:Math.max(0,rules.san+steps*rules.sanStep-(state.origin==='Cultista Arrependido'?Math.ceil(rules.san/2):0)),bonus,peLimit:level};}return {pv:Math.max(0,int(state.basePv)+steps*int(state.pvStep)+bonus),pe:Math.max(0,int(state.basePe)+steps*int(state.peStep)),san:Math.max(0,int(state.baseSan)+steps*int(state.sanStep)-(state.origin==='Cultista Arrependido'?Math.ceil(int(state.baseSan)/2):0)),bonus,peLimit:level};}
+function nexRitualAdjustMaxSan(resourceMax){
+ const lost=Math.max(0,Math.floor(Number(state.ritualToolkit?.permanentSanLoss)||0));
+ return {...resourceMax,san:Math.max(0,(Number(resourceMax.san)||0)-lost)};
+}
+function maxValues(){if(int(state.nex)===0){return nexRitualAdjustMaxSan({pv:Math.max(0,8+int(state.attributes.vig)),pe:Math.max(0,1+int(state.attributes.pre)),san:8,bonus:0,peLimit:1});}const level=LEVELS.indexOf(int(state.nex,5));const steps=Math.max(0,level-1);const bonus=state.origin==='Ex-Militar'?level:0;const vig=int(state.attributes.vig),pre=int(state.attributes.pre);const rules=CLASS_RULES[state.class];if(rules&&state.autoRules!==false){return nexRitualAdjustMaxSan({pv:Math.max(0,rules.pv+vig+steps*(rules.pvStep+vig)+bonus),pe:Math.max(0,rules.pe+pre+steps*(rules.peStep+pre)),san:Math.max(0,rules.san+steps*rules.sanStep-(state.origin==='Cultista Arrependido'?Math.ceil(rules.san/2):0)),bonus,peLimit:level});}return nexRitualAdjustMaxSan({pv:Math.max(0,int(state.basePv)+steps*int(state.pvStep)+bonus),pe:Math.max(0,int(state.basePe)+steps*int(state.peStep)),san:Math.max(0,int(state.baseSan)+steps*int(state.sanStep)-(state.origin==='Cultista Arrependido'?Math.ceil(int(state.baseSan)/2):0)),bonus,peLimit:level});}
 function save(show=false){try{localStorage.setItem(KEY,JSON.stringify(state));if(show)toast('Ficha salva neste navegador.');}catch(e){toast('Não foi possível salvar. Exporte um backup em JSON.');}}
 function toast(msg){const el=$('toast');el.textContent=msg;el.classList.add('show');clearTimeout(toast.timer);toast.timer=setTimeout(()=>el.classList.remove('show'),2800);}
 function escapeHtml(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
@@ -3937,7 +3941,8 @@ const PARANORMAL=[
 <script src="nex-homebrew-advanced.js?v=2106"></script>
 <script src="nex-rituais-metadados.js?v=1"></script>
 <script src="nex-rituais-ficha.js?v=2116"></script>
-<script src="nex-ritual-tools.js?v=4"></script>
+<script src="nex-ritual-effects.js?v=1"></script>
+<script src="nex-ritual-tools.js?v=5"></script>
 <script src="nex-livros-itens.js?v=2076"></script>
 <script src="nex-armas-livro-basico.js?v=2082"></script>
 <script src="nex-complementos-itens.js?v=2078"></script>
