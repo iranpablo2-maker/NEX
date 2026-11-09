@@ -2452,12 +2452,11 @@ $('nexHomebrewFilter')?.addEventListener('input',()=>nex12RenderHomebrew());
  document.addEventListener('click',event=>{
    const button=event.target.closest('button[data-n16-set-train]');
    if(!button||!$id('skillsList').contains(button))return;
-   const skill=state.skills?.[button.dataset.n16SetTrain];
-   if(!skill)return;
-   const value=Number(button.dataset.n16SetValue);
-   skill.training=[0,5,10,15].includes(value)?value:0;
-   save();
-   drawSkills();
+   if(!state.skills?.[button.dataset.n16SetTrain])return;
+   // Reuse the existing change flow so save, rerender and defense bonuses remain synchronized.
+   button.dataset.n16Train=button.dataset.n16SetTrain;
+   button.value=button.dataset.n16SetValue;
+   button.dispatchEvent(new Event('change',{bubbles:true}));
  });
  function abilityRecords(){
    const entries=[];
