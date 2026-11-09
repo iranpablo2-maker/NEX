@@ -1522,6 +1522,10 @@ html,body{background:#000!important;background-image:none!important}
 .nex-ritual-option strong{display:block}.nex-ritual-option small{display:block;color:#b6abbc;font-size:11px;margin-top:3px}
 .nex-ritual-option button[disabled]{opacity:.45;cursor:not-allowed}
 @media(max-width:550px){.nex-ritual-filter{grid-template-columns:1fr}.nex-ritual-top{flex-wrap:wrap}.nex-ritual-fields{grid-template-columns:1fr}}
+</style><style id="nex-hide-ritual-symbols">
+/* Rituais são exibidos apenas em texto — inclusive homebrews anteriores. */
+#homebrewScreen .nex53-ritual-image,
+#homebrewScreen .nex53-ritual-detail-image {display:none!important;}
 </style></head><body>
 <script src="nex-sobrevivendo-ao-horror.js?v=2072"></script>
 <header class="topbar"><div class="topinner"><button type="button" id="n17MenuToggle" class="n17-menu-button" aria-expanded="false" aria-controls="n17Drawer" aria-label="Abrir menu">☰</button><button type="button" class="brand" id="nexBrandHome" aria-label="Voltar ao menu principal" title="Voltar ao menu principal"><span class="brand-mark" aria-hidden="true">◈</span><span><h1>NEX</h1><span class="subtitle">SISTEMA DE FICHAS · ORDEM PARANORMAL</span></span></button><div class="actions"><button class="btn sm" id="menuHeaderButton" type="button" style="display:none!important" hidden tabindex="-1" aria-hidden="true">⌂ Menu principal</button><button class="btn sm" id="newChar" type="button" style="display:none!important" hidden tabindex="-1" aria-hidden="true">＋ Nova ficha</button><button class="btn sm" id="importBtn" style="display:none!important" aria-hidden="true" tabindex="-1">Importar</button><button class="btn sm" id="exportBtn" style="display:none!important" aria-hidden="true" tabindex="-1">↓ Exportar</button><input type="file" id="fileInput" accept="application/json,.json" hidden><span id="n17SaveIndicator" hidden aria-hidden="true"></span></div></div></header>
@@ -3927,7 +3931,8 @@ const PARANORMAL=[
 </script>
 <script src="nex-duplicate-review.js?v=2055"></script>
 <script src="nex-homebrew-advanced.js?v=2106"></script>
-<script src="nex-rituais-ficha.js?v=2111"></script>
+<script src="nex-rituais-metadados.js?v=1"></script>
+<script src="nex-rituais-ficha.js?v=2113"></script>
 <script src="nex-livros-itens.js?v=2076"></script>
 <script src="nex-armas-livro-basico.js?v=2082"></script>
 <script src="nex-complementos-itens.js?v=2078"></script>
