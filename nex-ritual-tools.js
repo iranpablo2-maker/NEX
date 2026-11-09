@@ -4,7 +4,7 @@
 */
 (function(){
 'use strict';
-const root=document.getElementById('rituals');
+const root=document.getElementById('casting');
 const list=document.getElementById('ritualList');
 if(!root||!list||typeof state==='undefined'||typeof save!=='function'||typeof nex12RenderRitualList!=='function')return;
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -12,12 +12,18 @@ const norm=v=>String(v||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim
 const id=()=>('rt'+Date.now().toString(36)+Math.random().toString(36).slice(2,9));
 const baseCost={1:1,2:3,3:6,4:10};
 const maxCost=99;
-let view='grimorio',query='',element='',circle='',source='';
+const isOccultist=()=>state.class==='Ocultista';
+const PE_LIMIT=()=>Math.max(0,(Number(maxValues().peLimit)||0)+(state.origin==='Universitário'?1:0));
+const availableTurnPE=()=>Math.max(0,PE_LIMIT()-kit().turnSpent);
+const permittedCircle=()=>typeof nex12RitualAllowed==='function'?Number(nex12RitualAllowed())||0:0;
+let view='conjurar',query='',element='',circle='',source='';
 let castingId='';
 function kit(){
  if(!state.ritualToolkit||typeof state.ritualToolkit!=='object'||Array.isArray(state.ritualToolkit))state.ritualToolkit={};
  const k=state.ritualToolkit;
  for(const field of ['active','history','combos'])if(!Array.isArray(k[field]))k[field]=[];
+ k.turnSpent=Math.max(0,Math.floor(Number(k.turnSpent)||0));
+ k.turnNumber=Math.max(1,Math.floor(Number(k.turnNumber)||1));
  return k;
 }
 function learned(){return Array.isArray(state.rituals)?state.rituals:[];}
@@ -57,12 +63,12 @@ function finalPrice(r,version,additional){
 }
 function badgeInfo(){
  const n=learned().length,a=kit().active.length,h=kit().history.length,c=kit().combos.length;
- return 'Aprendidos: '+n+' · Ativos: '+a+' · Usos registrados: '+h+' · Combinações: '+c;
+ return 'PE: '+pe()+' · Turno: '+kit().turnSpent+'/'+PE_LIMIT()+' PE · Aprendidos: '+n+' · Ativos: '+a+' · Histórico: '+h+' · Combinações: '+c;
 }
 const host=document.createElement('section');
 host.id='nexTkPanel';
 host.setAttribute('aria-label','Ferramentas de rituais');
-root.insertBefore(host,list);
+root.append(host);
 const modal=document.createElement('dialog');
 modal.id='nexTkCastDialog';modal.setAttribute('aria-label','Conjurar ritual');
 document.body.append(modal);
@@ -71,9 +77,10 @@ style.id='nexTkStyle';
 style.textContent='#nexTkPanel{border:1px solid #3b314b;border-radius:8px;padding:13px;margin:10px 0 18px;background:#17131c;color:#eee7f4}#nexTkPanel .tk-tabs{display:flex;flex-wrap:wrap;gap:6px;margin:9px 0 13px}#nexTkPanel .tk-tabs button{border:1px solid #53465e;background:#211b28;color:#e2d4ed;border-radius:5px;padding:8px 10px}#nexTkPanel .tk-tabs button[aria-pressed="true"]{background:#63398a;color:#fff;border-color:#a06bc9}#nexTkPanel h3{font-size:12px;color:#e4d0f6;margin:12px 0 7px}#nexTkPanel .tk-sub{font-size:12px;color:#ad9fba}#nexTkPanel .tk-fields{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}#nexTkPanel .tk-fields>*{flex:1 1 130px;max-width:100%}#nexTkPanel .tk-cards{display:grid;gap:8px;max-height:530px;overflow:auto;padding-right:2px}#nexTkPanel .tk-card{background:#221b2a;border:1px solid #493a55;padding:10px;border-radius:6px}#nexTkPanel .tk-row{display:flex;align-items:center;justify-content:space-between;gap:9px;flex-wrap:wrap}#nexTkPanel .tk-card details>summary{cursor:pointer;font-weight:700;margin-top:7px}#nexTkPanel .tk-card p{white-space:pre-wrap;margin:6px 0;font-size:12px}#nexTkPanel .tk-actions{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 0}#nexTkPanel button.tk-button,#nexTkCastDialog button{border:1px solid #665071;color:#f0e6fb;background:#3b284d;border-radius:5px;padding:7px 10px;cursor:pointer}#nexTkPanel button[disabled],#nexTkCastDialog button[disabled]{opacity:.5;cursor:not-allowed}#nexTkPanel input,#nexTkPanel select,#nexTkPanel textarea,#nexTkCastDialog input,#nexTkCastDialog select{background:#120f18;border:1px solid #59466a;border-radius:4px;padding:8px;color:white;width:100%;font:inherit}#nexTkPanel label,#nexTkCastDialog label{display:block;color:#d4c2de;font-size:12px}#nexTkPanel .tk-select-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:5px;max-height:230px;overflow:auto}#nexTkPanel .tk-select-list label{padding:7px;border:1px solid #473652;border-radius:5px}#nexTkPanel input[type=checkbox],#nexTkCastDialog input[type=checkbox]{width:auto;margin-right:7px}#nexTkCastDialog{background:#1a1421;border:1px solid #79549a;color:#f3ebfa;border-radius:9px;width:min(480px,calc(100vw - 24px));max-height:88vh;overflow:auto;padding:18px}#nexTkCastDialog::backdrop{background:#000b}#nexTkCastDialog .tk-modal-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:12px 0}#nexTkCastDialog .tk-modal-fields>label:first-child{grid-column:1/-1}#nexTkCastDialog .tk-foot{display:flex;justify-content:flex-end;gap:8px;margin-top:12px}#nexTkCastDialog .tk-warning{font-size:12px;color:#f0bd8c;margin-top:7px}#nexTkPanel .tk-mono{font-variant-numeric:tabular-nums}';
 document.head.append(style);
 function top(){
+ if(!isOccultist()){host.innerHTML='';if(modal.open&&typeof modal.close==='function')modal.close();return;}
  host.innerHTML='<div class="tk-row"><strong>GRIMÓRIO E CONTROLE DE RITUAIS</strong><small id="tkCounts" class="tk-sub"></small></div>'+
  '<nav class="tk-tabs" aria-label="Módulos de rituais">'+
- [['grimorio','Grimório'],['ativos','Rituais ativos'],['historico','Histórico'],['combos','Combinações']].map(x=>'<button type="button" data-tk-tab="'+x[0]+'" aria-pressed="'+String(view===x[0])+'">'+x[1]+'</button>').join('')+
+ [['conjurar','Conjurar'],['grimorio','Grimório'],['ativos','Rituais ativos'],['historico','Histórico'],['combos','Combinações']].map(x=>'<button type="button" data-tk-tab="'+x[0]+'" aria-pressed="'+String(view===x[0])+'">'+x[1]+'</button>').join('')+
  '</nav><div id="tkBody"></div>';
  document.getElementById('tkCounts').textContent=badgeInfo();
  renderBody();
@@ -82,6 +89,15 @@ function renderBody(){
  if(!host.isConnected)return;
  const el=document.getElementById('tkBody');if(!el)return;
  document.getElementById('tkCounts').textContent=badgeInfo();
+ if(view==='conjurar'){
+  const learnedRituals=learned();
+  const budget=availableTurnPE();
+  el.innerHTML='<div class="tk-row"><div><strong>PE disponíveis: '+pe()+'</strong><p class="tk-sub">Limite por turno: '+PE_LIMIT()+' PE · Usados: '+kit().turnSpent+' PE · Restantes no turno: '+budget+' PE · NEX '+esc(state.nex)+'% · Até '+permittedCircle()+'º círculo</p></div><button type="button" class="tk-button" data-tk-next-turn="1">Próximo turno</button></div>'+
+  '<p class="tk-sub">Conjure apenas rituais aprendidos e liberados pelo NEX. A conjuração desconta o PE automaticamente e registra o uso.</p>'+
+  '<div class="tk-fields"><input id="tkLearnedSearch" type="search" placeholder="Buscar ritual aprendido" aria-label="Buscar ritual aprendido" value="'+esc(query)+'"></div>'+
+  '<div class="tk-cards" id="tkLearnedCards"></div>';
+  drawLearned();return;
+ }
  if(view==='grimorio'){
   el.innerHTML='<p class="tk-sub">Consulte os rituais e adicione à ficha conforme as permissões do seu personagem. Sem símbolos ou ilustrações.</p>'+
   '<div class="tk-fields"><input aria-label="Pesquisar ritual" id="tkSearch" type="search" placeholder="Pesquisar pelo nome…" value="'+esc(query)+'">'+
@@ -118,6 +134,18 @@ function renderBody(){
   }).join('')+'</div>':'<p class="tk-sub">Nenhuma combinação salva.</p>');
  }
 }
+function drawLearned(){
+ const container=document.getElementById('tkLearnedCards');if(!container)return;
+ const list=learned().filter(r=>norm(r.name+' '+r.element).includes(norm(query)));
+ container.innerHTML=list.length?list.map(r=>{
+  const cost=finalPrice(r,'Normal',0),circleOK=Number(r.circle)<=permittedCircle();
+  const enough=cost<=pe()&&cost<=availableTurnPE();
+  const text=!circleOK?'Bloqueado pelo NEX':cost>PE_LIMIT()?'Acima do limite de PE':cost>availableTurnPE()?'Limite de PE deste turno':cost>pe()?'PE insuficiente':'Conjurar';
+  return '<article class="tk-card"><div class="tk-row"><strong>'+esc(r.name)+'</strong><small>'+esc(r.element)+' · '+esc(r.circle)+'º círculo · '+cost+' PE base</small></div>'+
+   '<p class="tk-sub">'+esc(info(r).description||'Consulte o efeito no grimório.')+'</p>'+
+   '<div class="tk-actions"><button type="button" class="tk-button" data-tk-cast="'+esc(r.id)+'" '+(!circleOK||!enough?'disabled':'')+'>'+text+'</button></div></article>';
+ }).join(''):'<p class="tk-sub">Nenhum ritual aprendido encontrado. Adicione rituais na aba Rituais.</p>';
+}
 function drawGrimoire(){
  const dst=document.getElementById('tkResults');if(!dst)return;
  const all=catalog();
@@ -142,7 +170,9 @@ function drawGrimoire(){
  }).join(''):'<p class="tk-sub">Nenhum ritual encontrado.</p>';
 }
 function openCast(rid){
+ if(!isOccultist()){toast('A conjuração nesta aba é exclusiva para Ocultistas.');return;}
  const r=learned().find(x=>String(x.id)===String(rid));if(!r){toast('Ritual não encontrado nesta ficha.');return;}
+ if(Number(r.circle)>permittedCircle()){toast('Este círculo ainda não foi liberado pelo NEX.');return;}
  castingId=String(rid);
  const d=info(r);
  const options=['Normal'].concat(hasEnhance(d.discente)?['Discente']:[],hasEnhance(d.verdadeiro)?['Verdadeiro']:[]);
@@ -172,16 +202,17 @@ function preview(){
  const price=enhancePrice(v.enhance);
  const costNode=modal.querySelector('#tkCostPreview');
  const rulesNode=modal.querySelector('#tkRulesPreview');
- costNode.textContent='Custo total: '+v.total+' PE · Disponíveis: '+pe()+' PE · Custo base: '+(baseCost[v.r.circle]||1)+' PE.';
+ costNode.textContent='Custo total: '+v.total+' PE · PE atuais: '+pe()+' · Disponíveis neste turno: '+availableTurnPE()+' de '+PE_LIMIT()+' PE.';
  let note=v.enhance||'Versão básica. Verifique o limite de PE por turno.';
  if(v.v!=='Normal'&&price===null)note+=' Custo adicional não informado; preencha o campo de ajustes.';
  const limit=typeof maxValues==='function'?maxValues().peLimit:0;
- if(v.total>limit&&limit)note+=' Atenção: excede o limite básico de PE por turno ('+limit+'); confirme modificadores e permissões.';
+ if(v.total>availableTurnPE())note+=' BLOQUEADO: excede os PE restantes neste turno.';
  rulesNode.textContent=note;
 }
 function confirmCast(){
  const m=castMath();if(!m)return;
  const {r,d,v,total,enhance,extra}=m;
+ if(!isOccultist()){toast('Somente Ocultistas podem conjurar nesta aba.');return;}
  if(v!=='Normal'&&enhancePrice(enhance)===null&&extra===0){toast('Informe os PE extras da versão aprimorada antes de conjurar.');return;}
  const required=requirement(enhance);
  if(required&&state.class==='Ocultista'&&typeof nex12RitualAllowed==='function'&&nex12RitualAllowed()<required){toast('A versão exige um círculo ainda não liberado.');return;}
@@ -189,11 +220,12 @@ function confirmCast(){
  if(/Afinidade necessária/i.test(enhance)&&!confirm('O aprimoramento exige afinidade. Confirma que seu personagem cumpre este requisito?'))return;
  if(total>pe()){toast('PE insuficientes: necessários '+total+', disponíveis '+pe()+'.');return;}
  const limit=typeof maxValues==='function'?Number(maxValues().peLimit)||0:0;
- if(limit&&total>limit&&!confirm('O gasto total excede o limite básico de PE por turno. Há alguma habilidade que permite esse gasto?'))return;
+ if(total>availableTurnPE()){toast('Limite de PE por turno excedido. Restam '+availableTurnPE()+' PE neste turno.');return;}
  if(!confirm('Conjurar '+r.name+' ('+v+') por '+total+' PE?'))return;
  const active=Boolean(modal.querySelector('#tkCastActive')?.checked);
  const upkeep=Math.min(99,Math.max(0,Number(modal.querySelector('#tkCastUpkeep')?.value)||0));
  state.peCurrent=Math.max(0,pe()-total);
+ kit().turnSpent+=total;
  addHistory('Conjuração',{name:r.name,ritualId:String(r.id),version:v,cost:total,peAfter:pe()});
  if(active){
   kit().active.unshift({id:id(),ritualId:String(r.id),name:r.name,version:v,duration:d.duration||'',upkeep,rounds:0,at:new Date().toISOString()});
@@ -205,11 +237,13 @@ function confirmCast(){
  toast('Ritual conjurado: '+total+' PE descontados.');
 }
 function handleRound(aid){
+ if(!isOccultist()){toast('Apenas Ocultistas podem sustentar rituais nesta aba.');return;}
  const k=kit(),a=k.active.find(x=>x.id===aid);if(!a)return;
  const cost=Math.max(0,Number(a.upkeep)||0);
- if(cost>pe()){toast('PE insuficientes para sustentar este ritual. Encerre ou ajuste com o mestre.');return;}
+ if(cost>pe()){toast('PE insuficientes para sustentar este ritual.');return;}
+ if(cost>availableTurnPE()){toast('Não há PE suficientes neste turno para a sustentação.');return;}
  if(cost&&!confirm('Sustentar '+a.name+' por '+cost+' PE nesta rodada?'))return;
- if(cost)state.peCurrent=Math.max(0,pe()-cost);
+ if(cost){state.peCurrent=Math.max(0,pe()-cost);kit().turnSpent+=cost;}
  a.rounds=(Number(a.rounds)||0)+1;
  addHistory('Rodada acompanhada',{name:a.name,version:a.version,cost,peAfter:pe(),note:'Rodada '+a.rounds});
  update();
@@ -230,6 +264,7 @@ function handleLearn(key){
 host.addEventListener('click',e=>{
  const btn=e.target.closest('button');if(!btn)return;
  if(btn.dataset.tkTab){view=btn.dataset.tkTab;top();return;}
+ if(btn.dataset.tkNextTurn){const k=kit();k.turnSpent=0;k.turnNumber++;addHistory('Novo turno',{note:'Turno '+k.turnNumber+', limite renovado',cost:0});update();return;}
  if(btn.dataset.tkLearn){handleLearn(btn.dataset.tkLearn);return;}
  if(btn.dataset.tkCast){openCast(btn.dataset.tkCast);return;}
  if(btn.dataset.tkRound){handleRound(btn.dataset.tkRound);return;}
@@ -251,6 +286,7 @@ host.addEventListener('click',e=>{
 });
 host.addEventListener('input',e=>{
  if(e.target.id==='tkSearch'){query=e.target.value;drawGrimoire();}
+ if(e.target.id==='tkLearnedSearch'){query=e.target.value;drawLearned();}
 });
 host.addEventListener('change',e=>{
  if(e.target.id==='tkElement'){element=e.target.value;drawGrimoire();}
@@ -275,10 +311,6 @@ modal.addEventListener('click',e=>{
 modal.addEventListener('input',e=>{if(['tkCastVersion','tkCastExtra'].includes(e.target.id))preview();});
 modal.addEventListener('change',e=>{if(e.target.id==='tkCastVersion')preview();});
 modal.addEventListener('submit',e=>{if(e.target.id==='tkCastForm'){e.preventDefault();confirmCast();}});
-list.addEventListener('click',e=>{
- const btn=e.target.closest('[data-tk-cast-from-sheet]');
- if(btn){e.preventDefault();openCast(btn.dataset.tkCastFromSheet);}
-});
 const previous=nex12RenderRitualList;
 nex12RenderRitualList=function(...args){const result=previous.apply(this,args);top();return result;};
 window.NEX_RITUAL_TOOLS={refresh:top};
