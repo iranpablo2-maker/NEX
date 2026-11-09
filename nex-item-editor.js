@@ -210,6 +210,7 @@ by('nexEditorForm').addEventListener('submit',event=>{
  d.name=String(d.name).trim().slice(0,100);
  d.quantity=Math.max(0,Math.min(9999,Math.trunc(number(d.quantity,1))));
  d.spaces=Math.max(0,Math.min(100,Math.round(number(d.spaces,1)*2)/2));
+ if(!window.NEX_CARRY?.canUpdate(item,d.spaces,d.quantity)){toast('Carga máxima atingida. Reduza o peso ou use 0 espaços.');return;}
  d.description=String(d.description||'').slice(0,2500);
  d.upgrades=String(d.upgrades||'').slice(0,2500);
  // O campo de imagem foi retirado do editor, preservando imagens eventualmente já salvas.
