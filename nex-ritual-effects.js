@@ -1,7 +1,6 @@
-/* NEX — Classificação explícita dos 101 rituais oficiais.
-   Categoria principal: Dano, Cura, Suporte (tipo interno Buff) ou Dano + Cura.
-   categories também registra usos alternativos dos rituais mistos.
-   Dados faltantes não são inventados: casos condicionais exigem consulta ao ritual. */
+/* NEX — categorias e dados curtos dos rituais para conjuração.
+   Fórmulas de versões aplicam-se apenas quando o aprimoramento existe;
+   efeitos condicionais requerem consulta à ficha e à decisão do mestre. */
 window.NEX_RITUAL_EFFECTS = {
   "amaldicoar arma|conhecimento|1": {
     "type": "Buff",
@@ -117,7 +116,12 @@ window.NEX_RITUAL_EFFECTS = {
     "healFromDamage": false,
     "categories": [
       "Cura"
-    ]
+    ],
+    "healVersions": {
+      "Normal": "3d8+3",
+      "Discente": "5d8+5",
+      "Verdadeiro": "7d8+7"
+    }
   },
   "consumir manancial|morte|1": {
     "type": "Buff",
