@@ -3144,7 +3144,9 @@ $('nexHomebrewFilter')?.addEventListener('input',()=>nex12RenderHomebrew());
        <button class="nex-skill-dice-button" type="button" title="Rolar teste de ${escape(name)}" aria-label="Rolar teste de ${escape(name)}" data-nex-skill-roll="${escape(name)}"><img src="${NEX_SKILL_DICE_ICON}" alt="" aria-hidden="true"></button>
        <span>${escape(name)}${skillOnly.has(name)?'*':''}${skillLoad.has(name)?'+':''}</span>
      </div>
-     <span class="nexv16-attr">(${n16SkillAttr[skill.attr]||n16SkillAttr[attr]||'INT'})</span>
+     <select class="nexv16-attr nex-attr-skill-picker" data-nex-skill-attr="${escape(name)}" aria-label="Atributo de ${escape(name)}" title="Trocar atributo da perícia">
+       ${Object.entries(n16SkillAttr).map(([key,short])=>`<option value="${key}" ${(skill.attr||attr)===key?'selected':''}>${short}</option>`).join('')}
+     </select>
      <span class="nexv16-total">(${total>=0?'+':''}${total})</span>
      <select class="nex57-training-select" data-nex-skill-ui="compact-v2064" aria-label="Treinamento de ${escape(name)}" data-n16-train="${escape(name)}" title="Treino: 0, 5, 10 ou 15">
        ${[0,5,10,15].map(value=>`<option value="${value}" ${training===value?'selected':''}>${value}</option>`).join('')}
@@ -4053,4 +4055,78 @@ const PARANORMAL=[
 <script src="nex-item-editor.js?v=2094"></script>
 <!-- Sincronização em nuvem desativada a pedido do proprietário: mantém salvamento local. -->
 
+<style id="nex-v2059-attribute-roll-skill-picker">
+#sheetScreen .nexv16-skill-row .nex-attr-skill-picker{
+ appearance:none!important;-webkit-appearance:none!important;width:42px!important;min-width:42px!important;
+ height:27px!important;background:transparent!important;border:0!important;padding:0 4px!important;
+ color:#d7b0ff!important;text-align:center!important;font-size:11px!important;font-weight:700!important;cursor:pointer!important;
+}
+#sheetScreen .nexv16-skill-row .nex-attr-skill-picker:hover,
+#sheetScreen .nexv16-skill-row .nex-attr-skill-picker:focus-visible{background:#201328!important;outline:1px solid #8443ba!important}
+#sheetScreen .nexv16-skill-row .nex-attr-skill-picker option{background:#17121d;color:#fff}
+#nexAttributeRollPopup[hidden]{display:none!important}
+#nexAttributeRollPopup{position:fixed;z-index:100004;width:min(290px,calc(100vw - 16px));min-height:92px;padding:12px 13px;
+ background:#202020;border:1px solid #9144cf;color:#fff;box-shadow:0 10px 35px #000c;font-family:system-ui,sans-serif}
+#nexAttributeRollPopup .nex-attr-popup-line{display:grid;grid-template-columns:40px 1fr auto;align-items:center;gap:12px;min-height:65px}
+#nexAttributeRollPopup .nex-attr-popup-symbol{width:36px;height:37px;display:grid;place-items:center;background:#8213c6;clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%)}
+#nexAttributeRollPopup .nex-attr-popup-name{font-size:15px;font-weight:750}
+#nexAttributeRollPopup .nex-attr-popup-detail{font-size:11px;color:#ababba;margin-top:13px;overflow-wrap:anywhere}
+#nexAttributeRollPopup .nex-attr-popup-total{font-size:30px;font-weight:800;padding:0 4px;white-space:nowrap}
+#nexAttributeRollPopup .nex-attr-popup-close{position:absolute;right:7px;top:5px;color:white;background:none;border:0;font-size:23px;cursor:pointer}
+</style>
+<script id="nex-v2059-attribute-roll-skill-picker">
+(function(){
+ const popup=document.createElement('aside');
+ popup.id='nexAttributeRollPopup';popup.hidden=true;popup.setAttribute('role','status');popup.setAttribute('aria-live','polite');
+ popup.innerHTML='<button class="nex-attr-popup-close" type="button" aria-label="Fechar">×</button><div id="nexAttributeRollPopupBody"></div>';
+ document.body.appendChild(popup);
+ const close=()=>{popup.hidden=true};
+ popup.querySelector('button').addEventListener('click',close);
+ document.addEventListener('keydown',e=>{if(e.key==='Escape')close()});
+ document.addEventListener('pointerdown',e=>{if(!popup.hidden&&!popup.contains(e.target)&&!e.target.closest('[data-nex-attr-roll]'))close()});
+ function show(anchor,name,rolls,chosen,total,bonus){
+  const esc=v=>String(v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  document.getElementById('nexAttributeRollPopupBody').innerHTML='<div class="nex-attr-popup-line"><span class="nex-attr-popup-symbol"></span><div><div class="nex-attr-popup-name">'+esc(name)+'</div><div class="nex-attr-popup-detail">['+esc(rolls.join(', '))+'] '+(bonus?' + '+bonus:'')+'</div></div><span class="nex-attr-popup-total">= '+esc(total)+'</span></div>';
+  popup.hidden=false;
+  const rect=anchor.getBoundingClientRect(),width=popup.offsetWidth,height=popup.offsetHeight;
+  popup.style.left=Math.max(8,Math.min(rect.left,innerWidth-width-8))+'px';
+  popup.style.top=(rect.bottom+height+9<=innerHeight?rect.bottom+9:Math.max(8,rect.top-height-9))+'px';
+ }
+ // Usa a rolagem já calculada pelo NEX, sem gerar uma segunda sequência de dados.
+ document.addEventListener('click',e=>{
+   const roll=e.target.closest('[data-nex-attr-roll]');
+   if(!roll||roll.closest('.nex-attrs-editing'))return;
+   const before=log.length;
+   // Este listener executa depois do manipulador interno de atributos.
+   if(log.length<=before)return;
+ },false);
+ const attrArea=document.getElementById('attributes');
+ if(attrArea){
+   attrArea.addEventListener('click',e=>{
+     const button=e.target.closest('[data-nex-attr-roll]');
+     if(!button||attrArea.classList.contains('nex-attrs-editing'))return;
+     // O listener de rolagem principal foi registrado antes deste.
+     const item=log[0];if(!item)return;
+     const key=button.dataset.nexAttrRoll;
+     const value=Math.max(0,Math.min(9,parseInt(state.attributes[key])||0));
+     const raw=String(item.rolls||'').match(/\[([^\]]+)\]/);
+     const values=raw?raw[1].split(',').map(v=>parseInt(v.trim())).filter(Number.isFinite):[];
+     if(!values.length)return;
+     const chosen=value===0?Math.min(...values):Math.max(...values);
+     show(button,ATTRIBUTE_NAMES[key]||key,values,chosen,item.total,0);
+   });
+ }
+ document.addEventListener('change',e=>{
+  const select=e.target.closest('[data-nex-skill-attr]');
+  if(!select)return;
+  const name=select.dataset.nexSkillAttr;
+  const valid=['agi','for','int','pre','vig'];
+  if(!state.skills?.[name]||!valid.includes(select.value))return;
+  state.skills[name].attr=select.value;
+  save();
+  const row=select.closest('.nexv16-skill-row');
+  if(row)row.querySelector('.nexv16-attr').title='Atributo escolhido: '+(ATTRIBUTE_NAMES[select.value]||select.value);
+ });
+})();
+</script>
 </body></html>
