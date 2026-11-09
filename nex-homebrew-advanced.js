@@ -14,7 +14,7 @@
  const normalize=x=>({
    id:x.id,type:x.type,name:cut(x.name,90),description:cut(x.description,2000),
    requirements:cut(x.requirements,650),minNex:num(x.minNex,0,99,5),
-   className:['Livre','Combatente','Especialista','Ocultista'].includes(x.className)?x.className:'Livre',
+   className:['Livre','Geral','Combatente','Especialista','Ocultista'].includes(x.className)?(x.className==='Livre'&&['poder_geral','poder','habilidade'].includes(x.type)?'Geral':x.className):'Geral',
    circle:num(x.circle,1,4,1),element:['Conhecimento','Energia','Morte','Sangue','Medo','Personalizado'].includes(x.element)?x.element:'Personalizado',
    cost:num(x.cost,0,99,0),vd:num(x.vd,0,9999,0),
    size:['Minúsculo','Pequeno','Médio','Grande','Enorme','Colossal'].includes(x.size)?x.size:'Médio',
@@ -96,10 +96,10 @@
    // Ao escolher a subcategoria, não é preciso selecionar "Categoria" novamente.
    $('nex55TypeField').hidden=tab==='habilidades';
    const classSelect=$('nex51Class'),oldClass=classSelect.value;
-   const choices=isTrail?['Combatente','Especialista','Ocultista']:['Livre','Combatente','Especialista','Ocultista'];
+   const choices=isTrail?['Combatente','Especialista','Ocultista']:isGeneral?['Geral','Combatente','Especialista','Ocultista']:['Livre','Combatente','Especialista','Ocultista'];
    classSelect.innerHTML=choices.map(name=>'<option value="'+name+'">'+name+'</option>').join('');
-   classSelect.value=choices.includes(oldClass)?oldClass:(isTrail?'Combatente':'Livre');
-   $('nex55ClassField').hidden=isOrigin||isGeneral||isParanormal;
+   classSelect.value=choices.includes(oldClass)?oldClass:(isTrail?'Combatente':isGeneral?'Geral':'Livre');
+   $('nex55ClassField').hidden=isOrigin||isParanormal;
    $('nex51NexField').hidden=isTrail||isOrigin||isGeneral||type==='poder_paranormal';
    $('nex53ParanormalElementField').hidden=type!=='poder_paranormal';
    $('nex52ThreatFields').hidden=type!=='ameaca';
@@ -109,8 +109,8 @@
    $('nex55DescriptionField').hidden=isTrail;
    $('nex55RequirementsField').hidden=isTrail||isOrigin||isGeneral||type==='poder_paranormal';
    $('nex55DescriptionLabel').textContent=isOrigin||isGeneral||isParanormal?'Descrição':'Descrição e efeitos';
-   $('nex51Name').placeholder=isParanormal?'Nome do homebrew':'Nome';
-   $('nex51Description').placeholder=isParanormal?'Descreva o poder paranormal...':'Descreva seu homebrew';
+   $('nex51Name').placeholder=isParanormal||isGeneral?'Nome do homebrew':'Nome';
+   $('nex51Description').placeholder=isParanormal?'Descreva o poder paranormal...':isGeneral?'Descreva o poder geral...':'Descreva seu homebrew';
    $('nex51Description').required=isParanormal;
    $('nex51Element').disabled=false;
    $('nex53ParanormalElement').disabled=!isParanormal;
@@ -156,7 +156,7 @@
    if(item.type==='item')return [item.category,'Item personalizado'];
    if(item.type==='trilha')return ['Trilha · '+item.className,'4 marcos · NEX 10%, 40%, 65% e 99%'];
    if(item.type==='origem')return ['Origem personalizada',(item.skills||[]).join(' · ')||'Duas perícias'];
-   if(['poder_geral','poder','habilidade'].includes(item.type))return ['Poder Geral','Personalizado'];
+   if(['poder_geral','poder','habilidade'].includes(item.type))return ['Poder Geral · '+(item.className==='Livre'?'Geral':item.className),'Homebrew'];
    if(item.type==='poder_paranormal')return ['Poder Paranormal · '+item.element,'Homebrew'];
    return [LABEL[item.type]+' · '+item.className,'NEX '+item.minNex+'%'];
  }
