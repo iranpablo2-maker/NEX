@@ -125,7 +125,7 @@ function render(){
    '<div class="nex-item-meta">'+(item.stats.length?item.stats.map(m=>'<span><b>'+escape(m[0])+':</b> '+escape(m[1])+'</span>').join(''):'<span><b>Espaços:</b> '+item.spaces+'</span>')+'</div></div>'+
    '<button type="button" class="nex-item-plus" data-add="'+index+'" aria-label="Adicionar '+escape(item.name)+'">+</button></div>'+
    '<div class="nex-item-detail" hidden>'+escape((item.source?item.source+' · ':'')+(item.description||'Confira as estatísticas nas regras do livro.'))+'</div></article>';
- }).join(''):'<div class="nex-item-empty">Nenhum item encontrado nesta categoria.</div>';
+ }).join(''):'<div class="nex-item-empty">'+(selected==='Itens Homebrew'?'Nenhum item homebrew cadastrado. Crie um na biblioteca Homebrew do NEX.':'Nenhum item encontrado nesta categoria.')+'</div>';
 }
 function open(){lastFocus=document.activeElement;selected='Itens';search.value='';render();modal.hidden=false;document.body.classList.add('nex-item-modal-open');search.focus();}
 function close(){modal.hidden=true;document.body.classList.remove('nex-item-modal-open');lastFocus?.focus?.();}
@@ -141,7 +141,7 @@ modal.addEventListener('click',event=>{
  const button=event.target.closest('button');if(!button)return;
  if(button.classList.contains('nex-item-close')){close();return;}
  if(button.classList.contains('nex-item-custom')){close();if(typeof originalAddItem==='function')originalAddItem.call(by('addItem'),event);else{state.items.push({id:'manual_'+Date.now(),name:'Novo item',quantity:1,spaces:1,category:'Geral',detail:''});renderInventory();save();}return;}
- if(button.dataset.cat){selected=button.dataset.cat;render();return;}
+ if(button.dataset.cat){selected=button.dataset.cat;search.value='';render();return;}
  if(button.dataset.add!==undefined){add(Number(button.dataset.add));return;}
  if(button.dataset.expand!==undefined){
   const card=button.closest('.nex-item-card'),detail=card.querySelector('.nex-item-detail');
