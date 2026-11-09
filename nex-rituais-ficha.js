@@ -43,7 +43,7 @@ const controls=document.createElement('div');controls.id='nexRitualsControls';
 controls.innerHTML='<div class="nex-ritual-top"><button class="btn primary" type="button" id="nexRitualAddButton">Adicionar</button><div class="nex-ritual-dt">DT DE RITUAIS <output id="nexRitualDT">—</output></div></div><div class="nex-ritual-bottom"><button type="button" class="btn" id="nexRitualNewButton">Novo Ritual</button><label>Bônus de DT <input type="number" id="nexRitualDTBonus" min="-50" max="50" step="1" value="0"></label></div><p class="nex-ritual-hint">DT = 10 + limite de PE por turno + Presença + bônus. O teste de Custo do Paranormal usa outra DT.</p>';
 root.insertBefore(controls,list);
 const dialog=document.createElement('dialog');dialog.id='nexRitualDialog';dialog.setAttribute('aria-label','Selecionar ou editar ritual');
-dialog.innerHTML='<header><strong id="nexRitualDialogTitle">Adicionar ritual</strong><button type="button" class="btn" id="nexRitualDialogClose">✕</button></header><div id="nexRitualSelector"><div class="nex-ritual-filter"><input type="search" id="nexRitualSearch" placeholder="Buscar ritual..." aria-label="Buscar ritual"><select id="nexRitualSource" aria-label="Livro"><option value="Todos">Todos os livros</option><option>Livro básico</option><option>Sobrevivendo ao Horror</option><option>Homebrew</option></select><select id="nexRitualCircleFilter" aria-label="Círculo"><option value="">Todos os círculos</option><option value="1">1º círculo</option><option value="2">2º círculo</option><option value="3">3º círculo</option><option value="4">4º círculo</option></select></div><div id="nexRitualChoices" class="nex-ritual-choices"></div></div><form id="nexRitualEditor" hidden><input id="nexRitualEditId" type="hidden"><label>Nome<input id="nexRitualName" required maxlength="90"></label><div class="nex-ritual-fields"><label>Elemento<select id="nexRitualElement"><option>Conhecimento</option><option>Energia</option><option>Morte</option><option>Sangue</option><option>Medo</option></select></label><label>Círculo<select id="nexRitualCircle"><option value="1">1º</option><option value="2">2º</option><option value="3">3º</option><option value="4">4º</option></select></label><label>Execução<input id="nexRitualExecution" maxlength="80" placeholder="Ex.: Padrão"></label><label>Alcance<input id="nexRitualRange" maxlength="80" placeholder="Ex.: Pessoal"></label><label>Alvo<input id="nexRitualTarget" maxlength="90"></label><label>Duração<input id="nexRitualDuration" maxlength="90"></label><label>Resistência<input id="nexRitualResistance" maxlength="100"></label></div><label>Resumo e anotações<textarea id="nexRitualDescription" rows="5" maxlength="2000"></textarea></label><label>Aprimoramento Discente<textarea id="nexRitualDiscente" rows="2" maxlength="1000"></textarea></label><label>Aprimoramento Verdadeiro<textarea id="nexRitualVerdadeiro" rows="2" maxlength="1000"></textarea></label><button class="btn primary" type="submit">Salvar ritual</button></form>';
+dialog.innerHTML='<header><strong id="nexRitualDialogTitle">Adicionar ritual</strong><button type="button" class="btn" id="nexRitualDialogClose">✕</button></header><div id="nexRitualSelector"><div class="nex-ritual-filter"><input type="search" id="nexRitualSearch" placeholder="Buscar ritual..." aria-label="Buscar ritual"><select id="nexRitualSource" aria-label="Livro"><option value="Todos">Todos os livros</option><option>Livro básico</option><option>Sobrevivendo ao Horror</option><option>Homebrew</option></select><select id="nexRitualCircleFilter" aria-label="Círculo"><option value="">Todos os círculos</option><option value="1">1º círculo</option><option value="2">2º círculo</option><option value="3">3º círculo</option><option value="4">4º círculo</option></select></div><div id="nexRitualChoices" class="nex-ritual-choices"></div></div><form id="nexRitualEditor" hidden><input id="nexRitualEditId" type="hidden"><label>Nome<input id="nexRitualName" required maxlength="90"></label><div class="nex-ritual-fields"><label>Elemento<select id="nexRitualElement"><option>Conhecimento</option><option>Energia</option><option>Morte</option><option>Sangue</option><option>Medo</option></select></label><label>Círculo<select id="nexRitualCircle"><option value="1">1º</option><option value="2">2º</option><option value="3">3º</option><option value="4">4º</option></select></label><label>Execução<input id="nexRitualExecution" maxlength="80" placeholder="Ex.: Padrão"></label><label>Alcance<input id="nexRitualRange" maxlength="80" placeholder="Ex.: Pessoal"></label><label>Alvo<input id="nexRitualTarget" maxlength="90"></label><label>Duração<input id="nexRitualDuration" maxlength="90"></label><label>Resistência<input id="nexRitualResistance" maxlength="100"></label></div><label>Resumo e anotações<textarea id="nexRitualDescription" rows="5" maxlength="2000"></textarea></label><label>Aprimoramento Discente<textarea id="nexRitualDiscente" rows="2" maxlength="1000"></textarea></label><label>Aprimoramento Verdadeiro<textarea id="nexRitualVerdadeiro" rows="2" maxlength="1000"></textarea></label><label>Imagem própria do ritual (opcional)<input id="nexRitualImageUrl" type="url" maxlength="2000" placeholder="https://..."></label><label>Ou escolha uma imagem PNG, JPG ou WebP (até 250 KB)<input type="file" id="nexRitualImageFile" accept="image/png,image/jpeg,image/webp"></label><img id="nexRitualImagePreview" hidden alt="Prévia da imagem do ritual"><button class="btn primary" type="submit">Salvar ritual</button></form>';
 document.body.append(dialog);
 function show(){if(typeof dialog.showModal==='function')dialog.showModal();else dialog.open=true;}
 function close(){if(typeof dialog.close==='function')dialog.close();else dialog.open=false;}
@@ -61,6 +61,10 @@ function openEditor(r=null){
  $('nexRitualSelector').hidden=true;$('nexRitualEditor').hidden=false;
  $('nexRitualDialogTitle').textContent=r?'Editar ritual':'Novo ritual';
  $('nexRitualEditId').value=r?.id||'';
+ $('nexRitualImageUrl').value=r?.image?.startsWith('https://')?r.image:'';
+ $('nexRitualImageFile').value='';
+ $('nexRitualImagePreview').src=r?.image||'';
+ $('nexRitualImagePreview').hidden=!r?.image;
  $('nexRitualName').value=r?.name||'';
  $('nexRitualElement').value=r?.element||'Conhecimento';
  $('nexRitualCircle').value=String(r?.circle||1);
@@ -109,6 +113,18 @@ $('nexRitualChoices').addEventListener('click',e=>{
  const button=e.target.closest('[data-r-key]');if(!button||button.disabled)return;
  const r=catalogue().find(x=>x.key===button.dataset.rKey);if(r)addRecord(r);
 });
+$('nexRitualImageFile').addEventListener('change',e=>{
+ const file=e.target.files?.[0];if(!file)return;
+ if(!['image/png','image/jpeg','image/webp'].includes(file.type)||file.size>250000){toast('Escolha PNG, JPG ou WebP de até 250 KB.');e.target.value='';return;}
+ const reader=new FileReader();
+ reader.onload=()=>{const img=$('nexRitualImagePreview');img.src=String(reader.result||'');img.hidden=false;$('nexRitualImageUrl').value='';};
+ reader.readAsDataURL(file);
+});
+$('nexRitualImageUrl').addEventListener('input',e=>{
+ const url=e.target.value.trim();const preview=$('nexRitualImagePreview');
+ if(url&&/^https:\/\//i.test(url)){preview.src=url;preview.hidden=false;}
+ else if(!url){preview.removeAttribute('src');preview.hidden=true;}
+});
 $('nexRitualDTBonus').addEventListener('change',e=>{state.ritualDtBonus=Math.max(-50,Math.min(50,Number(e.target.value)||0));save();render();});
 list.addEventListener('click',e=>{
  const edit=e.target.closest('[data-ritual-edit]'),del=e.target.closest('[data-ritual-remove]');
@@ -118,7 +134,7 @@ list.addEventListener('click',e=>{
 $('nexRitualEditor').addEventListener('submit',e=>{
  e.preventDefault();
  const id=$('nexRitualEditId').value;
- const values={name:$('nexRitualName').value.trim().slice(0,90),element:$('nexRitualElement').value,circle:Number($('nexRitualCircle').value),execution:$('nexRitualExecution').value.trim(),range:$('nexRitualRange').value.trim(),target:$('nexRitualTarget').value.trim(),duration:$('nexRitualDuration').value.trim(),resistance:$('nexRitualResistance').value.trim(),note:$('nexRitualDescription').value.trim(),discente:$('nexRitualDiscente').value.trim(),verdadeiro:$('nexRitualVerdadeiro').value.trim()};
+ const values={name:$('nexRitualName').value.trim().slice(0,90),element:$('nexRitualElement').value,circle:Number($('nexRitualCircle').value),execution:$('nexRitualExecution').value.trim(),range:$('nexRitualRange').value.trim(),target:$('nexRitualTarget').value.trim(),duration:$('nexRitualDuration').value.trim(),resistance:$('nexRitualResistance').value.trim(),note:$('nexRitualDescription').value.trim(),discente:$('nexRitualDiscente').value.trim(),verdadeiro:$('nexRitualVerdadeiro').value.trim(),image:$('nexRitualImagePreview').hidden?'':String($('nexRitualImagePreview').src||'')};
  if(!values.name)return;
  if(state.class==='Ocultista'&&values.circle>circleAccess()){toast('Círculo não liberado para este NEX.');return;}
  if(id){const record=state.rituals.find(x=>String(x.id)===id);if(record)Object.assign(record,values);}
