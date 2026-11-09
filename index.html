@@ -1238,6 +1238,34 @@ html,body{background:#000!important;background-image:none!important}
 #sheetScreen #overview #n16AbilityList .nex-sheet-ability-entry .nexv16-detail{padding:12px 16px 15px;background:#17171a;color:#ddd;white-space:normal}
 #sheetScreen #overview .nex-sheet-ability-source{display:block;margin-bottom:7px;color:#b38ac9;font-size:10px}
 @media(max-width:600px){#sheetScreen #overview .nex-sheet-ability-actions{gap:7px;margin-bottom:9px}#sheetScreen #overview .nex-sheet-ability-action-row .btn{min-height:35px;padding:7px 10px}#sheetScreen #overview #n16AbilityList .nex-sheet-ability-entry>summary{padding:9px 12px}}
+
+/* Layout compacto v2064: retira vazio e devolve contraste aos cartões. */
+#sheetScreen #overview .nex-sheet-ability-actions{
+ display:flex!important;flex-direction:row!important;justify-content:flex-end!important;
+ align-items:center!important;flex-wrap:nowrap!important;
+ gap:7px!important;padding:0!important;margin:0 0 6px!important;
+}
+#sheetScreen #overview .nex-sheet-ability-action-row{
+ display:flex!important;margin:0!important;padding:0!important;
+}
+#sheetScreen #overview .nex-sheet-ability-action-row .btn{
+ min-height:32px!important;padding:6px 10px!important;line-height:1.2!important;
+}
+#sheetScreen #overview #n16AbilityList{
+ display:flex!important;flex-direction:column!important;gap:4px!important;
+ padding:0!important;margin:0!important;
+}
+#sheetScreen #overview #n16AbilityList .nex-sheet-ability-entry{
+ display:block!important;background:#1c1c1f!important;
+ margin:0!important;padding:0!important;border:0!important;border-radius:3px!important;
+}
+#sheetScreen #overview #n16AbilityList .nex-sheet-ability-entry>summary{
+ min-height:37px!important;padding:7px 12px!important;
+ margin:0!important;gap:10px!important;
+}
+#sheetScreen #overview #n16AbilityList .nex-sheet-ability-entry .nexv16-detail{
+ background:#151518!important;padding:10px 12px!important;
+}
 </style>
 </head><body>
 <header class="topbar"><div class="topinner"><button type="button" id="n17MenuToggle" class="n17-menu-button" aria-expanded="false" aria-controls="n17Drawer" aria-label="Abrir menu">☰</button><button type="button" class="brand" id="nexBrandHome" aria-label="Voltar ao menu principal" title="Voltar ao menu principal"><span class="brand-mark" aria-hidden="true">◈</span><span><h1>NEX</h1><span class="subtitle">SISTEMA DE FICHAS · ORDEM PARANORMAL</span></span></button><div class="actions"><button class="btn sm" id="menuHeaderButton" type="button" style="display:none!important" hidden tabindex="-1" aria-hidden="true">⌂ Menu principal</button><button class="btn sm" id="newChar" type="button" style="display:none!important" hidden tabindex="-1" aria-hidden="true">＋ Nova ficha</button><button class="btn sm" id="importBtn" style="display:none!important" aria-hidden="true" tabindex="-1">Importar</button><button class="btn sm" id="exportBtn" style="display:none!important" aria-hidden="true" tabindex="-1">↓ Exportar</button><input type="file" id="fileInput" accept="application/json,.json" hidden><span id="n17SaveIndicator" hidden aria-hidden="true"></span></div></div></header>
