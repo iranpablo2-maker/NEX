@@ -1365,6 +1365,7 @@ html,body{background:#000!important;background-image:none!important}
 @media(max-width:650px){#wizardScreen .wizard-entry #wSkillsPanel{margin:8px 8px 12px}}
 </style>
 </head><body>
+<script src="nex-sobrevivendo-ao-horror.js?v=2071"></script>
 <header class="topbar"><div class="topinner"><button type="button" id="n17MenuToggle" class="n17-menu-button" aria-expanded="false" aria-controls="n17Drawer" aria-label="Abrir menu">☰</button><button type="button" class="brand" id="nexBrandHome" aria-label="Voltar ao menu principal" title="Voltar ao menu principal"><span class="brand-mark" aria-hidden="true">◈</span><span><h1>NEX</h1><span class="subtitle">SISTEMA DE FICHAS · ORDEM PARANORMAL</span></span></button><div class="actions"><button class="btn sm" id="menuHeaderButton" type="button" style="display:none!important" hidden tabindex="-1" aria-hidden="true">⌂ Menu principal</button><button class="btn sm" id="newChar" type="button" style="display:none!important" hidden tabindex="-1" aria-hidden="true">＋ Nova ficha</button><button class="btn sm" id="importBtn" style="display:none!important" aria-hidden="true" tabindex="-1">Importar</button><button class="btn sm" id="exportBtn" style="display:none!important" aria-hidden="true" tabindex="-1">↓ Exportar</button><input type="file" id="fileInput" accept="application/json,.json" hidden><span id="n17SaveIndicator" hidden aria-hidden="true"></span></div></div></header>
 <nav class="nex-ref-nav" aria-label="Navegação principal">
  <div class="nex-ref-nav-inner">
@@ -1806,9 +1807,12 @@ const NEX12_ORIGINS=[["Acadêmico", "Ciências", "Investigação", "Saber é Pod
 const NEX12_ORIGIN_DESCRIPTIONS={"Acadêmico": "Ao realizar um teste baseado em Intelecto, você pode gastar 2 PE para receber +5 no resultado.", "Agente de Saúde": "Sempre que recuperar os PV de alguém, some seu valor de Intelecto à quantidade de PV restaurados.", "Amnésico": "Uma vez por sessão, faça um teste de Intelecto (DT 10) para reconhecer alguém ou algum lugar do passado. Se passar, recebe 1d4 PE temporários e pode descobrir uma informação a critério do mestre.", "Artista": "Uma vez por missão, faça alguém presente em uma interação reconhecer uma obra sua. Você ganha +5 em testes com Presença e perícias baseadas nela contra essa pessoa; o mestre pode estender esse efeito a outras situações.", "Atleta": "Ao fazer um teste de perícia baseado em Agilidade ou Força, exceto Luta e Pontaria, você pode gastar 2 PE para obter +5 no teste.", "Chef": "No interlúdio, ao usar a ação alimentar-se para cozinhar, você e os aliados que também se alimentarem recebem os benefícios de dois pratos. Benefícios iguais podem se acumular.", "Criminoso": "Ao encerrar uma missão, escolha um item encontrado nela. Na missão seguinte, esse item não contará para seu limite de itens por patente.", "Cultista Arrependido": "Você começa com um poder paranormal de sua escolha, mas sua Sanidade inicial é reduzida à metade da quantidade normal da classe.", "Desgarrado": "Seus PV máximos aumentam em 1 para cada 5% de NEX.", "Engenheiro": "Escolha um item que não seja arma. Para você, esse equipamento conta como uma categoria inferior à sua categoria normal.", "Executivo": "Durante testes estendidos ou ao revisar documentos, você pode gastar 2 PE para receber +5 em um teste de perícia.", "Investigador": "Uma vez por cena, em um teste feito para encontrar pistas, você pode gastar 1 PE para receber +5.", "Lutador": "Seus ataques corpo a corpo recebem +2 nas rolagens de dano.", "Magnata": "Seu limite de crédito é considerado um nível superior ao normal.", "Mercenário": "No primeiro turno de cada cena de ação, você pode gastar 2 PE para ganhar uma ação de movimento extra.", "Militar": "As rolagens de dano com armas de fogo recebem +2.", "Operário": "Escolha uma arma ligada ao seu ofício, com aprovação do mestre. Você sabe utilizá-la e recebe +1 em ataque, dano e margem de ameaça com ela.", "Policial": "Você recebe +2 na Defesa.", "Religioso": "Você recebe +5 nos testes de Religião para acalmar alguém. Ao conseguir acalmar, essa pessoa recupera 1d6 + sua Presença em Sanidade.", "Servidor Público": "Quando faz um teste para ajudar, você pode gastar 1 PE para aumentar em +2 o bônus concedido ao aliado.", "Teórico da Conspiração": "Você recebe resistência a dano mental igual ao valor do seu Intelecto.", "T.I.": "Com acesso à internet e autorização do mestre, você pode gastar 2 PE para substituir um teste de perícia por um teste de Tecnologia.", "Trabalhador Rural": "Em testes de Adestramento ou Sobrevivência, você pode gastar 2 PE para receber +5. Você também ignora penalidades de deslocamento por terreno difícil.", "Trambiqueiro": "Uma vez por cena, você pode gastar 2 PE para usar Enganação no lugar de outra perícia em um teste.", "Universitário": "Você recebe +1 PE inicial e ganha mais 1 PE a cada NEX ímpar a partir de 15%. Seu limite de PE por turno aumenta em 1.", "Vítima": "Você recebe +1 de Sanidade máxima para cada 5% de NEX."};
 const NEX12_TRAILS={"Combatente": ["Aniquilador", "Comandante de Campo", "Guerreiro", "Operações Especiais", "Tropa de Choque"], "Especialista": ["Atirador de Elite", "Infiltrador", "Médico de Campo", "Negociador", "Técnico"], "Ocultista": ["Conduíte", "Flagelador", "Graduado", "Intuitivo", "Lâmina Paranormal"]};
 const NEX12_CATALOG=[["Faca", "Arma simples", "Dano e categoria: preencher após consultar o livro"], ["Bastão", "Arma simples", "Dano e categoria: preencher após consultar o livro"], ["Revólver", "Arma de fogo", "Dano e munição: preencher após consultar o livro"], ["Pistola", "Arma de fogo", "Dano e munição: preencher após consultar o livro"], ["Espingarda", "Arma de fogo", "Dano e munição: preencher após consultar o livro"], ["Lanterna", "Equipamento", "Iluminação"], ["Algemas", "Equipamento", "Ferramenta de contenção"], ["Kit de Medicina", "Equipamento", "Acessório de perícia"], ["Kit de Tecnologia", "Equipamento", "Acessório de perícia"], ["Mochila", "Equipamento", "Transporte de itens"], ["Proteção Leve", "Proteção", "Preencher bônus de Defesa conforme a ficha"], ["Componentes Ritualísticos", "Equipamento", "Componentes para rituais"]];
+NEX12_CATALOG.push(...(window.NEX_SAH?.items||[]).map(x=>[x.name,'Item Amaldiçoado · '+x.element,'Categoria '+x.category+' · '+x.spaces+' espaço(s); consulte o suplemento.']));
 const NEX12_RITUALS=[["Amaldiçoar Arma", 1, "Conhecimento"], ["Cicatrização", 1, "Morte"], ["Decadência", 1, "Morte"], ["Definhar", 1, "Morte"], ["Eletrocussão", 1, "Energia"], ["Embaralhar", 1, "Energia"], ["Perturbação", 1, "Conhecimento"], ["Terceiro Olho", 1, "Conhecimento"]];
+NEX12_RITUALS.push(...(window.NEX_SAH?.rituals||[]).map(x=>[x.name,x.circle,x.element]));
 const NEX12_BASE_COST={1:1,2:3,3:6,4:10};
 const N19_TRAIL_ABILITIES={"Combatente": {"Aniquilador": [["A Favorita", "Escolha uma arma favorita e reduza sua categoria."], ["Técnica Secreta", "Sua arma favorita recebe redução adicional de categoria e opções táticas especiais."], ["Técnica Sublime", "Amplia os efeitos disponíveis na Técnica Secreta."], ["Máquina de Matar", "Aprimora os críticos e o dano de sua arma favorita."]], "Comandante de Campo": [["Inspirar Confiança", "Permite auxiliar um aliado próximo a repetir um teste mediante gasto de PE."], ["Estrategista", "Coordena aliados para conceder ações de movimento extras."], ["Brecha na Guarda", "Aproveita ataques de aliados para abrir uma oportunidade de ataque adicional."], ["Oficial Comandante", "Permite coordenar ações adicionais dos aliados."]], "Guerreiro": [["Técnica Letal", "Aumenta a margem de ameaça dos seus ataques corpo a corpo."], ["Revidar", "Permite contra-atacar após bloquear um ataque."], ["Força Opressora", "Combina golpes corpo a corpo com manobras para derrubar ou empurrar."], ["Potência Máxima", "Aprimora os bônus do Ataque Especial com armas corpo a corpo."]], "Operações Especiais": [["Iniciativa Aprimorada", "Melhora sua iniciativa e concede movimento extra no início do combate."], ["Ataque Extra", "Permite realizar um ataque adicional mediante gasto de PE."], ["Surto de Adrenalina", "Gaste PE para realizar uma ação adicional."], ["Sempre Alerta", "Recebe uma ação padrão adicional no início da cena de combate."]], "Tropa de Choque": [["Casca Grossa", "Recebe PV adicionais por NEX e usa Vigor para reforçar o bloqueio."], ["Cai Dentro", "Permite proteger um aliado atraindo ataques contra você."], ["Duro de Matar", "Pode reduzir dano recebido mediante gasto de PE."], ["Inquebrável", "Melhora sua defesa e resistência quando está muito ferido."]]}, "Especialista": {"Atirador de Elite": [["Mira de Elite", "Aprimora seu dano com armas de fogo de longo alcance usando Intelecto."], ["Disparo Letal", "Ao mirar, pode gastar PE para melhorar a margem de ameaça."], ["Disparo Impactante", "Permite usar disparos para executar manobras em vez de causar dano."], ["Atirar para Matar", "Acertos críticos com armas de fogo passam a causar dano máximo."]], "Infiltrador": [["Ataque Furtivo", "Permite causar dano extra contra alvos desprevenidos ou flanqueados."], ["Gatuno", "Melhora Atletismo, Crime e a movimentação furtiva."], ["Assassinar", "Aprimora um Ataque Furtivo contra um alvo analisado."], ["Sombra Fugaz", "Permite evitar penalidades de Furtividade após uma ação chamativa."]], "Médico de Campo": [["Paramédico", "Permite curar PV com um kit de medicina mediante gasto de PE."], ["Equipe de Trauma", "Pode remover condições negativas de aliados."], ["Resgate", "Permite alcançar e proteger aliados em perigo com mais eficiência."], ["Reanimação", "Habilidade avançada de socorro de emergência em condições específicas."]], "Negociador": [["Eloquência", "Permite fascinar pessoas próximas por meio de perícias sociais."], ["Discurso Motivador", "Concede bônus temporários aos testes de aliados próximos."], ["Eu Conheço um Cara", "Permite solicitar um favor excepcional à sua rede de contatos."], ["Truque de Mestre", "Permite reproduzir habilidades observadas com custos e restrições."]], "Técnico": [["Inventário Otimizado", "Soma Intelecto à Força para calcular a capacidade de carga."], ["Remendão", "Repara equipamentos temporariamente e facilita o uso de equipamentos gerais."], ["Improvisar", "Permite criar ferramentas temporárias a partir dos materiais ao redor."], ["Preparado para Tudo", "Permite encontrar em seu inventário um item adequado à situação mediante custo."]]}, "Ocultista": {"Conduíte": [["Ampliar Ritual", "Pode gastar PE adicional para ampliar o alcance ou a área de um ritual."], ["Acelerar Ritual", "Pode gastar PE adicional para acelerar uma conjuração."], ["Anular Ritual", "Tenta neutralizar um ritual direcionado a você."], ["Canalizar o Medo", "Aprende um ritual especial associado ao Medo."]], "Flagelador": [["Poder do Flagelo", "Permite pagar parte dos custos de rituais com seus próprios PV."], ["Abraçar a Dor", "Pode gastar PE para reduzir dano não paranormal recebido."], ["Absorver Agonia", "Recebe PE temporários quando derrota inimigos usando rituais."], ["Medo Tangível", "Aprende um ritual especial associado ao Medo."]], "Graduado": [["Saber Ampliado", "Aprende rituais adicionais ao ganhar acesso aos círculos."], ["Grimório Ritualístico", "Guarda rituais extras em um grimório que deve consultar para conjurá-los."], ["Rituais Eficientes", "Aumenta a dificuldade para resistir aos seus rituais."], ["Conhecendo o Medo", "Aprende um ritual especial associado ao Medo."]], "Intuitivo": [["Mente Sã", "Recebe um bônus para resistir a efeitos paranormais."], ["Presença Poderosa", "Adiciona Presença ao limite de PE ao conjurar rituais."], ["Inabalável", "Ganha resistência a dano mental e paranormal."], ["Presença do Medo", "Aprende um ritual especial associado ao Medo."]], "Lâmina Paranormal": [["Lâmina Maldita", "Aprende Amaldiçoar Arma e pode usar Ocultismo ao atacar com a arma."], ["Gladiador Paranormal", "Recebe PE temporários ao acertar ataques corpo a corpo."], ["Conjuração Marcial", "Permite combinar a conjuração de um ritual com um ataque corpo a corpo."], ["Lâmina do Medo", "Aprende um ritual especial associado ao Medo."]]}};
+for(const [cls,collection] of Object.entries(window.NEX_SAH?.trails||{})){if(N19_TRAIL_ABILITIES[cls])Object.assign(N19_TRAIL_ABILITIES[cls],collection);}
 const N19_CLASS_ABILITIES={"Combatente": [["Ataque Especial", "Você pode gastar PE para melhorar seu desempenho em ataques, conforme a progressão da classe."]], "Especialista": [["Eclético", "Você pode gastar PE para aprimorar um teste de perícia seguindo a regra da classe."], ["Perito", "Escolhe perícias nas quais se especializa, aumentando a confiabilidade dos testes."]], "Ocultista": [["Escolhido pelo Outro Lado", "Aprende rituais e aumenta o conhecimento paranormal à medida que evolui."]]};
 const NEX12_MILESTONES=[10,40,65,99], NEX12_POWERS=[15,30,45,60,75,90];
 const NEX12_ORIGIN_MAP=Object.fromEntries(NEX12_ORIGINS.map(([name,skill1,skill2,ability])=>[name,{name,skills:[skill1,skill2].filter(Boolean),ability,description:NEX12_ORIGIN_DESCRIPTIONS[name]||"Descrição indisponível.",official:true,pvStep:0,damage:0}]));
@@ -1821,11 +1825,11 @@ function nex12Ensure(){
  if(!state.trailByClass||typeof state.trailByClass!=='object')state.trailByClass={};
 }
 nex12Ensure();
-function nex12Orig(){const linked=(state.nex51Items||[]).find(x=>x?.type==='origem'&&x.name===state.origin);const linkedOrigin=linked?{name:linked.name,skills:linked.skills||[],ability:linked.name,description:linked.description||'',official:false,pvStep:0,damage:0}:null;return (state.homebrew||[]).find(x=>x.name===state.origin)||NEX12_ORIGIN_MAP[state.origin]||linkedOrigin||nex55AdvancedOrigins().find(x=>x.name===state.origin)||(state.origin==='Ex-Militar'?NEX12_HB_DEFAULT:null);}
+function nex12Orig(){const linked=(state.nex51Items||[]).find(x=>x?.type==='origem'&&x.name===state.origin);const linkedOrigin=linked?{name:linked.name,skills:linked.skills||[],ability:linked.name,description:linked.description||'',official:false,pvStep:0,damage:0}:null;return (state.homebrew||[]).find(x=>x.name===state.origin)||NEX12_ORIGIN_MAP[state.origin]||linkedOrigin||nex55AdvancedOrigins().find(x=>x.name===state.origin)||NEX_EXTRA_ORIGINS.horror.find(x=>x.name===state.origin)||(state.origin==='Ex-Militar'?NEX12_HB_DEFAULT:null);}
 const NEX_ORIGIN_CATEGORIES={ordem:'Ordem Paranormal',horror:'Sobrevivendo ao Horror',arquivos:'Arquivos Secretos',homebrew:'Homebrew'};
 // Apenas o livro base e as origens criadas pelo usuário estão cadastrados nesta versão.
 // Suplementos permanecem vazios até que seus dados sejam adicionados e conferidos.
-const NEX_EXTRA_ORIGINS={horror:[],arquivos:[]};
+const NEX_EXTRA_ORIGINS={horror:window.NEX_SAH?.origins||[],arquivos:[]};
 function nex12GetOriginCategory(name){
  if((state.homebrew||[]).some(x=>x.name===name))return 'homebrew';
  if(NEX12_ORIGIN_MAP[name])return 'ordem';
@@ -1840,14 +1844,16 @@ function nex12ShowOriginCategory(category,chooseFirst=false){
 function nex12PopulateOrigins(){
  nex12Ensure();
  const official=NEX12_ORIGINS.map(x=>x[0]);
- const homebrew=[...(state.homebrew||[]).map(x=>x.name),...nex55AdvancedOrigins().map(x=>x.name)].filter((name,i,arr)=>!official.includes(name)&&arr.indexOf(name)===i);
- const known=[...official,...homebrew];
+ const horror=(NEX_EXTRA_ORIGINS.horror||[]).map(x=>x.name);
+ const homebrew=[...(state.homebrew||[]).map(x=>x.name),...nex55AdvancedOrigins().map(x=>x.name)].filter((name,i,arr)=>!official.includes(name)&&!horror.includes(name)&&arr.indexOf(name)===i);
+ const known=[...official,...horror,...homebrew];
  const opt=(x)=>`<option value="${escapeHtml(x)}">${escapeHtml(x)}</option>`;
  const source=$('originSource'), select=$('origin'),hint=$('originCategoryHint');
  source.value=nex12GetOriginCategory(state.origin);
  select.disabled=false;
  select.innerHTML='<option value="">Escolha uma origem</option>'+
    `<optgroup label="Ordem Paranormal">${official.map(opt).join('')}</optgroup>`+
+   `<optgroup label="Sobrevivendo ao Horror">${horror.map(opt).join('')}</optgroup>`+
    `<optgroup label="Homebrew">${homebrew.map(opt).join('')}</optgroup>`+
    (state.origin&&!known.includes(state.origin)?opt(state.origin):'');
  select.value=state.origin||'';
@@ -2414,7 +2420,7 @@ $('nexHomebrewFilter')?.addEventListener('input',()=>nex12RenderHomebrew());
  Ocultista:{description:'Estuda fenômenos do Outro Lado e canaliza conhecimentos paranormais, aceitando os riscos que isso implica.',style:'Rituais e conhecimento paranormal'}
  };
  function wAvail(category){if(category==='ordem')return NEX12_ORIGINS.map(x=>({name:x[0],skills:[x[1],x[2]].filter(Boolean),ability:x[3],description:NEX12_ORIGIN_DESCRIPTIONS[x[0]]||'',official:true}));if(category==='homebrew'){const legacy=(wDraft.homebrew||[]).map(x=>({name:x.name,skills:x.skills||[],ability:x.ability||'Habilidade personalizada',description:x.description||'',official:false}));return [...legacy,...nex55AdvancedOrigins().filter(x=>!legacy.some(o=>o.name===x.name)&&!NEX12_ORIGIN_MAP[x.name])];}return (NEX_EXTRA_ORIGINS[category]||[]);}
- const W_PARANORMAL_OPTIONS=['Aprender Ritual','Afortunado','Encarar a Morte','Potencial Aprimorado','Resistir a Elemento','Sangue de Ferro','Visão do Oculto'];
+ const W_PARANORMAL_OPTIONS=[...new Set(['Aprender Ritual','Afortunado','Encarar a Morte','Potencial Aprimorado','Resistir a Elemento','Sangue de Ferro','Visão do Oculto',...(window.NEX_SAH?.paranormal||[]).map(x=>x.name)])];
  function wCultistPowerName(){
    if(wDraft.origin!=='Cultista Arrependido')return '';
    const raw=wDraft.cultistPowerChoice||'';
@@ -3316,7 +3322,7 @@ update();
  const get=id=>document.getElementById(id);
  const overlay=get('n215Overlay'); if(!overlay)return;
  const escape=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
- const CATEGORIES=['Combatente','Especialista','Ocultista','Origens','Poderes Paranormais'];
+ const CATEGORIES=['Combatente','Especialista','Ocultista','Origens','Poderes Gerais','Poderes Paranormais'];
  const MILESTONES=[10,40,65,99];
  const BASE_POWERS={
   'Combatente':[
@@ -3359,7 +3365,8 @@ update();
    ['Tatuagem Ritualística','Vincula símbolos e preparação do corpo às práticas ocultas.']
   ]
  };
- const PARANORMAL=[
+ for(const [cls,items] of Object.entries(window.NEX_SAH?.classPowers||{})){if(BASE_POWERS[cls])BASE_POWERS[cls].push(...items.filter(([name])=>!BASE_POWERS[cls].some(([prev])=>prev===name)));}
+const PARANORMAL=[
   ['Aprender Ritual','Adquire acesso a um ritual através de um poder paranormal.'],
   ['Afortunado','Aprimora a influência da sorte em momentos decisivos.'],
   ['Encarar a Morte','Fortalece sua capacidade de resistir ao medo da morte.'],
@@ -3368,6 +3375,7 @@ update();
   ['Sangue de Ferro','Fortalece a resistência física sob influência paranormal.'],
   ['Visão do Oculto','Aumenta a capacidade de perceber o paranormal.']
  ];
+ PARANORMAL.push(...(window.NEX_SAH?.paranormal||[]).map(x=>[x.name,x.description+(x.prerequisite?' Pré-requisito: '+x.prerequisite+'.':'')]));
  let mode='all',category='Combatente',sub='',filter='',lastFocus=null;
  function ensure(){if(!state.n16||typeof state.n16!=='object')state.n16={};if(!Array.isArray(state.n16.abilities))state.n16.abilities=[];if(!Array.isArray(state.powers))state.powers=[];}
  function item(k,cat,branch,name,detail,req=0,source='',extra={}){
@@ -3385,14 +3393,19 @@ update();
    const desc=(NEX12_ORIGIN_DESCRIPTIONS||{})[name]||'Habilidade concedida por esta origem.';
    data.push(item('origin:'+name,'Origens','Todas as origens',ability,desc,0,'Origem: '+name,{originName:name}));
   }
+  for(const origin of NEX_EXTRA_ORIGINS.horror||[]){data.push(item('origin:horror:'+origin.name,'Origens','Sobrevivendo ao Horror',origin.ability,origin.description,0,'Origem: '+origin.name,{originName:origin.name}));}
   for(const origin of state.homebrew||[]){
    if(!origin||!origin.name||!origin.ability)continue;
    data.push(item('homebrew:'+origin.name,'Origens','Homebrew',origin.ability,origin.description||'Habilidade da origem criada pelo mestre.',0,'Origem: '+origin.name,{originName:origin.name}));
   }
+  for(const x of window.NEX_SAH?.generalPowers||[]){
+    const detail=x.description+(x.attr?(x.attr.startsWith('trained')?' Requer treinamento.':' Requer atributo '+x.attr.toUpperCase()+' '+x.threshold+'.'):'');
+    data.push(item('general:'+x.name,'Poderes Gerais','Todos os poderes gerais',x.name,detail,Math.max(15,x.minNex||0),'Poder Geral · Sobrevivendo ao Horror',{general:true,attr:x.attr,threshold:x.threshold,minNex:x.minNex||0}));
+  }
   for(const [name,desc] of PARANORMAL)data.push(item('paranormal:'+name,'Poderes Paranormais','Todos os poderes',name,desc,15));
   return data;
  }
- function branches(){if(category==='Origens')return ['Todas as origens','Homebrew'];if(category==='Poderes Paranormais')return ['Todos os poderes'];return ['Poderes de '+category,...Object.keys(N19_TRAIL_ABILITIES[category]||{})];}
+ function branches(){if(category==='Origens')return ['Todas as origens','Sobrevivendo ao Horror','Homebrew'];if(category==='Poderes Gerais')return ['Todos os poderes gerais'];if(category==='Poderes Paranormais')return ['Todos os poderes'];return ['Poderes de '+category,...Object.keys(N19_TRAIL_ABILITIES[category]||{})];}
  function autoPresent(d){
   if(d.key.startsWith('origin:') || d.key.startsWith('homebrew:'))return d.originName===state.origin;
   if(d.trail)return state.class===d.cls && (state.trailByClass?.[d.cls]||'')===d.trail && Number(state.nex)>=d.req;
@@ -3402,6 +3415,12 @@ update();
   if(d.trail){if(d.cls!==state.class)return 'Outra classe';if((state.trailByClass?.[state.class]||'')!==d.trail)return 'Outra trilha';if(Number(state.nex)<d.req)return 'NEX '+d.req+'%';}
   else if(d.key.startsWith('power:') && Number(state.nex)<15)return 'NEX 15%';
   else if(d.cat==='Poderes Paranormais' && Number(state.nex)<15)return 'NEX 15%';
+  if(d.general){
+    if(Number(state.nex)<Math.max(15,d.minNex||0))return 'NEX '+Math.max(15,d.minNex||0)+'%';
+    if(['agi','for','pre','vig','int'].includes(d.attr) && Number(state.attributes[d.attr]||0)<d.threshold)return d.attr.toUpperCase()+' '+d.threshold;
+    if(d.attr==='trained:Diplomacia' && Number(state.skills.Diplomacia?.training||0)<5)return 'Diplomacia treinada';
+    if(d.attr==='trained' && !Object.values(state.skills).some(row=>Number(row.training||0)>=5))return 'Perícia treinada';
+  }
   return '';
  }
  function manualPresent(d){
