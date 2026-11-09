@@ -1818,6 +1818,33 @@ NEX12_RITUALS.push(...(window.NEX_SAH?.rituals||[]).map(x=>[x.name,x.circle,x.el
 const NEX12_BASE_COST={1:1,2:3,3:6,4:10};
 const N19_TRAIL_ABILITIES={"Combatente": {"Aniquilador": [["A Favorita", "Escolha uma arma favorita e reduza sua categoria."], ["Técnica Secreta", "Sua arma favorita recebe redução adicional de categoria e opções táticas especiais."], ["Técnica Sublime", "Amplia os efeitos disponíveis na Técnica Secreta."], ["Máquina de Matar", "Aprimora os críticos e o dano de sua arma favorita."]], "Comandante de Campo": [["Inspirar Confiança", "Permite auxiliar um aliado próximo a repetir um teste mediante gasto de PE."], ["Estrategista", "Coordena aliados para conceder ações de movimento extras."], ["Brecha na Guarda", "Aproveita ataques de aliados para abrir uma oportunidade de ataque adicional."], ["Oficial Comandante", "Permite coordenar ações adicionais dos aliados."]], "Guerreiro": [["Técnica Letal", "Aumenta a margem de ameaça dos seus ataques corpo a corpo."], ["Revidar", "Permite contra-atacar após bloquear um ataque."], ["Força Opressora", "Combina golpes corpo a corpo com manobras para derrubar ou empurrar."], ["Potência Máxima", "Aprimora os bônus do Ataque Especial com armas corpo a corpo."]], "Operações Especiais": [["Iniciativa Aprimorada", "Melhora sua iniciativa e concede movimento extra no início do combate."], ["Ataque Extra", "Permite realizar um ataque adicional mediante gasto de PE."], ["Surto de Adrenalina", "Gaste PE para realizar uma ação adicional."], ["Sempre Alerta", "Recebe uma ação padrão adicional no início da cena de combate."]], "Tropa de Choque": [["Casca Grossa", "Recebe PV adicionais por NEX e usa Vigor para reforçar o bloqueio."], ["Cai Dentro", "Permite proteger um aliado atraindo ataques contra você."], ["Duro de Matar", "Pode reduzir dano recebido mediante gasto de PE."], ["Inquebrável", "Melhora sua defesa e resistência quando está muito ferido."]]}, "Especialista": {"Atirador de Elite": [["Mira de Elite", "Aprimora seu dano com armas de fogo de longo alcance usando Intelecto."], ["Disparo Letal", "Ao mirar, pode gastar PE para melhorar a margem de ameaça."], ["Disparo Impactante", "Permite usar disparos para executar manobras em vez de causar dano."], ["Atirar para Matar", "Acertos críticos com armas de fogo passam a causar dano máximo."]], "Infiltrador": [["Ataque Furtivo", "Permite causar dano extra contra alvos desprevenidos ou flanqueados."], ["Gatuno", "Melhora Atletismo, Crime e a movimentação furtiva."], ["Assassinar", "Aprimora um Ataque Furtivo contra um alvo analisado."], ["Sombra Fugaz", "Permite evitar penalidades de Furtividade após uma ação chamativa."]], "Médico de Campo": [["Paramédico", "Permite curar PV com um kit de medicina mediante gasto de PE."], ["Equipe de Trauma", "Pode remover condições negativas de aliados."], ["Resgate", "Permite alcançar e proteger aliados em perigo com mais eficiência."], ["Reanimação", "Habilidade avançada de socorro de emergência em condições específicas."]], "Negociador": [["Eloquência", "Permite fascinar pessoas próximas por meio de perícias sociais."], ["Discurso Motivador", "Concede bônus temporários aos testes de aliados próximos."], ["Eu Conheço um Cara", "Permite solicitar um favor excepcional à sua rede de contatos."], ["Truque de Mestre", "Permite reproduzir habilidades observadas com custos e restrições."]], "Técnico": [["Inventário Otimizado", "Soma Intelecto à Força para calcular a capacidade de carga."], ["Remendão", "Repara equipamentos temporariamente e facilita o uso de equipamentos gerais."], ["Improvisar", "Permite criar ferramentas temporárias a partir dos materiais ao redor."], ["Preparado para Tudo", "Permite encontrar em seu inventário um item adequado à situação mediante custo."]]}, "Ocultista": {"Conduíte": [["Ampliar Ritual", "Pode gastar PE adicional para ampliar o alcance ou a área de um ritual."], ["Acelerar Ritual", "Pode gastar PE adicional para acelerar uma conjuração."], ["Anular Ritual", "Tenta neutralizar um ritual direcionado a você."], ["Canalizar o Medo", "Aprende um ritual especial associado ao Medo."]], "Flagelador": [["Poder do Flagelo", "Permite pagar parte dos custos de rituais com seus próprios PV."], ["Abraçar a Dor", "Pode gastar PE para reduzir dano não paranormal recebido."], ["Absorver Agonia", "Recebe PE temporários quando derrota inimigos usando rituais."], ["Medo Tangível", "Aprende um ritual especial associado ao Medo."]], "Graduado": [["Saber Ampliado", "Aprende rituais adicionais ao ganhar acesso aos círculos."], ["Grimório Ritualístico", "Guarda rituais extras em um grimório que deve consultar para conjurá-los."], ["Rituais Eficientes", "Aumenta a dificuldade para resistir aos seus rituais."], ["Conhecendo o Medo", "Aprende um ritual especial associado ao Medo."]], "Intuitivo": [["Mente Sã", "Recebe um bônus para resistir a efeitos paranormais."], ["Presença Poderosa", "Adiciona Presença ao limite de PE ao conjurar rituais."], ["Inabalável", "Ganha resistência a dano mental e paranormal."], ["Presença do Medo", "Aprende um ritual especial associado ao Medo."]], "Lâmina Paranormal": [["Lâmina Maldita", "Aprende Amaldiçoar Arma e pode usar Ocultismo ao atacar com a arma."], ["Gladiador Paranormal", "Recebe PE temporários ao acertar ataques corpo a corpo."], ["Conjuração Marcial", "Permite combinar a conjuração de um ritual com um ataque corpo a corpo."], ["Lâmina do Medo", "Aprende um ritual especial associado ao Medo."]]}};
 for(const [cls,collection] of Object.entries(window.NEX_SAH?.trails||{})){if(N19_TRAIL_ABILITIES[cls])Object.assign(N19_TRAIL_ABILITIES[cls],collection);}
+// Uma única fonte de opções para o seletor principal e o seletor legado.
+// Trilhas homebrew podem ser usadas sem alterar as fichas ou a biblioteca.
+function nexTrailOptions(cls){
+ const allowed=['Combatente','Especialista','Ocultista'];
+ if(!allowed.includes(cls))return [];
+ const options=[...(NEX12_TRAILS[cls]||[]),...Object.keys(window.NEX_SAH?.trails?.[cls]||{})];
+ try{
+   const library=JSON.parse(localStorage.getItem('nex_homebrew_advanced_v2051')||'[]');
+   if(Array.isArray(library))for(const entry of library){
+     if(entry?.type==='trilha'&&entry.className===cls&&typeof entry.name==='string')options.push(entry.name);
+   }
+ }catch(error){console.warn('NEX: biblioteca de trilhas não pôde ser carregada',error);}
+ for(const entry of state.nex51Items||[]){
+   if(entry?.type==='trilha'&&entry.className===cls&&typeof entry.name==='string')options.push(entry.name);
+ }
+ return [...new Set(options.filter(x=>typeof x==='string'&&x.trim()))];
+}
+function nexTrailAbilities(cls,name){
+ const library=window.NEX51?.readLibrary?.()||[];
+ const entries=[...(state.nex51Items||[]),...(Array.isArray(library)?library:[])];
+ const homebrew=entries.find(x=>x?.type==='trilha'&&x.className===cls&&x.name===name);
+ if(homebrew&&Array.isArray(homebrew.trailAbilities)){
+   const byNex=new Map(homebrew.trailAbilities.map(x=>[Number(x.nex),x]));
+   return [10,40,65,99].map(n=>[String(byNex.get(n)?.name||''),String(byNex.get(n)?.description||'')]);
+ }
+ return N19_TRAIL_ABILITIES[cls]?.[name]||[];
+}
 const N19_CLASS_ABILITIES={"Combatente": [["Ataque Especial", "Você pode gastar PE para melhorar seu desempenho em ataques, conforme a progressão da classe."]], "Especialista": [["Eclético", "Você pode gastar PE para aprimorar um teste de perícia seguindo a regra da classe."], ["Perito", "Escolhe perícias nas quais se especializa, aumentando a confiabilidade dos testes."]], "Ocultista": [["Escolhido pelo Outro Lado", "Aprende rituais e aumenta o conhecimento paranormal à medida que evolui."]]};
 const NEX12_MILESTONES=[10,40,65,99], NEX12_POWERS=[15,30,45,60,75,90];
 const NEX12_ORIGIN_MAP=Object.fromEntries(NEX12_ORIGINS.map(([name,skill1,skill2,ability])=>[name,{name,skills:[skill1,skill2].filter(Boolean),ability,description:NEX12_ORIGIN_DESCRIPTIONS[name]||"Descrição indisponível.",official:true,pvStep:0,damage:0}]));
@@ -1878,7 +1905,7 @@ const nex12OriginalDamage=renderAttacks;
 renderAttacks=function(){nex12OriginalDamage();const o=nex12Orig(),d=o?int(o.damage):0;document.querySelectorAll('[data-roll-damage]').forEach(el=>{el.textContent='Rolar dano'+(d?' (+'+d+')':'');});};
 function nex12FixDamageRoll(ev){const b=ev.target.closest('[data-roll-damage]');if(!b)return;const o=nex12Orig();if(!o||o.name==='Ex-Militar'||!int(o.damage))return;ev.stopImmediatePropagation();const a=state.attacks.find(x=>String(x.id)===b.dataset.rollDamage);if(a)dice(a.damage,a.name+' — dano',int(o.damage));}
 document.addEventListener('click',nex12FixDamageRoll,true);
-function nex12RenderTrail(shouldSave=false){const opts=NEX12_TRAILS[state.class]||[];const select=$('trailSelect');const chosen=state.trailByClass[state.class]||'';if(!opts.includes(chosen)&&chosen)state.trailByClass[state.class]='';select.innerHTML='<option value="">Selecione uma trilha</option>'+opts.map(x=>`<option value="${escapeHtml(x)}">${escapeHtml(x)}</option>`).join('');select.value=state.trailByClass[state.class]||'';const enabled=int(state.nex)>=10;select.disabled=!enabled||!opts.length;
+function nex12RenderTrail(shouldSave=false){const opts=nexTrailOptions(state.class);const select=$('trailSelect');const chosen=state.trailByClass[state.class]||'';if(!opts.includes(chosen)&&chosen)state.trailByClass[state.class]='';select.innerHTML='<option value="">Selecione uma trilha</option>'+opts.map(x=>`<option value="${escapeHtml(x)}">${escapeHtml(x)}</option>`).join('');select.value=state.trailByClass[state.class]||'';const enabled=int(state.nex)>=10;select.disabled=!enabled||!opts.length;
  $('trailMilestones').innerHTML=`<div class="subhead">Evolução de trilha</div>`+NEX12_MILESTONES.map(n=>`<div class="v12-card v12-inline"><strong>NEX ${n}% — Habilidade de trilha</strong><span class="v12-badge">${int(state.nex)>=n?'Disponível':'Bloqueado'}</span></div>`).join('')+`<div class="subhead">Poderes de classe</div>`+NEX12_POWERS.map(n=>`<div class="v12-card v12-inline"><span>Escolha de poder • NEX ${n}%</span><span class="v12-badge">${int(state.nex)>=n?'Disponível':'Bloqueado'}</span></div>`).join('')+`<p class="hint">Aumento de atributo em 20%, 50%, 80% e 95% de NEX. Graus de treinamento e versatilidade são etapas separadas. Consulte o livro para pré-requisitos.</p>`;
  if(shouldSave)save();}
 function nex12RenderPowerList(){const list=$('powerList');list.innerHTML=state.powers.length?state.powers.map(p=>`<article class="v12-card"><div class="v12-inline"><strong>${escapeHtml(p.name)}</strong><span class="v12-badge">NEX ${int(p.nex)}%</span></div><p>${escapeHtml(p.note||'Poder registrado pelo jogador.')}</p><div class="v12-actions"><button class="btn sm" data-nex12-delete-power="${escapeHtml(p.id)}">Remover</button></div></article>`).join(''):'<div class="v12-empty">Nenhum poder escolhido.</div>';}
@@ -2853,10 +2880,10 @@ $('nexHomebrewFilter')?.addEventListener('input',()=>nex12RenderHomebrew());
    if(origin)entries.push({name:origin.ability||origin.name,source:`Origem: ${origin.name}`,detail:origin.description||'Consulte o livro para os efeitos.',id:null});
    for(const [name,detail] of N19_CLASS_ABILITIES[state.class]||[])entries.push({name,source:`Classe: ${state.class}`,detail,id:null});
    const trail=state.trailByClass?.[state.class]||'';
-   const abilities=N19_TRAIL_ABILITIES[state.class]?.[trail]||[];
+   const abilities=nexTrailAbilities(state.class,trail);
    for(let i=0;i<abilities.length;i++){
       const required=[10,40,65,99][i];
-      if(int(state.nex)>=required)entries.push({name:abilities[i][0],source:`Trilha: ${trail} · NEX ${required}%`,detail:abilities[i][1]+' Consulte o livro v1.3 para custos e condições completos.',id:null});
+      if(int(state.nex)>=required && abilities[i]?.[0])entries.push({name:abilities[i][0],source:`Trilha: ${trail} · NEX ${required}%`,detail:abilities[i][1]||'Descrição não cadastrada.',id:null});
    }
    for(const p of state.powers||[])entries.push({name:p.name||'Poder',source:p.source==='origin-cultista'?'Origem: Cultista Arrependido · Poder Paranormal':`Poder — NEX ${int(p.nex)}%`,detail:p.note||'Descrição não cadastrada.',id:null});
    for(const a of state.n16.abilities)entries.push({name:a.name,source:a.source||'Personalizada',detail:a.description||'Sem descrição.',id:a.id});
@@ -3079,7 +3106,7 @@ if(!select)return;
 function update(){
   if(typeof nex12Ensure==='function')nex12Ensure();
   const cls=state.class,nex=Number(state.nex)||5;
-  const trails=NEX12_TRAILS[cls]||[];
+  const trails=nexTrailOptions(cls);
   const unlocked=nex>=10 && trails.length>0;
   $id('n19TrailPanel').classList.toggle('hide',!unlocked);
   const legacyPanel=$id('n19LegacyTrail'); if(legacyPanel)legacyPanel.classList.toggle('hide',!unlocked);
