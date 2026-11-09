@@ -159,7 +159,7 @@ function add(index){
  const item=renderedItems[index];if(!item)return;
  if(!Array.isArray(state.items))state.items=[];
  if(state.items.length>=100){toast('Limite de 100 itens no inventário.');return;}
- if(!window.NEX_CARRY?.canAdd(item.spaces,1)){toast('Carga máxima atingida. Só é possível adicionar itens de 0 espaços.');return;}
+ 
  const getStat=(name)=>String((item.stats||[]).find(x=>norm(x[0])===norm(name))?.[1]||'');
  const s=String(item.subtitle||'').split('·').map(x=>x.trim());
  const crit=getStat('Crítico').replace(/\s/g,'');
@@ -172,6 +172,7 @@ function add(index){
    range:getStat('Alcance')||'—',tier:getStat('Categoria')||'0',upgrades:'',
    description:String(item.description||''),image:''
  };
+ if(!window.NEX_CARRY?.canAddItem({...nexInfo,quantity:1})){toast('Limite de carga ou de itens da categoria atingido para a patente atual.');return;}
  state.items.push({id:'nexitem_'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,6),name:item.name,quantity:1,category:mapCategory[item.section],spaces:item.spaces,description:nexInfo.description,nexInfo,detail:[item.description,...item.stats.map(m=>m.join(': '))].filter(Boolean).join(' · ').slice(0,2000)});
  renderInventory();save();toast(item.name+' adicionado ao inventário.');
 }
