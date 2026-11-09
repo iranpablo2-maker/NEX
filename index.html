@@ -3629,7 +3629,7 @@ const PARANORMAL=[
   ['Visão do Oculto','Aumenta a capacidade de perceber o paranormal.']
  ];
  PARANORMAL.push(...(window.NEX_SAH?.paranormal||[]).map(x=>[x.name,x.description+(x.prerequisite?' Pré-requisito: '+x.prerequisite+'.':'')]));
- let mode='all',category='Combatente',sub='',filter='',lastFocus=null;
+ let mode='all',category='Combatente',sub='',filter='',homebrewCategory='Combatente',homebrewFilter='',lastFocus=null;
  function ensure(){if(!state.n16||typeof state.n16!=='object')state.n16={};if(!Array.isArray(state.n16.abilities))state.n16.abilities=[];if(!Array.isArray(state.powers))state.powers=[];}
  function item(k,cat,branch,name,detail,req=0,source='',extra={}){
   return {key:k,cat,branch,name,detail,req,source:source||(cat==='Origens'?'Origem: '+branch:cat==='Poderes Paranormais'?'Poder Paranormal':branch==='Poderes de '+cat?'Poder de '+cat:'Trilha: '+branch+' · NEX '+req+'%'),...extra};
@@ -3659,6 +3659,56 @@ const PARANORMAL=[
   return data;
  }
  function branches(){if(category==='Origens')return ['Todas as origens','Sobrevivendo ao Horror','Homebrew'];if(category==='Poderes Gerais')return ['Todos os poderes gerais'];if(category==='Poderes Paranormais')return ['Todos os poderes'];return ['Poderes de '+category,...Object.keys(N19_TRAIL_ABILITIES[category]||{})];}
+ function homebrewCatalogue(){
+   const library=typeof window.NEX51?.readLibrary==='function'?window.NEX51.readLibrary():[];
+   const records=Array.isArray(library)?library:[];
+   const result=[];
+   for(const x of records){
+     if(!x||!x.id||!x.name)continue;
+     const cls=String(x.className||'Geral')==='Livre'?'Geral':String(x.className||'Geral');
+     let cat='';
+     if(x.type==='trilha' && ['Combatente','Especialista','Ocultista'].includes(cls))cat=cls;
+     else if(x.type==='origem')cat='Origens';
+     else if(x.type==='poder_paranormal')cat='Poderes Paranormais';
+     else if(['poder_geral','poder','habilidade'].includes(x.type)){
+       cat=['Combatente','Especialista','Ocultista'].includes(cls)?cls:'Poderes Gerais';
+     }
+     if(!cat)continue;
+     const isTrail=x.type==='trilha';
+     const description=isTrail?(Array.isArray(x.trailAbilities)?x.trailAbilities.map(s=>'NEX '+s.nex+'% · '+(s.name||'Habilidade')+': '+(s.description||'')).join(' | '):''):String(x.description||'');
+     result.push({key:'nexhb:'+x.id,cat,name:x.name,detail:description||'Descrição não cadastrada.',
+       source:isTrail?'Trilha Homebrew · '+cls:x.type==='origem'?'Origem Homebrew':x.type==='poder_paranormal'?'Poder Paranormal · '+(x.element||''):'Poder Geral · '+cls,
+       hb:x,restrictedClass:cat==='Combatente'||cat==='Especialista'||cat==='Ocultista'?cat:null});
+   }
+   return result;
+ }
+ function homebrewEligibility(d){
+   if(d.restrictedClass && d.restrictedClass!==state.class)return 'Exclusivo de '+d.restrictedClass;
+   if(d.hb.type==='origem' && d.hb.name!==state.origin)return 'Exige origem '+d.hb.name;
+   if(d.hb.type==='trilha' && (state.trailByClass?.[state.class]||'')!==d.hb.name)return 'Exige trilha '+d.hb.name;
+   return '';
+ }
+ function homebrewOwned(d){
+   return (state.n16.abilities||[]).some(a=>a.catalogKey===d.key)||
+          (state.powers||[]).some(a=>a.catalogKey===d.key);
+ }
+ function drawHomebrew(){
+   const records=homebrewCatalogue().filter(d=>d.cat===homebrewCategory);
+   const visible=records.filter(d=>!homebrewFilter||(d.name+' '+d.detail+' '+d.source).toLocaleLowerCase('pt-BR').includes(homebrewFilter));
+   get('n215MainTabs').innerHTML=CATEGORIES.map(cat=>'<button type="button" class="n215-main-tab '+(cat===homebrewCategory?'selected':'')+'" data-n215-homebrew-cat="'+escape(cat)+'">'+escape(cat)+'</button>').join('');
+   get('n215SubTabs').innerHTML='';
+   get('n215Search').value=homebrewFilter;
+   get('n215Meta').textContent=visible.length+' Homebrew(s) · '+homebrewCategory;
+   get('n215List').innerHTML=visible.length?visible.map(d=>{
+      const locked=homebrewEligibility(d),owned=homebrewOwned(d);
+      const record=(state.n16.abilities||[]).find(a=>a.catalogKey===d.key)||(state.powers||[]).find(a=>a.catalogKey===d.key);
+      const type=d.hb.type==='poder_paranormal'?'power':'ability';
+      return '<article class="n215-row"><div class="n215-row-main"><details><summary><span>'+escape(d.name)+'<small class="n215-source">'+escape(d.source)+(locked?' · '+escape(locked):'')+'</small></span></summary><div class="n215-description">'+escape(d.detail)+'</div></details>'+
+      (owned?'<button type="button" class="n215-add" data-n215-remove="'+escape(record?.id||'')+'" data-n215-type="'+type+'" title="Remover da ficha">✓</button>':
+        '<button type="button" class="n215-add" data-n215-add-homebrew="'+escape(d.key)+'" '+(locked?'disabled':'')+' title="'+escape(locked||'Adicionar à ficha')+'" aria-label="Adicionar '+escape(d.name)+'">'+(locked?'🔒':'+')+'</button>')+
+      '</div></article>';
+   }).join(''):'<p class="n215-empty">Nenhum Homebrew nesta categoria. Crie um na Biblioteca Homebrew.</p>';
+ }
  function autoPresent(d){
   if(d.key.startsWith('origin:') || d.key.startsWith('homebrew:'))return d.originName===state.origin;
   if(d.trail)return state.class===d.cls && (state.trailByClass?.[d.cls]||'')===d.trail && Number(state.nex)>=d.req;
@@ -3684,17 +3734,20 @@ const PARANORMAL=[
  }
  function redraw(){
   ensure();
-  get('n215CatalogControls').hidden=mode!=='all';
-  get('n215CustomForm').hidden=mode!=='custom';
-  get('n215List').hidden=mode==='custom';get('n215Meta').hidden=mode==='custom';
+  get('n215CatalogControls').hidden=false;
+  get('n215CustomForm').hidden=true;
+  get('n215List').hidden=false;get('n215Meta').hidden=false;
   document.querySelectorAll('[data-n215-mode]').forEach(x=>{x.classList.toggle('active',x.dataset.n215Mode===mode);x.setAttribute('aria-pressed',String(x.dataset.n215Mode===mode));});
-  if(mode==='custom')return;
   if(mode==='mine'){
-   const mine=[...state.n16.abilities.map(a=>({id:a.id,name:a.name,detail:a.description||'Sem descrição.',source:a.source||'Personalizada',type:'ability'})),...state.powers.filter(a=>a.id).map(a=>({id:a.id,name:a.name,detail:a.note||'Poder escolhido.',source:'Poder – NEX '+a.nex+'%',type:'power'}))];
-   get('n215Meta').textContent=mine.length+' habilidade(s) personalizadas na ficha';
-   get('n215List').innerHTML=mine.length?mine.map(a=>`<article class="n215-row"><div class="n215-row-main"><details><summary>${escape(a.name)}<small class="n215-source">${escape(a.source)}</small></summary><div class="n215-description">${escape(a.detail)}</div></details><button type="button" class="n215-add" data-n215-remove="${escape(a.id)}" data-n215-type="${a.type}" title="Remover">×</button></div></article>`).join(''):'<p class="n215-empty">Nenhuma habilidade adicional nesta ficha.</p>';
-   return;
+    get('n215CatalogControls').hidden=false;
+    get('n215SubTabs').hidden=true;
+    get('n215Search').placeholder='Buscar Homebrew...';
+    drawHomebrew();
+    return;
   }
+  get('n215SubTabs').hidden=false;
+  get('n215Search').placeholder='⌕ Buscar habilidade...';
+  get('n215Search').value=filter;
   get('n215MainTabs').innerHTML=CATEGORIES.map(c=>`<button type="button" class="n215-main-tab ${c===category?'selected':''}" data-n215-cat="${escape(c)}">${escape(c)}</button>`).join('');
   const allowed=branches();if(!allowed.includes(sub))sub=allowed[0];
   get('n215SubTabs').innerHTML=allowed.map(c=>`<button type="button" class="n215-sub-tab ${c===sub?'selected':''}" data-n215-sub="${escape(c)}">${escape(c)}</button>`).join('');
@@ -3712,7 +3765,7 @@ const PARANORMAL=[
   redraw();
  }
  function open(next='all'){
-  ensure();lastFocus=document.activeElement;mode=next;category=CATEGORIES.includes(state.class)?state.class:'Combatente';sub='';filter='';get('n215Search').value='';
+  ensure();lastFocus=document.activeElement;mode=next;category=CATEGORIES.includes(state.class)?state.class:'Combatente';homebrewCategory=CATEGORIES.includes(state.class)?state.class:'Poderes Gerais';sub='';filter='';homebrewFilter='';get('n215Search').value='';
   overlay.hidden=false;document.body.style.overflow='hidden';redraw();get('n215Close').focus();
  }
  function close(){overlay.hidden=true;document.body.style.overflow='';lastFocus?.focus?.();}
@@ -3722,12 +3775,21 @@ const PARANORMAL=[
  get('n215Close').addEventListener('click',close);
  overlay.addEventListener('click',e=>{if(e.target===overlay)close();});
  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!overlay.hidden){e.preventDefault();close();}});
- get('n215Search').addEventListener('input',e=>{filter=e.target.value.trim().toLocaleLowerCase('pt-BR');redraw();});
+ get('n215Search').addEventListener('input',e=>{if(mode==='mine')homebrewFilter=e.target.value.trim().toLocaleLowerCase('pt-BR');else filter=e.target.value.trim().toLocaleLowerCase('pt-BR');redraw();});
  overlay.addEventListener('click',e=>{
   const button=e.target.closest('button');if(!button)return;
   if(button.dataset.n215Mode){mode=button.dataset.n215Mode;redraw();return;}
+  if(button.dataset.n215HomebrewCat){homebrewCategory=button.dataset.n215HomebrewCat;redraw();return;}
   if(button.dataset.n215Cat){category=button.dataset.n215Cat;sub='';redraw();return;}
   if(button.dataset.n215Sub){sub=button.dataset.n215Sub;redraw();return;}
+  if(button.dataset.n215AddHomebrew){
+   const d=homebrewCatalogue().find(x=>x.key===button.dataset.n215AddHomebrew);
+   if(!d||homebrewEligibility(d)||homebrewOwned(d))return;
+   const id='n215hb'+Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+   if(d.hb.type==='poder_paranormal')state.powers.push({id,name:d.name,nex:Number(state.nex),note:d.detail,source:'homebrew',element:d.hb.element,catalogKey:d.key});
+   else state.n16.abilities.push({id,name:d.name,description:d.detail,source:d.source,catalogKey:d.key});
+   save();refreshSheet();return;
+  }
   if(button.dataset.n215Add){
    const d=catalogue().find(x=>x.key===button.dataset.n215Add);
    if(!d||eligibility(d)||autoPresent(d)||manualPresent(d))return;
