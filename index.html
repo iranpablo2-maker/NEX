@@ -1440,7 +1440,7 @@ html,body{background:#000!important;background-image:none!important}
   </div>
   <div class="wizard-step" data-wpanel="0">
     <h2>1. Atributos</h2><p class="wizard-lead">Defina as aptidões do seu personagem. Todos começam com 1 ponto em cada atributo e você tem 4 pontos extras para distribuir. É possível reduzir um atributo a 0 para ganhar mais um ponto. Nenhum atributo pode ultrapassar 3 nesta etapa.</p>
-    <div class="wizard-budget" id="wBudget">4 pontos disponíveis</div>
+    <div class="field" style="max-width:240px;margin:0 auto 12px"><label for="wNexStart">NEX inicial</label><select id="wNexStart"><option value="0">0% — Mundano</option><option value="5" selected>5% — Agente</option></select></div><div class="wizard-budget" id="wBudget">4 pontos disponíveis</div>
     <div class="wizard-attrs" id="wAttributes"></div>
     <p class="wizard-notice">Os atributos influenciam os testes e os recursos de seu personagem. Você poderá aprimorá-los quando evoluir.</p>
   </div>
@@ -2472,7 +2472,7 @@ $('nexHomebrewFilter')?.addEventListener('input',()=>nex12RenderHomebrew());
    return raw==='__other__'?String(wDraft.cultistPowerOther||'').trim().slice(0,90):raw;
  }
  function wCultistPowerValid(){
-   if(wDraft.origin!=='Cultista Arrependido')return true;
+   if(wDraft.origin!=='Cultista Arrependido'||int(wDraft.nex)===0)return true;
    const raw=wDraft.cultistPowerChoice||'';
    return raw==='__other__'?!!wCultistPowerName():W_PARANORMAL_OPTIONS.includes(raw);
  }
@@ -2545,6 +2545,7 @@ $('nexHomebrewFilter')?.addEventListener('input',()=>nex12RenderHomebrew());
   const target=$('wizardAttributeArt');
   if(artSource && target)target.style.backgroundImage=getComputedStyle(artSource).backgroundImage;
   $('wBudget').textContent=`${wPoints()} ponto(s) disponíveis`;
+  $('wNexStart').value=String(int(wDraft.nex)===0?0:5);
  }
  function wRenderOrigins(){const panel=$('wSkillsPanel');if(panel)$('wOriginChoice').after(panel);wRenderOriginSkills();const a=wAvail(wCategory),q=$('wSearch').value.trim().toLowerCase();$('wCategories').innerHTML=W_CATEGORIES.map(([k,label])=>`<button type="button" class="${k===wCategory?'selected':''}" data-wcat="${k}">${label}</button>`).join('');$('wOriginChoice').textContent='Selecionada: '+(wDraft.origin||'Nenhuma');const filtered=a.filter(o=>o.name.toLowerCase().includes(q));$('wOriginList').innerHTML=filtered.length?filtered.map(o=>`<div class="wizard-entry"><div class="wizard-entry-head"><button class="expander" type="button" data-wexpand="${escapeHtml(o.name)}"><span>${wOpen===o.name?'⌄':'›'}</span>${escapeHtml(o.name)}</button><button type="button" class="wizard-choose ${wDraft.origin===o.name?'selected':''}" data-wchoose="${escapeHtml(o.name)}">${wDraft.origin===o.name?'✓ Selecionado':'Escolher'}</button></div>${wOpen===o.name?`<div class="wizard-entry-detail"><p><b>Perícias:</b> ${escapeHtml((o.skills||[]).join(', ')||'A definir com o mestre')}</p><p><b>Habilidade:</b> ${escapeHtml(o.ability||'A definir')}</p><p>${escapeHtml(o.description|| (o.official?'Consulte a descrição completa desta habilidade no livro.':'Habilidade criada por você.'))}</p></div>`:''}</div>`).join(''):'<div class="wizard-panel"><p>Nenhuma origem cadastrada nesta categoria. Você pode escolher outra categoria ou criar uma origem no editor Homebrew da ficha.</p></div>';
    const row=[...$('wOriginList').querySelectorAll('.wizard-entry')].find(el=>el.querySelector('[data-wchoose]')?.dataset.wchoose===wDraft.origin);
@@ -2625,6 +2626,7 @@ $('nexHomebrewFilter')?.addEventListener('input',()=>nex12RenderHomebrew());
   function wRender(){document.querySelectorAll('[data-wpanel]').forEach(el=>el.hidden=Number(el.dataset.wpanel)!==wStep);document.querySelectorAll('[data-wstep]').forEach(el=>{const i=Number(el.dataset.wstep);el.classList.toggle('current',i===wStep);el.classList.toggle('completed',i<wStep);});$('wBack').textContent=wStep===0?'← Menu principal':'← Voltar';$('wNext').textContent=wStep===4?'Finalizar personagem ✓':'Próximo →';if(wStep===0)wRenderAttrs();if(wStep===1)wRenderOrigins();if(wStep===2)wRenderClass();if(wStep===3)wRenderTrainSkills();window.scrollTo(0,0);}
  function createAgent(){persist();wDraft=normalize({...defaults(),homebrew:JSON.parse(JSON.stringify(globalHomebrew())),name:'',origin:'',class:'Combatente',attributes:{agi:1,for:1,int:1,pre:1,vig:1},nex:5});wCategory='ordem';wStep=0;wOpen='';$('wSearch').value='';for(const id of ['wName','wPlayer','wAppearance','wPersonality','wHistory','wObjective'])$(id).value='';visible('wizard');wRender();}
  function wFinish(){
+  if(wPoints()!==0){toast('Confira os pontos de atributos do NEX escolhido.');wStep=0;wRender();return;}
   const name=$('wName').value.trim();if(!name){toast('Informe o nome do personagem.');$('wName').focus();return;}
   if(!wDraft.origin){toast('Escolha uma origem antes de finalizar.');return;}
   if(!W_CLASS_INFO[wDraft.class]||(int(wDraft.nex)===0)!==(wDraft.class==='Mundano')){toast('NEX 0% exige Mundano; NEX 5% ou maior exige uma classe de agente.');return;}
@@ -2669,12 +2671,18 @@ $('nexHomebrewFilter')?.addEventListener('input',()=>nex12RenderHomebrew());
  $('wizardScreen').addEventListener('change',e=>{
    const el=e.target;
    if(!wDraft)return;
-   if(el.id==='wNexSelect'){
+   if(el.id==='wNexStart'){
+     const newNex=int(el.value)===0?0:5;
+     wDraft.nex=newNex;
+     if(newNex===0){if(wDraft.class!=='Mundano')wDraft.nex0PreviousClass=wDraft.class;wDraft.class='Mundano';}
+     else if(wDraft.class==='Mundano')wDraft.class=wDraft.nex0PreviousClass||'Combatente';
+     wRenderAttrs();
+   }else if(el.id==='wNexSelect'){
      const level=int(el.value);wDraft.nex=LEVELS.includes(level)?level:5;
      if(wDraft.nex===0){if(wDraft.class!=='Mundano')wDraft.nex0PreviousClass=wDraft.class;wDraft.class='Mundano';}else if(wDraft.class==='Mundano')wDraft.class=wDraft.nex0PreviousClass||'Combatente';
      const cap=wDraft.nex>=70?15:wDraft.nex>=35?10:5;
      for(const skill of Object.values(wDraft.skills))if(int(skill.training)>cap)skill.training=cap;
-     wRenderTrainSkills();
+     if(wPoints()<0){wStep=0;toast('NEX 0% permite 3 pontos de atributos. Ajuste seus atributos.');wRender();}else wRenderTrainSkills();
    }else if(el.id==='wCombatAttack'||el.id==='wCombatDefense'){
      const oldRequired=wCreationRequired();
      const old=el.id==='wCombatAttack'?wDraft.wCombatAttack:wDraft.wCombatDefense;
