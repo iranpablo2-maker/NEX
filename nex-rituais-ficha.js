@@ -129,7 +129,7 @@ function render(){
   const blocked=state.class==='Ocultista'&&Number(r.circle)>circleAccess();
   return '<article class="nex-ritual-card"><details><summary><span class="nex-ritual-arrow">⌃</span><strong>'+esc(r.name)+'</strong></summary>'+
    '<div class="nex-ritual-detail"><div class="nex-ritual-pill nex-ritual-'+esc(r.element)+'">'+esc(r.element).toUpperCase()+' '+esc(r.circle)+'</div>'+
-   (d.image||symbolFor(r)?'<img src="'+esc(d.image||symbolFor(r))+'" alt="Símbolo do ritual" class="nex-ritual-image">':emblem(r.element,r.name))+
+   (d.image||symbolFor(r)?'<img src="'+esc(d.image||symbolFor(r))+'" alt="Símbolo cadastrado para o ritual" class="nex-ritual-image">':'<div class="nex-ritual-symbol-missing" style="padding:18px 12px;border:1px dashed #61546c;border-radius:5px;color:#bfb0ca;text-align:center;margin:12px 0">Símbolo não cadastrado — adicione uma imagem autorizada pelo botão Símbolo.</div>')+
    '<div class="nex-ritual-properties">'+lines('Execução',d.execution)+lines('Alcance',d.range)+lines('Alvo',d.target)+lines('Duração',d.duration)+lines('Resistência',d.resistance)+'</div>'+
    '<p class="nex-ritual-summary">'+esc(d.note||d.description||'Efeito não cadastrado. Consulte o livro ou edite o resumo.')+'</p>'+(d.summaryKind?'<small class="nex-ritual-summary-kind">'+esc(d.summaryKind)+'</small>':'')+
    (d.discente?'<p class="nex-ritual-enhance"><b>Discente:</b> '+esc(d.discente)+'</p>':'')+
