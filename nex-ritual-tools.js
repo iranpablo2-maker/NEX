@@ -405,14 +405,13 @@ function castingResultHTML(m,check,sanity,effect){
  if(effect.damage){
   const toValue=check?check.total:'—';
   const toLabel=check?'OCULTISMO':'SEM TO';
-  const detail=check?(check.passed?'Sucesso no TO':'Falha no TO · ritual executado'):'Ritual de Medo: sem TO';
   return '<div class="tk-roll-result">'+
    '<header class="tk-roll-header"><strong>'+esc(m.r.name)+'</strong><button type="button" data-tk-modal-close="1" aria-label="Fechar resultado">×</button></header>'+
    '<div class="tk-roll-content"><div class="tk-roll-symbol" aria-hidden="true"><svg viewBox="0 0 36 36" width="38" height="38"><path fill="#8510c6" d="M18 0 35.5 9v18L18 36 .5 27V9Z"/></svg></div>'+
    '<div class="tk-roll-stat"><strong>'+esc(toValue)+'</strong><span>'+toLabel+'</span></div>'+
    '<div class="tk-roll-divider" aria-hidden="true"></div>'+
    '<div class="tk-roll-stat"><strong>'+esc(effect.damage.total)+'</strong><span>DANO</span></div></div>'+
-   '<div class="tk-roll-status">'+esc(detail)+' · '+esc(m.v.toUpperCase())+'</div>'+
+
    '<details class="tk-roll-more"><summary>Detalhes da conjuração</summary><div class="tk-roll-more-body">'+infoRows+'</div></details>'+
    '</div>';
  }
