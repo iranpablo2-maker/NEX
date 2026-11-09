@@ -1,4 +1,4 @@
-/* NEX — referências resumidas de Sobrevivendo ao Horror, escritas em linguagem própria. */
+/* NEX — descrições resumidas e originais baseadas nas regras do suplemento. */
 window.NEX_SAH={
   "origins": [
     {
@@ -359,238 +359,238 @@ window.NEX_SAH={
       "attr": "agi",
       "threshold": 2,
       "minNex": 0,
-      "description": "Poder Geral de Sobrevivendo ao Horror. Confira os efeitos completos no livro."
+      "description": "Obtém treinamento em Acrobacia ou +2 caso já a conheça. Ignora limitações de terreno difícil em deslocamentos e investidas. Pré-requisito: Agilidade 2."
     },
     {
       "name": "Ás do Volante",
       "attr": "agi",
       "threshold": 2,
       "minNex": 0,
-      "description": "Poder Geral de Sobrevivendo ao Horror. Confira os efeitos completos no livro."
+      "description": "Ganha treino em Pilotagem ou +2 adicional; uma vez por rodada pode evitar dano sofrido pelo veículo com teste de Pilotagem. Pré-requisito: Agilidade 2."
     },
     {
       "name": "Atlético",
       "attr": "for",
       "threshold": 2,
       "minNex": 0,
-      "description": "Poder Geral de Sobrevivendo ao Horror. Confira os efeitos completos no livro."
+      "description": "Ganha treino em Atletismo ou +2 adicional e aumenta o deslocamento em 3 metros. Pré-requisito: Força 2."
     },
     {
       "name": "Atraente",
       "attr": "pre",
       "threshold": 2,
       "minNex": 0,
-      "description": "Poder Geral de Sobrevivendo ao Horror. Confira os efeitos completos no livro."
+      "description": "Recebe +5 em testes de interação apropriados contra pessoas que possam sentir atração pela sua aparência ou atitude. Pré-requisito: Presença 2."
     },
     {
       "name": "Dedos Ágeis",
       "attr": "agi",
       "threshold": 2,
       "minNex": 0,
-      "description": "Poder Geral de Sobrevivendo ao Horror. Confira os efeitos completos no livro."
+      "description": "Ganha treino em Crime ou +2 e executa arrombamentos, furtos e sabotagens com ações mais rápidas. Pré-requisito: Agilidade 2."
     },
     {
       "name": "Detector de Mentiras",
       "attr": "pre",
       "threshold": 2,
       "minNex": 0,
-      "description": "Poder Geral de Sobrevivendo ao Horror. Confira os efeitos completos no livro."
+      "description": "Ganha treino em Intuição ou +2; mentir para você impõe uma grande penalidade nos testes de Enganação. Pré-requisito: Presença 2."
     },
     {
       "name": "Especialista em Emergências",
       "attr": "int",
       "threshold": 2,
       "minNex": 0,
-      "description": "Poder Geral de Sobrevivendo ao Horror. Confira os efeitos completos no livro."
+      "description": "Ganha treino em Medicina ou +2 e consegue utilizar remédios e itens de tratamento com ações mais rápidas. Pré-requisito: Intelecto 2."
     },
     {
       "name": "Estigmado",
       "attr": "",
       "threshold": 0,
       "minNex": 0,
-      "description": "Poder Geral de Sobrevivendo ao Horror. Confira os efeitos completos no livro."
+      "description": "Ao receber dano mental provocado por medo, pode optar por convertê-lo em perda de PV, preservando a Sanidade à custa do próprio corpo."
     },
     {
       "name": "Foco em Perícia",
       "attr": "trained",
       "threshold": 0,
       "minNex": 0,
-      "description": "Poder Geral de Sobrevivendo ao Horror. Confira os efeitos completos no livro."
+      "description": "Escolha uma perícia treinada que não seja Luta nem Pontaria: seus testes com ela recebem um dado extra. Pode adquirir o poder novamente para outras perícias."
     },
     {
       "name": "Inventário Organizado",
       "attr": "int",
       "threshold": 2,
       "minNex": 0,
-      "description": "Poder Geral de Sobrevivendo ao Horror. Confira os efeitos completos no livro."
+      "description": "Acrescenta Intelecto à capacidade de carga e reduz pela metade o espaço consumido por objetos originalmente muito pequenos. Pré-requisito: Intelecto 2."
     },
     {
       "name": "Informado",
       "attr": "int",
       "threshold": 2,
       "minNex": 0,
-      "description": "Poder Geral de Sobrevivendo ao Horror. Confira os efeitos completos no livro."
+      "description": "Ganha treino em Atualidades ou +2 e pode substituir outras perícias por Atualidades em testes de conhecimento, com autorização do mestre. Pré-requisito: Intelecto 2."
     },
     {
       "name": "Interrogador",
       "attr": "for",
       "threshold": 2,
       "minNex": 0,
-      "description": "Poder Geral de Sobrevivendo ao Horror. Confira os efeitos completos no livro."
+      "description": "Ganha treino em Intimidação ou +2 e pode coagir alguém com uma ação padrão, respeitando o limite de uso contra um mesmo alvo. Pré-requisito: Força 2."
     },
     {
       "name": "Mentiroso Nato",
       "attr": "pre",
       "threshold": 2,
       "minNex": 0,
-      "description": "Poder Geral de Sobrevivendo ao Horror. Confira os efeitos completos no livro."
+      "description": "Ganha treino em Enganação ou +2 e sofre uma penalidade menor ao contar mentiras especialmente improváveis. Pré-requisito: Presença 2."
     },
     {
       "name": "Observador",
       "attr": "int",
       "threshold": 2,
       "minNex": 0,
-      "description": "Poder Geral de Sobrevivendo ao Horror. Confira os efeitos completos no livro."
+      "description": "Ganha treino em Investigação ou +2 e acrescenta seu Intelecto aos testes de Intuição. Pré-requisito: Intelecto 2."
     },
     {
       "name": "Pai de Pet",
       "attr": "pre",
       "threshold": 2,
       "minNex": 0,
-      "description": "Poder Geral de Sobrevivendo ao Horror. Confira os efeitos completos no livro."
+      "description": "Ganha treino em Adestramento ou +2 e recebe um animal aliado que concede +2 em duas perícias aprovadas pelo mestre. Pré-requisito: Presença 2."
     },
     {
       "name": "Palavras de Devoção",
       "attr": "pre",
       "threshold": 2,
       "minNex": 0,
-      "description": "Poder Geral de Sobrevivendo ao Horror. Confira os efeitos completos no livro."
+      "description": "Ganha treino em Religião ou +2; uma oração coletiva pode conceder resistência a dano mental 5 aos participantes até o fim da cena, consumindo 3 PE. Pré-requisito: Presença 2."
     },
     {
       "name": "Parceiro",
       "attr": "trained:Diplomacia",
       "threshold": 30,
       "minNex": 30,
-      "description": "Poder Geral de Sobrevivendo ao Horror. Confira os efeitos completos no livro."
+      "description": "Recebe um aliado que acompanha suas missões. A escolha do tipo de aliado depende das regras e do mestre. Pré-requisitos: Diplomacia treinada e NEX 30%."
     },
     {
       "name": "Pensamento Tático",
       "attr": "int",
       "threshold": 2,
       "minNex": 0,
-      "description": "Poder Geral de Sobrevivendo ao Horror. Confira os efeitos completos no livro."
+      "description": "Ganha treino em Tática ou +2. Ao analisar com sucesso um terreno, permite que o grupo tenha movimento adicional no início do combate posterior nesse local. Pré-requisito: Intelecto 2."
     },
     {
       "name": "Personalidade Esotérica",
       "attr": "int",
       "threshold": 2,
       "minNex": 0,
-      "description": "Poder Geral de Sobrevivendo ao Horror. Confira os efeitos completos no livro."
+      "description": "Acrescenta 3 PE à reserva e ganha treino em Ocultismo ou +2 se já for treinado. Pré-requisito: Intelecto 2."
     },
     {
       "name": "Persuasivo",
       "attr": "pre",
       "threshold": 2,
       "minNex": 0,
-      "description": "Poder Geral de Sobrevivendo ao Horror. Confira os efeitos completos no livro."
+      "description": "Ganha treino em Diplomacia ou +2 e reduz a dificuldade de convencer pessoas a aceitar pedidos arriscados ou custosos. Pré-requisito: Presença 2."
     },
     {
       "name": "Pesquisador Científico",
       "attr": "int",
       "threshold": 2,
       "minNex": 0,
-      "description": "Poder Geral de Sobrevivendo ao Horror. Confira os efeitos completos no livro."
+      "description": "Ganha treino em Ciências ou +2 e pode identificar certas criaturas e animais usando Ciências em vez das perícias habituais. Pré-requisito: Intelecto 2."
     },
     {
       "name": "Proativo",
       "attr": "agi",
       "threshold": 2,
       "minNex": 0,
-      "description": "Poder Geral de Sobrevivendo ao Horror. Confira os efeitos completos no livro."
+      "description": "Ganha treino em Iniciativa ou +2. Um resultado elevado nos dados de Iniciativa pode conceder uma ação padrão adicional no primeiro turno. Pré-requisito: Agilidade 2."
     },
     {
       "name": "Provisões de Emergência",
       "attr": "",
       "threshold": 0,
       "minNex": 0,
-      "description": "Poder Geral de Sobrevivendo ao Horror. Confira os efeitos completos no livro."
+      "description": "Mantém uma reserva de equipamentos para situações críticas. Uma vez por missão, pode recuperar suprimentos adicionais durante um interlúdio, conforme sua patente."
     },
     {
       "name": "Racionalidade Inflexível",
       "attr": "int",
       "threshold": 3,
       "minNex": 0,
-      "description": "Poder Geral de Sobrevivendo ao Horror. Confira os efeitos completos no livro."
+      "description": "Usa Intelecto em vez de Presença para Vontade e para determinar seus pontos de esforço. Pré-requisito: Intelecto 3."
     },
     {
       "name": "Rato de Computador",
       "attr": "int",
       "threshold": 2,
       "minNex": 0,
-      "description": "Poder Geral de Sobrevivendo ao Horror. Confira os efeitos completos no livro."
+      "description": "Ganha treino em Tecnologia ou +2 e executa operações digitais rapidamente; uma vez por investigação pode buscar pistas digitais sem gastar uma rodada. Pré-requisito: Intelecto 2."
     },
     {
       "name": "Resposta Rápida",
       "attr": "agi",
       "threshold": 2,
       "minNex": 0,
-      "description": "Poder Geral de Sobrevivendo ao Horror. Confira os efeitos completos no livro."
+      "description": "Ganha treino em Reflexos ou +2 e pode trocar um teste falho de Percepção por um novo teste usando Reflexos, gastando 2 PE. Pré-requisito: Agilidade 2."
     },
     {
       "name": "Talentoso",
       "attr": "pre",
       "threshold": 2,
       "minNex": 0,
-      "description": "Poder Geral de Sobrevivendo ao Horror. Confira os efeitos completos no livro."
+      "description": "Ganha treino em Artes ou +2. Em apresentações bem-sucedidas, amplia o bônus concedido a outras perícias conforme a margem de sucesso. Pré-requisito: Presença 2."
     },
     {
       "name": "Teimosia Obstinada",
       "attr": "pre",
       "threshold": 2,
       "minNex": 0,
-      "description": "Poder Geral de Sobrevivendo ao Horror. Confira os efeitos completos no livro."
+      "description": "Ganha treino em Vontade ou +2 e pode gastar 2 PE para receber +5 em resistências contra condições mentais e efeitos que alterem atitudes. Pré-requisito: Presença 2."
     },
     {
       "name": "Tenacidade",
       "attr": "vig",
       "threshold": 2,
       "minNex": 0,
-      "description": "Poder Geral de Sobrevivendo ao Horror. Confira os efeitos completos no livro."
+      "description": "Ganha treino em Fortitude ou +2 e pode tentar encerrar a condição morrendo com um teste adicional enquanto ainda estiver consciente. Pré-requisito: Vigor 2."
     },
     {
       "name": "Sentidos Aguçados",
       "attr": "pre",
       "threshold": 2,
       "minNex": 0,
-      "description": "Poder Geral de Sobrevivendo ao Horror. Confira os efeitos completos no livro."
+      "description": "Ganha treino em Percepção ou +2, reduz a vulnerabilidade contra oponentes ocultos e oferece uma segunda chance contra falhas por camuflagem. Pré-requisito: Presença 2."
     },
     {
       "name": "Sobrevivencialista",
       "attr": "int",
       "threshold": 2,
       "minNex": 0,
-      "description": "Poder Geral de Sobrevivendo ao Horror. Confira os efeitos completos no livro."
+      "description": "Ganha treino em Sobrevivência ou +2, resiste melhor às condições climáticas e não sofre redução de movimento por terreno difícil natural. Pré-requisito: Intelecto 2."
     },
     {
       "name": "Sorrateiro",
       "attr": "agi",
       "threshold": 2,
       "minNex": 0,
-      "description": "Poder Geral de Sobrevivendo ao Horror. Confira os efeitos completos no livro."
+      "description": "Ganha treino em Furtividade ou +2 e reduz penalidades ao agir furtivamente sem cobertura ideal ou enquanto se movimenta. Pré-requisito: Agilidade 2."
     },
     {
       "name": "Vitalidade Reforçada",
       "attr": "vig",
       "threshold": 2,
       "minNex": 0,
-      "description": "Poder Geral de Sobrevivendo ao Horror. Confira os efeitos completos no livro."
+      "description": "Acrescenta 1 PV para cada incremento de 5% de NEX e concede +2 em Fortitude. Pré-requisito: Vigor 2."
     },
     {
       "name": "Vontade Inabalável",
       "attr": "pre",
       "threshold": 2,
       "minNex": 0,
-      "description": "Poder Geral de Sobrevivendo ao Horror. Confira os efeitos completos no livro."
+      "description": "Acrescenta 1 PE para cada incremento de 10% de NEX e concede +2 em Vontade. Pré-requisito: Presença 2."
     }
   ],
   "paranormal": [
@@ -598,49 +598,49 @@ window.NEX_SAH={
       "name": "Espreitar da Besta",
       "element": "Sangue",
       "prerequisite": "",
-      "description": "Poder paranormal de Sangue de Sobrevivendo ao Horror. Consulte efeitos e afinidade no livro."
+      "description": "Sangue. Concede +5 em Furtividade e facilita perseguições e ações discretas. Com afinidade, o bônus em Furtividade aumenta para +10."
     },
     {
       "name": "Instintos Sanguinários",
       "element": "Sangue",
       "prerequisite": "",
-      "description": "Poder paranormal de Sangue de Sobrevivendo ao Horror. Consulte efeitos e afinidade no livro."
+      "description": "Sangue. Concede visão no escuro e faro. A afinidade amplia a percepção de perigos e a proteção contra flanqueamento, despreparo e armadilhas."
     },
     {
       "name": "Antecipar Vitalidade",
       "element": "Morte",
       "prerequisite": "",
-      "description": "Poder paranormal de Morte de Sobrevivendo ao Horror. Consulte efeitos e afinidade no livro."
+      "description": "Morte. Obtém dados extras em testes criando cargas que serão cobradas no descanso posterior. A afinidade amplia o limite dessas cargas e a velocidade de recuperação."
     },
     {
       "name": "Aura de Pavor",
       "element": "Morte",
       "prerequisite": "",
-      "description": "Poder paranormal de Morte de Sobrevivendo ao Horror. Consulte efeitos e afinidade no livro."
+      "description": "Morte. Gasta 2 PE para impor uma condição de medo a uma pessoa ou animal próximo, com teste de Vontade para resistir. A afinidade fortalece o efeito e permite atingir mais alvos."
     },
     {
       "name": "Absorver Conhecimento",
       "element": "Conhecimento",
       "prerequisite": "",
-      "description": "Poder paranormal de Conhecimento de Sobrevivendo ao Horror. Consulte efeitos e afinidade no livro."
+      "description": "Conhecimento. Pode consultar diretamente uma fonte escrita e receber informações que ela contém, gastando PE. Também melhora o bônus obtido com leitura; a afinidade reduz o custo de certos rituais."
     },
     {
       "name": "Apatia Herege",
       "element": "Conhecimento",
       "prerequisite": "Conhecimento 1",
-      "description": "Poder paranormal de Conhecimento de Sobrevivendo ao Horror. Consulte efeitos e afinidade no livro."
+      "description": "Conhecimento. Pode gastar 2 PE para repetir um teste de resistência contra medo, aceitando o segundo resultado. Com afinidade, decide depois de conhecer o resultado e escolhe a melhor rolagem. Pré-requisito: Conhecimento 1."
     },
     {
       "name": "Conexão Empática",
       "element": "Energia",
       "prerequisite": "Energia 1",
-      "description": "Poder paranormal de Energia de Sobrevivendo ao Horror. Consulte efeitos e afinidade no livro."
+      "description": "Energia. Permite conversar temporariamente com um dispositivo elétrico ligado para obter informações do que ele conhece. A afinidade concede bônus em interações técnicas e sociais com o objeto. Pré-requisito: Energia 1."
     },
     {
       "name": "Valer-se do Caos",
       "element": "Energia",
       "prerequisite": "",
-      "description": "Poder paranormal de Energia de Sobrevivendo ao Horror. Consulte efeitos e afinidade no livro."
+      "description": "Energia. Adiciona um dado aos testes, mas resultados desfavoráveis podem custar Sanidade. A afinidade reduz as chances de sofrer essa penalidade."
     }
   ],
   "trails": {
