@@ -1,6 +1,5 @@
-/* NEX — categorias e dados curtos dos rituais para conjuração.
-   Fórmulas de versões aplicam-se apenas quando o aprimoramento existe;
-   efeitos condicionais requerem consulta à ficha e à decisão do mestre. */
+/* NEX: efeitos e fórmulas numéricas verificadas; casos condicionais exigem consulta às regras.
+   Não contém descrições integrais de livros. */
 window.NEX_RITUAL_EFFECTS = {
   "amaldicoar arma|conhecimento|1": {
     "type": "Buff",
@@ -595,7 +594,10 @@ window.NEX_RITUAL_EFFECTS = {
     "categories": [
       "Dano"
     ],
-    "damageDice": ""
+    "damageDice": "3d10x10",
+    "versions": {
+      "Normal": "3d10x10"
+    }
   },
   "teletransporte|energia|4": {
     "type": "Buff",
