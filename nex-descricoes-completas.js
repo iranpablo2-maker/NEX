@@ -1,43 +1,72 @@
-/* NEX — textos resumidos originais de todos os equipamentos.
- * Executar após os arquivos de dados do catálogo e antes do inventário.
- * Não sobrescreve descrições escritas pelo jogador. */
+/* NEX — descrições originais e resumos por equipamento.
+ * Respeita textos manuais informativos e não copia o livro.
+ * Executado antes do catálogo e do editor. */
 (function(){
- 'use strict';
- const collections=[
-  window.NEX_ITEM_BOOKS||[],
-  window.NEX_BASE_WEAPONS||[],
-  window.NEX_ITEM_COMPLEMENTS?.items||[],
-  window.NEX_ITEM_VARIANTS||[],
-  window.NEX_MISSING_EQUIPMENT||[],
-  window.NEX_BASE_CURSED||[]
- ];
- const extras=window.NEX_ITEM_COMPLEMENTS?.descriptions||{};
- const normalized=s=>String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLocaleLowerCase('pt-BR');
- const map=new Map(Object.entries(extras).map(([k,v])=>[normalized(k),v]));
- const placeholder=/^(?:estatísticas de jogo conforme|dados de jogo da tabela|munição listada na tabela|equipamento listado na tabela|item amaldiçoado listado na tabela|detalhes a conferir|equipamento geral ·)/i;
- for(const items of collections)for(const item of items){
-  if(!item||!item.name)continue;
-  const custom=map.get(normalized(item.name));
-  if(custom){item.description=custom;continue;}
-  const existing=String(item.description||'').trim();
-  if(existing&&!placeholder.test(existing)){item.description=existing;continue;}
-  const title=String(item.name);
-  if(item.section==='Armas'){
-   const kind=String(item.subtitle||'arma do sistema');
-   const damage=item.stats?.find(x=>x[0]==='Dano')?.[1];
-   item.description=title+' é uma arma de '+kind.toLocaleLowerCase('pt-BR')+
-    (damage?', com dano '+damage:'')+'. Use suas estatísticas de alcance e crítico nos testes da ficha.';
-  }else if(item.section==='Munições'){
-   item.description=title+' é um recurso consumível usado como munição em equipamentos compatíveis no RPG.';
-  }else if(item.section==='Proteções'){
-   item.description=title+' é um equipamento defensivo usado para aumentar a proteção do personagem em situações de risco.';
-  }else if(item.section==='Itens Amaldiçoados'){
-   const element=item.stats?.find(x=>x[0]==='Elemento')?.[1];
-   item.description=title+' é um artefato paranormal'+(element?' associado a '+element:'')+
-    '. Consulte o mestre para os efeitos condicionais e custos específicos.';
-  }else{
-   item.description=title+' é um equipamento geral de investigação, exploração ou suporte da equipe.';
-  }
+'use strict';
+const collections=[
+ window.NEX_ITEM_BOOKS||[],window.NEX_BASE_WEAPONS||[],
+ window.NEX_ITEM_COMPLEMENTS?.items||[],window.NEX_ITEM_VARIANTS||[],
+ window.NEX_MISSING_EQUIPMENT||[],window.NEX_BASE_CURSED||[]
+];
+const norm=s=>String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLocaleLowerCase('pt-BR').trim();
+const manual=new Map([["Coronhada","Golpe improvisado usando a estrutura de uma arma de fogo como instrumento de impacto."],["Faca","Lâmina curta de uso próximo, prática para tarefas de campo e confrontos corpo a corpo."],["Punhal","Lâmina curta e pontiaguda, destinada a golpes de perfuração em distância próxima."],["Adaga","Arma branca compacta com lâmina própria para ataques rápidos e discretos."],["Martelo","Ferramenta transformada em arma de impacto, fácil de transportar e utilizar de perto."],["Bastão","Arma simples de impacto que pode ser empunhada de maneiras diferentes."],["Bastão Policial","Bastão de uso defensivo, pensado para conter ameaças em curta distância."],["Machete","Lâmina larga de utilidade prática no mato e de uso ofensivo no combate próximo."],["Facão","Ferramenta de lâmina longa que também serve como arma de corte."],["Lança","Arma de haste com ponta, que favorece golpes direcionados e mantém alguma distância do alvo."],["Cajado","Haste longa usada com as duas mãos para golpes de impacto e proteção."],["Arco","Arma de disparo que lança flechas; pode ser usada sem produzir o ruído de um disparo de arma de fogo."],["Besta","Arma de disparo com mecanismo de tensão, projetada para lançar virotes."],["Balestra","Arma de disparo com mecanismo de tensão, disparando projéteis à distância."],["Arco Composto","Arco com estrutura projetada para aproveitar melhor a força aplicada na corda."],["Pistola","Arma de fogo curta de repetição, adequada a situações de combate em alcance reduzido."],["Revólver","Arma de fogo curta com tambor, simples de portar e utilizada em confrontos próximos."],["Revólver Compacto","Versão reduzida do revólver, concebida para transporte discreto."],["Fuzil de Caça","Arma longa de disparo potente, associada a tiros precisos e distantes."],["Fuzil de Assalto","Arma longa de uso tático, voltada para confrontos em distâncias intermediárias."],["Fuzil de Precisão","Fuzil especializado em disparos controlados a longa distância."],["Submetralhadora","Arma automática compacta projetada para disparos sucessivos em distâncias mais curtas."],["Espingarda","Arma longa que utiliza cartuchos e se destaca em confrontos próximos."],["Espingarda de Cano Duplo","Espingarda de dois canos que oferece disparos com cartuchos em rápida sequência."],["Metralhadora","Arma de fogo pesada preparada para manter disparos contínuos."],["Bazuca","Armamento pesado que lança projéteis especiais; depende de sua munição correspondente."],["Lança-Chamas","Equipamento especial que projeta combustível incendiário em alcance reduzido."],["Machadinha","Pequeno machado manuseável com uma mão, útil como ferramenta e arma de corte."],["Machado","Arma de corte com cabeça pesada e cabo rígido."],["Acha","Machado de batalha de duas mãos voltado a golpes de grande impacto."],["Gadanho","Arma de haste e lâmina curva, adaptada para movimentos amplos de corte."],["Katana","Espada de lâmina curva, usada com precisão em confronto corpo a corpo."],["Espada","Lâmina longa de combate para golpes de corte e controle da distância."],["Florete","Espada fina e leve especializada em ataques de perfuração."],["Montante","Espada grande de duas mãos, que exige espaço para ser manejada."],["Marreta","Ferramenta muito pesada, usada como arma contundente improvisada."],["Maça","Arma contundente de cabeça reforçada, voltada para golpes de impacto."],["Motosserra","Ferramenta motorizada de corte que pode funcionar como armamento improvisado."],["Nunchaku","Arma formada por duas peças unidas por uma ligação flexível."],["Corrente","Corrente metálica utilizada como arma flexível de impacto."],["Baioneta","Lâmina de combate que pode ser utilizada em mãos ou associada a determinados fuzis."],["Faca Tática","Faca resistente de uso operacional, que combina utilidade em campo e combate próximo."],["Gancho de Carne","Gancho metálico adaptado como arma improvisada de perfuração."],["Picareta","Ferramenta de escavação robusta que também pode causar dano de perfuração."],["Shuriken","Projétil metálico leve projetado para ser arremessado."],["Estilingue","Dispositivo simples de disparo que utiliza tensão elástica para lançar pequenos projéteis."],["Pregador Pneumático","Ferramenta pneumática de fixação que pode servir de armamento improvisado."],["Pistola Pesada","Pistola com maior poder de fogo e estrutura mais robusta que modelos compactos."],["Flechas","Projéteis adequados a arcos e equipamentos que utilizam esse tipo de munição."],["Balas Curtas","Munição de armas de fogo curtas e outros armamentos compatíveis."],["Balas Longas","Munição associada a armas longas que exigem cartuchos desse tipo."],["Cartuchos","Munição utilizada especialmente em espingardas e armamentos compatíveis."],["Foguete","Projétil especial para armamentos lançadores compatíveis."],["Combustível","Reserva de combustível necessária ao funcionamento de equipamentos incendiários."],["Proteção Leve","Equipamento defensivo que reforça a proteção sem exigir uma armadura pesada."],["Proteção Pesada","Conjunto de proteção reforçada, projetado para absorver mais impactos e exigir maior capacidade de carga."],["Escudo","Equipamento de defesa carregado em uma mão para bloquear e desviar impactos."],["Kit de Perícia","Conjunto de ferramentas ligado a determinada especialidade, utilizado para tarefas que exigem material adequado."],["Utensílio","Objeto prático associado a uma perícia específica, como uma ferramenta especializada."],["Vestimenta","Roupa ou acessório preparado para favorecer uma determinada atividade do personagem."],["Algemas","Par de restrições para contenção e transporte de pessoas detidas."],["Arpéu","Gancho resistente usado com corda para alcançar pontos elevados ou puxar objetos."],["Bandoleira","Acessório de transporte que deixa o equipamento preso ao corpo e mais acessível."],["Binóculos","Instrumento óptico para observar objetos, construções e movimentos à distância."],["Bloqueador de Sinal","Aparelho eletrônico para interferir em comunicações dentro de sua área de atuação."],["Cicatrizante","Produto médico de uso rápido voltado ao atendimento de ferimentos."],["Corda","Material flexível e resistente para amarração, escalada e travessias."],["Equipamento de Sobrevivência","Conjunto de recursos de campo para orientação e sobrevivência em locais afastados."],["Lanterna Tática","Fonte portátil de iluminação que facilita operações noturnas e a exploração de locais escuros."],["Lanterna","Fonte portátil de luz para ambientes com pouca iluminação."],["Máscara de Gás","Proteção respiratória equipada com filtros para determinados contaminantes."],["Mochila","Bolsa de transporte para ferramentas e equipamentos; no NEX, concede dois espaços extras à capacidade de carga."],["Mochila Militar","Mochila reforçada para carregar suprimentos; no NEX, concede dois espaços extras à capacidade de carga."],["Óculos de Visão Térmica","Óculos especiais usados para visualizar diferenças de calor em ambientes e alvos."],["Óculos de Visão Noturna","Equipamento óptico para enxergar melhor em áreas com pouca iluminação."],["Óculos Escuros","Óculos destinados a reduzir o incômodo causado por luz intensa."],["Pé de Cabra","Barra metálica utilizada para fazer alavanca e mover obstáculos."],["Pistola de Dardos","Dispositivo que dispara dardos, com efeitos definidos pelo tipo de carga utilizado."],["Pistola Sinalizadora","Equipamento portátil que lança sinais luminosos para comunicação ou emergência."],["Soqueira","Peça rígida usada na mão para reforçar golpes desarmados."],["Spray de Pimenta","Dispositivo de defesa que espalha um agente irritante em curta distância."],["Taser","Dispositivo de defesa de contato ou alcance curto que utiliza descarga elétrica."],["Traje Hazmat","Roupa de proteção integral para operações em ambientes contaminados."],["Amuleto Sagrado","Objeto de devoção empregado pelo personagem como símbolo de crença ou proteção espiritual."],["Celular","Aparelho portátil para comunicação, registro de informações e acesso a recursos digitais."],["Chave de Fenda Universal","Ferramenta versátil adequada para ajustar e remover diferentes tipos de parafusos."],["Chaves","Conjunto de chaves utilizado para abrir fechaduras compatíveis."],["Documentos Falsos","Identificações e papéis fabricados para sustentar uma identidade fictícia."],["Manual Operacional","Guia de procedimentos e informações para apoiar a execução de tarefas de campo."],["Notebook","Computador portátil útil para registros, pesquisa e trabalho com arquivos digitais."],["Alarme de Movimento","Sensor que avisa quando detecta deslocamentos na área monitorada."],["Alimento Energético","Suprimento compacto destinado a fornecer energia durante atividades longas."],["Aplicador de Medicamentos","Dispositivo preparado para facilitar a administração de medicamentos."],["Braçadeira Reforçada","Acessório rígido que oferece suporte e proteção ao braço."],["Cão Adestrado","Animal treinado para acompanhar a equipe em atividades de campo."],["Coldre Saque Rápido","Suporte para arma de fogo que facilita o acesso ao equipamento."],["Equipamento de Escuta","Dispositivo utilizado para captar sons ou acompanhar uma conversa à distância."],["Estrepes (Saco)","Conjunto de pequenos obstáculos pontiagudos usados para dificultar deslocamentos."],["Faixa de Pregos","Barreira portátil com pontas metálicas para bloquear uma passagem."],["Isqueiro","Pequeno dispositivo capaz de produzir uma chama para tarefas cotidianas."],["Paraquedas","Equipamento de segurança destinado à descida aérea controlada."],["Traje de Mergulho","Vestuário próprio para trabalho em ambiente aquático e submerso."],["Traje Espacial","Conjunto de proteção para ambientes sem condições normais de respiração e pressão."],["Antibiótico","Medicamento utilizado em atendimento de determinadas infecções, segundo orientação apropriada."],["Amarras de (Elemento)","Vínculos de natureza paranormal cuja manifestação está associada ao elemento escolhido."],["Câmera de Aura Paranormal","Equipamento especializado em registrar indícios de manifestações paranormais."],["Componentes Ritualísticos de (Elemento)","Materiais organizados para a execução de rituais do elemento indicado."],["Emissor de Pulsos Paranormais","Aparelho dedicado à emissão controlada de pulsos associados a fenômenos paranormais."],["Escuta de Ruídos Paranormais","Instrumento de investigação voltado a sons ligados a manifestações incomuns."],["Medidor de Estabilidade da Membrana","Dispositivo que auxilia no acompanhamento das condições da Membrana."],["Scanner de Manifestação Paranormal de (Elemento)","Instrumento de busca que ajuda a detectar manifestações do elemento informado."],["Catalisador Ritualístico Ampliador","Componente especial relacionado à ampliação de determinados efeitos ritualísticos."],["Catalisador Ritualístico Perturbador","Catalisador empregado para interferir nas propriedades de uma manifestação ritualística."],["Catalisador Ritualístico Potencializador","Recurso que auxilia na intensificação de uma manifestação ritualística."],["Catalisador Ritualístico Prolongador","Material preparado para estender a duração de determinados efeitos."],["Pérola de Sangue","Artefato sobrenatural associado ao Sangue e ao aprimoramento momentâneo de capacidades físicas."],["Coração Pulsante","Objeto paranormal de Sangue relacionado à proteção temporária do portador."],["Coroa de Espinhos","Adorno de Sangue que altera a relação do portador com efeitos sobre a mente."],["Seringa de Transfiguração","Instrumento paranormal que modifica temporariamente a aparência de alguém."],["Frasco de Vitalidade","Recipiente de Sangue ligado à preservação e recuperação da vitalidade."],["Amarras Mortais","Correntes de Morte que impõem restrições sobrenaturais à movimentação."],["Vislumbre do Fim","Artefato de Morte associado à percepção de acontecimentos futuros e inevitabilidade."],["Casaco de Lodo","Vestuário paranormal ligado à Morte que modifica as condições de proteção do usuário."],["Anéis do Elo Mental","Conjunto de anéis ligados ao Conhecimento que estabelece conexão mental entre portadores."],["Lanterna Reveladora","Lanterna paranormal utilizada para evidenciar sinais que normalmente não são percebidos."],["Crânio Espiral","Objeto de Morte associado à distorção de movimento e passagem do tempo."],["Frasco de Lodo","Recipiente que guarda uma substância sobrenatural relacionada à Morte."],["Máscara das Pessoas nas Sombras","Máscara ligada ao paranormal, associada à alteração da presença percebida do usuário."],["Peitoral da Segunda Chance","Proteção paranormal relacionada à resistência em situações de grande perigo."],["Pergaminho da Pertinácia","Pergaminho de Conhecimento associado à preservação da determinação do usuário."],["Relógio de Arnaldo","Relógio especial que interfere na relação do usuário com o tempo."],["Talismã da Sorte","Amuleto paranormal vinculado a acontecimentos favoráveis e improbáveis."],["Bateria Reversa","Dispositivo sobrenatural de Energia associado ao funcionamento anormal de equipamentos."],["Teclado de Conexão Neural","Interface paranormal que estabelece interação incomum com sistemas eletrônicos."],["Dedo Decepado","Relíquia de Conhecimento vinculada a capacidades paranormais específicas."],["Tela do Pesadelo","Tela paranormal que manifesta imagens e percepções perturbadoras."],["Selos Paranormais","Suportes preparados para armazenar manifestações ritualísticas."],["Jaqueta de Veríssimo","Vestuário paranormal conhecido por sua associação à proteção do portador."]].map(([name,description])=>[norm(name),description]));
+const extra=new Map(Object.entries(window.NEX_ITEM_COMPLEMENTS?.descriptions||{}).map(([n,d])=>[norm(n),d]));
+const stat=(item,key)=>String((item.stats||[]).find(x=>norm(x[0])===norm(key))?.[1]||'').trim();
+const generic=/detalhes a conferir|consulte (o livro|as regras|os valores|o mestre)|equipamento listado na tabela|estatísticas de jogo conforme|dados de jogo da tabela|munição listada na tabela|item amaldiçoado listado na tabela|equipamento geral (?:de|·)|é um equipamento geral de|é um recurso consumível usado como munição|é um artefato paranormal|arma do sistema|conforme a tabela \d|listado na tabela/i;
+function narrative(item){
+ const n=String(item.name||'Item').trim(),s=String(item.section||'Geral');
+ const kind=String(item.subtitle||'').replace(/ · Livro básico| · Suplemento/gi,'');
+ const damage=stat(item,'Dano'),crit=stat(item,'Crítico'),range=stat(item,'Alcance');
+ const type=stat(item,'Tipo'),element=stat(item,'Elemento'),defense=stat(item,'Defesa');
+ const ammo=stat(item,'Munição');
+ const pieces=[];
+ if(s==='Armas'){
+   pieces.push(n+' é '+(kind?'um equipamento '+kind.toLowerCase():'uma arma')+' utilizado em confrontos conforme suas características.');
+   if(damage)pieces.push('Causa '+damage+' de dano'+(type?' do tipo '+type.toLowerCase():'')+'.');
+   if(crit)pieces.push('Seu crítico é '+crit+'.');
+   if(range&&range!=='—')pieces.push('Tem alcance '+range.toLowerCase()+'.');
+   if(ammo)pieces.push('Utiliza '+ammo.toLowerCase()+' como munição.');
+ } else if(s==='Munições'){
+   pieces.push(n+' é uma munição destinada a armamentos compatíveis.');
+   pieces.push('O tipo de arma determina como ela é utilizada e consumida.');
+ } else if(s==='Proteções'){
+   pieces.push(n+' é um equipamento defensivo, usado para proteger quem o veste ou carrega.');
+   if(defense)pieces.push('Concede '+defense+' de Defesa conforme a ficha.');
+ } else if(s==='Itens Amaldiçoados'){
+   pieces.push(n+' é um objeto paranormal'+(element?' relacionado ao elemento '+element:'')+'.');
+   pieces.push('Sua manifestação é excepcional e está associada às condições próprias desse artefato.');
+ } else if(/granada|mina|explosivo|dinamite|galão vermelho/i.test(n)){
+   pieces.push(n+' é um equipamento especial de uso tático, indicado no jogo para produzir um efeito de área.');
+   pieces.push('Os testes e efeitos dependem dos atributos informados no catálogo.');
+ } else if(/ritual|catalisador|componente|paranormal|membrana/i.test(n)){
+   pieces.push(n+' é um recurso de investigação ou suporte ligado a fenômenos paranormais.');
+   pieces.push('Sua função é auxiliar a preparação, a observação ou a realização de práticas ritualísticas, conforme o tipo de objeto.');
+ } else {
+   pieces.push(n+' é um recurso de campo destinado a apoiar atividades de exploração, investigação ou suporte.');
+   if(kind)pieces.push('Classificação: '+kind+'.');
  }
- window.NEX_ITEM_DESCRIPTIONS_READY=true;
+ const category=stat(item,'Categoria'),spaces=stat(item,'Espaços');
+ if(category)pieces.push('Categoria de equipamento: '+category+'.');
+ if(spaces)pieces.push('Ocupa '+spaces+' espaço(s) de carga.');
+ return pieces.join(' ');
+}
+function describe(item){
+ if(!item)return '';
+ const key=norm(item.name);
+ const manualText=manual.get(key);
+ if(manualText)return manualText;
+ const specific=extra.get(key);
+ if(specific&&!generic.test(specific))return specific;
+ const current=String(item.description||'').trim();
+ if(current&&!generic.test(current)&&current.length>=45&&!/^(?:arma|munição|proteção) [·:]/i.test(current))return current;
+ return narrative(item);
+}
+for(const collection of collections){
+ for(const item of collection){
+  if(!item||!item.name)continue;
+  item.description=describe(item);
+ }
+}
+window.NEX_ITEM_DESCRIBE=describe;
+window.NEX_ITEM_DESCRIPTIONS_READY=true;
 })();
