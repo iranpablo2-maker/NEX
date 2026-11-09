@@ -1321,6 +1321,29 @@ html,body{background:#000!important;background-image:none!important}
   }
 }
 </style>
+<style id="nex-wizard-nex-skills-v2066">
+#wizardScreen .w-nex-block{display:grid;gap:8px;max-width:250px;margin:4px 0 26px}
+#wizardScreen .w-nex-block label{font-size:12px;font-weight:750;color:#e6d9ee}
+#wizardScreen .w-nex-block select{background:#18161c;color:#fff;border:1px solid #6d437f;border-radius:5px;padding:10px 12px;font-size:14px}
+#wizardScreen .w-train-block{max-width:780px}
+#wizardScreen .w-train-heading{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;border-bottom:1px solid #514256;padding-bottom:10px}
+#wizardScreen .w-train-heading h3{font-size:16px;text-transform:none;letter-spacing:0;color:#f6eefb}
+#wizardScreen .w-train-heading span,#wizardScreen #wTrainOriginHint{font-size:11px;color:#b6a4bf}
+#wizardScreen #wTrainOriginHint{margin:10px 0}
+#wizardScreen .w-train-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:20px}
+#wizardScreen .w-train-row{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:43px;border-bottom:1px solid #2c2531}
+#wizardScreen .w-train-name{font-size:12px;font-weight:650;color:#eee;min-width:0}
+#wizardScreen .w-train-name small{display:block;font-size:10px;color:#c292db;font-weight:500}
+#wizardScreen .w-train-row select{width:48px;flex:none;appearance:none;-webkit-appearance:none;text-align:center;text-align-last:center;background:transparent;color:#b96be9;border:0;border-bottom:1px solid #735085;border-radius:0;padding:5px 2px;font-size:12px;font-weight:700;cursor:pointer;color-scheme:dark}
+#wizardScreen .w-train-row select option{background:#18151a;color:white}
+@media(max-width:650px){
+ #wizardScreen .wizard-progress{gap:3px}
+ #wizardScreen .wizard-progress button{font-size:10px;padding:5px 3px}
+ #wizardScreen .wizard-progress span{font-size:10px}
+ #wizardScreen .w-train-list{grid-template-columns:1fr}
+ #wizardScreen .w-train-row{min-height:41px}
+}
+</style>
 </head><body>
 <header class="topbar"><div class="topinner"><button type="button" id="n17MenuToggle" class="n17-menu-button" aria-expanded="false" aria-controls="n17Drawer" aria-label="Abrir menu">☰</button><button type="button" class="brand" id="nexBrandHome" aria-label="Voltar ao menu principal" title="Voltar ao menu principal"><span class="brand-mark" aria-hidden="true">◈</span><span><h1>NEX</h1><span class="subtitle">SISTEMA DE FICHAS · ORDEM PARANORMAL</span></span></button><div class="actions"><button class="btn sm" id="menuHeaderButton" type="button" style="display:none!important" hidden tabindex="-1" aria-hidden="true">⌂ Menu principal</button><button class="btn sm" id="newChar" type="button" style="display:none!important" hidden tabindex="-1" aria-hidden="true">＋ Nova ficha</button><button class="btn sm" id="importBtn" style="display:none!important" aria-hidden="true" tabindex="-1">Importar</button><button class="btn sm" id="exportBtn" style="display:none!important" aria-hidden="true" tabindex="-1">↓ Exportar</button><input type="file" id="fileInput" accept="application/json,.json" hidden><span id="n17SaveIndicator" hidden aria-hidden="true"></span></div></div></header>
 <nav class="nex-ref-nav" aria-label="Navegação principal">
@@ -1388,7 +1411,7 @@ html,body{background:#000!important;background-image:none!important}
 
 <section id="wizardScreen" class="hide wizard" aria-label="Criação de personagem">
   <div class="wizard-progress" aria-label="Etapas">
-    <button type="button" data-wstep="0">Atributos</button><span>—</span><button type="button" data-wstep="1">Origem</button><span>—</span><button type="button" data-wstep="2">Classe</button><span>—</span><button type="button" data-wstep="3">Toques Finais</button>
+    <button type="button" data-wstep="0">Atributos</button><span>—</span><button type="button" data-wstep="1">Origem</button><span>—</span><button type="button" data-wstep="2">Classe</button><span>—</span><button type="button" data-wstep="3">NEX e Perícias</button><span>—</span><button type="button" data-wstep="4">Toques Finais</button>
   </div>
   <div class="wizard-step" data-wpanel="0">
     <h2>1. Atributos</h2><p class="wizard-lead">Defina as aptidões do seu personagem. Todos começam com 1 ponto em cada atributo e você tem 4 pontos extras para distribuir. É possível reduzir um atributo a 0 para ganhar mais um ponto. Nenhum atributo pode ultrapassar 3 nesta etapa.</p>
@@ -1417,7 +1440,17 @@ html,body{background:#000!important;background-image:none!important}
     <div class="wizard-classes" id="wClassList"></div>
   </div>
   <div class="wizard-step" data-wpanel="3" hidden>
-    <h2>4. Toques Finais</h2><p class="wizard-lead">Agora dê vida ao personagem: escolha um nome e conte como ele pensa, de onde veio e o que espera encontrar durante suas investigações.</p>
+    <h2>4. NEX e Perícias</h2>
+    <p class="wizard-lead">Escolha o NEX inicial e os níveis de treinamento. Tudo será aplicado automaticamente à ficha criada.</p>
+    <div class="w-nex-block"><label for="wNexSelect">NEX inicial</label><select id="wNexSelect" aria-label="NEX inicial do personagem"></select></div>
+    <div class="w-train-block">
+      <div class="w-train-heading"><h3>Perícias</h3><span>Treino: 0 · 5 · 10 · 15</span></div>
+      <p id="wTrainOriginHint" class="hint"></p>
+      <div id="wTrainSkillList" class="w-train-list"></div>
+    </div>
+  </div>
+  <div class="wizard-step" data-wpanel="4" hidden>
+    <h2>5. Toques Finais</h2><p class="wizard-lead">Agora dê vida ao personagem: escolha um nome e conte como ele pensa, de onde veio e o que espera encontrar durante suas investigações.</p>
     <div class="wizard-final">
       <label>Personagem<input id="wName" placeholder="Nome do personagem" maxlength="90"></label>
       <label>Jogador<input id="wPlayer" placeholder="Nome do jogador" maxlength="90"></label>
@@ -2374,7 +2407,27 @@ $('nexHomebrewFilter')?.addEventListener('input',()=>nex12RenderHomebrew());
  }
  function wRenderOrigins(){wRenderOriginSkills();const a=wAvail(wCategory),q=$('wSearch').value.trim().toLowerCase();$('wCategories').innerHTML=W_CATEGORIES.map(([k,label])=>`<button type="button" class="${k===wCategory?'selected':''}" data-wcat="${k}">${label}</button>`).join('');$('wOriginChoice').textContent='Selecionada: '+(wDraft.origin||'Nenhuma');const filtered=a.filter(o=>o.name.toLowerCase().includes(q));$('wOriginList').innerHTML=filtered.length?filtered.map(o=>`<div class="wizard-entry"><div class="wizard-entry-head"><button class="expander" type="button" data-wexpand="${escapeHtml(o.name)}"><span>${wOpen===o.name?'⌄':'›'}</span>${escapeHtml(o.name)}</button><button type="button" class="wizard-choose ${wDraft.origin===o.name?'selected':''}" data-wchoose="${escapeHtml(o.name)}">${wDraft.origin===o.name?'✓ Selecionado':'Escolher'}</button></div>${wOpen===o.name?`<div class="wizard-entry-detail"><p><b>Perícias:</b> ${escapeHtml((o.skills||[]).join(', ')||'Definidas pela origem')}</p><p><b>Habilidade:</b> ${escapeHtml(o.ability||'A definir')}</p><p>${escapeHtml(o.description|| (o.official?'Consulte a descrição completa desta habilidade no livro.':'Habilidade criada por você.'))}</p></div>`:''}</div>`).join(''):'<div class="wizard-panel"><p>Nenhuma origem cadastrada nesta categoria. Você pode escolher outra categoria ou criar uma origem no editor Homebrew da ficha.</p></div>';}
  function wRenderClass(){$('wClassList').innerHTML=Object.entries(W_CLASS_INFO).map(([name,o])=>{const r=CLASS_RULES[name];return `<article class="wizard-class ${wDraft.class===name?'selected':''}"><h3>${name}</h3><p>${escapeHtml(o.description)}</p><p class="wizard-state">Especialidade: ${escapeHtml(o.style)}</p><div class="wizard-class-stats"><div><small>PV iniciais</small><strong>${r.pv} + Vigor</strong><small>Por NEX: +${r.pvStep} + VIG</small></div><div><small>PE iniciais</small><strong>${r.pe} + Presença</strong><small>Por NEX: +${r.peStep} + PRE</small></div><div><small>Sanidade inicial</small><strong>${r.san}</strong><small>Por NEX: +${r.sanStep}</small></div></div><button type="button" class="wizard-choose ${wDraft.class===name?'selected':''}" data-wclass="${name}">${wDraft.class===name?'✓ Selecionado':'Escolher '+name}</button></article>`}).join('');}
- function wRender(){document.querySelectorAll('[data-wpanel]').forEach(el=>el.hidden=Number(el.dataset.wpanel)!==wStep);document.querySelectorAll('[data-wstep]').forEach(el=>{const i=Number(el.dataset.wstep);el.classList.toggle('current',i===wStep);el.classList.toggle('completed',i<wStep);});$('wBack').textContent=wStep===0?'← Menu principal':'← Voltar';$('wNext').textContent=wStep===3?'Finalizar personagem ✓':'Próximo →';if(wStep===0)wRenderAttrs();if(wStep===1)wRenderOrigins();if(wStep===2)wRenderClass();window.scrollTo(0,0);}
+ function wRenderTrainSkills(){
+   const info=wOriginSkillsInfo();
+   const granted=(info.selectable?(wDraft.originSkillChoices||[]):info.skills)
+     .filter((skill,index,array)=>skill&&array.indexOf(skill)===index&&SKILL_DATA.some(([name])=>name===skill));
+   $('wNexSelect').innerHTML=LEVELS.map(level=>`<option value="${level}" ${int(wDraft.nex)===level?'selected':''}>NEX ${level}%</option>`).join('');
+   $('wTrainOriginHint').textContent=granted.length
+     ?'Perícias da origem (mínimo +5): '+granted.join(', ')+'.'
+     :'Escolha o treinamento desejado. Perícias concedidas pela origem terão no mínimo +5.';
+   $('wTrainSkillList').innerHTML=SKILL_DATA.map(([name,attr])=>{
+     const fromOrigin=granted.includes(name);
+     const previous=int(wDraft.skills?.[name]?.training);
+     const training=Math.max(fromOrigin?5:0,previous);
+     return `<div class="w-train-row">
+       <div class="w-train-name">${escapeHtml(name)}${fromOrigin?'<small>Origem +5</small>':''}</div>
+       <select data-wtrain="${escapeHtml(name)}" aria-label="Treinamento de ${escapeHtml(name)}">
+         ${[0,5,10,15].map(value=>`<option value="${value}" ${value===training?'selected':''} ${fromOrigin&&value===0?'disabled':''}>${value}</option>`).join('')}
+       </select>
+     </div>`;
+   }).join('');
+ }
+ function wRender(){document.querySelectorAll('[data-wpanel]').forEach(el=>el.hidden=Number(el.dataset.wpanel)!==wStep);document.querySelectorAll('[data-wstep]').forEach(el=>{const i=Number(el.dataset.wstep);el.classList.toggle('current',i===wStep);el.classList.toggle('completed',i<wStep);});$('wBack').textContent=wStep===0?'← Menu principal':'← Voltar';$('wNext').textContent=wStep===4?'Finalizar personagem ✓':'Próximo →';if(wStep===0)wRenderAttrs();if(wStep===1)wRenderOrigins();if(wStep===2)wRenderClass();if(wStep===3)wRenderTrainSkills();window.scrollTo(0,0);}
  function createAgent(){persist();wDraft=normalize({...defaults(),homebrew:JSON.parse(JSON.stringify(globalHomebrew())),name:'',origin:'',class:'Combatente',attributes:{agi:1,for:1,int:1,pre:1,vig:1},nex:5});wCategory='ordem';wStep=0;wOpen='';$('wSearch').value='';for(const id of ['wName','wPlayer','wAppearance','wPersonality','wHistory','wObjective'])$(id).value='';visible('wizard');wRender();}
  function wFinish(){
   const name=$('wName').value.trim();if(!name){toast('Informe o nome do personagem.');$('wName').focus();return;}
@@ -2402,10 +2455,24 @@ $('nexHomebrewFilter')?.addEventListener('input',()=>nex12RenderHomebrew());
  }
  $('wBack').addEventListener('click',()=>{if(wStep===0){showHome();return;}wStep--;wRender();});
  $('wCancel').addEventListener('click',()=>showHome());
- $('wNext').addEventListener('click',()=>{if(wStep===0&&wPoints()!==0){toast('Distribua todos os 4 pontos antes de continuar.');return;}if(wStep===1&&!wDraft.origin){toast('Escolha uma origem antes de continuar.');return;}if(wStep===3){wFinish();return;}wStep++;wRender();});
+ $('wNext').addEventListener('click',()=>{if(wStep===0&&wPoints()!==0){toast('Distribua todos os 4 pontos antes de continuar.');return;}if(wStep===1&&!wDraft.origin){toast('Escolha uma origem antes de continuar.');return;}if(wStep===1){const info=wOriginSkillsInfo(),chosen=(wDraft.originSkillChoices||[]).filter(Boolean);if(info.selectable&&(chosen.length!==2||chosen[0]===chosen[1])){toast('Escolha duas perícias diferentes para esta origem.');return;}}if(wStep===4){wFinish();return;}wStep++;wRender();});
  document.querySelectorAll('[data-wstep]').forEach(b=>b.addEventListener('click',()=>{const target=Number(b.dataset.wstep);if(target>wStep)return;wStep=target;wRender();}));
  $('wSearch').addEventListener('input',wRenderOrigins);
  for(const id of ['wSkillOne','wSkillTwo'])$(id).addEventListener('change',()=>{wDraft.originSkillChoices=[$('wSkillOne').value,$('wSkillTwo').value];});
+ $('wizardScreen').addEventListener('change',e=>{
+   const el=e.target;
+   if(el.id==='wNexSelect'){
+     const level=int(el.value);wDraft.nex=LEVELS.includes(level)?level:5;
+   }else if(el.matches('[data-wtrain]')){
+     const name=el.dataset.wtrain;
+     if(!wDraft.skills?.[name])return;
+     const info=wOriginSkillsInfo();
+     const granted=info.selectable?(wDraft.originSkillChoices||[]):info.skills;
+     const raw=int(el.value),value=[0,5,10,15].includes(raw)?raw:0;
+     wDraft.skills[name].training=Math.max(granted.includes(name)?5:0,value);
+     el.value=String(wDraft.skills[name].training);
+   }
+ });
  $('wizardScreen').addEventListener('input',e=>{
   const el=e.target;
   if(!el.matches('[data-winput]'))return;
