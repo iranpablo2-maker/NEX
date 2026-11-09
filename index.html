@@ -502,6 +502,10 @@ body{background:#101011;color:#e9e8ec;font-family:Arial,Helvetica,sans-serif;fon
 #sheetScreen .nex-class-choice{width:100%;border:1px solid #31263b;background:#17131b;color:#f3edf8;padding:7px 8px;border-radius:4px;text-align:left;font-size:13px;}
 #sheetScreen .nex-class-choice:hover,#sheetScreen .nex-class-choice[aria-selected="true"]{background:#2a1b32;border-color:#bf74ef;}
 #sheetScreen .nex-origin-search {width:100%;min-height:31px!important;padding:7px 8px!important;margin-bottom:6px;background:#0d0d12!important;color:#fff!important;border:1px solid #534559!important;border-radius:3px!important;font-size:12px!important;}
+#sheetScreen .nex-origin-categories{display:flex;flex-wrap:wrap;gap:5px;margin:0 0 9px;padding:3px 0 7px;border-bottom:1px solid #45334c}
+#sheetScreen .nex-origin-category{border:1px solid #594464;border-radius:3px;padding:6px 8px;font-size:11px;background:#24192d;color:#e7d5ed;cursor:pointer;line-height:1.3}
+#sheetScreen .nex-origin-category[aria-pressed="true"]{border-color:#b25ae6;background:#713294;color:#fff;font-weight:700}
+#sheetScreen .nex-origin-group-title{display:block!important;position:sticky!important;top:0!important;background:#24192d!important;padding:7px 9px!important;color:#e8c2ff!important;border-left:3px solid #b25ae6!important}
 #sheetScreen .nex-origin-options {max-height:min(276px,45vh);overflow:auto;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:#725278 #18131b;}
 #sheetScreen .nex-origin-choice {display:block;width:100%;padding:9px 8px;text-align:left;border:0;border-radius:3px;background:transparent;color:#f3edf5;font-size:12px;cursor:pointer;}
 #sheetScreen .nex-origin-group{padding:3px 0 7px;border-bottom:1px solid #3c3043}
@@ -3418,7 +3422,7 @@ update();
   if(!field) return;
   field.classList.add('nex-origin-field');
   const wrapper=document.createElement('div'); wrapper.id='nexOriginControl'; wrapper.className='nex-origin-control';
-  wrapper.innerHTML=`<button type="button" class="nex-origin-trigger" aria-expanded="false" aria-controls="nexOriginPopup" aria-haspopup="listbox"><span class="nex-origin-current">Escolher origem</span><span class="nex-origin-arrow" aria-hidden="true">▾</span></button><div class="nex-origin-popup" id="nexOriginPopup" hidden><input class="nex-origin-search" type="search" aria-label="Buscar origem" placeholder="Buscar origem..." autocomplete="off"><div class="nex-origin-options" role="listbox" aria-label="Origens disponíveis"></div></div>`;
+  wrapper.innerHTML=`<button type="button" class="nex-origin-trigger" aria-expanded="false" aria-controls="nexOriginPopup" aria-haspopup="listbox"><span class="nex-origin-current">Escolher origem</span><span class="nex-origin-arrow" aria-hidden="true">▾</span></button><div class="nex-origin-popup" id="nexOriginPopup" hidden><div class="nex-origin-categories" role="group" aria-label="Filtrar origens por livro"></div><input class="nex-origin-search" type="search" aria-label="Buscar origem" placeholder="Buscar origem..." autocomplete="off"><div class="nex-origin-options" role="listbox" aria-label="Origens disponíveis"></div></div>`;
   select.insertAdjacentElement('afterend',wrapper);
   select.classList.add('nex-origin-native');
   select.tabIndex=-1;
@@ -3427,31 +3431,44 @@ update();
   const popup=wrapper.querySelector('.nex-origin-popup');
   const search=wrapper.querySelector('.nex-origin-search');
   const options=wrapper.querySelector('.nex-origin-options');
+  const categoryBox=wrapper.querySelector('.nex-origin-categories');
+  let categoryFilter='all';
   const current=wrapper.querySelector('.nex-origin-current');
   const close=()=>{popup.hidden=true;trigger.setAttribute('aria-expanded','false');};
   const sync=()=>{current.textContent=select.selectedOptions[0]?.textContent?.trim()||'Escolher origem';trigger.disabled=select.disabled;};
   function render(){
     sync();
     const query=search.value.trim().toLocaleLowerCase('pt-BR');
-    options.replaceChildren();
-    const labels=['Ordem Paranormal','Sobrevivendo ao Horror','Arquivos Secretos','Homebrew','Outras origens'];
-    const groups=new Map(labels.map(label=>[label,[]]));
-    const matches=[...select.options].filter(opt=>opt.value && !opt.disabled && !opt.hidden && (!query || opt.textContent.toLocaleLowerCase('pt-BR').includes(query)));
-    if(!matches.length){const empty=document.createElement('div');empty.className='nex-origin-empty';empty.textContent='Nenhuma origem encontrada.';options.append(empty);return;}
-    for(const opt of matches){
-      const groupName=opt.closest('optgroup')?.label||'Outras origens';
-      if(!groups.has(groupName))groups.set(groupName,[]);
-      groups.get(groupName).push(opt);
+    const groupLabels=['Ordem Paranormal','Sobrevivendo ao Horror','Homebrew','Outras origens'];
+    const groups=new Map(groupLabels.map(label=>[label,[]]));
+    const all=[...select.options].filter(opt=>opt.value && !opt.disabled && !opt.hidden);
+    for(const opt of all){
+      const source=opt.closest('optgroup')?.label||'Outras origens';
+      if(!groups.has(source))groups.set(source,[]);
+      groups.get(source).push(opt);
     }
+    const choices=[['all','Todas'],...groupLabels.filter(name=>groups.get(name)?.length).map(name=>[name,name==='Ordem Paranormal'?'Livro básico':name])];
+    categoryBox.replaceChildren();
+    for(const [key,label] of choices){
+      const btn=document.createElement('button');
+      btn.type='button';btn.className='nex-origin-category';
+      btn.textContent=label;btn.dataset.originGroup=key;
+      btn.setAttribute('aria-pressed',String(categoryFilter===key));
+      btn.addEventListener('click',()=>{categoryFilter=key;render();});
+      categoryBox.append(btn);
+    }
+    options.replaceChildren();
+    let found=0;
     for(const [label,entries] of groups){
-      if(!entries.length)continue;
-      const section=document.createElement('section');
-      section.className='nex-origin-group';
-      const heading=document.createElement('div');
-      heading.className='nex-origin-group-title';
-      heading.textContent=label+' · '+entries.length;
+      if(categoryFilter!=='all' && categoryFilter!==label)continue;
+      const matches=entries.filter(opt=>!query||opt.textContent.toLocaleLowerCase('pt-BR').includes(query));
+      if(!matches.length)continue;
+      found+=matches.length;
+      const section=document.createElement('section');section.className='nex-origin-group';
+      const heading=document.createElement('div');heading.className='nex-origin-group-title';
+      heading.textContent=label+' · '+matches.length;
       section.append(heading);
-      for(const opt of entries){
+      for(const opt of matches){
         const b=document.createElement('button');b.type='button';b.className='nex-origin-choice';b.role='option';
         b.textContent=opt.textContent.trim();b.dataset.value=opt.value;
         b.setAttribute('aria-selected',String(select.value===opt.value));
@@ -3465,11 +3482,12 @@ update();
       }
       options.append(section);
     }
+    if(!found){const empty=document.createElement('div');empty.className='nex-origin-empty';empty.textContent='Nenhuma origem encontrada nesta categoria.';options.append(empty);}
   }
   trigger.addEventListener('click',()=>{
     if(trigger.disabled)return;
     if(!popup.hidden){close();return;}
-    search.value='';render();popup.hidden=false;trigger.setAttribute('aria-expanded','true');
+    search.value='';categoryFilter='all';render();popup.hidden=false;trigger.setAttribute('aria-expanded','true');
     search.focus();
   });
   search.addEventListener('input',render);
