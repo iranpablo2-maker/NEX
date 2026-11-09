@@ -1,17 +1,72 @@
-/* NEX: fórmulas numéricas concisas e categorias de efeito.
-   Os dados de versões são usados no painel Conjurar; condições especiais devem ser conferidas no livro.
-   A biblioteca não contém imagens nem transcrições de descrições oficiais. */
+/* NEX — Classificação explícita dos 101 rituais oficiais.
+   Categoria principal: Dano, Cura, Suporte (tipo interno Buff) ou Dano + Cura.
+   categories também registra usos alternativos dos rituais mistos.
+   Dados faltantes não são inventados: casos condicionais exigem consulta ao ritual. */
 window.NEX_RITUAL_EFFECTS = {
-  "decadencia|morte|1": {
-    "type": "Dano",
-    "damageDice": "2d8+2",
+  "amaldicoar arma|conhecimento|1": {
+    "type": "Buff",
+    "categories": [
+      "Suporte"
+    ]
+  },
+  "compreensao paranormal|conhecimento|1": {
+    "type": "Buff",
+    "categories": [
+      "Suporte"
+    ]
+  },
+  "enfeiticar|conhecimento|1": {
+    "type": "Buff",
+    "categories": [
+      "Suporte"
+    ]
+  },
+  "perturbacao|conhecimento|1": {
+    "type": "Buff",
+    "categories": [
+      "Suporte",
+      "Dano"
+    ]
+  },
+  "ouvir os sussurros|conhecimento|1": {
+    "type": "Buff",
+    "categories": [
+      "Suporte"
+    ]
+  },
+  "tecer ilusao|conhecimento|1": {
+    "type": "Buff",
+    "categories": [
+      "Suporte",
+      "Dano"
+    ]
+  },
+  "terceiro olho|conhecimento|1": {
+    "type": "Buff",
+    "categories": [
+      "Suporte"
+    ]
+  },
+  "amaldicoar arma|energia|1": {
+    "type": "Buff",
+    "categories": [
+      "Suporte"
+    ]
+  },
+  "amaldicoar tecnologia|energia|1": {
+    "type": "Buff",
+    "categories": [
+      "Suporte"
+    ]
+  },
+  "coincidencia forcada|energia|1": {
+    "type": "Buff",
+    "damageDice": "",
     "healDice": "",
     "healFromDamage": false,
-    "versions": {
-      "Normal": "2d8+2",
-      "Discente": "3d8+3",
-      "Verdadeiro": "8d8+8"
-    }
+    "categories": [
+      "Suporte"
+    ]
   },
   "eletrocussao|energia|1": {
     "type": "Dano",
@@ -22,56 +77,178 @@ window.NEX_RITUAL_EFFECTS = {
       "Normal": "3d6",
       "Discente": "6d6",
       "Verdadeiro": "8d6"
-    }
+    },
+    "categories": [
+      "Dano"
+    ]
+  },
+  "embaralhar|energia|1": {
+    "type": "Buff",
+    "damageDice": "",
+    "healDice": "",
+    "healFromDamage": false,
+    "categories": [
+      "Suporte"
+    ]
+  },
+  "luz|energia|1": {
+    "type": "Buff",
+    "categories": [
+      "Suporte"
+    ]
+  },
+  "polarizacao caotica|energia|1": {
+    "type": "Buff",
+    "categories": [
+      "Suporte",
+      "Dano"
+    ]
+  },
+  "amaldicoar arma|morte|1": {
+    "type": "Buff",
+    "categories": [
+      "Suporte"
+    ]
   },
   "cicatrizacao|morte|1": {
     "type": "Cura",
     "damageDice": "",
     "healDice": "3d8+3",
-    "healFromDamage": false
+    "healFromDamage": false,
+    "categories": [
+      "Cura"
+    ]
   },
-  "hemofagia|sangue|2": {
-    "type": "Dano + Cura",
-    "damageDice": "6d6",
+  "consumir manancial|morte|1": {
+    "type": "Buff",
+    "damageDice": "",
     "healDice": "",
-    "healFromDamage": true,
-    "versions": {
-      "Normal": "6d6",
-      "Discente": "6d6",
-      "Verdadeiro": "4d6"
-    }
+    "healFromDamage": false,
+    "categories": [
+      "Suporte"
+    ]
   },
-  "descarnar|sangue|2": {
+  "decadencia|morte|1": {
     "type": "Dano",
-    "damageDice": "6d8",
+    "damageDice": "2d8+2",
     "healDice": "",
     "healFromDamage": false,
     "versions": {
-      "Normal": "6d8",
-      "Discente": "10d8",
-      "Verdadeiro": "4d8"
-    }
+      "Normal": "2d8+2",
+      "Discente": "3d8+3",
+      "Verdadeiro": "8d8+8"
+    },
+    "categories": [
+      "Dano"
+    ]
   },
-  "ferver sangue|sangue|3": {
-    "type": "Dano",
-    "damageDice": "4d8",
+  "definhar|morte|1": {
+    "type": "Buff",
+    "damageDice": "",
     "healDice": "",
     "healFromDamage": false,
-    "versions": {
-      "Normal": "4d8",
-      "Verdadeiro": "4d8"
-    }
+    "categories": [
+      "Suporte"
+    ]
   },
-  "flagelo de sangue|sangue|2": {
-    "type": "Dano",
-    "damageDice": "10d6",
+  "espirais da perdicao|morte|1": {
+    "type": "Buff",
+    "damageDice": "",
     "healDice": "",
     "healFromDamage": false,
-    "versions": {
-      "Normal": "10d6",
-      "Discente": "10d6",
-      "Verdadeiro": "10d6"
-    }
+    "categories": [
+      "Suporte"
+    ]
+  },
+  "nuvem de cinzas|morte|1": {
+    "type": "Buff",
+    "categories": [
+      "Suporte"
+    ]
+  },
+  "amaldicoar arma|sangue|1": {
+    "type": "Buff",
+    "categories": [
+      "Suporte"
+    ]
+  },
+  "arma atroz|sangue|1": {
+    "type": "Buff",
+    "damageDice": "",
+    "healDice": "",
+    "healFromDamage": false,
+    "categories": [
+      "Suporte"
+    ]
+  },
+  "armadura de sangue|sangue|1": {
+    "type": "Buff",
+    "damageDice": "",
+    "healDice": "",
+    "healFromDamage": false,
+    "categories": [
+      "Suporte"
+    ]
+  },
+  "corpo adaptado|sangue|1": {
+    "type": "Buff",
+    "damageDice": "",
+    "healDice": "",
+    "healFromDamage": false,
+    "categories": [
+      "Suporte"
+    ]
+  },
+  "distorcer aparencia|sangue|1": {
+    "type": "Buff",
+    "categories": [
+      "Suporte"
+    ]
+  },
+  "fortalecimento sensorial|sangue|1": {
+    "type": "Buff",
+    "damageDice": "",
+    "healDice": "",
+    "healFromDamage": false,
+    "categories": [
+      "Suporte"
+    ]
+  },
+  "odio incontrolavel|sangue|1": {
+    "type": "Buff",
+    "damageDice": "",
+    "healDice": "",
+    "healFromDamage": false,
+    "categories": [
+      "Suporte"
+    ]
+  },
+  "cineraria|medo|1": {
+    "type": "Buff",
+    "categories": [
+      "Suporte"
+    ]
+  },
+  "aprimorar mente|conhecimento|2": {
+    "type": "Buff",
+    "damageDice": "",
+    "healDice": "",
+    "healFromDamage": false,
+    "categories": [
+      "Suporte"
+    ]
+  },
+  "deteccao de ameacas|conhecimento|2": {
+    "type": "Buff",
+    "categories": [
+      "Suporte"
+    ]
+  },
+  "esconder dos olhos|conhecimento|2": {
+    "type": "Buff",
+    "categories": [
+      "Suporte"
+    ]
   },
   "invadir mente|conhecimento|2": {
     "type": "Dano",
@@ -82,18 +259,61 @@ window.NEX_RITUAL_EFFECTS = {
       "Normal": "6d6",
       "Discente": "10d6",
       "Verdadeiro": "10d6"
-    }
+    },
+    "categories": [
+      "Dano",
+      "Suporte"
+    ]
   },
-  "miasma entropico|morte|2": {
+  "localizacao|conhecimento|2": {
+    "type": "Buff",
+    "categories": [
+      "Suporte"
+    ]
+  },
+  "chamas do caos|energia|2": {
+    "type": "Buff",
+    "categories": [
+      "Suporte",
+      "Dano"
+    ]
+  },
+  "contencao fantasmagorica|energia|2": {
+    "type": "Buff",
+    "categories": [
+      "Suporte"
+    ]
+  },
+  "dissonancia acustica|energia|2": {
+    "type": "Buff",
+    "categories": [
+      "Suporte"
+    ]
+  },
+  "sopro do caos|energia|2": {
+    "type": "Buff",
+    "categories": [
+      "Suporte"
+    ]
+  },
+  "tela de ruido|energia|2": {
+    "type": "Buff",
+    "categories": [
+      "Suporte"
+    ]
+  },
+  "desacelerar impacto|morte|2": {
+    "type": "Buff",
+    "categories": [
+      "Suporte"
+    ]
+  },
+  "eco espiral|morte|2": {
     "type": "Dano",
-    "damageDice": "4d8",
-    "healDice": "",
-    "healFromDamage": false,
-    "versions": {
-      "Normal": "4d8",
-      "Discente": "6d8",
-      "Verdadeiro": "4d8"
-    }
+    "categories": [
+      "Dano"
+    ],
+    "damageDice": ""
   },
   "paradoxo|morte|2": {
     "type": "Dano",
@@ -104,7 +324,162 @@ window.NEX_RITUAL_EFFECTS = {
       "Normal": "6d6",
       "Discente": "4d6",
       "Verdadeiro": "13d6"
-    }
+    },
+    "categories": [
+      "Dano"
+    ]
+  },
+  "miasma entropico|morte|2": {
+    "type": "Dano",
+    "damageDice": "4d8",
+    "healDice": "",
+    "healFromDamage": false,
+    "versions": {
+      "Normal": "4d8",
+      "Discente": "6d8",
+      "Verdadeiro": "4d8"
+    },
+    "categories": [
+      "Dano"
+    ]
+  },
+  "velocidade mortal|morte|2": {
+    "type": "Buff",
+    "damageDice": "",
+    "healDice": "",
+    "healFromDamage": false,
+    "categories": [
+      "Suporte"
+    ]
+  },
+  "aprimorar fisico|sangue|2": {
+    "type": "Buff",
+    "damageDice": "",
+    "healDice": "",
+    "healFromDamage": false,
+    "categories": [
+      "Suporte"
+    ]
+  },
+  "descarnar|sangue|2": {
+    "type": "Dano",
+    "damageDice": "6d8",
+    "healDice": "",
+    "healFromDamage": false,
+    "versions": {
+      "Normal": "6d8",
+      "Discente": "10d8",
+      "Verdadeiro": "4d8"
+    },
+    "categories": [
+      "Dano"
+    ]
+  },
+  "flagelo de sangue|sangue|2": {
+    "type": "Dano",
+    "damageDice": "10d6",
+    "healDice": "",
+    "healFromDamage": false,
+    "versions": {
+      "Normal": "10d6",
+      "Discente": "10d6",
+      "Verdadeiro": "10d6"
+    },
+    "categories": [
+      "Dano"
+    ]
+  },
+  "hemofagia|sangue|2": {
+    "type": "Dano + Cura",
+    "damageDice": "6d6",
+    "healDice": "",
+    "healFromDamage": true,
+    "versions": {
+      "Normal": "6d6",
+      "Discente": "6d6",
+      "Verdadeiro": "4d6"
+    },
+    "categories": [
+      "Dano",
+      "Cura"
+    ]
+  },
+  "transfusao vital|sangue|2": {
+    "type": "Cura",
+    "damageDice": "",
+    "healDice": "",
+    "healFromDamage": false,
+    "categories": [
+      "Cura"
+    ]
+  },
+  "protecao contra rituais|medo|2": {
+    "type": "Buff",
+    "categories": [
+      "Suporte"
+    ]
+  },
+  "rejeitar nevoa|medo|2": {
+    "type": "Buff",
+    "categories": [
+      "Suporte"
+    ]
+  },
+  "alterar memoria|conhecimento|3": {
+    "type": "Buff",
+    "categories": [
+      "Suporte"
+    ]
+  },
+  "contato paranormal|conhecimento|3": {
+    "type": "Buff",
+    "categories": [
+      "Suporte"
+    ]
+  },
+  "mergulho mental|conhecimento|3": {
+    "type": "Buff",
+    "categories": [
+      "Suporte"
+    ]
+  },
+  "videncia|conhecimento|3": {
+    "type": "Buff",
+    "categories": [
+      "Suporte"
+    ]
+  },
+  "convocacao instantanea|energia|3": {
+    "type": "Buff",
+    "categories": [
+      "Suporte"
+    ]
+  },
+  "salto fantasma|energia|3": {
+    "type": "Buff",
+    "categories": [
+      "Suporte"
+    ]
+  },
+  "transfigurar agua|energia|3": {
+    "type": "Buff",
+    "categories": [
+      "Suporte",
+      "Dano"
+    ]
+  },
+  "transfigurar terra|energia|3": {
+    "type": "Buff",
+    "categories": [
+      "Suporte",
+      "Dano"
+    ]
+  },
+  "ancora temporal|morte|3": {
+    "type": "Buff",
+    "categories": [
+      "Suporte"
+    ]
   },
   "poeira da podridao|morte|3": {
     "type": "Dano",
@@ -114,33 +489,50 @@ window.NEX_RITUAL_EFFECTS = {
     "versions": {
       "Normal": "4d8",
       "Verdadeiro": "4d8+16"
-    }
+    },
+    "categories": [
+      "Dano"
+    ]
   },
-  "inexistir|conhecimento|4": {
+  "tentaculos de lodo|morte|3": {
     "type": "Dano",
-    "damageDice": "10d12+10",
-    "healDice": "",
-    "healFromDamage": false,
-    "versions": {
-      "Normal": "10d12+10",
-      "Discente": "15d12+15",
-      "Verdadeiro": "20d12+20"
-    }
+    "categories": [
+      "Dano",
+      "Suporte"
+    ]
   },
-  "espirais da perdicao|morte|1": {
+  "zerar entropia|morte|3": {
     "type": "Buff",
-    "damageDice": "",
-    "healDice": "",
-    "healFromDamage": false
+    "categories": [
+      "Suporte"
+    ]
   },
-  "lamina do medo|medo|4": {
+  "ferver sangue|sangue|3": {
     "type": "Dano",
-    "damageDice": "10d8",
+    "damageDice": "4d8",
     "healDice": "",
     "healFromDamage": false,
     "versions": {
-      "Normal": "10d8"
-    }
+      "Normal": "4d8",
+      "Verdadeiro": "4d8"
+    },
+    "categories": [
+      "Dano",
+      "Suporte"
+    ]
+  },
+  "forma monstruosa|sangue|3": {
+    "type": "Buff",
+    "categories": [
+      "Suporte"
+    ]
+  },
+  "purgatorio|sangue|3": {
+    "type": "Buff",
+    "categories": [
+      "Suporte",
+      "Dano"
+    ]
   },
   "vomitar pestes|sangue|3": {
     "type": "Dano",
@@ -151,7 +543,143 @@ window.NEX_RITUAL_EFFECTS = {
       "Normal": "5d12",
       "Discente": "5d12",
       "Verdadeiro": "5d12"
-    }
+    },
+    "categories": [
+      "Dano"
+    ]
+  },
+  "dissipar ritual|medo|3": {
+    "type": "Buff",
+    "categories": [
+      "Suporte"
+    ]
+  },
+  "controle mental|conhecimento|4": {
+    "type": "Buff",
+    "categories": [
+      "Suporte"
+    ]
+  },
+  "inexistir|conhecimento|4": {
+    "type": "Dano",
+    "damageDice": "10d12+10",
+    "healDice": "",
+    "healFromDamage": false,
+    "versions": {
+      "Normal": "10d12+10",
+      "Discente": "15d12+15",
+      "Verdadeiro": "20d12+20"
+    },
+    "categories": [
+      "Dano"
+    ]
+  },
+  "possessao|conhecimento|4": {
+    "type": "Buff",
+    "categories": [
+      "Suporte"
+    ]
+  },
+  "alterar destino|energia|4": {
+    "type": "Buff",
+    "categories": [
+      "Suporte"
+    ]
+  },
+  "deflagracao de energia|energia|4": {
+    "type": "Dano",
+    "categories": [
+      "Dano"
+    ],
+    "damageDice": ""
+  },
+  "teletransporte|energia|4": {
+    "type": "Buff",
+    "categories": [
+      "Suporte"
+    ]
+  },
+  "convocar o algoz|morte|4": {
+    "type": "Dano",
+    "categories": [
+      "Dano",
+      "Suporte"
+    ],
+    "damageDice": ""
+  },
+  "distorcao temporal|morte|4": {
+    "type": "Buff",
+    "categories": [
+      "Suporte"
+    ]
+  },
+  "fim inevitavel|morte|4": {
+    "type": "Dano",
+    "categories": [
+      "Dano"
+    ],
+    "damageDice": ""
+  },
+  "capturar o coracao|sangue|4": {
+    "type": "Buff",
+    "categories": [
+      "Suporte"
+    ]
+  },
+  "involucro de carne|sangue|4": {
+    "type": "Buff",
+    "categories": [
+      "Suporte"
+    ]
+  },
+  "vinculo de sangue|sangue|4": {
+    "type": "Buff",
+    "categories": [
+      "Suporte",
+      "Dano"
+    ]
+  },
+  "canalizar o medo|medo|4": {
+    "type": "Buff",
+    "categories": [
+      "Suporte"
+    ]
+  },
+  "conhecendo o medo|medo|4": {
+    "type": "Dano",
+    "damageDice": "10d6",
+    "healDice": "",
+    "healFromDamage": false,
+    "versions": {
+      "Normal": "10d6"
+    },
+    "categories": [
+      "Dano"
+    ]
+  },
+  "lamina do medo|medo|4": {
+    "type": "Dano",
+    "damageDice": "10d8",
+    "healDice": "",
+    "healFromDamage": false,
+    "versions": {
+      "Normal": "10d8"
+    },
+    "categories": [
+      "Dano"
+    ]
+  },
+  "medo tangivel|medo|4": {
+    "type": "Buff",
+    "categories": [
+      "Suporte"
+    ]
+  },
+  "presenca do medo|medo|4": {
+    "type": "Dano",
+    "categories": [
+      "Dano"
+    ]
   },
   "esfolar|sangue|1": {
     "type": "Dano",
@@ -162,7 +690,58 @@ window.NEX_RITUAL_EFFECTS = {
       "Normal": "3d4+3",
       "Discente": "5d4+5",
       "Verdadeiro": "10d4+10"
-    }
+    },
+    "categories": [
+      "Dano"
+    ]
+  },
+  "sede de adrenalina|sangue|2": {
+    "type": "Buff",
+    "damageDice": "",
+    "healDice": "",
+    "healFromDamage": false,
+    "categories": [
+      "Suporte"
+    ]
+  },
+  "odor da cacada|sangue|3": {
+    "type": "Buff",
+    "damageDice": "",
+    "healDice": "",
+    "healFromDamage": false,
+    "categories": [
+      "Suporte"
+    ]
+  },
+  "martirio de sangue|sangue|4": {
+    "type": "Buff",
+    "categories": [
+      "Suporte"
+    ]
+  },
+  "apagar as luzes|morte|1": {
+    "type": "Buff",
+    "categories": [
+      "Suporte"
+    ]
+  },
+  "lingua morta|morte|2": {
+    "type": "Buff",
+    "categories": [
+      "Suporte"
+    ]
+  },
+  "fedor putrido|morte|3": {
+    "type": "Buff",
+    "categories": [
+      "Suporte"
+    ]
+  },
+  "singularidade temporal|morte|4": {
+    "type": "Buff",
+    "categories": [
+      "Suporte"
+    ]
   },
   "desfazer sinapses|conhecimento|1": {
     "type": "Dano",
@@ -173,117 +752,57 @@ window.NEX_RITUAL_EFFECTS = {
       "Normal": "2d6+2",
       "Discente": "3d6+3",
       "Verdadeiro": "8d6+8"
-    }
+    },
+    "categories": [
+      "Dano"
+    ]
   },
-  "conhecendo o medo|medo|4": {
-    "type": "Dano",
-    "damageDice": "10d6",
-    "healDice": "",
-    "healFromDamage": false,
-    "versions": {
-      "Normal": "10d6"
-    }
-  },
-  "armadura de sangue|sangue|1": {
+  "aurora da verdade|conhecimento|2": {
     "type": "Buff",
-    "damageDice": "",
-    "healDice": "",
-    "healFromDamage": false
+    "categories": [
+      "Suporte"
+    ]
   },
-  "aprimorar fisico|sangue|2": {
+  "relembrar fragmento|conhecimento|3": {
     "type": "Buff",
-    "damageDice": "",
-    "healDice": "",
-    "healFromDamage": false
+    "categories": [
+      "Suporte"
+    ]
   },
-  "aprimorar mente|conhecimento|2": {
+  "pronunciar sigilo|conhecimento|4": {
     "type": "Buff",
-    "damageDice": "",
-    "healDice": "",
-    "healFromDamage": false
-  },
-  "arma atroz|sangue|1": {
-    "type": "Buff",
-    "damageDice": "",
-    "healDice": "",
-    "healFromDamage": false
-  },
-  "coincidencia forcada|energia|1": {
-    "type": "Buff",
-    "damageDice": "",
-    "healDice": "",
-    "healFromDamage": false
-  },
-  "definhar|morte|1": {
-    "type": "Buff",
-    "damageDice": "",
-    "healDice": "",
-    "healFromDamage": false
-  },
-  "embaralhar|energia|1": {
-    "type": "Buff",
-    "damageDice": "",
-    "healDice": "",
-    "healFromDamage": false
-  },
-  "fortalecimento sensorial|sangue|1": {
-    "type": "Buff",
-    "damageDice": "",
-    "healDice": "",
-    "healFromDamage": false
-  },
-  "odio incontrolavel|sangue|1": {
-    "type": "Buff",
-    "damageDice": "",
-    "healDice": "",
-    "healFromDamage": false
-  },
-  "velocidade mortal|morte|2": {
-    "type": "Buff",
-    "damageDice": "",
-    "healDice": "",
-    "healFromDamage": false
-  },
-  "corpo adaptado|sangue|1": {
-    "type": "Buff",
-    "damageDice": "",
-    "healDice": "",
-    "healFromDamage": false
-  },
-  "consumir manancial|morte|1": {
-    "type": "Buff",
-    "damageDice": "",
-    "healDice": "",
-    "healFromDamage": false
-  },
-  "transfusao vital|sangue|2": {
-    "type": "Cura",
-    "damageDice": "",
-    "healDice": "",
-    "healFromDamage": false
-  },
-  "sede de adrenalina|sangue|2": {
-    "type": "Buff",
-    "damageDice": "",
-    "healDice": "",
-    "healFromDamage": false
-  },
-  "odor da cacada|sangue|3": {
-    "type": "Buff",
-    "damageDice": "",
-    "healDice": "",
-    "healFromDamage": false
+    "categories": [
+      "Suporte"
+    ]
   },
   "overclock|energia|1": {
     "type": "Buff",
     "damageDice": "",
     "healDice": "",
-    "healFromDamage": false
+    "healFromDamage": false,
+    "categories": [
+      "Suporte"
+    ]
   },
   "tremeluzir|energia|2": {
     "type": "Buff",
     "damageDice": "",
     "healDice": "",
-    "healFromDamage": false
+    "healFromDamage": false,
+    "categories": [
+      "Suporte"
+    ]
+  },
+  "mutar|energia|3": {
+    "type": "Buff",
+    "categories": [
+      "Suporte"
+    ]
+  },
+  "milagre ionizante|energia|3": {
+    "type": "Cura",
+    "categories": [
+      "Cura"
+    ]
   }
 };
