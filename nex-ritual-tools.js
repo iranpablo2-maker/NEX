@@ -216,7 +216,13 @@ function renderBody(){
  if(view==='historico'){
   const arr=kit().history;
   el.innerHTML='<div class="tk-row"><span class="tk-sub">Últimas 200 ações desta ficha.</span><button type="button" class="tk-button" data-tk-clear="1" '+(!arr.length?'disabled':'')+'>Limpar histórico</button></div>'+
-   (arr.length?'<div class="tk-cards">'+arr.map(h=>'<article class="tk-card"><div class="tk-row"><strong>'+esc(h.type)+'</strong><small>'+esc(new Date(h.at).toLocaleString('pt-BR'))+'</small></div><p>'+esc(h.name||h.note||'')+(h.version?' · '+esc(h.version):'')+'</p><p class="tk-sub">'+(Number(h.cost)>0?'-'+esc(h.cost)+' PE'+(h.peAfter!==undefined?' · Restantes: '+esc(h.peAfter)+' PE':''):'Sem gasto de PE')+'</p></article>').join('')+'</div>':'<p class="tk-sub">O histórico será preenchido quando você conjurar ou sustentar rituais.</p>');
+   (arr.length?'<div class="tk-cards">'+arr.map(h=>'<article class="tk-card"><div class="tk-row"><strong>'+esc(h.type)+'</strong><small>'+esc(new Date(h.at).toLocaleString('pt-BR'))+'</small></div><p>'+esc(h.name||h.note||'')+(h.version?' · '+esc(h.version):'')+'</p><p class="tk-sub">'+(Number(h.cost)>0?'-'+esc(h.cost)+' PE'+(h.peAfter!==undefined?' · Restantes: '+esc(h.peAfter)+' PE':''):'Sem gasto de PE')+'</p>'+
+   (h.to?'<p>TO: '+esc(h.to.total)+' / DT '+esc(h.to.dt)+' · '+(h.to.passed?'Sucesso':'Falha')+'</p>':h.type==='Conjuração'?'<p>TO: dispensado (Medo)</p>':'')+
+   (h.effect?.damage?'<p>Dano: '+esc(h.effect.damage.total)+' ('+esc(h.effect.damage.expression)+')</p>':'')+
+   (h.effect?.healing?'<p>Cura: '+esc(h.effect.healing.total)+' ('+esc(h.effect.healing.expression)+')</p>':'')+
+   (h.effect?.type==='Buff'?'<p>Buff/Suporte: '+esc(h.effect.buffText||'Efeito registrado')+'</p>':'')+
+   ((h.sanLoss||h.permanentSanLoss)?'<p>Sanidade: -'+esc(h.sanLoss||0)+' atual · -'+esc(h.permanentSanLoss||0)+' permanente</p>':'')+
+   '</article>').join('')+'</div>':'<p class="tk-sub">O histórico será preenchido quando você conjurar ou sustentar rituais.</p>');
   return;
  }
  if(view==='combos'){
@@ -332,7 +338,10 @@ function preview(){
  const submit=modal.querySelector('#tkCastForm button[type="submit"]');
  if(submit){submit.disabled=turnBlocked||peBlocked||circleBlocked||missingDice||missingCost;submit.title=submit.disabled?'Corrija os dados ou os limites de conjuração':'';}
 }
-function rollSimpleDicePattern(expr){return /^\d{1,2}d\d{1,3}(?:[+-]\d{1,3})?$/.test(String(expr||'').trim().replace(/\s+/g,'').toLowerCase());}
+function rollSimpleDicePattern(expr){
+ const matched=/^(\d{1,2})d(\d{1,3})(?:[+-]\d{1,3})?$/.exec(String(expr||'').trim().replace(/\s+/g,'').toLowerCase());
+ return Boolean(matched&&Number(matched[1])>=1&&Number(matched[1])<=50&&Number(matched[2])>=2&&Number(matched[2])<=1000);
+}
 function castingResultHTML(m,check,sanity,effect){
  const kind=effect.type==='Buff'?'TO + Buff':effect.type==='Cura'?'TO + Cura':effect.type==='Dano + Cura'?'TO + Dano + Cura':'TO + Dano';
  const rows=[];
@@ -362,11 +371,15 @@ function confirmCast(){
  if(total>pe()){toast('PE insuficientes: necessários '+total+', disponíveis '+pe()+'.');return;}
  if(total>availableTurnPE()){toast('Limite de PE por turno excedido. Restam '+availableTurnPE()+' PE neste turno.');return;}
  const fields=formEffect();
- const effect=computeEffect(fields);
- if(!effect){toast('Dados inválidos: informe uma expressão como 2d6+2.');return;}
+ const needsDamage=['Dano','Dano + Cura'].includes(fields.type);
+ const needsHeal=['Cura','Dano + Cura'].includes(fields.type)&&!Boolean(fields.type==='Dano + Cura'&&fields.healFromDamage);
+ if((needsDamage&&!rollSimpleDicePattern(fields.damageDice))||(needsHeal&&!rollSimpleDicePattern(fields.healDice))){
+  toast('Dados inválidos: informe uma expressão como 2d6+2.');return;
+ }
  if(!confirm('Conjurar '+r.name+' ('+v+') por '+total+' PE e rolar o TO?'))return;
- // A confirmação acontece antes de qualquer gasto; todas as rolagens e recursos são registrados uma única vez.
+ // A confirmação acontece antes do gasto e das rolagens.
  castCommitted=true;
+ const effect=computeEffect(fields);
  const isFear=norm(r.element)==='medo';
  const toBonus=Math.max(-99,Math.min(99,Math.floor(Number(modal.querySelector('#tkTOBonus')?.value)||0)));
  const check=isFear?null:occultismRoll(total,toBonus);
