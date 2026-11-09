@@ -2987,7 +2987,7 @@ $('nexHomebrewFilter')?.addEventListener('input',()=>nex12RenderHomebrew());
    if($id('n16Credit'))$id('n16Credit').value=t.credit;
  }
  function itemTier(item){
-   const raw=String(item?.nexInfo?.tier??(String(item?.detail||'').match(/(?:^| · )Categoria:\\s*([^·]+)/i)?.[1])??'0').trim().toUpperCase();
+   const raw=String(item?.nexInfo?.tier??(String(item?.detail||'').match(/(?:^| · )Categoria:\s*([^·]+)/i)?.[1])??'0').trim().toUpperCase();
    const alias={'0':0,'I':1,'II':2,'III':3,'IV':4,'1':1,'2':2,'3':3,'4':4};
    return Object.prototype.hasOwnProperty.call(alias,raw)?alias[raw]:0;
  }
@@ -3004,7 +3004,8 @@ $('nexHomebrewFilter')?.addEventListener('input',()=>nex12RenderHomebrew());
    canAddItem(item){
      const tier=itemTier(item),qty=Math.max(0,Math.trunc(Number(item.quantity??1)||0));
      const candidateCapacity=capacity()+(!(state.items||[]).some(isBackpack)&&isBackpack(item)?2:0);
-     const loadAllowed=Math.max(0,Number(item.spaces??1)||0)*qty+spacesUsed()<=candidateCapacity+1e-9;
+     const addedLoad=Math.max(0,Number(item.spaces??1)||0)*qty;
+     const loadAllowed=addedLoad===0||addedLoad+spacesUsed()<=candidateCapacity+1e-9;
      return loadAllowed && (tier===0||(tier<=4&&categoryUsed(tier)+qty<=prestigeTier().limits[tier-1]));
    },
    canUpdate(item,spaces,qty,newTier=itemTier(item),newName=item.name){
@@ -3015,7 +3016,7 @@ $('nexHomebrewFilter')?.addEventListener('input',()=>nex12RenderHomebrew());
      const otherBackpack=list.some(i=>String(i.id)!==String(item.id)&&isBackpack(i));
      const afterBackpack=otherBackpack||(/^(mochila|mochila militar)$/i.test(String(newName).trim())&&Number(qty)>0);
      const capacityAfter=capacity()+(afterBackpack&&!currentlyHasBackpack?2:0)-(!afterBackpack&&currentlyHasBackpack?2:0);
-     const loadAllowed=newLoad<=oldLoad+1e-9 || spacesUsed()-oldLoad+newLoad<=capacityAfter+1e-9;
+     const loadAllowed=newLoad===0||newLoad<=oldLoad+1e-9 || spacesUsed()-oldLoad+newLoad<=capacityAfter+1e-9;
      const n=Number(newTier);
      if(n<0||n>4||!Number.isInteger(n))return false;
      const currentQty=categoryUsed(n),oldQty=itemTier(item)===n?Math.max(0,Math.trunc(Number(item.quantity)||0)):0;
