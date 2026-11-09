@@ -1700,7 +1700,7 @@ function nex55AdvancedOrigins(){
    if(!Array.isArray(entries))return [];
    return entries.filter(item=>item?.type==='origem' && typeof item.name==='string' && item.name.trim())
      .map(item=>({
-       name:item.name.trim(),skills:Array.isArray(item.skills)?[...new Set(item.skills.filter(skill=>SKILL_DATA.some(([name])=>name===skill)))].slice(0,2):[],
+       name:item.name.trim(),skills:Array.isArray(item.skills)?[...new Set(item.skills.filter(skill=>SKILL_DATA.some(([name])=>name===skill)))]:[],
        ability:item.name.trim(),description:String(item.description||''),official:false,pvStep:0,damage:0
      }));
  }catch(error){console.warn('NEX: origens avançadas indisponíveis',error);return [];}
@@ -2394,20 +2394,50 @@ $('nexHomebrewFilter')?.addEventListener('input',()=>nex12RenderHomebrew());
  function wAvail(category){if(category==='ordem')return NEX12_ORIGINS.map(x=>({name:x[0],skills:[x[1],x[2]].filter(Boolean),ability:x[3],description:NEX12_ORIGIN_DESCRIPTIONS[x[0]]||'',official:true}));if(category==='homebrew'){const legacy=(wDraft.homebrew||[]).map(x=>({name:x.name,skills:x.skills||[],ability:x.ability||'Habilidade personalizada',description:x.description||'',official:false}));return [...legacy,...nex55AdvancedOrigins().filter(x=>!legacy.some(o=>o.name===x.name)&&!NEX12_ORIGIN_MAP[x.name])];}return (NEX_EXTRA_ORIGINS[category]||[]);}
  function wOriginSkillsInfo(){
    const origin=[...wAvail('ordem'),...wAvail('homebrew'),...wAvail('horror'),...wAvail('arquivos')].find(o=>o.name===wDraft.origin);
-   const skills=(origin?.skills||[]).filter(s=>SKILL_DATA.some(([name])=>name===s));
-   return {skills,selectable:!!origin && skills.length===0};
+   const skills=[...new Set((origin?.skills||[]).filter(s=>SKILL_DATA.some(([name])=>name===s)))];
+   return {skills,selectable:!!origin&&skills.length!==2};
+ }
+ function wOriginChosenSkills(){
+   const info=wOriginSkillsInfo(),selected=wDraft.originSkillChoices||[];
+   if(info.skills.length===2)return info.skills.slice();
+   if(info.skills.length===1)return [info.skills[0],selected[1]||''];
+   return [selected[0]||'',selected[1]||''];
+ }
+ function wOriginChoicesValid(){
+   const info=wOriginSkillsInfo(),selected=wOriginChosenSkills();
+   if(selected.length!==2||!selected[0]||!selected[1]||selected[0]===selected[1])return false;
+   const allowed=info.skills.length>2?info.skills:SKILL_DATA.map(([name])=>name);
+   return selected.every(name=>allowed.includes(name))&&(info.skills.length!==1||selected[0]===info.skills[0]);
  }
  function wRenderOriginSkills(){
    const panel=$('wSkillsPanel'),info=wOriginSkillsInfo();panel.hidden=!wDraft.origin;
    if(!wDraft.origin)return;
-   $('wFixedSkills').innerHTML=info.skills.map(s=>`<span class="wizard-skill-pill">✓ ${escapeHtml(s)} +5</span>`).join('');
+   const selected=wOriginChosenSkills();
+   $('wFixedSkills').innerHTML=info.skills.length===2
+      ?info.skills.map(name=>`<span class="wizard-skill-pill">✓ ${escapeHtml(name)} +5</span>`).join('')
+      :info.skills.length===1?`<span class="wizard-skill-pill">✓ ${escapeHtml(info.skills[0])} +5</span>`:'';
    $('wSelectableSkills').hidden=!info.selectable;
-   $('wSkillsExplanation').textContent=info.selectable?'Esta origem não define perícias fixas. Selecione duas perícias com aprovação do mestre.':'Estas perícias são concedidas pela origem e serão treinadas automaticamente.';
+   $('wSkillsExplanation').textContent=info.skills.length>2
+      ?'Esta origem oferece '+info.skills.length+' perícias. Escolha duas diferentes entre as opções abaixo (+5 em cada uma).'
+      :info.skills.length===1
+      ?'A primeira perícia é fixa. Escolha uma segunda perícia diferente para receber +5.'
+      :info.skills.length===0
+      ?'Esta origem não define perícias fixas. Escolha duas perícias diferentes com aprovação do mestre.'
+      :'Estas duas perícias são concedidas automaticamente pela origem.';
    if(info.selectable){
-     const opts='<option value="">Selecione uma perícia</option>'+SKILL_DATA.map(([name])=>`<option value="${escapeHtml(name)}">${escapeHtml(name)}</option>`).join('');
-     for(const id of ['wSkillOne','wSkillTwo']){$(id).innerHTML=opts;}
-     $('wSkillOne').value=wDraft.originSkillChoices?.[0]||'';
-     $('wSkillTwo').value=wDraft.originSkillChoices?.[1]||'';
+      const names=info.skills.length>2?info.skills:SKILL_DATA.map(([name])=>name);
+      const opts='<option value="">Selecione uma perícia</option>'+names.map(name=>`<option value="${escapeHtml(name)}">${escapeHtml(name)}</option>`).join('');
+      for(const id of ['wSkillOne','wSkillTwo'])$(id).innerHTML=opts;
+      if(info.skills.length===1){
+         $('wSkillOne').value=info.skills[0];
+         $('wSkillOne').disabled=true;
+      }else{
+         $('wSkillOne').disabled=false;
+         $('wSkillOne').value=selected[0]||'';
+      }
+      $('wSkillTwo').value=selected[1]||'';
+   }else{
+      $('wSkillOne').disabled=false;
    }
  }
  function wPoints(){return 9-Object.values(wDraft.attributes).reduce((a,x)=>a+int(x),0);}
@@ -2421,12 +2451,10 @@ $('nexHomebrewFilter')?.addEventListener('input',()=>nex12RenderHomebrew());
   if(artSource && target)target.style.backgroundImage=getComputedStyle(artSource).backgroundImage;
   $('wBudget').textContent=`${wPoints()} ponto(s) disponíveis`;
  }
- function wRenderOrigins(){wRenderOriginSkills();const a=wAvail(wCategory),q=$('wSearch').value.trim().toLowerCase();$('wCategories').innerHTML=W_CATEGORIES.map(([k,label])=>`<button type="button" class="${k===wCategory?'selected':''}" data-wcat="${k}">${label}</button>`).join('');$('wOriginChoice').textContent='Selecionada: '+(wDraft.origin||'Nenhuma');const filtered=a.filter(o=>o.name.toLowerCase().includes(q));$('wOriginList').innerHTML=filtered.length?filtered.map(o=>`<div class="wizard-entry"><div class="wizard-entry-head"><button class="expander" type="button" data-wexpand="${escapeHtml(o.name)}"><span>${wOpen===o.name?'⌄':'›'}</span>${escapeHtml(o.name)}</button><button type="button" class="wizard-choose ${wDraft.origin===o.name?'selected':''}" data-wchoose="${escapeHtml(o.name)}">${wDraft.origin===o.name?'✓ Selecionado':'Escolher'}</button></div>${wOpen===o.name?`<div class="wizard-entry-detail"><p><b>Perícias:</b> ${escapeHtml((o.skills||[]).join(', ')||'Definidas pela origem')}</p><p><b>Habilidade:</b> ${escapeHtml(o.ability||'A definir')}</p><p>${escapeHtml(o.description|| (o.official?'Consulte a descrição completa desta habilidade no livro.':'Habilidade criada por você.'))}</p></div>`:''}</div>`).join(''):'<div class="wizard-panel"><p>Nenhuma origem cadastrada nesta categoria. Você pode escolher outra categoria ou criar uma origem no editor Homebrew da ficha.</p></div>';}
+ function wRenderOrigins(){wRenderOriginSkills();const a=wAvail(wCategory),q=$('wSearch').value.trim().toLowerCase();$('wCategories').innerHTML=W_CATEGORIES.map(([k,label])=>`<button type="button" class="${k===wCategory?'selected':''}" data-wcat="${k}">${label}</button>`).join('');$('wOriginChoice').textContent='Selecionada: '+(wDraft.origin||'Nenhuma');const filtered=a.filter(o=>o.name.toLowerCase().includes(q));$('wOriginList').innerHTML=filtered.length?filtered.map(o=>`<div class="wizard-entry"><div class="wizard-entry-head"><button class="expander" type="button" data-wexpand="${escapeHtml(o.name)}"><span>${wOpen===o.name?'⌄':'›'}</span>${escapeHtml(o.name)}</button><button type="button" class="wizard-choose ${wDraft.origin===o.name?'selected':''}" data-wchoose="${escapeHtml(o.name)}">${wDraft.origin===o.name?'✓ Selecionado':'Escolher'}</button></div>${wOpen===o.name?`<div class="wizard-entry-detail"><p><b>Perícias:</b> ${escapeHtml((o.skills||[]).join(', ')||'A definir com o mestre')}</p><p><b>Habilidade:</b> ${escapeHtml(o.ability||'A definir')}</p><p>${escapeHtml(o.description|| (o.official?'Consulte a descrição completa desta habilidade no livro.':'Habilidade criada por você.'))}</p></div>`:''}</div>`).join(''):'<div class="wizard-panel"><p>Nenhuma origem cadastrada nesta categoria. Você pode escolher outra categoria ou criar uma origem no editor Homebrew da ficha.</p></div>';}
  function wRenderClass(){$('wClassList').innerHTML=Object.entries(W_CLASS_INFO).map(([name,o])=>{const r=CLASS_RULES[name];return `<article class="wizard-class ${wDraft.class===name?'selected':''}"><h3>${name}</h3><p>${escapeHtml(o.description)}</p><p class="wizard-state">Especialidade: ${escapeHtml(o.style)}</p><div class="wizard-class-stats"><div><small>PV iniciais</small><strong>${r.pv} + Vigor</strong><small>Por NEX: +${r.pvStep} + VIG</small></div><div><small>PE iniciais</small><strong>${r.pe} + Presença</strong><small>Por NEX: +${r.peStep} + PRE</small></div><div><small>Sanidade inicial</small><strong>${r.san}</strong><small>Por NEX: +${r.sanStep}</small></div></div><button type="button" class="wizard-choose ${wDraft.class===name?'selected':''}" data-wclass="${name}">${wDraft.class===name?'✓ Selecionado':'Escolher '+name}</button></article>`}).join('');}
  function wCreationOriginSkills(){
-   const info=wOriginSkillsInfo();
-   return [...new Set((info.selectable?(wDraft.originSkillChoices||[]):info.skills)
-       .filter(name=>name&&SKILL_DATA.some(([skill])=>skill===name)))];
+   return wOriginChoicesValid()?wOriginChosenSkills():[];
  }
  function wCreationRequired(){
    if(wDraft.class==='Ocultista')return ['Ocultismo','Vontade'];
@@ -2506,10 +2534,8 @@ $('nexHomebrewFilter')?.addEventListener('input',()=>nex12RenderHomebrew());
   const catalog=[...wAvail('ordem'),...wAvail('homebrew'),...wAvail('horror'),...wAvail('arquivos')];
   const origin=catalog.find(o=>o.name===wDraft.origin);
   if(!origin){toast('Origem não cadastrada. Confira sua escolha.');return;}
-  const fixed=(origin.skills||[]).filter(skill=>!!wDraft.skills[skill]);
-  const selectable=fixed.length===0;
-  const chosen=selectable?(wDraft.originSkillChoices||[]).filter(Boolean):fixed;
-  if(selectable && (chosen.length!==2 || chosen[0]===chosen[1])){toast('Escolha duas perícias diferentes para esta origem.');wStep=1;wRender();return;}
+  if(!wOriginChoicesValid()){toast('Escolha duas perícias válidas e diferentes para esta origem.');wStep=1;wRender();return;}
+  const chosen=wOriginChosenSkills();
   wDraft.originSkillGrants=chosen.slice();wDraft.originSkillBaseline={};
   for(const skill of chosen){if(wDraft.skills[skill]){wDraft.originSkillBaseline[skill]=int(wDraft.skills[skill].training);wDraft.skills[skill].training=Math.max(5,int(wDraft.skills[skill].training));}}
   for(const skill of rules.required){if(wDraft.skills[skill])wDraft.skills[skill].training=Math.max(5,int(wDraft.skills[skill].training));}
@@ -2525,10 +2551,10 @@ $('nexHomebrewFilter')?.addEventListener('input',()=>nex12RenderHomebrew());
  }
  $('wBack').addEventListener('click',()=>{if(wStep===0){showHome();return;}wStep--;wRender();});
  $('wCancel').addEventListener('click',()=>showHome());
- $('wNext').addEventListener('click',()=>{if(wStep===0&&wPoints()!==0){toast('Distribua todos os 4 pontos antes de continuar.');return;}if(wStep===1&&!wDraft.origin){toast('Escolha uma origem antes de continuar.');return;}if(wStep===1){const info=wOriginSkillsInfo(),chosen=(wDraft.originSkillChoices||[]).filter(Boolean);if(info.selectable&&(chosen.length!==2||chosen[0]===chosen[1])){toast('Escolha duas perícias diferentes para esta origem.');return;}}if(wStep===3){const rule=wCreationRules(true);if(rule.issue){toast(rule.issue);wRenderTrainSkills();return;}}if(wStep===4){wFinish();return;}wStep++;wRender();});
+ $('wNext').addEventListener('click',()=>{if(wStep===0&&wPoints()!==0){toast('Distribua todos os 4 pontos antes de continuar.');return;}if(wStep===1&&!wDraft.origin){toast('Escolha uma origem antes de continuar.');return;}if(wStep===1&&!wOriginChoicesValid()){toast('Escolha duas perícias válidas e diferentes para esta origem.');return;}if(wStep===3){const rule=wCreationRules(true);if(rule.issue){toast(rule.issue);wRenderTrainSkills();return;}}if(wStep===4){wFinish();return;}wStep++;wRender();});
  document.querySelectorAll('[data-wstep]').forEach(b=>b.addEventListener('click',()=>{const target=Number(b.dataset.wstep);if(target>wStep)return;wStep=target;wRender();}));
  $('wSearch').addEventListener('input',wRenderOrigins);
- for(const id of ['wSkillOne','wSkillTwo'])$(id).addEventListener('change',()=>{wDraft.originSkillChoices=[$('wSkillOne').value,$('wSkillTwo').value];});
+ for(const id of ['wSkillOne','wSkillTwo'])$(id).addEventListener('change',()=>{wDraft.originSkillChoices=[$('wSkillOne').value,$('wSkillTwo').value];wRenderOriginSkills();});
  $('wizardScreen').addEventListener('change',e=>{
    const el=e.target;
    if(!wDraft)return;
