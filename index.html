@@ -2981,6 +2981,7 @@ $('nexHomebrewFilter')?.addEventListener('input',()=>nex12RenderHomebrew());
    $id('n16Capacity').textContent=String(capacity());
    const show=list.filter(i=>(category==='Todos'||itemCategory(i)===category) && (String(i.name||'')+' '+String(i.detail||'')).toLocaleLowerCase('pt-BR').includes(inventoryFilter));
    $id('inventoryList').innerHTML=show.length?show.map(i=>`<details class="nexv16-entry" data-item-id="${escape(i.id)}"><summary><span class="nexv16-name">${escape(i.name||'Item')}<span class="nexv16-item-meta" style="display:block">${escape(itemCategory(i))} · Quantidade: ${Math.max(0,int(i.quantity,1))} · Espaços: ${int(i.spaces,1)}</span></span><span class="hint">⌄</span></summary><div class="nexv16-detail"><div class="nexv16-item-fields"><label>Nome<input data-item-field="name" value="${escape(i.name||'')}"></label><label>Categoria<select data-item-field="category">${['Arma','Munição','Proteção','Geral','Item Amaldiçoado'].map(c=>`<option ${itemCategory(i)===c?'selected':''}>${c}</option>`).join('')}</select></label><label>Quantidade<input type="number" min="0" data-item-field="quantity" value="${Math.max(0,int(i.quantity,1))}"></label><label>Espaços por item<input type="number" min="-20" max="100" data-item-field="spaces" value="${int(i.spaces,1)}"></label><label style="grid-column:1/-1">Detalhes<input data-item-field="detail" value="${escape(i.detail||'')}"></label></div><div class="actions"><button class="btn sm" type="button" data-delete-item="${escape(i.id)}">Excluir item</button></div></div></details>`).join(''):'<div class="nexv16-empty">Nenhum item nesta categoria.</div>';
+   window.NEX_ITEM_EDITOR?.enhance?.();
  }
  // Replace visual renderers without changing the original business logic.
  renderSkills=drawSkills;
@@ -3671,6 +3672,7 @@ const PARANORMAL=[
 <script src="nex-municoes-adicionais.js?v=2082"></script>
 <script src="nex-itens-amaldicoados-basico.js?v=2083"></script>
 <script src="nex-item-catalog.js?v=2083"></script>
+<script src="nex-item-editor.js?v=2084"></script>
 <!-- Sincronização em nuvem desativada a pedido do proprietário: mantém salvamento local. -->
 
 </body></html>
