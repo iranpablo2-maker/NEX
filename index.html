@@ -1603,6 +1603,37 @@ html,body{background:#000!important;background-image:none!important}
 @media(max-width:650px){
  #sheetScreen .nexv16-skill-head,#sheetScreen .nexv16-skill-row{min-width:390px!important;}
 }
+</style>
+<style id="nex-wallpaper-red-theme-fix">
+/* Fundo personalizável é renderizado por trás de todo o conteúdo da ficha. */
+#sheetScreen{position:relative!important;isolation:isolate!important;--nex-custom-bg:none;--nex-custom-dim:.35}
+#sheetScreen.nex-has-wallpaper::before{
+ content:""!important;display:block!important;position:fixed!important;inset:0!important;
+ background-image:linear-gradient(rgba(0,0,0,var(--nex-custom-dim)),rgba(0,0,0,var(--nex-custom-dim))),var(--nex-custom-bg)!important;
+ background-size:cover!important;background-position:center!important;background-repeat:no-repeat!important;
+ z-index:-1!important;pointer-events:none!important;
+}
+#sheetScreen.nex-has-wallpaper{background-color:transparent!important}
+#sheetScreen.nex-has-wallpaper .shell{background:transparent!important}
+#sheetScreen.nex-has-wallpaper .panel{background-color:rgba(12,10,11,.88)!important}
+#sheetScreen.nex-has-wallpaper .left .panel{background:transparent!important}
+/* Tema vermelho substituindo os detalhes roxos mais visíveis. */
+:root{--accent:#c93440!important;--violet:#a92230!important}
+#sheetScreen .btn.primary,#sheetScreen .nexv16-filter button.selected{background:#a62530!important;border-color:#d84b56!important}
+#sheetScreen .nex-attr-skill-picker{color:#ff8189!important}
+#sheetScreen .nex-attr-skill-picker:hover,#sheetScreen .nex-attr-skill-picker:focus-visible{background:#301115!important;outline-color:#df4a55!important}
+#nexSheetSettingsButton:hover,#nexSheetSettingsButton[aria-expanded="true"]{background:#381317!important;color:#ff8d95!important}
+#nexSheetSettingsPanel{border-color:#aa3944!important;background:#181214!important}
+#nexSheetSettingsPanel h3{color:#ffb8bd!important}
+#nexSheetSettingsPanel input[type="url"],#nexSheetSettingsPanel select{border-color:#874048!important}
+#nexSheetSettingsPanel input[type="range"]{accent-color:#c82d3b!important}
+#nexSheetSettingsPanel .nex-wallpaper-preview{border-color:#873b44!important}
+#nexSheetSettingsPanel .nex-wallpaper-buttons button{background:#7d2029!important;border-color:#b84651!important}
+#nexSheetSettingsPanel .nex-wallpaper-buttons button:hover{background:#a52b37!important}
+#nexAttributeRollPopup,#nex25RollPopup{border-color:#bf3947!important}
+#nexAttributeRollPopup .nex-attr-popup-symbol{background:#b72838!important}
+#sheetScreen .nex-attributes-pencil:hover{color:#ff737e!important}
+.nex-ref-nav button:hover,.nex-ref-nav button:focus-visible{border-bottom-color:#c53240!important;background:#301116!important}
 </style></head><body>
 <script src="nex-sobrevivendo-ao-horror.js?v=2072"></script>
 <header class="topbar"><div class="topinner"><button type="button" id="n17MenuToggle" class="n17-menu-button" aria-expanded="false" aria-controls="n17Drawer" aria-label="Abrir menu">☰</button><button type="button" class="brand" id="nexBrandHome" aria-label="Voltar ao menu principal" title="Voltar ao menu principal"><span class="brand-mark" aria-hidden="true">◈</span><span><h1>NEX</h1><span class="subtitle">SISTEMA DE FICHAS · ORDEM PARANORMAL</span></span></button><div class="actions"><button class="btn sm" id="menuHeaderButton" type="button" style="display:none!important" hidden tabindex="-1" aria-hidden="true">⌂ Menu principal</button><button class="btn sm" id="newChar" type="button" style="display:none!important" hidden tabindex="-1" aria-hidden="true">＋ Nova ficha</button><button class="btn sm" id="importBtn" style="display:none!important" aria-hidden="true" tabindex="-1">Importar</button><button class="btn sm" id="exportBtn" style="display:none!important" aria-hidden="true" tabindex="-1">↓ Exportar</button><input type="file" id="fileInput" accept="application/json,.json" hidden><span id="n17SaveIndicator" hidden aria-hidden="true"></span></div></div></header>
@@ -4209,7 +4240,18 @@ const PARANORMAL=[
  const $=id=>document.getElementById(id);
  const panel=$('nexSheetSettingsPanel'),button=$('nexSheetSettingsButton');
  if(!panel||!button)return;
- function settings(){return state.sheetWallpaper&&typeof state.sheetWallpaper==='object'?state.sheetWallpaper:{}}
+ 
+ const wallpaperKey=()=>{let id='default';try{id=localStorage.getItem('nex_menu_current_v13')||'default'}catch(e){}return 'nex_fundo_ficha_'+id.replace(/[^a-zA-Z0-9_-]/g,'')};
+ function backupSettings(){try{const data=JSON.parse(localStorage.getItem(wallpaperKey())||'null');return data&&typeof data==='object'?data:null}catch(e){return null}}
+ function settings(){
+  const own=state.sheetWallpaper&&typeof state.sheetWallpaper==='object'?state.sheetWallpaper:{};
+  const backup=backupSettings();
+  return backup&&backup.image&&!own.image?{...own,...backup}:own;
+ }
+ function saveWallpaperBackup(config){
+  try{localStorage.setItem(wallpaperKey(),JSON.stringify(config));return true}
+  catch(e){console.warn('Fundo não pôde ser salvo no armazenamento separado',e);return false}
+ }
  function safeUrl(url){if(typeof url!=='string')return '';if(url.startsWith('data:image/jpeg;base64,')||url.startsWith('data:image/png;base64,')||url.startsWith('data:image/webp;base64,'))return url;try{const u=new URL(url);return ['http:','https:'].includes(u.protocol)?u.href:''}catch(e){return ''}}
  function imageCSS(url){return 'url("'+url.replace(/["\\\n\r]/g,'')+'")'}
  function apply(){
@@ -4219,6 +4261,9 @@ const PARANORMAL=[
   box.style.backgroundSize=url?(cfg.fit==='contain'?'contain':'cover'):'';
   box.style.backgroundPosition=cfg.position==='top'?'center top':cfg.position==='bottom'?'center bottom':'center center';
   box.style.backgroundAttachment='fixed';
+  box.style.setProperty('--nex-custom-bg',url?imageCSS(url):'none');
+  box.style.setProperty('--nex-custom-dim',String(dim/100));
+  box.classList.toggle('nex-has-wallpaper',!!url);
   const preview=$('nexWallpaperPreview');if(preview)preview.style.backgroundImage=url?imageCSS(url):'none';
   $('nexWallpaperDim').value=dim;
   $('nexWallpaperDimValue').textContent=dim+'%';
@@ -4229,9 +4274,12 @@ const PARANORMAL=[
  window.NEXApplySheetBackground=apply;
  apply();
  function patch(changes){
-  state.sheetWallpaper={...settings(),...changes};
+  const next={...settings(),...changes};
+  state.sheetWallpaper=next;
+  const backedUp=saveWallpaperBackup(next);
   apply();
   save();
+  if(!backedUp)toast('O fundo foi aplicado, mas não pôde ser salvo. Libere espaço no navegador.');
  }
  function open(on){panel.hidden=!on;button.setAttribute('aria-expanded',String(on));if(on)apply()}
  button.addEventListener('click',()=>open(panel.hidden));
@@ -4247,14 +4295,14 @@ const PARANORMAL=[
    const img=new Image();const blobUrl=URL.createObjectURL(file);
    try{
     await new Promise((resolve,reject)=>{img.onload=resolve;img.onerror=reject;img.src=blobUrl});
-    const ratio=Math.min(1,1600/Math.max(img.naturalWidth,img.naturalHeight));
+    const ratio=Math.min(1,1100/Math.max(img.naturalWidth,img.naturalHeight));
     const canvas=document.createElement('canvas');
     canvas.width=Math.max(1,Math.round(img.naturalWidth*ratio));
     canvas.height=Math.max(1,Math.round(img.naturalHeight*ratio));
     canvas.getContext('2d').drawImage(img,0,0,canvas.width,canvas.height);
-    let data=canvas.toDataURL('image/jpeg',.78);
-    if(data.length>1800000)data=canvas.toDataURL('image/jpeg',.55);
-    if(data.length>2200000){toast('Não foi possível reduzir o tamanho da imagem.');return;}
+    let data=canvas.toDataURL('image/jpeg',.65);
+    if(data.length>700000)data=canvas.toDataURL('image/jpeg',.43);
+    if(data.length>1000000){toast('Imagem muito grande após a redução. Escolha outra imagem.');return;}
     patch({image:data});
     toast('Fundo personalizado aplicado à ficha.');
    }finally{URL.revokeObjectURL(blobUrl);}
@@ -4269,7 +4317,7 @@ const PARANORMAL=[
  $('nexWallpaperDim').addEventListener('input',e=>patch({dim:Number(e.target.value)}));
  $('nexWallpaperFit').addEventListener('change',e=>patch({fit:e.target.value}));
  $('nexWallpaperPosition').addEventListener('change',e=>patch({position:e.target.value}));
- $('nexWallpaperReset').addEventListener('click',()=>{state.sheetWallpaper={};apply();save();toast('Fundo original restaurado.');});
+ $('nexWallpaperReset').addEventListener('click',()=>{state.sheetWallpaper={};try{localStorage.removeItem(wallpaperKey())}catch(e){}apply();save();toast('Fundo original restaurado.');});
 })();
 </script>
 </body></html>
