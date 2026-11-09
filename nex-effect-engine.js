@@ -113,7 +113,8 @@
     '<label>Valor do bônus<input id="nex58Value" type="number" min="-99" max="99" value="2" required></label>' +
     '<label>Funcionamento<select id="nex58Mode"><option value="passive">Passivo (sempre)</option><option value="toggle">Ativar / desativar</option><option value="equip">Equipar / desequipar</option></select></label>' +
     '<label id="nex58CostLabel">Custo para ativar (PE)<input id="nex58Cost" type="number" min="0" max="50" value="0"></label>' +
-    '</div><button type="submit" class="btn primary sm" style="margin-top:10px">Adicionar efeito</button></form>' +
+    '</div><button type="submit" class="btn primary sm" style="margin-top:10px">Adicionar efeito</button> ' +
+    '<button id="nex58Reset" type="button" class="btn sm" style="margin-top:10px">Encerrar efeitos temporários</button></form>' +
     '<div id="nex58Status" role="status" aria-live="polite"></div><div id="nex58List"></div>';
   by('n16AbilityList')?.insertAdjacentElement('afterend',panel);
   by('nex58Skill').innerHTML=skillNames.map(name=>'<option value="'+esc(name)+'">'+esc(name)+'</option>').join('');
@@ -180,13 +181,20 @@
     const kind=by('nex58Kind').value;
     const skill=by('nex58Skill').value;
     const value=number(by('nex58Value').value);
-    const mode=source.startsWith('inv:')||record.equip?'equip':by('nex58Mode').value;
+    const requestedMode=by('nex58Mode').value;
+    const mode=source.startsWith('inv:')||record.equip?'equip':(requestedMode==='equip'?'toggle':requestedMode);
     const cost=mode==='toggle'?number(by('nex58Cost').value,0,50):0;
     const name=source==='manual:'?by('nex58Name').value.trim():record.name.replace(/^(Homebrew|Item|Poder|Habilidade): /,'');
     if(!name||!Object.hasOwn(kinds,kind)||(kind==='skill'&&!skillNames.includes(skill))||!value||entries().length>=100)return;
     state.nex58Effects=[...entries(),{id:'fx_'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,8),source,name,kind,skill:kind==='skill'?skill:'',value,mode,active:false,cost}];
     renderStats();save();
     by('nex58Form').reset();resetSourceOptions();
+  });
+  by('nex58Reset').addEventListener('click',()=>{
+    const active=entries().filter(fx=>fx.mode==='toggle'&&fx.active===true);
+    if(!active.length)return;
+    for(const fx of active)fx.active=false;
+    renderStats();save();
   });
   panel.addEventListener('click',event=>{
     const button=event.target.closest('[data-nex58-toggle],[data-nex58-remove]');
