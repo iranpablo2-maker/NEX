@@ -1545,7 +1545,7 @@ function nex12Ensure(){
  if(!state.trailByClass||typeof state.trailByClass!=='object')state.trailByClass={};
 }
 nex12Ensure();
-function nex12Orig(){return (state.homebrew||[]).find(x=>x.name===state.origin)||NEX12_ORIGIN_MAP[state.origin]||nex55AdvancedOrigins().find(x=>x.name===state.origin)||(state.origin==='Ex-Militar'?NEX12_HB_DEFAULT:null);}
+function nex12Orig(){const linked=(state.nex51Items||[]).find(x=>x?.type==='origem'&&x.name===state.origin);const linkedOrigin=linked?{name:linked.name,skills:linked.skills||[],ability:linked.name,description:linked.description||'',official:false,pvStep:0,damage:0}:null;return (state.homebrew||[]).find(x=>x.name===state.origin)||NEX12_ORIGIN_MAP[state.origin]||linkedOrigin||nex55AdvancedOrigins().find(x=>x.name===state.origin)||(state.origin==='Ex-Militar'?NEX12_HB_DEFAULT:null);}
 const NEX_ORIGIN_CATEGORIES={ordem:'Ordem Paranormal',horror:'Sobrevivendo ao Horror',arquivos:'Arquivos Secretos',homebrew:'Homebrew'};
 // Apenas o livro base e as origens criadas pelo usuário estão cadastrados nesta versão.
 // Suplementos permanecem vazios até que seus dados sejam adicionados e conferidos.
