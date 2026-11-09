@@ -51,6 +51,8 @@ style.textContent=[
 '#nexItemModal .nex-item-search-wrap{padding:14px 16px 9px}',
 '#nexItemModal #nexItemModalSearch{width:100%;border:0;border-radius:3px;background:#101010;color:#fff;height:42px;padding:8px 13px;font-size:16px}',
 '#nexItemModal .nex-item-results{overflow-y:auto;flex:1;min-height:180px;padding:6px 16px 18px;overscroll-behavior:contain}',
+'#nexItemModal .nex-item-footer{border-top:1px solid #3c3a40;padding:9px 16px;display:flex;justify-content:flex-end}',
+'#nexItemModal .nex-item-custom{padding:8px 13px;border:1px solid #8744b1;background:transparent;color:#ddd;border-radius:3px;cursor:pointer}',
 '#nexItemModal .nex-item-card{margin-bottom:8px;background:#161616;border-radius:4px;overflow:hidden}',
 '#nexItemModal .nex-item-card-header{display:grid;grid-template-columns:38px minmax(0,1fr) 45px;gap:10px;align-items:center;padding:9px 10px;min-height:67px}',
 '#nexItemModal .nex-item-expand{border:0;background:none;color:#ad42f9;font-size:23px;cursor:pointer}',
@@ -71,9 +73,11 @@ modal.innerHTML='<section class="nex-item-dialog" role="dialog" aria-modal="true
 '<div class="nex-item-top"><h2 id="nexItemModalTitle">Adicionar Itens</h2><button class="nex-item-close" type="button" aria-label="Fechar">×</button></div>'+
 '<div class="nex-item-tabs" role="tablist">'+sections.map((c,i)=>'<button type="button" class="nex-item-tab" role="tab" data-cat="'+escape(c)+'" aria-selected="'+String(i===0)+'">'+escape(c)+'</button>').join('')+'</div>'+
 '<div class="nex-item-search-wrap"><input type="search" id="nexItemModalSearch" placeholder="⌕  Buscar" aria-label="Buscar itens"></div>'+
-'<div id="nexItemModalResults" class="nex-item-results" aria-live="polite"></div></section>';
+'<div id="nexItemModalResults" class="nex-item-results" aria-live="polite"></div>'+ 
+'<div class="nex-item-footer"><button type="button" class="nex-item-custom">+ Criar item personalizado</button></div></section>';
 document.body.appendChild(modal);
 const search=by('nexItemModalSearch'),results=by('nexItemModalResults');
+const originalAddItem=by('addItem')?.onclick;
 let selected='Armas',lastFocus=null;
 function render(){
  modal.querySelectorAll('[data-cat]').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.cat===selected)));
@@ -102,6 +106,7 @@ modal.addEventListener('click',event=>{
  if(event.target===modal){close();return;}
  const button=event.target.closest('button');if(!button)return;
  if(button.classList.contains('nex-item-close')){close();return;}
+ if(button.classList.contains('nex-item-custom')){close();if(typeof originalAddItem==='function')originalAddItem.call(by('addItem'),event);else{state.items.push({id:'manual_'+Date.now(),name:'Novo item',quantity:1,spaces:1,category:'Geral',detail:''});renderInventory();save();}return;}
  if(button.dataset.cat){selected=button.dataset.cat;render();return;}
  if(button.dataset.add!==undefined){add(Number(button.dataset.add));return;}
  if(button.dataset.expand!==undefined){
