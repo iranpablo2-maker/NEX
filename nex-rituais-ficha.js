@@ -77,10 +77,14 @@ function addRecord(template){
  state.rituals.push({id:'nr'+Date.now().toString(36)+Math.random().toString(36).slice(2,6),name:template.name,circle:template.circle,element:template.element,extra:0,note:template.description||'',catalogKey:template.key,source:template.source,execution:template.execution||'',range:template.range||'',target:template.target||'',duration:template.duration||'',resistance:template.resistance||'',discente:template.discente||'',verdadeiro:template.verdadeiro||'',image:template.image||''});
  save();render();close();
 }
-function emblem(element){
+function emblem(element,name=''){
  const strokes={Conhecimento:'#c9ac61',Energia:'#ad6af7',Morte:'#c9c9d4',Sangue:'#d96f7b',Medo:'#e5e5e5'};
  const tone=strokes[element]||'#baa3d6';
- return '<svg class="nex-ritual-emblem" viewBox="0 0 140 140" aria-hidden="true" fill="none" stroke="'+tone+'" stroke-width="2"><circle cx="70" cy="70" r="56"/><circle cx="70" cy="70" r="43" stroke-dasharray="2 6"/><path d="M70 9L119 111H21Z"/><path d="M70 24L104 108H36Z"/><path d="M29 50L110 90M110 50L29 90"/><circle cx="70" cy="70" r="13"/></svg>';
+ let hash=2166136261;for(const char of String(name||element))hash=Math.imul(hash^char.charCodeAt(0),16777619)>>>0;
+ const spikes=5+(hash%5),rotation=(hash>>>4)%72,inner=16+(hash>>>12)%14;
+ const points=Array.from({length:spikes},(_,i)=>{const angle=(Math.PI*2*i/spikes)+rotation*Math.PI/180;return (70+48*Math.cos(angle)).toFixed(1)+','+(70+48*Math.sin(angle)).toFixed(1);}).join(' ');
+ const nodes=Array.from({length:spikes},(_,i)=>{const a=(Math.PI*2*i/spikes)+rotation*Math.PI/180;return '<circle cx="'+(70+inner*Math.cos(a)).toFixed(1)+'" cy="'+(70+inner*Math.sin(a)).toFixed(1)+'" r="2.5"/>';}).join('');
+ return '<svg class="nex-ritual-emblem" viewBox="0 0 140 140" aria-label="Emblema original do NEX para '+esc(name||element)+'" role="img" fill="none" stroke="'+tone+'" stroke-width="1.8"><circle cx="70" cy="70" r="56"/><circle cx="70" cy="70" r="43" stroke-dasharray="2 6"/><polygon points="'+points+'"/><circle cx="70" cy="70" r="'+inner+'"/>'+nodes+'</svg>';
 }
 function lines(label,value){return value?'<p><span>'+esc(label)+':</span> '+esc(value)+'</p>':'';}
 function render(){
@@ -94,7 +98,7 @@ function render(){
   const blocked=state.class==='Ocultista'&&Number(r.circle)>circleAccess();
   return '<article class="nex-ritual-card"><details><summary><span class="nex-ritual-arrow">⌃</span><strong>'+esc(r.name)+'</strong></summary>'+
    '<div class="nex-ritual-detail"><div class="nex-ritual-pill nex-ritual-'+esc(r.element)+'">'+esc(r.element).toUpperCase()+' '+esc(r.circle)+'</div>'+
-   (d.image?'<img src="'+esc(d.image)+'" alt="Símbolo do ritual" class="nex-ritual-image">':emblem(r.element))+
+   (d.image?'<img src="'+esc(d.image)+'" alt="Símbolo do ritual" class="nex-ritual-image">':emblem(r.element,r.name))+
    '<div class="nex-ritual-properties">'+lines('Execução',d.execution)+lines('Alcance',d.range)+lines('Alvo',d.target)+lines('Duração',d.duration)+lines('Resistência',d.resistance)+'</div>'+
    '<p class="nex-ritual-summary">'+esc(d.note||d.description||'Efeito não cadastrado. Consulte o livro ou edite o resumo.')+'</p>'+(d.summaryKind?'<small class="nex-ritual-summary-kind">'+esc(d.summaryKind)+'</small>':'')+
    (d.discente?'<p class="nex-ritual-enhance"><b>Discente:</b> '+esc(d.discente)+'</p>':'')+
