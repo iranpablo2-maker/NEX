@@ -33,6 +33,12 @@ for(const model of (typeof NEX12_CATALOG!=='undefined'?NEX12_CATALOG:[])){
  if(existing){if(existing.description.startsWith('Detalhes a conferir'))existing.description=desc;continue}
  put(name,section,kind+'. '+desc,[['Espaços',String(spaces)]],spaces);
 }
+for(const record of window.NEX_ITEM_BOOKS||[]){
+ const item={name:record.name,section:record.section,description:record.description||'',stats:record.stats||[],spaces:record.spaces??1,source:record.source||'Livro de regras'};
+ const existing=items.find(x=>norm(x.name)===norm(item.name)&&x.section===item.section);
+ if(existing)Object.assign(existing,item);
+ else items.push(item);
+}
 items.sort((a,b)=>a.name.localeCompare(b.name,'pt-BR'));
 const style=document.createElement('style');
 style.id='nex-item-modal-styles';
@@ -90,7 +96,7 @@ function render(){
    '<div><span class="nex-item-name">'+escape(item.name)+'</span><span class="nex-item-desc">'+escape(item.description.slice(0,80))+'</span>'+
    '<div class="nex-item-meta">'+(item.stats.length?item.stats.map(m=>'<span><b>'+escape(m[0])+':</b> '+escape(m[1])+'</span>').join(''):'<span><b>Espaços:</b> '+item.spaces+'</span>')+'</div></div>'+
    '<button type="button" class="nex-item-plus" data-add="'+index+'" aria-label="Adicionar '+escape(item.name)+'">+</button></div>'+
-   '<div class="nex-item-detail" hidden>'+escape(item.description||'Confira as estatísticas nas regras do livro.')+'</div></article>';
+   '<div class="nex-item-detail" hidden>'+escape((item.source?item.source+' · ':'')+(item.description||'Confira as estatísticas nas regras do livro.'))+'</div></article>';
  }).join(''):'<div class="nex-item-empty">Nenhum item encontrado nesta categoria.</div>';
 }
 function open(){lastFocus=document.activeElement;selected='Armas';search.value='';render();modal.hidden=false;document.body.classList.add('nex-item-modal-open');search.focus();}
