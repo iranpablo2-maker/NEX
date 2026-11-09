@@ -2401,7 +2401,7 @@ $('nexHomebrewFilter')?.addEventListener('input',()=>nex12RenderHomebrew());
    ensure();
    $id('skillsList').innerHTML='<div class="nexv16-skill-head"><span>Perícia</span><span>Dados</span><span>Bônus</span><span>Treino</span><span>Outros</span></div>'+SKILL_DATA.map(([name,attr])=>{
      const s=state.skills[name]||{attr,training:0};const training=int(s.training);const other=int(s.other);const total=training+other;
-     return `<div class="nexv16-skill-row ${training>0?'trained':''}"><div class="nexv16-skill-name"><button class="nex-skill-dice-button" type="button" title="Rolar teste de ${escape(name)}" aria-label="Rolar teste de ${escape(name)}" data-nex-skill-roll="${escape(name)}"><img src="${NEX_SKILL_DICE_ICON}" alt="" aria-hidden="true"></button><span>${escape(name)}${skillOnly.has(name)?'*':''}${skillLoad.has(name)?'+':''}</span></div><span class="nexv16-attr">(${n16SkillAttr[attr]||'INT'})</span><span class="nexv16-total">(${total>=0?'+':''}${total})</span><select class="nex57-training-select" aria-label="Nível de treinamento de ${escape(name)}" title="Treinamento: +0 sem treino, +5 treinado, +10 veterano, +15 expert" data-n16-train="${escape(name)}">${[0,5,10,15].map(value=>`<option value="${value}" ${training===value?'selected':''}>${value===0?'—':'+'+value}</option>`).join('')}</select><input type="number" aria-label="Outros bônus de ${escape(name)}" data-n16-other="${escape(name)}" min="-99" max="99" value="${other}"></div>`;
+     return `<div class="nexv16-skill-row ${training>0?'trained':''}"><div class="nexv16-skill-name"><button class="nex-skill-dice-button" type="button" title="Rolar teste de ${escape(name)}" aria-label="Rolar teste de ${escape(name)}" data-nex-skill-roll="${escape(name)}"><img src="${NEX_SKILL_DICE_ICON}" alt="" aria-hidden="true"></button><span>${escape(name)}${skillOnly.has(name)?'*':''}${skillLoad.has(name)?'+':''}</span></div><span class="nexv16-attr">(${n16SkillAttr[attr]||'INT'})</span><span class="nexv16-total">(${total>=0?'+':''}${total})</span><div class="nex-min-training" role="group" aria-label="Treinamento de ${escape(name)}"><select class="nex57-training-select" aria-label="Nível de treinamento de ${escape(name)}" data-n16-train="${escape(name)}" tabindex="-1">${[0,5,10,15].map(value=>`<option value="${value}" ${training===value?'selected':''}>${value===0?'—':'+'+value}</option>`).join('')}</select>${[0,5,10,15].map(value=>`<button type="button" class="nex-min-training-btn ${training===value?'active':''}" data-nex-min-train-value="${value}" aria-label="${value===0?'Sem treinamento':'Treinamento +'+value} em ${escape(name)}" aria-pressed="${training===value}">${value===0?'—':'+'+value}</button>`).join('')}</div><input type="number" aria-label="Outros bônus de ${escape(name)}" data-n16-other="${escape(name)}" min="-99" max="99" value="${other}"></div>`;
    }).join('');
  }
  function abilityRecords(){
@@ -3098,4 +3098,25 @@ update();
 <script src="nex-duplicate-review.js?v=2055"></script>
 <script src="nex-homebrew-advanced.js?v=2055"></script>
 <!-- Sincronização em nuvem desativada a pedido do proprietário: mantém salvamento local. -->
+<style id="nex-minimal-pericias-20261109">
+#sheetScreen .nexv16-skill-head,#sheetScreen .nexv16-skill-row{grid-template-columns:minmax(105px,1fr) 37px 42px minmax(116px,136px) 42px!important;min-width:370px!important;gap:3px!important}
+#sheetScreen .nex-min-training{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:2px;border:1px solid #3a3540;border-radius:6px;padding:2px;background:#16141b;min-width:0}
+#sheetScreen .nex-min-training .nex57-training-select{display:none!important}
+#sheetScreen .nex-min-training-btn{appearance:none;border:0;border-radius:4px;background:transparent;color:#a8a2ae;font-size:10px;font-weight:650;min-height:25px;padding:0 1px;cursor:pointer;white-space:nowrap}
+#sheetScreen .nex-min-training-btn:hover{background:#302b37;color:#f6efff}
+#sheetScreen .nex-min-training-btn.active{background:#5c3f78;color:#fff}
+#sheetScreen .nexv16-skill-row.trained .nex-min-training-btn.active{background:#305a41;color:#e5ffec}
+#sheetScreen .nex-min-training-btn:focus-visible{outline:2px solid #d4a7ff;outline-offset:1px}
+@media(max-width:750px){#sheetScreen .nex-min-training-btn{min-height:29px;font-size:10px}}
+</style>
+<script id="nex-minimal-pericias-20261109">
+document.addEventListener('click',function(event){
+ const b=event.target.closest('[data-nex-min-train-value]');
+ if(!b)return;
+ const select=b.closest('.nex-min-training')?.querySelector('[data-n16-train]');
+ if(!select)return;
+ select.value=b.dataset.nexMinTrainValue;
+ select.dispatchEvent(new Event('change',{bubbles:true}));
+});
+</script>
 </body></html>
