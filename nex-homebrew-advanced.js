@@ -44,7 +44,7 @@
  '<button type="button" data-nex52-tab="rituais" role="tab" aria-selected="false">RITUAIS</button>'+
  '<button type="button" data-nex52-tab="itens" role="tab" aria-selected="false">ITENS</button></div>'+
  '<div class="nex52-toolbar"><strong id="nex52Count">Homebrew 0/50</strong><button type="button" id="nex52Add">Adicionar</button></div>'+
- '<label class="nex52-search" for="nex51Search"><span aria-hidden="true">⌕</span><input type="search" id="nex51Search" placeholder="Buscar" autocomplete="off" aria-label="Buscar homebrew"></label>'+
+ '<label class="nex52-search" for="nex51Search"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><circle cx="10.7" cy="10.7" r="7.2"/><path d="m16 16 5 5"/></svg><input type="search" id="nex51Search" placeholder="Buscar" autocomplete="off" aria-label="Buscar homebrew"></label>'+
  '<section id="nex52Editor" class="nex52-editor" hidden><div class="nex52-editor-head"><strong id="nex52EditorTitle">Adicionar homebrew</strong><button type="button" id="nex52CloseEditor" aria-label="Fechar editor">×</button></div>'+
  '<form id="nex51Form" class="nex52-form"><input id="nex51Edit" type="hidden">'+
  '<label>Tipo<select id="nex51Type"><option value="ameaca">Ameaça</option><option value="poder">Poder</option><option value="trilha">Trilha</option><option value="habilidade">Habilidade</option><option value="ritual">Ritual</option><option value="item">Item</option></select></label>'+
@@ -76,6 +76,7 @@
  }
  function resetForm(){
    $('nex51Form').reset();$('nex51Edit').value='';
+   $('nex51Type').innerHTML=currentTypes().map(type=>'<option value="'+type+'">'+LABEL[type]+'</option>').join('');
    $('nex51Type').value=defaultType();$('nex52EditorTitle').textContent='Adicionar '+(tab==='ameacas'?'ameaça':tab==='habilidades'?'habilidade':tab==='rituais'?'ritual':'item');
    editorFields();
  }
