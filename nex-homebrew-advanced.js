@@ -15,6 +15,9 @@
    id:x.id,type:x.type,name:cut(x.name,90),description:cut(x.description,2000),
    requirements:cut(x.requirements,650),minNex:num(x.minNex,0,99,5),
    className:['Livre','Geral','Combatente','Especialista','Ocultista'].includes(x.className)?(x.className==='Livre'&&['poder_geral','poder','habilidade'].includes(x.type)?'Geral':x.className):(['poder_geral','poder','habilidade'].includes(x.type)?'Geral':'Livre'),
+   ritualType:['Dano','Suporte','Cura'].includes(x.ritualType)?x.ritualType:'Suporte',
+   discenteCircle:num(x.discenteCircle,1,4,Math.min(4,num(x.circle,1,4,1)+1)),
+   verdadeiroCircle:num(x.verdadeiroCircle,1,4,Math.min(4,num(x.circle,1,4,1)+2)),
    circle:num(x.circle,1,4,1),element:['Conhecimento','Energia','Morte','Sangue','Medo','Personalizado'].includes(x.element)?x.element:'Conhecimento',
    execution:['Padrão','Movimento','Completa','Reação','Livre'].includes(x.execution)?x.execution:'Padrão',
    range:['Pessoal','Toque','Curto','Médio','Longo','Extremo','Ilimitado'].includes(x.range)?x.range:'Pessoal',
@@ -76,6 +79,7 @@
  '<label id="nex51NexField">NEX mínimo<input id="nex51Nex" type="number" min="0" max="99" value="5"></label></div>'+
  
  '<div class="nex52-specific nex53-ritual-fields" id="nex52RitualFields" hidden>'+
+ '<label class="nex53-ritual-category">Categoria do ritual<select id="nex53RitualType"><option>Dano</option><option>Suporte</option><option>Cura</option></select></label>'+
  '<label>Elemento<select id="nex51Element"><option>Conhecimento</option><option>Energia</option><option>Medo</option><option>Morte</option><option>Sangue</option></select></label>'+
  '<label>Círculo<select id="nex51Circle"><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option></select></label>'+
  '<label>Execução<select id="nex53Execution"><option>Padrão</option><option>Movimento</option><option>Completa</option><option>Reação</option><option>Livre</option></select></label>'+
@@ -85,9 +89,11 @@
  '<label>Duração<input id="nex53Duration" maxlength="150" placeholder="Ex.: Cena"></label>'+
  '<label>Efeito<input id="nex53Effect" maxlength="700" placeholder="Efeito do ritual"></label>'+
  '<label>Resistência<input id="nex53Resistance" maxlength="150" placeholder="Ex.: Fortitude parcial"></label>'+
- '<label>Dados<input id="nex53Dice" maxlength="120" placeholder="Ex.: 2d6"></label>'+
- '<label>Dados Discente<input id="nex53DiscenteDice" maxlength="120" placeholder="Ex.: 4d6"></label>'+
- '<label>Dados Verdadeiro<input id="nex53VerdadeiroDice" maxlength="120" placeholder="Ex.: 6d6"></label>'+
+ '<label class="nex53-damage-field">Dados<input id="nex53Dice" maxlength="120" placeholder="Ex.: 2d6"></label>'+
+ '<label class="nex53-damage-field">Dados Discente<input id="nex53DiscenteDice" maxlength="120" placeholder="Ex.: 4d6"></label>'+
+ '<label class="nex53-damage-field">Dados Verdadeiro<input id="nex53VerdadeiroDice" maxlength="120" placeholder="Ex.: 6d6"></label>'+
+ '<label class="nex53-damage-field nex53-advanced-req">Círculo necessário (Discente)<select id="nex53DiscenteCircle"><option value="1">1º</option><option value="2">2º</option><option value="3">3º</option><option value="4">4º</option></select></label>'+
+ '<label class="nex53-damage-field nex53-advanced-req">Círculo necessário (Verdadeiro)<select id="nex53VerdadeiroCircle"><option value="1">1º</option><option value="2">2º</option><option value="3">3º</option><option value="4">4º</option></select></label>'+
  '<div class="nex53-ritual-image"><label>Imagem (opcional)<input id="nex53RitualImage" type="url" maxlength="2000" placeholder="https://..."></label>'+
  '<label>Ou escolher imagem<input id="nex53RitualFile" type="file" accept="image/png,image/jpeg,image/webp"></label>'+
  '<img id="nex53RitualPreview" alt="Prévia da imagem do ritual" hidden></div>'+
@@ -109,6 +115,10 @@
  '<div class="nex52-dialog-actions"><label>Personagem<select id="nex51Target"><option value="">Selecione um personagem</option></select></label>'+
  '<button type="button" class="btn primary" id="nex52Apply">Adicionar à ficha</button><button type="button" class="btn" id="nex52Close">Fechar</button></div></dialog>';
  sheet.innerHTML='<details class="nex51-sheet"><summary>Homebrews associados à ficha (<span id="nex51SheetCount">0</span>)</summary><div id="nex51SheetItems" class="nex52-sheet-list"></div></details>';
+ function toggleRitualDamageFields(){
+   const damage=$('nex51Type').value==='ritual'&&$('nex53RitualType').value==='Dano';
+   mount.querySelectorAll('.nex53-damage-field').forEach(el=>{el.hidden=!damage;});
+ }
  function editorFields(){
    const type=$('nex51Type').value;
    const isTrail=type==='trilha',isOrigin=type==='origem',isGeneral=['poder_geral','poder','habilidade'].includes(type);
@@ -137,6 +147,7 @@
    $('nex51Element').required=type==='ritual';
    $('nex53ParanormalElement').disabled=!isParanormal;
    $('nex52RitualFields').hidden=type!=='ritual';
+   toggleRitualDamageFields();
    $('nex52ItemFields').hidden=type!=='item';
  }
  const FALLBACK_SKILLS=['Acrobacia','Adestramento','Artes','Atletismo','Atualidades','Ciências','Crime','Diplomacia','Enganação','Fortitude','Furtividade','Iniciativa','Intimidação','Intuição','Investigação','Luta','Medicina','Ocultismo','Percepção','Pilotagem','Pontaria','Profissão','Reflexos','Religião','Sobrevivência','Tática','Tecnologia','Vontade'];
@@ -152,6 +163,8 @@
    $('nex51Type').innerHTML=currentTypes().map(type=>'<option value="'+type+'">'+LABEL[type]+'</option>').join('');
    $('nex51Type').value=defaultType();$('nex52EditorTitle').textContent='Adicionar '+LABEL[defaultType()].toLocaleLowerCase('pt-BR');
    $('nex53ParanormalElement').value='Sangue';
+   $('nex53RitualType').value='Suporte';
+   $('nex53DiscenteCircle').value='2';$('nex53VerdadeiroCircle').value='3';
    $('nex53RitualImage').value='';$('nex53RitualFile').value='';$('nex53RitualPreview').hidden=true;
    editorFields();
  }
@@ -164,6 +177,9 @@
      $('nex51Requirements').value=item.requirements;$('nex51Class').value=item.className;
      $('nex51Nex').value=item.minNex;$('nex51Circle').value=item.circle;
      $('nex51Element').value=item.element;
+     $('nex53RitualType').value=item.ritualType;
+     $('nex53DiscenteCircle').value=String(item.discenteCircle);
+     $('nex53VerdadeiroCircle').value=String(item.verdadeiroCircle);
      $('nex53Execution').value=item.execution;
      $('nex53Range').value=item.range;
      $('nex53Area').value=item.area; $('nex53Target').value=item.target;
@@ -185,7 +201,7 @@
  }
  function meta(item){
    if(item.type==='ameaca')return ['VD: '+item.vd,item.creatureType+' - '+item.size];
-   if(item.type==='ritual')return [item.circle+'º círculo · '+item.element,item.execution+' · '+item.range];
+   if(item.type==='ritual')return [item.ritualType+' · '+item.circle+'º círculo · '+item.element,item.execution+' · '+item.range];
    if(item.type==='item')return [item.category,'Item personalizado'];
    if(item.type==='trilha')return ['Trilha · '+item.className,'4 marcos · NEX 10%, 40%, 65% e 99%'];
    if(item.type==='origem')return ['Origem personalizada',(item.skills||[]).join(' · ')||'Duas perícias'];
@@ -251,7 +267,8 @@
  function closeDialog(){const d=$('nex52Detail');if(typeof d.close==='function')d.close();else d.removeAttribute('open');opened=null;}
  function ritualDetails(item){
    if(item.type!=='ritual')return '';
-   const fields=[['Execução',item.execution],['Alcance',item.range],['Área',item.area],['Alvo',item.target],['Duração',item.duration],['Efeito',item.effect],['Resistência',item.resistance],['Dados',item.ritualDice],['Dados Discente',item.discenteDice],['Dados Verdadeiro',item.verdadeiroDice]];
+   const fields=[['Categoria',item.ritualType],['Execução',item.execution],['Alcance',item.range],['Área',item.area],['Alvo',item.target],['Duração',item.duration],['Efeito',item.effect],['Resistência',item.resistance]];
+   if(item.ritualType==='Dano')fields.push(['Dados',item.ritualDice],['Dados Discente',item.discenteDice],['Dados Verdadeiro',item.verdadeiroDice]);
    return '<div class="nex53-ritual-details">'+fields.filter(([label,value])=>value).map(([label,value])=>'<div><strong>'+esc(label)+'</strong><p>'+esc(value)+'</p></div>').join('')+'</div>'+(item.image?'<img class="nex53-ritual-detail-image" src="'+esc(item.image)+'" alt="Imagem do ritual '+esc(item.name)+'">':'');
  }
  function view(item){
@@ -264,6 +281,12 @@
    targetOptions();const d=$('nex52Detail');if(typeof d.showModal==='function')d.showModal();else d.setAttribute('open','');
  }
  $('nex51Type').addEventListener('change',editorFields);
+ $('nex53RitualType').addEventListener('change',toggleRitualDamageFields);
+ $('nex51Circle').addEventListener('change',()=>{
+   const circle=Number($('nex51Circle').value);
+   $('nex53DiscenteCircle').value=String(Math.min(4,circle+1));
+   $('nex53VerdadeiroCircle').value=String(Math.min(4,circle+2));
+ });
  $('nex53RitualImage').addEventListener('input',e=>{
    const src=e.target.value.trim();
    const preview=$('nex53RitualPreview');preview.hidden=!/^https:\/\//i.test(src);
@@ -314,6 +337,9 @@
      type,name,description:$('nex51Description').value,requirements:$('nex51Requirements').value,
      className:$('nex51Class').value,minNex:['trilha','origem','poder_geral','poder','habilidade'].includes(type)?(old?.minNex??(type==='trilha'?10:5)):$('nex51Nex').value,circle:$('nex51Circle').value,
      element:type==='poder_paranormal'?$('nex53ParanormalElement').value:$('nex51Element').value,cost:$('nex51Cost').value,vd:$('nex52VD').value,
+     ritualType:type==='ritual'?$('nex53RitualType').value:(old?.ritualType||'Suporte'),
+     discenteCircle:type==='ritual'?$('nex53DiscenteCircle').value:old?.discenteCircle,
+     verdadeiroCircle:type==='ritual'?$('nex53VerdadeiroCircle').value:old?.verdadeiroCircle,
      execution:type==='ritual'?$('nex53Execution').value:(old?.execution||'Padrão'),
      range:type==='ritual'?$('nex53Range').value:(old?.range||'Pessoal'),
      area:type==='ritual'?$('nex53Area').value:old?.area,
