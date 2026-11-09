@@ -9,7 +9,7 @@
   const entries=()=>Array.isArray(state.nex58Effects)?state.nex58Effects:[];
   function sources(){
     const list=[{key:'manual:',name:'Regra manual / habilidade oficial'}];
-    for(const h of state.nex51Items||[])if(h&&h.id)list.push({key:'hb:'+h.id,name:'Homebrew: '+h.name,minNex:Number(h.minNex)||0});
+    for(const h of state.nex51Items||[])if(h&&h.id)list.push({key:'hb:'+h.id,name:'Homebrew: '+h.name,minNex:Number(h.minNex)||0,equip:h.type==='item'});
     for(const p of state.powers||[])if(p&&p.id)list.push({key:'pow:'+p.id,name:'Poder: '+p.name});
     for(const a of state.n16?.abilities||[])if(a&&a.id)list.push({key:'ab:'+a.id,name:'Habilidade: '+a.name});
     for(const i of state.items||[])if(i&&i.id!=null&&number(i.quantity,0,9999)>0)list.push({key:'inv:'+i.id,name:'Item: '+i.name});
@@ -24,7 +24,7 @@
   function enabled(effect){
     if(!effect||!validSource(effect))return false;
     if(effect.mode==='toggle'||effect.mode==='equip')return effect.active===true;
-    return effect.mode==='passive' && !effect.source.startsWith('inv:');
+    return effect.mode==='passive' && !effect.source.startsWith('inv:') && !sources().some(s=>s.key===effect.source&&s.equip);
   }
   function totals(){
     const result={pv:0,pe:0,defense:0,skills:{}};
@@ -93,6 +93,7 @@
   '#nex58Panel p{margin:9px 0;color:#bbaec4;font-size:12px}' +
   '.nex58-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-top:12px}' +
   '.nex58-grid label{font-size:11px;color:#d9cce2;display:grid;gap:5px}' +
+  '.nex58-grid [hidden]{display:none!important}' +
   '.nex58-grid input,.nex58-grid select{min-width:0;width:100%;font-size:14px;border:1px solid #54415d;background:#17121d;padding:8px;color:#eee;border-radius:3px}' +
   '.nex58-row{border-top:1px solid #423249;padding:11px 0;display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}' +
   '.nex58-row strong{font-size:12px}.nex58-row small{display:block;font-size:11px;color:#b5a5bf;margin-top:3px}' +
@@ -118,7 +119,8 @@
   by('nex58Skill').innerHTML=skillNames.map(name=>'<option value="'+esc(name)+'">'+esc(name)+'</option>').join('');
 
   function updateForm(){
-    const isItem=by('nex58Source').value.startsWith('inv:');
+    const selected=by('nex58Source').value;
+    const isItem=selected.startsWith('inv:')||!!sources().find(s=>s.key===selected)?.equip;
     const kind=by('nex58Kind').value;
     const mode=by('nex58Mode');
     mode.disabled=isItem;
@@ -132,6 +134,7 @@
     if(!toggle)by('nex58Cost').value='0';
   }
   let lastState=null;
+  let lastSources='';
   function resetSourceOptions(){
     const select=by('nex58Source');
     const previous=select.value;
@@ -141,7 +144,9 @@
   }
   function renderList(){
     if(!by('nex58List'))return;
-    if(lastState!==state){lastState=state;by('nex58Form').reset();resetSourceOptions();}
+    const signature=sources().map(s=>s.key+'='+s.name).join('|');
+    if(lastState!==state){lastState=state;by('nex58Form').reset();lastSources=signature;resetSourceOptions();}
+    else if(lastSources!==signature){lastSources=signature;resetSourceOptions();}
     const list=entries();
     const t=totals(),active=list.filter(enabled).length;
     by('nex58Count').textContent='('+active+' ativos / '+list.length+' cadastrados)';
@@ -175,7 +180,7 @@
     const kind=by('nex58Kind').value;
     const skill=by('nex58Skill').value;
     const value=number(by('nex58Value').value);
-    const mode=source.startsWith('inv:')?'equip':by('nex58Mode').value;
+    const mode=source.startsWith('inv:')||record.equip?'equip':by('nex58Mode').value;
     const cost=mode==='toggle'?number(by('nex58Cost').value,0,50):0;
     const name=source==='manual:'?by('nex58Name').value.trim():record.name.replace(/^(Homebrew|Item|Poder|Habilidade): /,'');
     if(!name||!Object.hasOwn(kinds,kind)||(kind==='skill'&&!skillNames.includes(skill))||!value||entries().length>=100)return;
@@ -206,5 +211,7 @@
   });
   // Atualiza ao alternar fichas ou mudar itens. Não altera dados persistidos silenciosamente.
   document.addEventListener('nex51-ready',()=>{lastState=null;renderList();});
+  panel.addEventListener('toggle',()=>{if(panel.open)renderList();});
+  document.addEventListener('click',event=>{if(event.target.closest('[data-tab="overview"]'))queueMicrotask(renderList);});
   renderList();paintDefense();paintSkills();
 })();
