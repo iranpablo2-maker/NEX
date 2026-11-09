@@ -11,7 +11,7 @@ const costByCircle={1:1,2:3,3:6,4:10};
 const circleAccess=()=>typeof nex12RitualAllowed==='function'?nex12RitualAllowed():1;
 const canonical=x=>String(x||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
 const special={
- 'Alterar Destino':{execution:'Reação',range:'Pessoal',target:'Você',duration:'Instantânea',description:'Permite alterar a chance de sucesso diante de um perigo iminente.',trueText:'Sua versão avançada permite beneficiar um aliado próximo.'},
+ 'Alterar Destino':{execution:'Reação',range:'Pessoal',target:'Você',duration:'Instantânea',description:'Em reação, concede +15 à Defesa contra um ataque ou a um teste de resistência.',verdadeiro:'(+5 PE) A forma Verdadeira permite estender o benefício a um aliado em alcance curto.'},
  'Cicatrização':{description:'Acelera a recuperação dos ferimentos de um personagem.'},
  'Terceiro Olho':{description:'Ajuda a perceber manifestações paranormais normalmente ocultas.'},
  'Luz':{description:'Faz um objeto iluminar o ambiente ao redor.'},
