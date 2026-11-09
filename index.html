@@ -4325,10 +4325,11 @@ const PARANORMAL=[
  function apply(){
   const box=$('sheetScreen');if(!box)return;
   const cfg=settings(),url=safeUrl(cfg.image),dim=Math.min(90,Math.max(0,Number(cfg.dim??0)||0));
-  box.style.backgroundImage=url?'linear-gradient(rgba(0,0,0,'+(dim/100)+'),rgba(0,0,0,'+(dim/100)+')),'+imageCSS(url):'none';
-  box.style.backgroundSize=url?(cfg.fit==='contain'?'contain':'cover'):'';
-  box.style.backgroundPosition=cfg.position==='top'?'center top':cfg.position==='bottom'?'center bottom':'center center';
-  box.style.backgroundAttachment='fixed';
+  box.style.setProperty('background-image',url?imageCSS(url):'none','important');
+  box.style.setProperty('background-color','#000','important');
+  box.style.setProperty('background-size',url?(cfg.fit==='contain'?'contain':'cover'):'cover','important');
+  box.style.setProperty('background-position',cfg.position==='top'?'center top':cfg.position==='bottom'?'center bottom':'center center','important');
+  box.style.setProperty('background-attachment','fixed','important');
   box.style.setProperty('--nex-custom-bg',url?imageCSS(url):'none');
   box.style.setProperty('--nex-custom-dim',String(dim/100));
   box.classList.toggle('nex-has-wallpaper',!!url);
@@ -4461,4 +4462,66 @@ const PARANORMAL=[
 #nex25RollPopup,#nexAttributeRollPopup{border-color:#c93a48!important}
 #sheetScreen .nex-attributes-pencil:hover{color:#ed5661!important}
 </style>
-</body></html>
+
+<style id="nex-tema-vermelho-final">
+/* Corrige a sobreposição do fundo: o papel de parede fica no próprio #sheetScreen. */
+#sheetScreen.nex-has-wallpaper::before{display:none!important;content:none!important}
+#sheetScreen.nex-has-wallpaper{background-color:#000!important;min-height:100vh!important}
+#sheetScreen.nex-has-wallpaper>.shell{background:transparent!important}
+#sheetScreen.nex-has-wallpaper .layout,
+#sheetScreen.nex-has-wallpaper .left,
+#sheetScreen.nex-has-wallpaper .right,
+#sheetScreen.nex-has-wallpaper .col,
+#sheetScreen.nex-has-wallpaper .view{background:transparent!important}
+/* Camada preta de 65% sem diminuir a opacidade das letras. */
+#sheetScreen.nex-has-wallpaper .nex216-identity,
+#sheetScreen.nex-has-wallpaper .panel,
+#sheetScreen.nex-has-wallpaper .mini-nav,
+#sheetScreen.nex-has-wallpaper .n193-combat,
+#sheetScreen.nex-has-wallpaper .nexv16-entry,
+#sheetScreen.nex-has-wallpaper .nexv16-catalog,
+#sheetScreen.nex-has-wallpaper .ability,
+#sheetScreen.nex-has-wallpaper .nex-item-card-new{
+  background:rgba(0,0,0,.65)!important;
+}
+#sheetScreen.nex-has-wallpaper .nexv16-skills,
+#sheetScreen.nex-has-wallpaper .nexv16-skill-row,
+#sheetScreen.nex-has-wallpaper .nexv16-skill-head,
+#sheetScreen.nex-has-wallpaper .nexv16-detail,
+#sheetScreen.nex-has-wallpaper .nex-ritual-card{
+  background:transparent!important;
+}
+/* Tema vermelho nas áreas que permaneciam violetas no cabeçalho e na ficha */
+:root{--accent:#c32838!important;--violet:#a62230!important}
+.brand-mark,.nex-ref-nav .active,#sheetScreen .nex216-identity select,
+#sheetScreen .nex216-identity input:focus,#sheetScreen .tab.active,
+#sheetScreen .nex57-training-select:focus-visible{
+ border-color:#c73543!important;
+}
+.brand-mark{color:#e74d58!important;box-shadow:0 0 0 3px #8c202421!important}
+#sheetScreen .mini-nav strong,
+#sheetScreen .right-head strong,#sheetScreen .panel-head h2,
+#sheetScreen .nexv16-total,#sheetScreen .nexv16-attr{
+ color:#efd9db!important;
+}
+#sheetScreen .tab.active,.nex-ref-nav button:hover,
+.nex-ref-nav button:focus-visible{
+ color:#fff!important;border-color:#d94350!important;box-shadow:inset 0 -2px #d94350!important;
+}
+#sheetScreen .btn.primary,#sheetScreen button.btn.primary,
+#sheetScreen .nexv16-filter button.selected,
+#sheetScreen .nex57-training-select option:checked{
+ background:#ac2936!important;border-color:#d3404d!important;color:#fff!important;
+}
+#sheetScreen .nex-attr-skill-picker,#sheetScreen .nex57-training-select{
+ color:#f5c3c6!important;
+}
+#nexTkPanel .tk-tabs button[aria-pressed="true"],
+#nexItemModal [aria-selected="true"],
+#nexItemEditor .nex-editor-save{
+ background:#ac2936!important;border-color:#d3404d!important;color:#fff!important;
+}
+#nexSheetSettingsPanel .nex-wallpaper-buttons button{
+ background:#ac2936!important;border:1px solid #d3404d!important;color:#fff!important;
+}
+</style></body></html>
