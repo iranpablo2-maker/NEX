@@ -67,6 +67,7 @@
  '<label>Porte<select id="nex52Size"><option>Minúsculo</option><option>Pequeno</option><option selected>Médio</option><option>Grande</option><option>Enorme</option><option>Colossal</option></select></label></div>'+
  '<div class="nex52-specific" id="nex52AbilityFields" hidden><label id="nex55ClassField">Classe<select id="nex51Class"><option>Livre</option><option>Combatente</option><option>Especialista</option><option>Ocultista</option></select></label>'+
  '<label id="nex51NexField">NEX mínimo<input id="nex51Nex" type="number" min="0" max="99" value="5"></label></div>'+
+ '<div class="nex52-specific nex52-full" id="nex53ParanormalElementField" hidden><label>Elemento<select id="nex53ParanormalElement" required><option value="Sangue">Sangue</option><option value="Morte">Morte</option><option value="Energia">Energia</option><option value="Conhecimento">Conhecimento</option><option value="Medo">Medo</option></select></label></div>'+
  '<div class="nex52-specific" id="nex52RitualFields" hidden><label>Círculo<select id="nex51Circle"><option value="1">1º</option><option value="2">2º</option><option value="3">3º</option><option value="4">4º</option></select></label>'+
  '<label>Elemento<select id="nex51Element"><option>Conhecimento</option><option>Energia</option><option>Morte</option><option>Sangue</option><option>Medo</option><option>Personalizado</option></select></label>'+
  '<label>PE indicado<input id="nex51Cost" type="number" min="0" max="99" value="0"></label></div>'+
@@ -90,21 +91,23 @@
  function editorFields(){
    const type=$('nex51Type').value;
    const isTrail=type==='trilha',isOrigin=type==='origem',isGeneral=['poder_geral','poder','habilidade'].includes(type);
+   const isParanormal=type==='poder_paranormal';
    // Ao escolher a subcategoria, não é preciso selecionar "Categoria" novamente.
    $('nex55TypeField').hidden=tab==='habilidades';
    const classSelect=$('nex51Class'),oldClass=classSelect.value;
    const choices=isTrail?['Combatente','Especialista','Ocultista']:['Livre','Combatente','Especialista','Ocultista'];
    classSelect.innerHTML=choices.map(name=>'<option value="'+name+'">'+name+'</option>').join('');
    classSelect.value=choices.includes(oldClass)?oldClass:(isTrail?'Combatente':'Livre');
-   $('nex55ClassField').hidden=isOrigin||isGeneral;
-   $('nex51NexField').hidden=isTrail||isOrigin||isGeneral;
+   $('nex55ClassField').hidden=isOrigin||isGeneral||isParanormal;
+   $('nex51NexField').hidden=isTrail||isOrigin||isGeneral||type==='poder_paranormal';
+   $('nex53ParanormalElementField').hidden=type!=='poder_paranormal';
    $('nex52ThreatFields').hidden=type!=='ameaca';
    $('nex52AbilityFields').hidden=!['origem','poder_paranormal','poder_geral','poder','trilha','habilidade'].includes(type);
    $('nex53TrailFields').hidden=!isTrail;
    $('nex55OriginSkills').hidden=!isOrigin;
    $('nex55DescriptionField').hidden=isTrail;
-   $('nex55RequirementsField').hidden=isTrail||isOrigin||isGeneral;
-   $('nex55DescriptionLabel').textContent=isOrigin||isGeneral?'Descrição':'Descrição e efeitos';
+   $('nex55RequirementsField').hidden=isTrail||isOrigin||isGeneral||type==='poder_paranormal';
+   $('nex55DescriptionLabel').textContent=isOrigin||isGeneral||type==='poder_paranormal'?'Descrição':'Descrição e efeitos';
    $('nex52RitualFields').hidden=type!=='ritual';
    $('nex52ItemFields').hidden=type!=='item';
  }
@@ -120,6 +123,7 @@
    loadSkillChoices();
    $('nex51Type').innerHTML=currentTypes().map(type=>'<option value="'+type+'">'+LABEL[type]+'</option>').join('');
    $('nex51Type').value=defaultType();$('nex52EditorTitle').textContent='Adicionar '+LABEL[defaultType()].toLocaleLowerCase('pt-BR');
+   $('nex53ParanormalElement').value='Sangue';
    editorFields();
  }
  function closeEditor(){$('nex52Editor').hidden=true;resetForm();}
@@ -130,7 +134,7 @@
      $('nex51Name').value=item.name;$('nex51Description').value=item.description;
      $('nex51Requirements').value=item.requirements;$('nex51Class').value=item.className;
      $('nex51Nex').value=item.minNex;$('nex51Circle').value=item.circle;
-     $('nex51Element').value=item.element;$('nex51Cost').value=item.cost;
+     $('nex51Element').value=item.element;$('nex53ParanormalElement').value=['Sangue','Morte','Energia','Conhecimento','Medo'].includes(item.element)?item.element:'Sangue';$('nex51Cost').value=item.cost;
      $('nex52VD').value=item.vd;$('nex52Size').value=item.size;
      $('nex52CreatureType').value=item.creatureType;$('nex52Category').value=item.category;
      if(item.type==='origem'){$('nex55Skill1').value=item.skills?.[0]||'';$('nex55Skill2').value=item.skills?.[1]||'';}
@@ -147,6 +151,7 @@
    if(item.type==='trilha')return ['Trilha · '+item.className,'4 marcos · NEX 10%, 40%, 65% e 99%'];
    if(item.type==='origem')return ['Origem personalizada',(item.skills||[]).join(' · ')||'Duas perícias'];
    if(['poder_geral','poder','habilidade'].includes(item.type))return ['Poder Geral','Personalizado'];
+   if(item.type==='poder_paranormal')return ['Poder Paranormal · '+item.element,'Homebrew'];
    return [LABEL[item.type]+' · '+item.className,'NEX '+item.minNex+'%'];
  }
  function trailDetails(item){
@@ -244,7 +249,7 @@
      id:editing||'hb51_'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,9),
      type,name,description:$('nex51Description').value,requirements:$('nex51Requirements').value,
      className:$('nex51Class').value,minNex:['trilha','origem','poder_geral','poder','habilidade'].includes(type)?(old?.minNex??(type==='trilha'?10:5)):$('nex51Nex').value,circle:$('nex51Circle').value,
-     element:$('nex51Element').value,cost:$('nex51Cost').value,vd:$('nex52VD').value,
+     element:type==='poder_paranormal'?$('nex53ParanormalElement').value:$('nex51Element').value,cost:$('nex51Cost').value,vd:$('nex52VD').value,
      size:$('nex52Size').value,creatureType:$('nex52CreatureType').value,category:$('nex52Category').value,
      trailAbilities:type==='trilha'?TRAIL_NEX.map(n=>({nex:n,name:$('nex53TrailName'+n).value,description:$('nex53TrailDescription'+n).value})):(old?.trailAbilities||[]),
      skills:type==='origem'?[$('nex55Skill1').value,$('nex55Skill2').value]:(old?.skills||[])
