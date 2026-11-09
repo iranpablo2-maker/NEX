@@ -1063,6 +1063,26 @@ html,body{background:#000!important;background-image:none!important}
 .nex52-form input,.nex52-form select,.nex52-form textarea{width:100%;padding:10px;border-radius:5px;border:1px solid #665267;background:#22202a;color:#fff}
 .nex52-form .nex52-specific{display:grid;grid-column:1/-1;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
 .nex52-form .nex52-specific[hidden]{display:none}
+ 
+/* Rituais Homebrew — editor completo com layout responsivo. */
+#homebrewScreen .nex52-form .nex53-ritual-name{grid-column:1/-1}
+#homebrewScreen .nex52-form #nex52RitualFields{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:12px;grid-column:1/-1}
+#homebrewScreen .nex52-form #nex52RitualFields[hidden]{display:none!important}
+#homebrewScreen #nex52RitualFields>label{grid-column:span 3;min-width:0}
+#homebrewScreen #nex52RitualFields>label:nth-child(n+5):nth-child(-n+7){grid-column:span 4}
+#homebrewScreen #nex52RitualFields>label:nth-child(8),#homebrewScreen #nex52RitualFields>label:nth-child(9){grid-column:span 6}
+#homebrewScreen #nex52RitualFields>label:nth-child(n+10):nth-child(-n+12){grid-column:span 4}
+#homebrewScreen #nex52RitualFields .nex53-ritual-image{grid-column:1/-1;display:flex;flex-direction:column;gap:10px}
+#homebrewScreen #nex53RitualPreview{max-width:200px;max-height:200px;object-fit:contain;border:1px solid #665267;border-radius:5px}
+#homebrewScreen #nex53RitualPreview[hidden]{display:none!important}
+.nex53-ritual-details{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.nex53-ritual-details>div{background:#25212b;padding:9px;border:1px solid #4b394e;border-radius:5px;overflow-wrap:anywhere}
+.nex53-ritual-details strong{color:#bd9bcd;font-size:11px}
+.nex53-ritual-details p{margin:5px 0 0;white-space:pre-wrap}
+.nex53-ritual-detail-image{display:block;max-width:min(100%,280px);max-height:260px;object-fit:contain;margin:12px 0}
+@media(max-width:700px){#homebrewScreen #nex52RitualFields>label{grid-column:span 6!important}#homebrewScreen #nex52RitualFields .nex53-ritual-image{grid-column:1/-1}}
+@media(max-width:440px){#homebrewScreen #nex52RitualFields>label{grid-column:1/-1!important}.nex53-ritual-details{grid-template-columns:1fr}}
+
 .nex52-form .nex52-full{grid-column:1/-1}
 .nex52-form-actions{grid-column:1/-1;display:flex;gap:10px}
 .nex52-dialog{width:min(600px,94vw);max-height:85vh;overflow-y:auto;background:#16151d;border:1px solid #745181;border-radius:9px;color:#f2edf4;padding:24px}
@@ -3853,7 +3873,7 @@ const PARANORMAL=[
 })();
 </script>
 <script src="nex-duplicate-review.js?v=2055"></script>
-<script src="nex-homebrew-advanced.js?v=2102"></script>
+<script src="nex-homebrew-advanced.js?v=2104"></script>
 <script src="nex-livros-itens.js?v=2076"></script>
 <script src="nex-armas-livro-basico.js?v=2082"></script>
 <script src="nex-complementos-itens.js?v=2078"></script>
