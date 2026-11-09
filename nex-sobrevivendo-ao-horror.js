@@ -1,6 +1,4 @@
-/* NEX — catálogo de referências resumidas do suplemento Sobrevivendo ao Horror.
- * Nomes e metadados de regras; descrições resumidas originais, sem transcrição do livro.
- * É necessário consultar o suplemento para efeitos completos e pré-requisitos. */
+/* NEX — referências resumidas de Sobrevivendo ao Horror, escritas em linguagem própria. */
 window.NEX_SAH={
   "origins": [
     {
@@ -10,7 +8,7 @@ window.NEX_SAH={
         "Percepção"
       ],
       "ability": "Companheiro Animal",
-      "description": "Origem de Sobrevivendo ao Horror. Companheiro Animal: consulte os efeitos e condições no suplemento.",
+      "description": "Você possui um companheiro animal que atua como aliado e oferece +2 em uma perícia aprovada pelo mestre. Em NEX 35% ganha benefícios adicionais de aliado e em 70% sua habilidade especial. A perda do companheiro traz uma penalidade séria de Sanidade.",
       "official": true,
       "source": "Sobrevivendo ao Horror"
     },
@@ -21,7 +19,7 @@ window.NEX_SAH={
         "Fortitude"
       ],
       "ability": "Acostumado ao Extremo",
-      "description": "Origem de Sobrevivendo ao Horror. Acostumado ao Extremo: consulte os efeitos e condições no suplemento.",
+      "description": "Acostumado a ambientes extremos, pode gastar 1 PE para reduzir em 5 o dano de frio, fogo ou mental recebido. A cada nova utilização na mesma cena, esse custo cresce em 1 PE.",
       "official": true,
       "source": "Sobrevivendo ao Horror"
     },
@@ -32,7 +30,7 @@ window.NEX_SAH={
         "Profissão"
       ],
       "ability": "Fome do Outro Lado",
-      "description": "Origem de Sobrevivendo ao Horror. Fome do Outro Lado: consulte os efeitos e condições no suplemento.",
+      "description": "Prepara pratos com ingredientes paranormais durante o interlúdio. Um teste de Profissão pode conceder resistência ao elemento da criatura, mas o preparo malsucedido prejudica quem come. Consumir essas refeições também tem efeitos negativos permanentes na Sanidade.",
       "official": true,
       "source": "Sobrevivendo ao Horror"
     },
@@ -43,7 +41,7 @@ window.NEX_SAH={
         "Tecnologia"
       ],
       "ability": "Poder da Amizade",
-      "description": "Origem de Sobrevivendo ao Horror. Poder da Amizade: consulte os efeitos e condições no suplemento.",
+      "description": "Escolhe um melhor amigo. Enquanto ambos estiverem próximos e puderem se comunicar visualmente, recebe +2 nos testes de perícia. Caso perca esse companheiro, sofre redução temporária de PE.",
       "official": true,
       "source": "Sobrevivendo ao Horror"
     },
@@ -54,7 +52,7 @@ window.NEX_SAH={
         "Vontade"
       ],
       "ability": "Não é Fantasia, É Cosplay!",
-      "description": "Origem de Sobrevivendo ao Horror. Não é Fantasia, É Cosplay!: consulte os efeitos e condições no suplemento.",
+      "description": "Pode empregar Artes para criar disfarces no lugar de Enganação. Se usar uma caracterização relacionada à perícia testada, recebe +2 no teste correspondente.",
       "official": true,
       "source": "Sobrevivendo ao Horror"
     },
@@ -65,7 +63,7 @@ window.NEX_SAH={
         "Diplomacia"
       ],
       "ability": "Conexões",
-      "description": "Origem de Sobrevivendo ao Horror. Conexões: consulte os efeitos e condições no suplemento.",
+      "description": "Recebe +2 em Diplomacia e pode recorrer a um contato especializado. Após gastar 10 minutos e 2 PE, substitui um teste ligado ao conhecimento desse contato por um teste de Diplomacia.",
       "official": true,
       "source": "Sobrevivendo ao Horror"
     },
@@ -76,7 +74,7 @@ window.NEX_SAH={
         "Sobrevivência"
       ],
       "ability": "Manual do Sobrevivente",
-      "description": "Origem de Sobrevivendo ao Horror. Manual do Sobrevivente: consulte os efeitos e condições no suplemento.",
+      "description": "Pode gastar 2 PE para somar +5 a resistências contra dificuldades do ambiente, armadilhas, condições físicas e perigos semelhantes. Durante interlúdios, descanso em condições precárias é tratado como normal.",
       "official": true,
       "source": "Sobrevivendo ao Horror"
     },
@@ -87,7 +85,7 @@ window.NEX_SAH={
         "Fortitude"
       ],
       "ability": "Mutação",
-      "description": "Origem de Sobrevivendo ao Horror. Mutação: consulte os efeitos e condições no suplemento.",
+      "description": "As mudanças sofridas pelo personagem concedem resistência a dano 2 e +2 em uma perícia física escolhida. Em contrapartida, suas diferenças causam desvantagem em interações de Diplomacia.",
       "official": true,
       "source": "Sobrevivendo ao Horror"
     },
@@ -98,7 +96,7 @@ window.NEX_SAH={
         "Ocultismo"
       ],
       "ability": "Conhecimento Oculto",
-      "description": "Origem de Sobrevivendo ao Horror. Conhecimento Oculto: consulte os efeitos e condições no suplemento.",
+      "description": "Pode investigar criaturas usando Ocultismo a partir de pistas indiretas. Ao identificar uma criatura com sucesso, recebe +2 nos testes realizados contra ela até o término da missão.",
       "official": true,
       "source": "Sobrevivendo ao Horror"
     },
@@ -109,7 +107,7 @@ window.NEX_SAH={
         "Percepção"
       ],
       "ability": "Através da Lente",
-      "description": "Origem de Sobrevivendo ao Horror. Através da Lente: consulte os efeitos e condições no suplemento.",
+      "description": "Ao observar ou analisar pistas por lentes e fotografias, pode gastar 2 PE para receber +5 em Investigação ou Percepção. Enxergar o ambiente continuamente por uma lente também reduz seu deslocamento.",
       "official": true,
       "source": "Sobrevivendo ao Horror"
     },
@@ -120,7 +118,7 @@ window.NEX_SAH={
         "Vontade"
       ],
       "ability": "Invenção Paranormal",
-      "description": "Origem de Sobrevivendo ao Horror. Invenção Paranormal: consulte os efeitos e condições no suplemento.",
+      "description": "Cria um dispositivo capaz de reproduzir o efeito básico de um ritual de primeiro círculo. Ativar exige teste de Profissão (engenheiro); falhar pode travar o invento. Uma manutenção no interlúdio permite reutilizá-lo.",
       "official": true,
       "source": "Sobrevivendo ao Horror"
     },
@@ -131,7 +129,7 @@ window.NEX_SAH={
         "Religião"
       ],
       "ability": "A Culpa é das Estrelas",
-      "description": "Origem de Sobrevivendo ao Horror. A Culpa é das Estrelas: consulte os efeitos e condições no suplemento.",
+      "description": "Escolhe um número da sorte no d6. No início de uma cena, pode gastar 1 PE e testar a sorte para conseguir +2 nos testes de perícia. Falhas aumentam temporariamente as chances de sucesso futuro.",
       "official": true,
       "source": "Sobrevivendo ao Horror"
     },
@@ -142,7 +140,7 @@ window.NEX_SAH={
         "Medicina"
       ],
       "ability": "Luto Habitual",
-      "description": "Origem de Sobrevivendo ao Horror. Luto Habitual: consulte os efeitos e condições no suplemento.",
+      "description": "Reduz o dano mental de acontecimentos relacionados à rotina de necropsias e legistas. Pode gastar 2 PE para receber +5 em Medicina ao prestar primeiros socorros ou examinar corpos.",
       "official": true,
       "source": "Sobrevivendo ao Horror"
     },
@@ -153,7 +151,7 @@ window.NEX_SAH={
         "Sobrevivência"
       ],
       "ability": "Mapa Celeste",
-      "description": "Origem de Sobrevivendo ao Horror. Mapa Celeste: consulte os efeitos e condições no suplemento.",
+      "description": "Consegue se orientar pelos pontos cardeais e lembrar caminhos já percorridos quando observa o céu. Pode gastar 2 PE para repetir testes de Sobrevivência e escolher o melhor resultado; também suporta descanso precário.",
       "official": true,
       "source": "Sobrevivendo ao Horror"
     },
@@ -164,7 +162,7 @@ window.NEX_SAH={
         "Fortitude"
       ],
       "ability": "Fôlego de Nadador",
-      "description": "Origem de Sobrevivendo ao Horror. Fôlego de Nadador: consulte os efeitos e condições no suplemento.",
+      "description": "Recebe +5 PV, prende a respiração por mais tempo conforme seu Vigor e pode nadar com seu deslocamento normal após um teste bem-sucedido de Atletismo.",
       "official": true,
       "source": "Sobrevivendo ao Horror"
     },
@@ -175,7 +173,7 @@ window.NEX_SAH={
         "Reflexos"
       ],
       "ability": "Mãos no Volante",
-      "description": "Origem de Sobrevivendo ao Horror. Mãos no Volante: consulte os efeitos e condições no suplemento.",
+      "description": "Ignora penalidades de ataque por estar em veículo em movimento. Ao pilotar, pode gastar 2 PE para ganhar +5 em testes de Pilotagem ou resistência.",
       "official": true,
       "source": "Sobrevivendo ao Horror"
     },
@@ -186,7 +184,7 @@ window.NEX_SAH={
         "Tecnologia"
       ],
       "ability": "O Inteligentão",
-      "description": "Origem de Sobrevivendo ao Horror. O Inteligentão: consulte os efeitos e condições no suplemento.",
+      "description": "Aumenta em um dado o bônus obtido pela atividade de leitura durante o interlúdio, aproveitando melhor estudos, livros e outras fontes de informação.",
       "official": true,
       "source": "Sobrevivendo ao Horror"
     },
@@ -196,7 +194,7 @@ window.NEX_SAH={
         "Vontade"
       ],
       "ability": "Luta ou Fuga",
-      "description": "Origem de Sobrevivendo ao Horror. Luta ou Fuga: consulte os efeitos e condições no suplemento.",
+      "description": "Tem Vontade como perícia fixa e escolhe mais uma relacionada à sua premonição. Recebe +2 em Vontade e pode obter 2 PE temporários quando surge uma referência relevante à visão, conforme avaliação do mestre.",
       "official": true,
       "source": "Sobrevivendo ao Horror"
     },
@@ -207,7 +205,7 @@ window.NEX_SAH={
         "Profissão"
       ],
       "ability": "Terapia",
-      "description": "Origem de Sobrevivendo ao Horror. Terapia: consulte os efeitos e condições no suplemento.",
+      "description": "Pode usar Profissão (psicólogo) em situações de Diplomacia. Gastando 2 PE, pode substituir um teste de resistência falho contra dano mental por um teste da profissão, uma vez por rodada.",
       "official": true,
       "source": "Sobrevivendo ao Horror"
     },
@@ -218,7 +216,7 @@ window.NEX_SAH={
         "Investigação"
       ],
       "ability": "Encontrar a Verdade",
-      "description": "Origem de Sobrevivendo ao Horror. Encontrar a Verdade: consulte os efeitos e condições no suplemento.",
+      "description": "Pode usar Investigação para persuadir e influenciar atitudes em vez de Diplomacia. Ao investigar, pode gastar 2 PE para receber +5 no teste.",
       "official": true,
       "source": "Sobrevivendo ao Horror"
     }
@@ -227,131 +225,131 @@ window.NEX_SAH={
     "Combatente": [
       [
         "Apego Angustiado",
-        "Poder de Combatente de Sobrevivendo ao Horror. Consulte os pré-requisitos e efeitos no livro."
+        "Permanece consciente mesmo sob a condição morrendo, mas perde 2 pontos de Sanidade ao final de cada rodada em que continuar nessa situação."
       ],
       [
         "Caminho para Forca",
-        "Poder de Combatente de Sobrevivendo ao Horror. Consulte os pré-requisitos e efeitos no livro."
+        "Ao se sacrificar por aliados numa perseguição, pode gastar 1 PE para ampliar o auxílio oferecido. Em cenas furtivas, também pode desviar a atenção dos inimigos para favorecer o grupo."
       ],
       [
         "Ciente das Cicatrizes",
-        "Poder de Combatente de Sobrevivendo ao Horror. Consulte os pré-requisitos e efeitos no livro."
+        "Investiga rastros ligados a armas e ferimentos com Luta ou Pontaria no lugar de outra perícia. Requer treinamento em pelo menos uma dessas duas perícias."
       ],
       [
         "Correria Desesperada",
-        "Poder de Combatente de Sobrevivendo ao Horror. Consulte os pré-requisitos e efeitos no livro."
+        "Aumenta o deslocamento em 3 metros e concede dado adicional em testes usados para fugir durante uma perseguição."
       ],
       [
         "Engolir o Choro",
-        "Poder de Combatente de Sobrevivendo ao Horror. Consulte os pré-requisitos e efeitos no livro."
+        "Ignora penalidades causadas por condições ao tentar escapar ou agir furtivamente, mesmo quando está debilitado."
       ],
       [
         "Instinto de Fuga",
-        "Poder de Combatente de Sobrevivendo ao Horror. Consulte os pré-requisitos e efeitos no livro."
+        "Recebe +2 nos testes de perícia ao longo de uma perseguição ou situação equivalente. Requer treinamento em Intuição."
       ],
       [
         "Mochileiro",
-        "Poder de Combatente de Sobrevivendo ao Horror. Consulte os pré-requisitos e efeitos no livro."
+        "Amplia a capacidade de carga em cinco espaços e permite aproveitar uma vestimenta adicional. Requer Vigor 2."
       ],
       [
         "Paranoia Defensiva",
-        "Poder de Combatente de Sobrevivendo ao Horror. Consulte os pré-requisitos e efeitos no livro."
+        "Uma vez por cena, pode gastar uma rodada e 3 PE para conceder ao grupo proteção contra o próximo ataque ou +5 em um teste de perícia, à escolha de cada integrante."
       ],
       [
         "Sacrificar os Joelhos",
-        "Poder de Combatente de Sobrevivendo ao Horror. Consulte os pré-requisitos e efeitos no livro."
+        "Uma vez por cena de perseguição, ao realizar esforço extra, pode gastar 2 PE para obter sucesso automático no teste. Requer treinamento em Atletismo."
       ],
       [
         "Sem Tempo, Irmão",
-        "Poder de Combatente de Sobrevivendo ao Horror. Consulte os pré-requisitos e efeitos no livro."
+        "Uma vez por investigação, facilita o trabalho do grupo automaticamente, mas desencadeia uma rolagem adicional de evento investigativo."
       ],
       [
         "Valentão",
-        "Poder de Combatente de Sobrevivendo ao Horror. Consulte os pré-requisitos e efeitos no livro."
+        "Pode usar Força em testes de Intimidação e, uma vez por cena, gastar 1 PE para tentar assustar alguém com uma ação livre."
       ]
     ],
     "Especialista": [
       [
         "Acolher o Terror",
-        "Poder de Especialista de Sobrevivendo ao Horror. Consulte os pré-requisitos e efeitos no livro."
+        "Permite utilizar uma vez adicional por sessão a opção de se entregar ao medo, conforme as regras específicas de terror do suplemento."
       ],
       [
         "Contatos Oportunos",
-        "Poder de Especialista de Sobrevivendo ao Horror. Consulte os pré-requisitos e efeitos no livro."
+        "Durante um interlúdio, convoca um contato que atua como aliado até o fim da missão, sujeito à disponibilidade definida pelo mestre. Requer Crime treinado."
       ],
       [
         "Disfarce Sutil",
-        "Poder de Especialista de Sobrevivendo ao Horror. Consulte os pré-requisitos e efeitos no livro."
+        "Pode montar um disfarce como ação completa gastando 1 PE, sem kit; com um kit recebe +5 no teste. Requer Presença 2 e Enganação treinada."
       ],
       [
         "Esconderijo Desesperado",
-        "Poder de Especialista de Sobrevivendo ao Horror. Consulte os pré-requisitos e efeitos no livro."
+        "Move-se furtivamente na velocidade normal sem penalidade e reduz ainda mais sua visibilidade ao se esconder com sucesso numa cena de furtividade."
       ],
       [
         "Especialista Diletante",
-        "Poder de Especialista de Sobrevivendo ao Horror. Consulte os pré-requisitos e efeitos no livro."
+        "Adquire um poder de outra classe ou um poder geral que cumpra seus requisitos; não vale para trilhas ou poderes paranormais. Requer NEX 30%."
       ],
       [
         "Flashback",
-        "Poder de Especialista de Sobrevivendo ao Horror. Consulte os pré-requisitos e efeitos no livro."
+        "Escolhe uma origem diferente da própria e passa a ter o poder característico dessa segunda origem."
       ],
       [
         "Leitura Fria",
-        "Poder de Especialista de Sobrevivendo ao Horror. Consulte os pré-requisitos e efeitos no livro."
+        "No interlúdio, pode formular perguntas sobre um NPC após observá-lo; cada pergunta não respondida concede PE temporários. Requer Intuição treinada."
       ],
       [
         "Mãos Firmes",
-        "Poder de Especialista de Sobrevivendo ao Horror. Consulte os pré-requisitos e efeitos no livro."
+        "Pode gastar 2 PE para obter um dado extra em Furtividade ao se esconder ou manipular discretamente objetos. Requer Furtividade treinada."
       ],
       [
         "Plano de Fuga",
-        "Poder de Especialista de Sobrevivendo ao Horror. Consulte os pré-requisitos e efeitos no livro."
+        "Pode usar Intelecto para criar obstáculos numa perseguição e, uma vez por cena, gastar 2 PE para ter sucesso sem testar."
       ],
       [
         "Remoer Memórias",
-        "Poder de Especialista de Sobrevivendo ao Horror. Consulte os pré-requisitos e efeitos no livro."
+        "Uma vez por cena, troca um teste de perícia baseada em Intelecto ou Presença por um teste de Intelecto com DT 15, gastando 2 PE. Requer Intelecto 1."
       ],
       [
         "Resistir à Pressão",
-        "Poder de Especialista de Sobrevivendo ao Horror. Consulte os pré-requisitos e efeitos no livro."
+        "Numa investigação, gasta 5 PE para estender a urgência em uma rodada e dar +2 nos testes do grupo durante esse intervalo. Requer Investigação treinada."
       ]
     ],
     "Ocultista": [
       [
         "Deixe os Sussurros Guiarem",
-        "Poder de Ocultista de Sobrevivendo ao Horror. Consulte os pré-requisitos e efeitos no livro."
+        "Uma vez por cena, gasta 2 PE e uma rodada para obter +2 em testes investigativos até o fim da cena. Enquanto mantém o benefício, falhas em testes também custam Sanidade."
       ],
       [
         "Domínio Esotérico",
-        "Poder de Ocultista de Sobrevivendo ao Horror. Consulte os pré-requisitos e efeitos no livro."
+        "Pode reunir os benefícios de dois catalisadores ritualísticos diferentes ao conjurar um ritual. Requer Intelecto 3."
       ],
       [
         "Estalos Macabros",
-        "Poder de Ocultista de Sobrevivendo ao Horror. Consulte os pré-requisitos e efeitos no livro."
+        "Gasta 1 PE para usar Ocultismo ao distrair ou enganar a atenção de outro ser; contra pessoas e animais ganha +5 no teste."
       ],
       [
         "Minha Dor me Impulsiona",
-        "Poder de Ocultista de Sobrevivendo ao Horror. Consulte os pré-requisitos e efeitos no livro."
+        "Se estiver ferido, pode gastar 1 PE para receber +1d6 em Acrobacia, Atletismo ou Furtividade. Requer Vigor 2."
       ],
       [
         "Nos Olhos do Monstro",
-        "Poder de Ocultista de Sobrevivendo ao Horror. Consulte os pré-requisitos e efeitos no livro."
+        "Ao observar diretamente uma criatura durante uma rodada e gastar 3 PE, recebe +5 em testes contra ela, exceto ataques, até o fim da cena."
       ],
       [
         "Olhar Sinistro",
-        "Poder de Ocultista de Sobrevivendo ao Horror. Consulte os pré-requisitos e efeitos no livro."
+        "Usa Presença em vez de Intelecto para Ocultismo e pode empregar Ocultismo para coagir. Requer Presença 1."
       ],
       [
         "Sentido Premonitório",
-        "Poder de Ocultista de Sobrevivendo ao Horror. Consulte os pré-requisitos e efeitos no livro."
+        "Gasta 3 PE para antecipar acontecimentos próximos de perseguições, investigações e furtividade. A manutenção custa 1 PE por rodada; não funciona em combate."
       ],
       [
         "Sincronia Paranormal",
-        "Poder de Ocultista de Sobrevivendo ao Horror. Consulte os pré-requisitos e efeitos no livro."
+        "Conecta mentalmente aliados que já enfrentaram o paranormal juntos e distribui dados extras para perícias mentais. A ativação e a manutenção consomem PE. Requer Presença 2."
       ],
       [
         "Traçado Conjuratório",
-        "Poder de Ocultista de Sobrevivendo ao Horror. Consulte os pré-requisitos e efeitos no livro."
+        "Desenha um símbolo protetor gastando uma ação completa e 1 PE. Dentro dele, recebe +2 em Ocultismo e resistências e aumenta em +2 a dificuldade para resistir aos seus rituais."
       ]
     ]
   },
