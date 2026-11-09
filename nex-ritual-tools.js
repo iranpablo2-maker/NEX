@@ -84,8 +84,8 @@ function effectSettings(r,version){
  const summaryDice=String(version==='Discente'?d.discente:version==='Verdadeiro'?d.verdadeiro:'').match(/\bDados:\s*(\d+d\d+(?:[+-]\d+)?)\b/i)?.[1]||'';
  const currentDice=String(typedDice||summaryDice||'').match(/\b\d+d\d+(?:[+-]\d+)?\b/i)?.[0]||'';
  if(currentDice){
-  if(type==='Cura'&&!preset.healVersions?.[version])healDice=currentDice;
-  else if(!preset.versions?.[version])damageDice=currentDice;
+  if(type==='Cura'&&(typedDice||!preset.healVersions?.[version]))healDice=currentDice;
+  else if(type!=='Cura'&&(typedDice||!preset.versions?.[version]))damageDice=currentDice;
  }
  const defaults={type,damageDice,healDice,healFromDamage:Boolean(preset.healFromDamage),buffText:summary};
  return {...defaults,...configured};
@@ -262,14 +262,14 @@ function drawLearned(){
    const config=effectSettings(r,version);
    const isDamage=['Dano','Dano + Cura'].includes(config.type);
    const isHeal=config.type==='Cura';
-   const formula=!optionAvailable?'':isDamage?(config.damageDice||'DANO'):isHeal?(config.healDice||'CURA'):'EFEITO';
+   const formula=!optionAvailable?'':isDamage?(config.damageDice||'VARIÁVEL'):isHeal?(config.healDice||'CURA'):'EFEITO';
    const effectDetails=String(config.buffText||d.note||d.description||'Efeito não cadastrado.').trim();
    const shortEffect=effectDetails.length>190?effectDetails.slice(0,187)+'…':effectDetails;
    const required=version==='Discente'?Number(d.discenteCircle)||requirement(d.discente):version==='Verdadeiro'?Number(d.verdadeiroCircle)||requirement(d.verdadeiro):0;
    const price=finalPrice(r,version,0),needsCost=version!=='Normal'&&enhancePrice(enhanced)===null;
    const blockReason=!optionAvailable?'Versão não disponível':
     required>allowedCircle||Number(r.circle)>allowedCircle?'Bloqueado pelo NEX':
-    isDamage&&!rollSimpleDicePattern(config.damageDice)?'Dados não cadastrados':
+    false?'Dados não cadastrados':
     isHeal&&config.healDice&&!rollSimpleDicePattern(config.healDice)?'Dados não cadastrados':
     price>availableTurnPE()?'Limite de PE neste turno':
     price>pe()?'PE insuficiente':'';
@@ -330,7 +330,10 @@ function quickDamageRoll(rid,version='Normal'){
  if(cost>pe()){toast('PE insuficiente.');return;}
  if(cost>availableTurnPE()){toast('Limite de PE por turno excedido.');return;}
  const fields=effectSettings(r,version);
- if(['Dano','Dano + Cura'].includes(fields.type)&&!rollSimpleDicePattern(fields.damageDice)){toast('Dados de dano não cadastrados.');return;}
+ if(['Dano','Dano + Cura'].includes(fields.type)&&!rollSimpleDicePattern(fields.damageDice)){
+  fields.type='Buff';
+  fields.buffText=(fields.buffText||'')+'\nDano variável: informe a fórmula no editor do ritual para rolar os dados.';
+ }
  if(fields.type==='Cura'&&fields.healDice&&!rollSimpleDicePattern(fields.healDice)){toast('Dados de cura inválidos.');return;}
  if(/Afinidade necessária/i.test(enhance)&&!confirm('Esta versão exige afinidade. Confirma que o personagem possui?'))return;
  const effect=computeEffect(fields);
