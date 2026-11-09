@@ -15,7 +15,13 @@
    id:x.id,type:x.type,name:cut(x.name,90),description:cut(x.description,2000),
    requirements:cut(x.requirements,650),minNex:num(x.minNex,0,99,5),
    className:['Livre','Geral','Combatente','Especialista','Ocultista'].includes(x.className)?(x.className==='Livre'&&['poder_geral','poder','habilidade'].includes(x.type)?'Geral':x.className):(['poder_geral','poder','habilidade'].includes(x.type)?'Geral':'Livre'),
-   circle:num(x.circle,1,4,1),element:['Conhecimento','Energia','Morte','Sangue','Medo','Personalizado'].includes(x.element)?x.element:'Personalizado',
+   circle:num(x.circle,1,4,1),element:['Conhecimento','Energia','Morte','Sangue','Medo','Personalizado'].includes(x.element)?x.element:'Conhecimento',
+   execution:['Padrão','Movimento','Completa','Reação','Livre'].includes(x.execution)?x.execution:'Padrão',
+   range:['Pessoal','Toque','Curto','Médio','Longo','Extremo','Ilimitado'].includes(x.range)?x.range:'Pessoal',
+   area:cut(x.area,150),target:cut(x.target,150),duration:cut(x.duration,150),
+   effect:cut(x.effect,700),resistance:cut(x.resistance,150),
+   ritualDice:cut(x.ritualDice,120),discenteDice:cut(x.discenteDice,120),verdadeiroDice:cut(x.verdadeiroDice,120),
+   image:typeof x.image==='string' && (/^https:\/\//i.test(x.image)||/^data:image\/(?:png|jpeg|webp);base64,/i.test(x.image))?x.image.slice(0,650000):'',
    cost:num(x.cost,0,99,0),vd:num(x.vd,0,9999,0),
    size:['Minúsculo','Pequeno','Médio','Grande','Enorme','Colossal'].includes(x.size)?x.size:'Médio',
    creatureType:cut(x.creatureType||'Criatura',70),
@@ -69,9 +75,23 @@
  '<div class="nex52-specific" id="nex52AbilityFields" hidden><label id="nex55ClassField">Classe<select id="nex51Class"><option>Livre</option><option>Combatente</option><option>Especialista</option><option>Ocultista</option></select></label>'+
  '<label id="nex51NexField">NEX mínimo<input id="nex51Nex" type="number" min="0" max="99" value="5"></label></div>'+
  
- '<div class="nex52-specific" id="nex52RitualFields" hidden><label>Círculo<select id="nex51Circle"><option value="1">1º</option><option value="2">2º</option><option value="3">3º</option><option value="4">4º</option></select></label>'+
- '<label>Elemento<select id="nex51Element"><option>Conhecimento</option><option>Energia</option><option>Morte</option><option>Sangue</option><option>Medo</option><option>Personalizado</option></select></label>'+
- '<label>PE indicado<input id="nex51Cost" type="number" min="0" max="99" value="0"></label></div>'+
+ '<div class="nex52-specific nex53-ritual-fields" id="nex52RitualFields" hidden>'+
+ '<label>Elemento<select id="nex51Element"><option>Conhecimento</option><option>Energia</option><option>Medo</option><option>Morte</option><option>Sangue</option></select></label>'+
+ '<label>Círculo<select id="nex51Circle"><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option></select></label>'+
+ '<label>Execução<select id="nex53Execution"><option>Padrão</option><option>Movimento</option><option>Completa</option><option>Reação</option><option>Livre</option></select></label>'+
+ '<label>Alcance<select id="nex53Range"><option>Pessoal</option><option>Toque</option><option>Curto</option><option>Médio</option><option>Longo</option><option>Extremo</option><option>Ilimitado</option></select></label>'+
+ '<label>Área<input id="nex53Area" maxlength="150" placeholder="Ex.: Esfera de 3m"></label>'+
+ '<label>Alvo<input id="nex53Target" maxlength="150" placeholder="Ex.: Uma criatura"></label>'+
+ '<label>Duração<input id="nex53Duration" maxlength="150" placeholder="Ex.: Cena"></label>'+
+ '<label>Efeito<input id="nex53Effect" maxlength="700" placeholder="Efeito do ritual"></label>'+
+ '<label>Resistência<input id="nex53Resistance" maxlength="150" placeholder="Ex.: Fortitude parcial"></label>'+
+ '<label>Dados<input id="nex53Dice" maxlength="120" placeholder="Ex.: 2d6"></label>'+
+ '<label>Dados Discente<input id="nex53DiscenteDice" maxlength="120" placeholder="Ex.: 4d6"></label>'+
+ '<label>Dados Verdadeiro<input id="nex53VerdadeiroDice" maxlength="120" placeholder="Ex.: 6d6"></label>'+
+ '<div class="nex53-ritual-image"><label>Imagem (opcional)<input id="nex53RitualImage" type="url" maxlength="2000" placeholder="https://..."></label>'+
+ '<label>Ou escolher imagem<input id="nex53RitualFile" type="file" accept="image/png,image/jpeg,image/webp"></label>'+
+ '<img id="nex53RitualPreview" alt="Prévia da imagem do ritual" hidden></div>'+
+ '</div>'+
  '<div class="nex52-specific" id="nex52ItemFields" hidden><label>Categoria<input id="nex52Category" maxlength="70" placeholder="Ex.: Equipamento"></label></div>'+
  '<div id="nex53TrailFields" class="nex53-trail-fields nex52-full" hidden><p>Configure o nome e o efeito de cada marco de NEX.</p>'+
  TRAIL_NEX.map((n,i)=>'<fieldset class="nex53-trail-step"><legend>NEX '+n+'% · Habilidade '+(i+1)+'</legend>'+
@@ -106,13 +126,15 @@
    $('nex52AbilityFields').hidden=!['origem','poder_geral','poder','trilha','habilidade'].includes(type);
    $('nex53TrailFields').hidden=!isTrail;
    $('nex55OriginSkills').hidden=!isOrigin;
-   $('nex55DescriptionField').hidden=isTrail;
-   $('nex55RequirementsField').hidden=isTrail||isOrigin||isGeneral||type==='poder_paranormal';
+   $('nex55DescriptionField').hidden=isTrail||type==='ritual';
+   $('nex55RequirementsField').hidden=isTrail||isOrigin||isGeneral||type==='poder_paranormal'||type==='ritual';
    $('nex55DescriptionLabel').textContent=isOrigin||isGeneral||isParanormal?'Descrição':'Descrição e efeitos';
-   $('nex51Name').placeholder=isParanormal||isGeneral?'Nome do homebrew':'Nome';
+   $('nex51Name').placeholder=type==='ritual'?'Novo Ritual':isParanormal||isGeneral?'Nome do homebrew':'Nome';
+   $('nex51Name').parentElement.classList.toggle('nex53-ritual-name',type==='ritual');
    $('nex51Description').placeholder=isParanormal?'Descreva o poder paranormal...':isGeneral?'Descreva o poder geral...':'Descreva seu homebrew';
    $('nex51Description').required=isParanormal;
    $('nex51Element').disabled=false;
+   $('nex51Element').required=type==='ritual';
    $('nex53ParanormalElement').disabled=!isParanormal;
    $('nex52RitualFields').hidden=type!=='ritual';
    $('nex52ItemFields').hidden=type!=='item';
@@ -130,6 +152,7 @@
    $('nex51Type').innerHTML=currentTypes().map(type=>'<option value="'+type+'">'+LABEL[type]+'</option>').join('');
    $('nex51Type').value=defaultType();$('nex52EditorTitle').textContent='Adicionar '+LABEL[defaultType()].toLocaleLowerCase('pt-BR');
    $('nex53ParanormalElement').value='Sangue';
+   $('nex53RitualImage').value='';$('nex53RitualFile').value='';$('nex53RitualPreview').hidden=true;
    editorFields();
  }
  function closeEditor(){$('nex52Editor').hidden=true;resetForm();}
@@ -140,7 +163,17 @@
      $('nex51Name').value=item.name;$('nex51Description').value=item.description;
      $('nex51Requirements').value=item.requirements;$('nex51Class').value=item.className;
      $('nex51Nex').value=item.minNex;$('nex51Circle').value=item.circle;
-     $('nex51Element').value=item.element;$('nex53ParanormalElement').value=['Sangue','Morte','Energia','Conhecimento','Medo'].includes(item.element)?item.element:'Sangue';$('nex51Cost').value=item.cost;
+     $('nex51Element').value=item.element;
+     $('nex53Execution').value=item.execution;
+     $('nex53Range').value=item.range;
+     $('nex53Area').value=item.area; $('nex53Target').value=item.target;
+     $('nex53Duration').value=item.duration;$('nex53Effect').value=item.effect;
+     $('nex53Resistance').value=item.resistance;$('nex53Dice').value=item.ritualDice;
+     $('nex53DiscenteDice').value=item.discenteDice;$('nex53VerdadeiroDice').value=item.verdadeiroDice;
+     $('nex53RitualImage').value=item.image?.startsWith('https://')?item.image:'';
+     $('nex53RitualPreview').hidden=!item.image;
+     if(item.image)$('nex53RitualPreview').src=item.image;
+     $('nex53ParanormalElement').value=['Sangue','Morte','Energia','Conhecimento','Medo'].includes(item.element)?item.element:'Sangue';$('nex51Cost').value=item.cost;
      $('nex52VD').value=item.vd;$('nex52Size').value=item.size;
      $('nex52CreatureType').value=item.creatureType;$('nex52Category').value=item.category;
      if(item.type==='origem'){$('nex55Skill1').value=item.skills?.[0]||'';$('nex55Skill2').value=item.skills?.[1]||'';}
@@ -152,7 +185,7 @@
  }
  function meta(item){
    if(item.type==='ameaca')return ['VD: '+item.vd,item.creatureType+' - '+item.size];
-   if(item.type==='ritual')return [item.circle+'º círculo · '+item.element,item.cost+' PE'];
+   if(item.type==='ritual')return [item.circle+'º círculo · '+item.element,item.execution+' · '+item.range];
    if(item.type==='item')return [item.category,'Item personalizado'];
    if(item.type==='trilha')return ['Trilha · '+item.className,'4 marcos · NEX 10%, 40%, 65% e 99%'];
    if(item.type==='origem')return ['Origem personalizada',(item.skills||[]).join(' · ')||'Duas perícias'];
@@ -216,16 +249,35 @@
      '<p class="nex52-empty">Nenhum homebrew associado a esta ficha.</p>';
  }
  function closeDialog(){const d=$('nex52Detail');if(typeof d.close==='function')d.close();else d.removeAttribute('open');opened=null;}
+ function ritualDetails(item){
+   if(item.type!=='ritual')return '';
+   const fields=[['Execução',item.execution],['Alcance',item.range],['Área',item.area],['Alvo',item.target],['Duração',item.duration],['Efeito',item.effect],['Resistência',item.resistance],['Dados',item.ritualDice],['Dados Discente',item.discenteDice],['Dados Verdadeiro',item.verdadeiroDice]];
+   return '<div class="nex53-ritual-details">'+fields.filter(([label,value])=>value).map(([label,value])=>'<div><strong>'+esc(label)+'</strong><p>'+esc(value)+'</p></div>').join('')+'</div>'+(item.image?'<img class="nex53-ritual-detail-image" src="'+esc(item.image)+'" alt="Imagem do ritual '+esc(item.name)+'">':'');
+ }
  function view(item){
    opened=item.id;const info=meta(item);
    $('nex52DetailBody').innerHTML='<div class="nex52-detail-top"><span>'+esc(LABEL[item.type])+'</span><h3>'+esc(item.name)+'</h3></div>'+
      '<p class="nex52-detail-meta">'+esc(info.join(' · '))+'</p>'+
      (item.description?'<h4>Descrição</h4><p>'+esc(item.description)+'</p>':'<p>Sem descrição.</p>')+
      (item.requirements?'<h4>Pré-requisitos</h4><p>'+esc(item.requirements)+'</p>':'')+
-     (item.type==='origem'?'<h4>Perícias treinadas</h4><p>'+esc((item.skills||[]).join(' e ')||'Não configuradas')+'</p>':'')+trailDetails(item);
+     (item.type==='origem'?'<h4>Perícias treinadas</h4><p>'+esc((item.skills||[]).join(' e ')||'Não configuradas')+'</p>':'')+ritualDetails(item)+trailDetails(item);
    targetOptions();const d=$('nex52Detail');if(typeof d.showModal==='function')d.showModal();else d.setAttribute('open','');
  }
  $('nex51Type').addEventListener('change',editorFields);
+ $('nex53RitualImage').addEventListener('input',e=>{
+   const src=e.target.value.trim();
+   const preview=$('nex53RitualPreview');preview.hidden=!/^https:\/\//i.test(src);
+   if(!preview.hidden)preview.src=src;
+ });
+ $('nex53RitualFile').addEventListener('change',e=>{
+   const file=e.target.files?.[0];if(!file)return;
+   if(!['image/png','image/jpeg','image/webp'].includes(file.type)||file.size>400000){
+     message('Escolha PNG, JPG ou WebP com até 400 KB.');e.target.value='';return;
+   }
+   const reader=new FileReader();
+   reader.onload=()=>{const preview=$('nex53RitualPreview');preview.src=String(reader.result||'');preview.hidden=false;$('nex53RitualImage').value='';message('Imagem carregada. Salve o ritual para manter a imagem.');};
+   reader.readAsDataURL(file);
+ });
  $('nex52Add').addEventListener('click',()=>openEditor(null));
  $('nex52CloseEditor').addEventListener('click',closeEditor);
  $('nex52Cancel').addEventListener('click',closeEditor);
@@ -262,6 +314,17 @@
      type,name,description:$('nex51Description').value,requirements:$('nex51Requirements').value,
      className:$('nex51Class').value,minNex:['trilha','origem','poder_geral','poder','habilidade'].includes(type)?(old?.minNex??(type==='trilha'?10:5)):$('nex51Nex').value,circle:$('nex51Circle').value,
      element:type==='poder_paranormal'?$('nex53ParanormalElement').value:$('nex51Element').value,cost:$('nex51Cost').value,vd:$('nex52VD').value,
+     execution:type==='ritual'?$('nex53Execution').value:(old?.execution||'Padrão'),
+     range:type==='ritual'?$('nex53Range').value:(old?.range||'Pessoal'),
+     area:type==='ritual'?$('nex53Area').value:old?.area,
+     target:type==='ritual'?$('nex53Target').value:old?.target,
+     duration:type==='ritual'?$('nex53Duration').value:old?.duration,
+     effect:type==='ritual'?$('nex53Effect').value:old?.effect,
+     resistance:type==='ritual'?$('nex53Resistance').value:old?.resistance,
+     ritualDice:type==='ritual'?$('nex53Dice').value:old?.ritualDice,
+     discenteDice:type==='ritual'?$('nex53DiscenteDice').value:old?.discenteDice,
+     verdadeiroDice:type==='ritual'?$('nex53VerdadeiroDice').value:old?.verdadeiroDice,
+     image:type==='ritual'?($('nex53RitualFile').files.length?(! $('nex53RitualPreview').hidden ?$('nex53RitualPreview').src:''):($('nex53RitualImage').value||(! $('nex53RitualPreview').hidden?$('nex53RitualPreview').src:''))):(old?.image||''),
      size:$('nex52Size').value,creatureType:$('nex52CreatureType').value,category:$('nex52Category').value,
      trailAbilities:type==='trilha'?TRAIL_NEX.map(n=>({nex:n,name:$('nex53TrailName'+n).value,description:$('nex53TrailDescription'+n).value})):(old?.trailAbilities||[]),
      skills:type==='origem'?[$('nex55Skill1').value,$('nex55Skill2').value]:(old?.skills||[])
