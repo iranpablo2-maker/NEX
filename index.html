@@ -1567,6 +1567,42 @@ html,body{background:#000!important;background-image:none!important}
 }
 #sheetScreen #attributes .nex-attributes-pencil:hover{color:#dfb1ff!important}
 #sheetScreen #attributes .nex-attributes-pencil:focus-visible{outline:2px solid #dfb1ff!important;outline-offset:2px}
+</style><style id="nex-fix-skill-column-clipping">
+/* Mais espaço para cada coluna, principalmente OUTROS; cabeçalhos e valores permanecem alinhados. */
+#sheetScreen .nexv16-table-scroll{width:100%!important;max-width:100%!important;overflow-x:auto!important;overflow-y:visible!important;scrollbar-width:thin}
+#sheetScreen .nexv16-skill-head,
+#sheetScreen .nexv16-skill-row{
+ grid-template-columns:minmax(125px,1fr) 46px 48px 64px 65px!important;
+ column-gap:5px!important;
+ min-width:390px!important;
+ width:100%!important;
+ padding-left:5px!important;padding-right:5px!important;
+ align-items:center!important;
+}
+#sheetScreen .nexv16-skill-head > span{min-width:0!important;white-space:nowrap!important;text-align:center!important}
+#sheetScreen .nexv16-skill-head > span:first-child{text-align:left!important}
+#sheetScreen .nexv16-skill-row > *{min-width:0!important;box-sizing:border-box!important}
+#sheetScreen .nexv16-skill-row input[data-n16-other]{
+ appearance:textfield!important;-moz-appearance:textfield!important;
+ width:100%!important;min-width:0!important;max-width:100%!important;
+ height:34px!important;min-height:34px!important;line-height:normal!important;
+ padding:5px 6px!important;margin:0!important;box-sizing:border-box!important;
+ border:1px solid #55505d!important;border-radius:3px!important;
+ background:#0d0b11!important;color:#fff!important;-webkit-text-fill-color:#fff!important;
+ text-align:center!important;font-size:12px!important;font-weight:600!important;
+ overflow:visible!important;
+}
+#sheetScreen .nexv16-skill-row input[data-n16-other]::-webkit-inner-spin-button,
+#sheetScreen .nexv16-skill-row input[data-n16-other]::-webkit-outer-spin-button{-webkit-appearance:none!important;margin:0!important}
+#sheetScreen .nexv16-skill-row select.nex57-training-select{
+ width:64px!important;min-width:64px!important;max-width:64px!important;
+}
+#sheetScreen .nexv16-skill-row select.nex-attr-skill-picker{
+ width:46px!important;min-width:46px!important;max-width:46px!important;
+}
+@media(max-width:650px){
+ #sheetScreen .nexv16-skill-head,#sheetScreen .nexv16-skill-row{min-width:390px!important;}
+}
 </style></head><body>
 <script src="nex-sobrevivendo-ao-horror.js?v=2072"></script>
 <header class="topbar"><div class="topinner"><button type="button" id="n17MenuToggle" class="n17-menu-button" aria-expanded="false" aria-controls="n17Drawer" aria-label="Abrir menu">☰</button><button type="button" class="brand" id="nexBrandHome" aria-label="Voltar ao menu principal" title="Voltar ao menu principal"><span class="brand-mark" aria-hidden="true">◈</span><span><h1>NEX</h1><span class="subtitle">SISTEMA DE FICHAS · ORDEM PARANORMAL</span></span></button><div class="actions"><button class="btn sm" id="menuHeaderButton" type="button" style="display:none!important" hidden tabindex="-1" aria-hidden="true">⌂ Menu principal</button><button class="btn sm" id="newChar" type="button" style="display:none!important" hidden tabindex="-1" aria-hidden="true">＋ Nova ficha</button><button class="btn sm" id="importBtn" style="display:none!important" aria-hidden="true" tabindex="-1">Importar</button><button class="btn sm" id="exportBtn" style="display:none!important" aria-hidden="true" tabindex="-1">↓ Exportar</button><input type="file" id="fileInput" accept="application/json,.json" hidden><span id="n17SaveIndicator" hidden aria-hidden="true"></span></div></div></header>
@@ -1575,7 +1611,7 @@ html,body{background:#000!important;background-image:none!important}
   <button type="button" data-nexnav="agents">Personagens</button>
   <button type="button" data-nexnav="campaigns">Campanhas</button>
   <button type="button" data-nexnav="homebrew">Homebrew</button>
-    <span class="nex-ref-nav-status" aria-label="Versão do site">NEX 2.0.55</span>
+    
  </div>
 </nav>
 
@@ -1591,7 +1627,7 @@ html,body{background:#000!important;background-image:none!important}
 <div class="n17-drawer-bottom">As fichas são gravadas neste navegador. Para trocar de aparelho ou versão do HTML, exporte um backup JSON.</div></aside>
 
 <section id="mainMenu" aria-label="Menu principal NEX">
- <div class="home-hero"><div class="home-eyebrow">PLATAFORMA DE PERSONAGENS · VERSÃO 2.0.55</div><h2>NEX</h2><p>O paranormal não espera. Organize seus personagens, consulte suas fichas e prepare sua próxima investigação em um único lugar. Seus registros ficam neste navegador.</p><div class="actions"><button class="home-action" type="button" id="menuNew">＋ Criar personagem</button><button class="home-action secondary" type="button" id="menuContinue" style="display:none!important" hidden tabindex="-1" aria-hidden="true">Abrir ficha atual →</button></div></div>
+ <div class="home-hero"><div class="home-eyebrow">PLATAFORMA DE PERSONAGENS</div><h2>NEX</h2><p>O paranormal não espera. Organize seus personagens, consulte suas fichas e prepare sua próxima investigação em um único lugar. Seus registros ficam neste navegador.</p><div class="actions"><button class="home-action" type="button" id="menuNew">＋ Criar personagem</button><button class="home-action secondary" type="button" id="menuContinue" style="display:none!important" hidden tabindex="-1" aria-hidden="true">Abrir ficha atual →</button></div></div>
  <div class="home-section-heading"><h2>Central de operações</h2><span class="home-tag">◈ ACESSO LOCAL</span></div>
  <div class="home-grid"><button class="home-tile" data-home="agents"><span class="symbol">♙</span><strong>Meus personagens</strong><small>Visualize, abra e gerencie fichas de personagens.</small></button><button class="home-tile" data-home="new"><span class="symbol">＋</span><strong>Criar personagem</strong><small>Inicie uma nova ficha com as regras do NEX.</small></button><button class="home-tile" data-home="campaigns"><span class="symbol">◎</span><strong>Campanhas</strong><small>Organize suas mesas e registre informações importantes.</small></button><button class="home-tile" data-home="homebrew"><span class="symbol">✧</span><strong>Homebrew</strong><small>Crie e edite origens personalizadas na biblioteca independente.</small></button></div>
  <div class="home-section-heading" id="agentsHeading"><h2>Personagens registrados</h2><div class="home-toolbar"><button class="btn sm" id="menuBackup" style="display:none!important" aria-hidden="true" tabindex="-1">↓ Exportar ficha atual</button><button class="btn sm" id="menuImport" style="display:none!important" aria-hidden="true" tabindex="-1">↑ Importar ficha</button></div></div>
