@@ -1194,6 +1194,22 @@ html,body{background:#000!important;background-image:none!important}
 #sheetScreen .nex-skill-dice-button{width:23px!important;height:26px!important;flex:0 0 23px!important}
 #sheetScreen .nex-skill-dice-button img{width:21px!important;height:24px!important;object-fit:contain!important;mix-blend-mode:normal!important}
 </style>
+<style id="nex-sheet-abilities-cards-v2062">
+/* Habilidades na ficha: ações à direita e cartões expansíveis, sem filtro. */
+#sheetScreen #overview .nex-sheet-ability-actions{display:flex;flex-direction:column;gap:26px;margin:4px 0 15px;align-items:stretch}
+#sheetScreen #overview .nex-sheet-ability-action-row{display:flex;justify-content:flex-end}
+#sheetScreen #overview .nex-sheet-ability-action-row .btn{min-height:37px;font-size:12px;font-weight:700;border-radius:2px;padding:8px 12px}
+#sheetScreen #overview #n215AddAbility{background:#9d38e9;border:1px solid #9d38e9;color:#fff}
+#sheetScreen #overview #n16ShowAbility{background:transparent;color:#c1b9c7;border:1px solid #9d38e9}
+#sheetScreen #overview #n16AbilityList{display:grid;gap:8px}
+#sheetScreen #overview #n16AbilityList .nex-sheet-ability-entry{margin:0;border:0;border-radius:3px;background:#202023}
+#sheetScreen #overview #n16AbilityList .nex-sheet-ability-entry>summary{min-height:53px;padding:12px 16px;gap:18px;display:flex;align-items:center;font-size:13px;font-weight:700;color:#fff;list-style:none}
+#sheetScreen #overview #n16AbilityList .nex-sheet-ability-entry>summary::before{content:'⌄';font-size:21px;line-height:1;color:#b04df4;margin:0}
+#sheetScreen #overview #n16AbilityList .nex-sheet-ability-entry[open]>summary::before{transform:rotate(180deg)}
+#sheetScreen #overview #n16AbilityList .nex-sheet-ability-entry .nexv16-detail{padding:12px 16px 15px;background:#17171a;color:#ddd;white-space:normal}
+#sheetScreen #overview .nex-sheet-ability-source{display:block;margin-bottom:7px;color:#b38ac9;font-size:10px}
+@media(max-width:600px){#sheetScreen #overview .nex-sheet-ability-actions{gap:23px}#sheetScreen #overview #n16AbilityList .nex-sheet-ability-entry>summary{padding:12px 14px}}
+</style>
 </head><body>
 <header class="topbar"><div class="topinner"><button type="button" id="n17MenuToggle" class="n17-menu-button" aria-expanded="false" aria-controls="n17Drawer" aria-label="Abrir menu">☰</button><button type="button" class="brand" id="nexBrandHome" aria-label="Voltar ao menu principal" title="Voltar ao menu principal"><span class="brand-mark" aria-hidden="true">◈</span><span><h1>NEX</h1><span class="subtitle">SISTEMA DE FICHAS · ORDEM PARANORMAL</span></span></button><div class="actions"><button class="btn sm" id="menuHeaderButton" type="button" style="display:none!important" hidden tabindex="-1" aria-hidden="true">⌂ Menu principal</button><button class="btn sm" id="newChar" type="button" style="display:none!important" hidden tabindex="-1" aria-hidden="true">＋ Nova ficha</button><button class="btn sm" id="importBtn" style="display:none!important" aria-hidden="true" tabindex="-1">Importar</button><button class="btn sm" id="exportBtn" style="display:none!important" aria-hidden="true" tabindex="-1">↓ Exportar</button><input type="file" id="fileInput" accept="application/json,.json" hidden><span id="n17SaveIndicator" hidden aria-hidden="true"></span></div></div></header>
 <nav class="nex-ref-nav" aria-label="Navegação principal">
@@ -1442,7 +1458,7 @@ html,body{background:#000!important;background-image:none!important}
 <section class="col middle nexv16-skills"><div class="panel-head"><h2>✧ Perícias</h2><span class="hint">DADOS · BÔNUS · TREINO · OUTROS</span></div><div class="nexv16-table-scroll"><div id="nexSkillRollResult" class="nex-skill-roll-result" role="status" aria-live="polite" hidden></div><div id="skillsList" class="skills-list"></div></div><p class="hint nexv16-footnote">Treino: +5 Treinado · +10 Veterano · +15 Expert<br>* Requer treinamento · + Pode sofrer penalidade de carga</p></section>
 <main class="col right"><nav class="tabs" aria-label="Abas da ficha"><button class="tab" data-tab="attacks">Combate</button><button class="tab active" data-tab="overview">Habilidades</button><button class="tab ritual-tab" data-tab="rituals">Rituais</button><button class="tab" data-tab="inventory">Inventário</button><button class="tab" data-tab="notes">Descrição</button></nav>
 <section class="view active" id="overview">
-<div class="nexv16-toolbar"><div><h2>Habilidades</h2><p class="hint">Habilidades da origem, poderes e habilidades personalizadas</p></div><div class="n215-toolbar-actions"><button type="button" class="btn primary sm" id="n215AddAbility">＋ Adicionar</button><button type="button" class="btn sm" id="n16ShowAbility">Nova habilidade</button></div></div>
+<div class="nex-sheet-ability-actions" aria-label="Ações de habilidades"><div class="nex-sheet-ability-action-row"><button type="button" class="btn primary sm" id="n215AddAbility">Adicionar</button></div><div class="nex-sheet-ability-action-row"><button type="button" class="btn sm" id="n16ShowAbility">Nova Habilidade</button></div></div>
 
 <form id="n16AbilityForm" class="nexv16-edit hide"><label>Nome<input id="n16AbilityName" maxlength="90" required></label><label>Descrição<textarea id="n16AbilityDesc" maxlength="1800" rows="3"></textarea></label><div class="actions"><button class="btn primary sm" type="submit">Salvar habilidade</button><button class="btn sm" type="button" id="n16CancelAbility">Cancelar</button></div></form>
 <section id="n19TrailPanel" class="n19-trail-panel hide" aria-label="Seleção de trilha">
@@ -2474,8 +2490,8 @@ $('nexHomebrewFilter')?.addEventListener('input',()=>nex12RenderHomebrew());
    return entries;
  }
  function drawAbilities(){
-   ensure();const records=abilityRecords().filter(a=>(a.name+' '+a.source+' '+a.detail).toLocaleLowerCase('pt-BR').includes(abilityFilter));
-   $id('n16AbilityList').innerHTML=records.length?records.map(a=>`<details class="nexv16-entry"><summary><span class="nexv16-name">${escape(a.name)}<span class="sub" style="display:block">${escape(a.source)}</span></span></summary><div class="nexv16-detail">${escape(a.detail)}${a.id?`<div class="actions"><button type="button" class="btn sm" data-n16-remove-ability="${escape(a.id)}">Excluir habilidade</button></div>`:''}</div></details>`).join(''):'<div class="nexv16-empty">Nenhuma habilidade encontrada.</div>';
+   ensure();const records=abilityRecords();
+   $id('n16AbilityList').innerHTML=records.length?records.map(a=>`<details class="nexv16-entry nex-sheet-ability-entry"><summary><span class="nexv16-name">${escape(a.name)}</span></summary><div class="nexv16-detail"><small class="nex-sheet-ability-source">${escape(a.source)}</small><div>${escape(a.detail)}</div>${a.id?`<div class="actions"><button type="button" class="btn sm" data-n16-remove-ability="${escape(a.id)}">Excluir habilidade</button></div>`:''}</div></details>`).join(''):'<div class="nexv16-empty">Nenhuma habilidade encontrada.</div>';
  }
  function itemCategory(item){const c=item.category||'Geral';return ['Arma','Munição','Proteção','Geral','Item Amaldiçoado'].includes(c)?c:'Geral';}
  function capacity(){return Math.max(0,5*int(state.attributes.for,1));}
