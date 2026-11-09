@@ -186,6 +186,7 @@ style.textContent+="\n#nexTkCastDialog.nex-tk-result-compact{width:min(320px,cal
 style.textContent+="\n#nexTkPanel .tk-dmg-element{max-width:54%;overflow:hidden;text-overflow:ellipsis}\n#nexTkPanel .tk-dmg-roll .tk-dmg-formula{overflow:hidden;text-overflow:ellipsis}\n";
 style.textContent+="\n#nexTkPanel .tk-type-filters{display:flex;flex-wrap:wrap;gap:7px;margin:2px 0 12px}\n#nexTkPanel .tk-type-filter{border:1px solid #4a3a56;border-radius:6px;background:#221c28;color:#cdc2d2;padding:7px 13px;font-size:12px;cursor:pointer}\n#nexTkPanel .tk-type-filter[aria-pressed=\"true\"]{background:#5b2b7a;border-color:#8f54b7;color:#fff}\n#nexTkPanel .tk-type-filter:focus-visible{outline:2px solid #ba7feb;outline-offset:2px}\n";
 style.textContent+="\n#nexTkPanel .tk-dmg-effect{display:block;font-size:10px;line-height:1.35;color:#c4b8c9;margin-top:7px;white-space:pre-line;overflow-wrap:anywhere;max-height:8em;overflow:hidden}\n#nexTkPanel .tk-dmg-about{border-top:1px solid #352d39;margin:0 12px 10px;padding-top:7px}\n#nexTkPanel .tk-dmg-about>summary{cursor:pointer;color:#bba6cf;font-size:11px;padding:6px 3px}\n#nexTkPanel .tk-dmg-about-content{color:#ccc0d2;font-size:11px;line-height:1.5;overflow-wrap:anywhere}\n#nexTkPanel .tk-dmg-about-content p{margin:6px 2px}\n#nexTkCastDialog .tk-roll-effect-show{padding:9px 14px 12px;margin:0;color:#e9d9ee;font-size:12px;line-height:1.55;white-space:pre-line;overflow-wrap:anywhere;border-top:1px solid #37303b}\n";
+style.textContent+="\n#nexTkCastDialog .tk-resistance-panel{margin-top:12px;padding:10px;border:1px solid #594466;border-radius:5px}\n#nexTkCastDialog .tk-resistance-panel strong{font-size:12px}\n#nexTkCastDialog .tk-resistance-controls{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin:8px 0}\n#nexTkCastDialog .tk-resistance-controls label{font-size:11px;min-width:0}\n#nexTkCastDialog .tk-resistance-controls input{width:100%;box-sizing:border-box}\n#nexTkCastDialog #tkResistanceResult{font-size:11px;margin-top:8px;line-height:1.5}\n";
 document.head.append(style);
 function top(){
  if(!isOccultist()){host.innerHTML='';if(modal.open&&typeof modal.close==='function')modal.close();return;}
@@ -423,6 +424,31 @@ function rollSimpleDicePattern(expr){
  const matched=/^(\d{1,2})d(\d{1,3})(?:[+-]\d{1,3})?$/.exec(String(expr||'').trim().replace(/\s+/g,'').toLowerCase());
  return Boolean(matched&&Number(matched[1])>=1&&Number(matched[1])<=50&&Number(matched[2])>=2&&Number(matched[2])<=1000);
 }
+function resistanceTestType(r){
+ const value=String(info(r).resistance||'');
+ const name=value.match(/\b(Fortitude|Reflexos|Vontade)\b/i);
+ return name?name[1]:'';
+}
+function renderResistanceRoll(ritual){
+ const type=resistanceTestType(ritual);
+ if(!type)return '';
+ return '<section class="tk-resistance-panel"><strong>Teste de resistência do alvo: '+esc(type)+'</strong>'+
+ '<p class="tk-sub">Informe os dados do alvo; este teste não desconta PE.</p>'+
+ '<div class="tk-resistance-controls"><label>Dados d20<input id="tkTargetPool" type="number" min="0" max="20" value="1"></label>'+
+ '<label>Bônus da perícia<input id="tkTargetBonus" type="number" min="-99" max="99" value="0"></label></div>'+
+ '<button type="button" class="tk-button" data-tk-roll-resistance="1">Rolar resistência (DT '+targetRitualDT()+')</button>'+
+ '<div id="tkResistanceResult" aria-live="polite"></div></section>';
+}
+function resolveResistanceRoll(){
+ const poolNode=modal.querySelector('#tkTargetPool'),bonusNode=modal.querySelector('#tkTargetBonus');
+ const output=modal.querySelector('#tkResistanceResult');if(!output||!poolNode||!bonusNode)return;
+ const pool=Math.min(20,Math.max(0,Math.floor(Number(poolNode.value)||0)));
+ const bonus=Math.min(99,Math.max(-99,Math.floor(Number(bonusNode.value)||0)));
+ const values=Array.from({length:pool||2},()=>die(20));
+ const chosen=pool===0?Math.min(...values):Math.max(...values);
+ const total=chosen+bonus,dt=targetRitualDT();
+ output.textContent='Dados: ['+values.join(', ')+'] · '+chosen+' + '+bonus+' = '+total+' / DT '+dt+' · '+(total>=dt?'Passou na resistência':'Falhou na resistência')+'. Confira o efeito da resistência na descrição do ritual.';
+}
 function castingResultHTML(m,check,sanity,effect){
  const rows=[];
  if(check)rows.push('<p><strong>Teste de Ocultismo:</strong> ['+esc(check.rolls.join(', '))+'] → '+check.chosen+' + '+check.training+' treino + '+check.bonus+' bônus = <strong>'+check.total+'</strong> · DT '+check.dt+' ('+(check.passed?'Sucesso':'Falha')+')</p>');
@@ -434,7 +460,7 @@ function castingResultHTML(m,check,sanity,effect){
  if(effect.type==='Buff')rows.push('<p><strong>Suporte/Buff:</strong> '+esc(effect.buffText||'Consultar ritual')+'</p>');
  rows.push('<p><strong>DT de resistência do alvo:</strong> '+targetRitualDT()+' (quando aplicável).</p>');
  rows.push('<p class="tk-sub">Falhar no TO não impede a conjuração básica, mas pode causar perda de Sanidade. Confira os efeitos e resistências com o mestre.</p>');
- const infoRows=rows.join('');
+ const infoRows=rows.join('')+renderResistanceRoll(m.r);
  if(effect.damage||effect.healing||effect.type==='Buff'){
   const toValue=check?check.total:'—',toLabel=check?'OCULTISMO':'SEM TO';
   const secondValue=effect.damage?effect.damage.total:effect.healing?effect.healing.total:'✓';
@@ -565,6 +591,7 @@ host.addEventListener('submit',e=>{
  update();toast('Combinação salva nesta ficha.');
 });
 modal.addEventListener('click',e=>{
+ if(e.target.closest('[data-tk-roll-resistance]')){resolveResistanceRoll();return;}
  if(e.target.closest('[data-tk-modal-close]')){if(typeof modal.close==='function')modal.close();else modal.open=false;castingId='';}
 });
 modal.addEventListener('input',e=>{if(['tkCastExtra','tkTOBonus','tkDamageDice','tkHealDice','tkBuffText'].includes(e.target.id))preview();});
