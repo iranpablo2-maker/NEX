@@ -65,6 +65,11 @@ style.textContent=[
 '#nexItemEditor .span-2{grid-column:span 2}',
 '#nexItemEditor .span-4{grid-column:1/-1}',
 '#nexItemEditor h3{font-size:15px;padding-top:15px;border-top:1px solid #484049;color:#d8cae5;margin:18px 0 12px}',
+'#nexItemEditor .nex-editor-inline{display:flex;gap:8px;align-items:center;margin-bottom:8px}',
+'#nexItemEditor .nex-editor-inline input{flex:1;min-width:0;background:#111;border:1px solid #484049;color:#fff;padding:8px}',
+'#nexItemEditor .nex-editor-inline button{border:0;background:#a13ae0;color:white;border-radius:3px;padding:8px 12px}',
+'#nexItemEditor .nex-editor-rich{display:flex;gap:4px;margin-bottom:8px}',
+'#nexItemEditor .nex-editor-rich button{border:1px solid #514453;background:transparent;color:white;min-width:35px;padding:5px}',
 '#nexItemEditor .nex-editor-buttons{padding:12px 18px;display:flex;gap:14px;justify-content:flex-end;border-top:1px solid #484049;flex:none}',
 '#nexItemEditor .nex-editor-buttons button{padding:10px 18px;border:0;border-radius:3px}',
 '#nexItemEditor .nex-editor-save{background:#a63be5;color:white;font-weight:700}',
@@ -97,9 +102,9 @@ function editorFields(d){
  field('damage','Dano*',d.damage)+field('secondary','Dano secundário',d.secondary)+
  field('critical','Crítico*',d.critical)+field('multiplier','Multiplicador*',d.multiplier)+
  field('damageType','Tipo de dano',d.damageType,'text',2)+field('range','Alcance',d.range,'text',2)+'</div>';
- html+='<h3>Melhorias</h3>'+field('upgrades','Melhorias (uma por linha)',d.upgrades,'textarea',4)+
+ html+='<h3>Melhorias</h3><div class="nex-editor-inline"><input id="nexEditorNewUpgrade" placeholder="Nome da melhoria"><button type="button" data-nex-add-upgrade>Adicionar</button></div>'+field('upgrades','Melhorias cadastradas',d.upgrades,'textarea',4)+
  '<h3>Imagem</h3>'+field('image','URL HTTPS da imagem',d.image,'text',4)+
- '<h3>Descrição (use **texto** para roxo)</h3>'+field('description','Descrição do item',d.description,'textarea',4);
+ '<h3>Descrição</h3><div class="nex-editor-rich"><button type="button" data-nex-rich="**"><b>B</b></button><button type="button" data-nex-rich="*"><i>I</i></button><button type="button" data-nex-rich="__"><u>U</u></button></div>'+field('description','Descrição do item (negrito roxo)',d.description,'textarea',4);
  return html;
 }
 function open(id){
@@ -115,7 +120,7 @@ function close(){
  lastFocus?.focus?.();
 }
 function descriptionText(s){
- return safe(s).replace(/\*\*(.+?)\*\*/gs,'<strong style="color:#b03eec">$1</strong>');
+ return safe(s).replace(/\*\*(.+?)\*\*/gs,'<strong style="color:#b03eec">$1</strong>').replace(/__(.+?)__/gs,'<u>$1</u>').replace(/(?<!\*)\*([^*\n]+)\*(?!\*)/g,'<em>$1</em>');
 }
 function card(item){
  const d=detail(item),weapon=d.category==='Arma',id=safe(item.id);
@@ -153,7 +158,11 @@ document.addEventListener('click',event=>{
  }
 });
 modal.addEventListener('click',event=>{
- if(event.target===modal||event.target.closest('.nex-editor-close,.nex-editor-cancel'))close();
+ if(event.target===modal||event.target.closest('.nex-editor-close,.nex-editor-cancel')){close();return;}
+ const add=event.target.closest('[data-nex-add-upgrade]');
+ if(add){const input=by('nexEditorNewUpgrade'),area=by('nexEditorFields').querySelector('[data-edit="upgrades"]');if(input&&area&&input.value.trim()){area.value+=(area.value.trim()?'\n':'')+input.value.trim().slice(0,120);input.value='';}return;}
+ const rich=event.target.closest('[data-nex-rich]');
+ if(rich){const area=by('nexEditorFields').querySelector('[data-edit="description"]');if(!area)return;const mark=rich.dataset.nexRich,start=area.selectionStart,end=area.selectionEnd;area.value=area.value.slice(0,start)+mark+area.value.slice(start,end)+mark+area.value.slice(end);area.focus();area.setSelectionRange(start+mark.length,end+mark.length);}
 });
 by('nexEditorForm').addEventListener('submit',event=>{
  event.preventDefault();const item=find(current);if(!item)return;
