@@ -16,7 +16,7 @@ const isOccultist=()=>state.class==='Ocultista';
 const PE_LIMIT=()=>Math.max(0,(Number(maxValues().peLimit)||0)+(state.origin==='Universitário'?1:0));
 const availableTurnPE=()=>PE_LIMIT(); // sem controle manual de turnos: limite é verificado em cada conjuração
 const permittedCircle=()=>typeof nex12RitualAllowed==='function'?Number(nex12RitualAllowed())||0:0;
-let view='conjurar',query='',element='',circle='',source='';
+let view='conjurar',query='',element='',circle='',source='',typeFilter='Todos';
 let castingId='';
 let castCommitted=false;
 function kit(){
@@ -176,6 +176,7 @@ style.textContent='#nexTkPanel{border:1px solid #3b314b;border-radius:8px;paddin
 style.textContent+="\n#nexTkPanel{background:transparent;border:0;padding:0;margin:12px 0 24px}\n#nexTkPanel .tk-dmg-resources{border:1px solid #353139;border-radius:7px;background:#17151a;padding:12px;margin-bottom:12px}\n#nexTkPanel .tk-dmg-list{display:flex;flex-direction:column;gap:9px}\n#nexTkPanel .tk-dmg-card{background:#202022;border:1px solid #29292e;border-radius:5px;overflow:hidden}\n#nexTkPanel .tk-dmg-card>summary{list-style:none;display:flex;gap:14px;align-items:center;padding:14px 16px 7px;cursor:pointer}\n#nexTkPanel .tk-dmg-card>summary::-webkit-details-marker{display:none}\n#nexTkPanel .tk-dmg-card .tk-dmg-chevron{font-size:23px;line-height:12px;color:#ae54ed;transform:rotate(0deg);transition:transform .16s}\n#nexTkPanel .tk-dmg-card:not([open]) .tk-dmg-chevron{transform:rotate(-90deg)}\n#nexTkPanel .tk-dmg-card>summary strong{font-size:14px;color:#fbf9fd}\n#nexTkPanel .tk-dmg-element{margin-left:auto;font-size:11px;color:#a399ac;white-space:nowrap}\n#nexTkPanel .tk-dmg-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;padding:9px 12px 15px 64px}\n#nexTkPanel .tk-dmg-version{min-width:0;text-align:left}\n#nexTkPanel .tk-dmg-label{font-size:11px;color:#b8c1cb;display:block;margin-bottom:4px;letter-spacing:.02em}\n#nexTkPanel .tk-dmg-roll{display:flex;align-items:center;gap:5px;min-height:25px}\n#nexTkPanel .tk-dmg-formula{font-size:14px;font-weight:650;color:#fff;white-space:nowrap}\n#nexTkPanel .tk-dmg-die{background:transparent;border:0;color:#dddce4;cursor:pointer;padding:2px;line-height:0;border-radius:4px}\n#nexTkPanel .tk-dmg-die:hover:not(:disabled){color:#bd75ef;background:#35233e}\n#nexTkPanel .tk-dmg-die:focus-visible{outline:2px solid #b96bef;outline-offset:2px}\n#nexTkPanel .tk-dmg-die:disabled{opacity:.28;cursor:not-allowed}\n#nexTkPanel .tk-dmg-cost,#nexTkPanel .tk-dmg-lock{font-size:10px;color:#8e8595}\n#nexTkPanel .tk-dmg-lock{color:#bc8094}\n#nexTkPanel .tk-dmg-disabled .tk-dmg-formula{opacity:.6}\n@media(max-width:540px){#nexTkPanel .tk-dmg-card>summary{padding:13px 12px 6px;gap:8px}#nexTkPanel .tk-dmg-grid{padding:10px 10px 14px 12px;gap:6px}#nexTkPanel .tk-dmg-element{font-size:9px}#nexTkPanel .tk-dmg-formula{font-size:12px}#nexTkPanel .tk-dmg-label{font-size:10px}#nexTkPanel .tk-dmg-roll{gap:2px}}\n";
 style.textContent+="\n#nexTkCastDialog.nex-tk-result-compact{width:min(320px,calc(100vw - 24px));max-height:90vh;overflow:auto;padding:0;background:#202022;border:1px solid #5b2288;border-radius:2px;color:#f9f9fb;box-shadow:0 18px 60px #0009}\n#nexTkCastDialog .tk-roll-result{font-family:inherit}\n#nexTkCastDialog .tk-roll-header{height:40px;display:flex;align-items:center;justify-content:center;position:relative;padding:5px 38px}\n#nexTkCastDialog .tk-roll-header strong{font-size:17px;color:#f5f3f8;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}\n#nexTkCastDialog .tk-roll-header button{position:absolute;right:6px;top:3px;border:0;padding:0 5px;background:transparent;color:#fff;font-size:29px;font-weight:200;line-height:32px}\n#nexTkCastDialog .tk-roll-content{display:grid;grid-template-columns:50px 1fr 1px 1fr;align-items:center;min-height:76px;gap:3px;padding:0 12px 0 12px}\n#nexTkCastDialog .tk-roll-symbol{display:flex;align-items:center;justify-content:center}\n#nexTkCastDialog .tk-roll-stat{display:flex;flex-direction:column;gap:8px;align-items:center;min-width:0}\n#nexTkCastDialog .tk-roll-stat strong{font-size:32px;color:#fff;font-weight:750;line-height:1}\n#nexTkCastDialog .tk-roll-stat span{font-size:12px;letter-spacing:.02em;color:#a7a7ab;font-weight:700}\n#nexTkCastDialog .tk-roll-divider{background:#68656e;height:47px;align-self:center}\n#nexTkCastDialog .tk-roll-status{font-size:11px;color:#bca6cf;text-align:center;padding:9px 6px 11px}\n#nexTkCastDialog .tk-roll-more{border-top:1px solid #36313e}\n#nexTkCastDialog .tk-roll-more>summary{padding:8px 13px;cursor:pointer;font-size:11px;color:#c9bbc9;text-align:center}\n#nexTkCastDialog .tk-roll-more-body{padding:2px 15px 15px;font-size:12px;line-height:1.5}\n#nexTkCastDialog .tk-roll-more-body p{margin:8px 0;overflow-wrap:anywhere}\n";
 style.textContent+="\n#nexTkPanel .tk-dmg-element{max-width:54%;overflow:hidden;text-overflow:ellipsis}\n#nexTkPanel .tk-dmg-roll .tk-dmg-formula{overflow:hidden;text-overflow:ellipsis}\n";
+style.textContent+="\n#nexTkPanel .tk-type-filters{display:flex;flex-wrap:wrap;gap:7px;margin:2px 0 12px}\n#nexTkPanel .tk-type-filter{border:1px solid #4a3a56;border-radius:6px;background:#221c28;color:#cdc2d2;padding:7px 13px;font-size:12px;cursor:pointer}\n#nexTkPanel .tk-type-filter[aria-pressed=\"true\"]{background:#5b2b7a;border-color:#8f54b7;color:#fff}\n#nexTkPanel .tk-type-filter:focus-visible{outline:2px solid #ba7feb;outline-offset:2px}\n";
 document.head.append(style);
 function top(){
  if(!isOccultist()){host.innerHTML='';if(modal.open&&typeof modal.close==='function')modal.close();return;}
@@ -187,6 +188,7 @@ function renderBody(){
  const el=document.getElementById('tkBody');if(!el)return;
  if(view==='conjurar'){
   el.innerHTML='<div class="tk-fields"><input id="tkLearnedSearch" type="search" placeholder="Buscar ritual…" aria-label="Buscar ritual" value="'+esc(query)+'"></div>'+
+  '<nav class="tk-type-filters" aria-label="Filtrar tipos de ritual">'+['Todos','Dano','Cura','Suporte'].map(x=>'<button type="button" class="tk-type-filter" data-tk-type="'+x+'" aria-pressed="'+String(typeFilter===x)+'">'+x+'</button>').join('')+'</nav>'+
   '<div id="tkLearnedCards" class="tk-dmg-list"></div>';
   drawLearned();return;
  }
@@ -234,7 +236,14 @@ function renderBody(){
 }
 function drawLearned(){
  const container=document.getElementById('tkLearnedCards');if(!container)return;
- const list=learned().filter(r=>norm(r.name+' '+r.element).includes(norm(query)));
+ const list=learned().filter(r=>{
+  if(!norm(r.name+' '+r.element).includes(norm(query)))return false;
+  if(typeFilter==='Todos')return true;
+  const preset=window.NEX_RITUAL_EFFECTS?.[signature(r)];
+  const effective=effectSettings(r,'Normal').type;
+  const labels=preset?.categories|| (effective==='Dano + Cura'?['Dano','Cura']:[effective==='Buff'?'Suporte':effective]);
+  return labels.includes(typeFilter);
+ });
  const diceIcon='<svg aria-hidden="true" viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1.7 20.7 6.8v10.4L12 22.3l-8.7-5.1V6.8z"/><path d="m12 1.7-4.2 8.4 4.2 12.2 4.2-12.2L12 1.7ZM3.3 6.8l4.5 3.3h8.4l4.5-3.3m-17.4 10.4 4.5-7.1m12.9 7.1-4.5-7.1"/></svg>';
  container.innerHTML=list.length?list.map(r=>{
   const d=info(r),allowedCircle=permittedCircle();
@@ -261,7 +270,8 @@ function drawLearned(){
     (blockReason?'<small class="tk-dmg-lock">'+esc(blockReason)+'</small>':needsCost?'<small class="tk-dmg-lock">Custo não cadastrado</small>':'<small class="tk-dmg-cost">'+price+' PE</small>')+'</div>';
   }).join('');
   const type=effectSettings(r,'Normal').type;
-  const category=type==='Cura'?'Cura':type==='Buff'?'Suporte':type==='Dano + Cura'?'Dano e cura':'Dano';
+  const categories=window.NEX_RITUAL_EFFECTS?.[signature(r)]?.categories;
+  const category=categories?.length>1?categories.join(' + '):type==='Cura'?'Cura':type==='Buff'?'Suporte':type==='Dano + Cura'?'Dano + Cura':'Dano';
   return '<details class="tk-dmg-card" open><summary><span class="tk-dmg-chevron">⌄</span><strong>'+esc(r.name)+'</strong><span class="tk-dmg-element">'+esc(category)+' · '+esc(r.element)+' · '+esc(r.circle)+'º</span></summary><div class="tk-dmg-grid">'+columns+'</div></details>';
  }).join(''):'<p class="tk-sub">Nenhum ritual aprendido encontrado. Adicione rituais na aba Rituais.</p>';
 }
@@ -490,6 +500,7 @@ function handleLearn(key){
 host.addEventListener('click',e=>{
  const btn=e.target.closest('button');if(!btn)return;
  if(btn.dataset.tkTab){view=btn.dataset.tkTab;top();return;}
+ if(btn.dataset.tkType){typeFilter=btn.dataset.tkType;top();return;}
  
  if(btn.dataset.tkLearn){if(isOccultist())handleLearn(btn.dataset.tkLearn);return;}
  if(btn.dataset.tkCast){quickDamageRoll(btn.dataset.tkCast,btn.dataset.tkVersion||'Normal');return;}
