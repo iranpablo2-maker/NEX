@@ -1551,6 +1551,22 @@ html,body{background:#000!important;background-image:none!important}
 /* Rituais são exibidos apenas em texto — inclusive homebrews anteriores. */
 #homebrewScreen .nex53-ritual-image,
 #homebrewScreen .nex53-ritual-detail-image {display:none!important;}
+</style><style>
+/* NEX — lápis único à esquerda e clique nos números para rolar atributos puros */
+#sheetScreen #attributes.attributes{position:relative!important;isolation:isolate}
+#sheetScreen #attributes .attr{z-index:10!important;pointer-events:auto!important}
+#sheetScreen #attributes .attr .nex-attr-roll{display:flex!important;position:relative!important;z-index:11!important;pointer-events:auto!important;cursor:pointer!important;touch-action:manipulation}
+#sheetScreen #attributes .attr .nex-attr-editor{display:none!important}
+#sheetScreen #attributes.nex-attrs-editing .attr .nex-attr-roll{display:none!important}
+#sheetScreen #attributes.nex-attrs-editing .attr .nex-attr-editor{display:block!important;position:relative!important;z-index:11!important;pointer-events:auto!important}
+#sheetScreen #attributes .nex-attributes-pencil{
+ position:absolute!important;top:6px!important;left:4px!important;right:auto!important;
+ width:34px!important;height:34px!important;padding:5px!important;display:grid!important;place-items:center!important;
+ background:transparent!important;border:0!important;box-shadow:none!important;color:#fff!important;
+ z-index:50!important;cursor:pointer!important;touch-action:manipulation;
+}
+#sheetScreen #attributes .nex-attributes-pencil:hover{color:#dfb1ff!important}
+#sheetScreen #attributes .nex-attributes-pencil:focus-visible{outline:2px solid #dfb1ff!important;outline-offset:2px}
 </style></head><body>
 <script src="nex-sobrevivendo-ao-horror.js?v=2072"></script>
 <header class="topbar"><div class="topinner"><button type="button" id="n17MenuToggle" class="n17-menu-button" aria-expanded="false" aria-controls="n17Drawer" aria-label="Abrir menu">☰</button><button type="button" class="brand" id="nexBrandHome" aria-label="Voltar ao menu principal" title="Voltar ao menu principal"><span class="brand-mark" aria-hidden="true">◈</span><span><h1>NEX</h1><span class="subtitle">SISTEMA DE FICHAS · ORDEM PARANORMAL</span></span></button><div class="actions"><button class="btn sm" id="menuHeaderButton" type="button" style="display:none!important" hidden tabindex="-1" aria-hidden="true">⌂ Menu principal</button><button class="btn sm" id="newChar" type="button" style="display:none!important" hidden tabindex="-1" aria-hidden="true">＋ Nova ficha</button><button class="btn sm" id="importBtn" style="display:none!important" aria-hidden="true" tabindex="-1">Importar</button><button class="btn sm" id="exportBtn" style="display:none!important" aria-hidden="true" tabindex="-1">↓ Exportar</button><input type="file" id="fileInput" accept="application/json,.json" hidden><span id="n17SaveIndicator" hidden aria-hidden="true"></span></div></div></header>
@@ -1955,71 +1971,63 @@ function save(show=false){try{localStorage.setItem(KEY,JSON.stringify(state));if
 function toast(msg){const el=$('toast');el.textContent=msg;el.classList.add('show');clearTimeout(toast.timer);toast.timer=setTimeout(()=>el.classList.remove('show'),2800);}
 function escapeHtml(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function renderStats(){const m=maxValues();for(const key of ['pv','pe','san']){let field=key==='san'?'sanCurrent':key+'Current';const v=clamp(int(state[field]),0,m[key]);state[field]=v;$(key+'NowText').textContent=v;$(key+'MaxText').textContent=m[key];$(key+'Bar').style.width=(m[key]?100*v/m[key]:0)+'%';const resourceBox=$(field)?.closest('.n193-resource-bar');if(resourceBox)resourceBox.style.setProperty('--nex-resource-fill',(m[key]?100*v/m[key]:0)+'%');const inp=$(field);if(document.activeElement!==inp)inp.value=v;inp.max=m[key];} const peLimit=$('peLimit'); if(peLimit) peLimit.textContent=m.peLimit; const peNotice=$('peTurnNoticeValue');if(peNotice){const base=m.peLimit;const universitario=state.origin==='Universitário';const displayed=base+(universitario?1:0);peNotice.textContent=String(displayed);const detail=$('peTurnNoticeDetail');if(detail)detail.textContent='NEX '+state.nex+'%: '+base+' PE base'+(universitario?' + 1 PE da origem Universitário.':'. Poderes e outros efeitos podem alterar esse limite.');} $('defense').value=10+int(state.attributes.agi)+int(state.defenseBonus); $('attributeBudget').textContent='Pontos distribuídos: '+(Object.values(state.attributes).reduce((a,b)=>a+int(b),0)-5)+' / 4 (NEX inicial)'; const rulesStatus=$('rulesStatus'); if(rulesStatus) rulesStatus.textContent=int(state.nex)===0?'Regra opcional: Mundano (NEX 0%)':state.autoRules===false?'Regras personalizadas':'Regras do livro v1.3'; const od=$('originDescription'); if(od) od.innerHTML=state.origin==='Ex-Militar'?'<strong>Veterano de Combate.</strong> Você recebe +1 ponto de vida (PV) para cada 5% de NEX. Além disso, seus ataques causam +2 pontos de dano.<br><br><span class="muted">Bônus atual: +'+m.bonus+' PV máximos e +2 de dano.</span>':'<strong>Origem personalizada.</strong> Nenhum bônus automático configurado para esta origem. Use os campos de regras para ajustar sua ficha.';}
+
 function renderAttributes(){
- const pencil='<svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="m15 5 4 4M4 20l4.5-1 11-11a2.83 2.83 0 0 0-4-4l-11 11L4 20Z"/></svg>';
- const floppy='<svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M4 3h14l3 3v15H3V3Z"/><path d="M7 3v7h10V3M7 21v-8h10v8"/></svg>';
+ const editing=document.getElementById('attributes')?.classList.contains('nex-attrs-editing')||false;
  $('attributes').innerHTML=Object.entries(ATTRIBUTE_NAMES).map(([key,name])=>{
-  const value=clamp(int(state.attributes[key]),0,9);
-  return '<div class="attr attr-'+key+'" title="'+name+'">'+
-   '<button type="button" class="nex-attr-roll '+([1,2].includes(value)?'nex-digit-12':'')+'" data-nex-attr-roll="'+key+'" aria-label="Rolar atributo '+name+' sem perícia" title="Rolar '+name+' puro">'+value+'</button>'+
-   '<input id="attr-'+key+'" class="nex-attr-editor" type="number" inputmode="numeric" min="0" max="9" value="'+value+'" aria-label="Editar '+name+'" tabindex="-1">'+
-   '<button type="button" class="nex-attr-edit-toggle" data-nex-attr-toggle="'+key+'" title="Editar '+name+'" aria-label="Editar '+name+'" aria-pressed="false">'+pencil+'</button>'+
-   '</div>';
- }).join('');
+   const value=clamp(int(state.attributes[key]),0,9);
+   return '<div class="attr attr-'+key+'" title="'+name+'">'+
+    '<button type="button" class="nex-attr-roll" data-nex-attr-roll="'+key+'" aria-label="Rolar '+name+' puro" title="Rolar '+name+' sem perícia">'+value+'</button>'+
+    '<input id="attr-'+key+'" class="nex-attr-editor" type="number" inputmode="numeric" min="0" max="9" value="'+value+'" aria-label="Editar '+name+'" tabindex="-1">'+
+    '</div>';
+ }).join('')+
+ '<button type="button" class="nex-attributes-pencil" id="nexAttributesEdit" title="Editar atributos" aria-label="Editar atributos" aria-pressed="false">'+NEX_ATTR_PENCIL+'</button>';
+ if(editing)nexAttributesToggle(true);
 }
-const NEX_ATTR_PENCIL='<svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="m15 5 4 4M4 20l4.5-1 11-11a2.83 2.83 0 0 0-4-4l-11 11L4 20Z"/></svg>';
-const NEX_ATTR_SAVE='<svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M4 3h14l3 3v15H3V3Z"/><path d="M7 3v7h10V3M7 21v-8h10v8"/></svg>';
-function nexAttrEdit(card,editing){
- const key=card.querySelector('[data-nex-attr-toggle]')?.dataset.nexAttrToggle;
- const btn=card.querySelector('[data-nex-attr-toggle]');
- const input=card.querySelector('.nex-attr-editor');
- if(!key||!btn||!input)return;
- if(editing){
-  document.querySelectorAll('#attributes .attr.nex-attr-editing').forEach(other=>{if(other!==card)nexAttrEdit(other,false);});
-  input.value=clamp(int(state.attributes[key]),0,9);
-  card.classList.add('nex-attr-editing');
-  btn.innerHTML=NEX_ATTR_SAVE;
-  btn.title='Salvar '+ATTRIBUTE_NAMES[key];btn.setAttribute('aria-label',btn.title);btn.setAttribute('aria-pressed','true');
-  input.removeAttribute('tabindex');input.focus();input.select();
- }else{
-  card.classList.remove('nex-attr-editing');
-  btn.innerHTML=NEX_ATTR_PENCIL;
-  btn.title='Editar '+ATTRIBUTE_NAMES[key];btn.setAttribute('aria-label',btn.title);btn.setAttribute('aria-pressed','false');
-  input.setAttribute('tabindex','-1');
- }
+const NEX_ATTR_PENCIL='<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="m15 5 4 4M4 20l4.5-1 11-11a2.83 2.83 0 0 0-4-4l-11 11L4 20Z"/></svg>';
+const NEX_ATTR_SAVE='<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><path d="M4 3h14l3 3v15H3V3Z"/><path d="M7 3v7h10V3M7 21v-8h10v8"/></svg>';
+function nexAttributesToggle(editing){
+ const area=$('attributes'),button=$('nexAttributesEdit');
+ if(!area||!button)return;
+ area.classList.toggle('nex-attrs-editing',editing);
+ area.querySelectorAll('.attr').forEach(card=>{
+   card.classList.toggle('nex-attr-editing',editing);
+   const input=card.querySelector('.nex-attr-editor');
+   if(editing){input.value=clamp(int(state.attributes[input.id.slice(5)]),0,9);input.removeAttribute('tabindex');}
+   else input.setAttribute('tabindex','-1');
+ });
+ button.innerHTML=editing?NEX_ATTR_SAVE:NEX_ATTR_PENCIL;
+ button.title=editing?'Salvar atributos':'Editar atributos';
+ button.setAttribute('aria-label',button.title);
+ button.setAttribute('aria-pressed',String(editing));
 }
-function nexAttrSave(card){
- const key=card.querySelector('[data-nex-attr-toggle]')?.dataset.nexAttrToggle;
- const input=card.querySelector('.nex-attr-editor');
- if(!key||!input)return;
- const parsed=Number(input.value);
- if(!Number.isFinite(parsed)||input.value.trim()===''){
-  toast('Informe um valor válido de 0 a 9.');input.focus();return;
- }
- const value=clamp(Math.trunc(parsed),0,9);
- state.attributes[key]=value;
- renderStats();
- save();
- renderAttributes();
+function nexAttributesSave(){
+ const edits={};
+ let valid=true;
+ $('attributes').querySelectorAll('.nex-attr-editor').forEach(input=>{
+  const n=Number(input.value);
+  if(input.value.trim()===''||!Number.isFinite(n)){valid=false;return;}
+  edits[input.id.slice(5)]=clamp(Math.trunc(n),0,9);
+ });
+ if(!valid){toast('Informe valores válidos de 0 a 9.');return;}
+ Object.assign(state.attributes,edits);
+ nexAttributesToggle(false);
+ renderStats();save();renderAttributes();
 }
 $('attributes').addEventListener('click',e=>{
- const toggle=e.target.closest('[data-nex-attr-toggle]');
- if(toggle){
-  const card=toggle.closest('.attr');
-  if(card.classList.contains('nex-attr-editing'))nexAttrSave(card);else nexAttrEdit(card,true);
-  return;
- }
+ const pencil=e.target.closest('#nexAttributesEdit');
+ if(pencil){e.preventDefault();e.stopPropagation();if($('attributes').classList.contains('nex-attrs-editing'))nexAttributesSave();else nexAttributesToggle(true);return;}
  const roll=e.target.closest('[data-nex-attr-roll]');
- if(roll&&!roll.closest('.nex-attr-editing')){
-  const key=roll.dataset.nexAttrRoll;
-  if(ATTRIBUTE_NAMES[key])attributeRoll(key,ATTRIBUTE_NAMES[key],0);
+ if(roll&&!$('attributes').classList.contains('nex-attrs-editing')){
+   e.preventDefault();e.stopPropagation();
+   const key=roll.dataset.nexAttrRoll;
+   if(ATTRIBUTE_NAMES[key])attributeRoll(key,ATTRIBUTE_NAMES[key],0);
  }
 });
 $('attributes').addEventListener('keydown',e=>{
  if(!e.target.matches('.nex-attr-editor'))return;
- const card=e.target.closest('.attr');
- if(e.key==='Enter'){e.preventDefault();nexAttrSave(card);}
- if(e.key==='Escape'){e.preventDefault();nexAttrEdit(card,false);}
+ if(e.key==='Enter'){e.preventDefault();nexAttributesSave();}
+ if(e.key==='Escape'){e.preventDefault();nexAttributesToggle(false);}
 });
 function renderSkills(){ $('skillsList').innerHTML=SKILL_DATA.map(([name,attr])=>{let s=state.skills[name]||{attr,training:0};return `<div class="skill"><div class="skill-name">${escapeHtml(name)}<small>${escapeHtml(ATTRIBUTE_NAMES[s.attr]||'Intelecto')}</small></div><select aria-label="Treino de ${escapeHtml(name)}" data-skill="${escapeHtml(name)}"><option value="0" ${int(s.training)===0?'selected':''}>+0</option><option value="5" ${int(s.training)===5?'selected':''}>+5</option><option value="10" ${int(s.training)===10?'selected':''}>+10</option><option value="15" ${int(s.training)===15?'selected':''}>+15</option></select><button class="btn sm" data-roll-skill="${escapeHtml(name)}">Rolar</button></div>`;}).join('');}
 function renderAttacks(){ $('attacksList').innerHTML=state.attacks.length?state.attacks.map(a=>`<div class="item" data-attack-id="${escapeHtml(a.id)}"><div class="item-head"><strong>${escapeHtml(a.name||'Ataque')}</strong><button class="btn sm" data-delete-attack="${escapeHtml(a.id)}">Excluir</button></div><div class="item-grid"><div class="field"><label>Nome</label><input data-attack-field="name" value="${escapeHtml(a.name||'')}"></div><div class="field"><label>Teste (ex.: 1d20+5)</label><input data-attack-field="test" value="${escapeHtml(a.test||'')}"></div><div class="field"><label>Dano (ex.: 1d8)</label><input data-attack-field="damage" value="${escapeHtml(a.damage||'')}"></div></div><div class="field"><label>Detalhes</label><input data-attack-field="detail" value="${escapeHtml(a.detail||'')}"></div><div class="inline"><button class="btn sm" data-roll-attack="${escapeHtml(a.id)}">Rolar ataque</button><button class="btn sm primary" data-roll-damage="${escapeHtml(a.id)}">Rolar dano ${state.origin==='Ex-Militar'?'(+2)':''}</button></div></div>`).join(''):'<p class="hint">Nenhum ataque cadastrado.</p>';}
@@ -2028,7 +2036,7 @@ function renderPortrait(){const box=$('portraitPreview'); if(!box) return; if(st
 function renderFields(){document.querySelectorAll('[data-field]').forEach(el=>{let k=el.dataset.field;el.value=k==='autoRules'?String(state.autoRules!==false):(state[k]??'');});const classSelect=$('class');if(classSelect){const mundane=classSelect.querySelector('option[value="Mundano"],option:last-child');if(mundane)mundane.hidden=int(state.nex)!==0;classSelect.disabled=int(state.nex)===0;}renderPortrait();renderStats();renderAttributes();renderSkills();renderAttacks();renderInventory();}
 function logResult(label,expression,rolls,total){log.unshift({label,expression,rolls,total});log=log.slice(0,40);}
 function dice(expr,label,extra=0){const clean=String(expr).replace(/\s/g,'').toLowerCase();if(!/^[+-]?(?:\d*d\d+|\d+)(?:[+-](?:\d*d\d+|\d+))*$/.test(clean)||clean.length>90){toast('Expressão inválida. Use, por exemplo, 2d6+3.');return;}const tokens=clean.match(/[+-]?(?:\d*d\d+|\d+)/g)||[];let total=extra;let parts=[];let rolled=0;for(let token of tokens){const sign=token.startsWith('-')?-1:1;const core=token.replace(/^[+-]/,'');if(core.includes('d')){let [count,faces]=core.split('d').map(Number);if(!count)count=1;if(count>50||faces>1000||faces<2||count<1||rolled+count>70){toast('Limite: 50 dados por termo, até d1000.');return;}let results=[];for(let j=0;j<count;j++){const rand=new Uint32Array(1);crypto.getRandomValues(rand);const value=rand[0]%faces+1;results.push(value);total+=sign*value;}rolled+=count;parts.push(`${sign<0?'-':''}[${results.join(', ')}]`);}else{total+=sign*Number(core);parts.push(token);}}if(extra)parts.push(`bônus ${extra>=0?'+':''}${extra}`);logResult(label,clean+(extra?(extra>=0?'+':'')+extra:''),parts.join(' '),total);}
-function attributeRoll(key,label,bonus=0){const value=int(state.attributes[key],1);const num=value===0?2:Math.max(1,Math.min(20,value));let rolls=[];for(let i=0;i<num;i++){const buf=new Uint32Array(1);crypto.getRandomValues(buf);rolls.push(buf[0]%20+1);}const die=value===0?Math.min(...rolls):Math.max(...rolls);logResult(label,(value===0?'2d20 (pior)':num+'d20 (melhor)')+(bonus?' + '+bonus:''),'['+rolls.join(', ')+'] → '+die,die+bonus);}
+function attributeRoll(key,label,bonus=0){const value=int(state.attributes[key],1);const num=value===0?2:Math.max(1,Math.min(20,value));let rolls=[];for(let i=0;i<num;i++){const buf=new Uint32Array(1);crypto.getRandomValues(buf);rolls.push(buf[0]%20+1);}const die=value===0?Math.min(...rolls):Math.max(...rolls);logResult(label,(value===0?'2d20 (pior)':num+'d20 (melhor)')+(bonus?' + '+bonus:''),'['+rolls.join(', ')+'] → '+die,die+bonus);toast(label+' puro: '+rolls.join(', ')+' → '+(die+bonus));}
 function applyClass(){const m=maxValues();state.pvCurrent=Math.min(Math.max(0,int(state.pvCurrent)),m.pv);state.peCurrent=Math.min(Math.max(0,int(state.peCurrent)),m.pe);state.sanCurrent=Math.min(Math.max(0,int(state.sanCurrent)),m.san);renderStats();save();}
 function bind(){for(const n of LEVELS){let opt=document.createElement('option');opt.value=n;opt.textContent=n+'%';$('nex').append(opt);}
  document.addEventListener('input',e=>{const el=e.target;if(el.matches('[data-field]')){const k=el.dataset.field;state[k]=k==='autoRules'?(el.value==='true'):(el.type==='number'?int(el.value):el.value);if(k==='nex'){if(int(state.nex)===0){if(state.class!=='Mundano')state.nex0PreviousClass=state.class;state.class='Mundano';}else if(state.class==='Mundano')state.class=['Combatente','Especialista','Ocultista'].includes(state.nex0PreviousClass)?state.nex0PreviousClass:'Combatente';renderFields();}renderStats();save();}if(el.matches('[data-attr]')){state.attributes[el.dataset.attr]=clamp(int(el.value),0,9);el.classList.toggle("nex-digit-12",[1,2].includes(state.attributes[el.dataset.attr]));const d=document.querySelector('[data-attr-display="'+el.dataset.attr+'"]');if(d)d.textContent=state.attributes[el.dataset.attr];renderStats();save();}if(el.matches('[data-attack-field]')){const a=state.attacks.find(x=>String(x.id)===el.closest('[data-attack-id]').dataset.attackId);if(a){a[el.dataset.attackField]=el.value;save();}}if(el.matches('[data-item-field]')){const i=state.items.find(x=>String(x.id)===el.closest('[data-item-id]').dataset.itemId);if(i){i[el.dataset.itemField]=el.type==='number'?int(el.value):el.value;save();}}});
