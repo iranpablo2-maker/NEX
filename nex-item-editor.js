@@ -133,14 +133,13 @@ function card(item){
  '<button type="button" data-nex-item-edit="'+id+'" class="nex-item-edit">Editar</button></div></div></details>';
 }
 // Usa o renderizador de inventário existente para preservar filtros, busca e contadores.
-const priorRender=renderInventory;
-renderInventory=function(){
- const result=priorRender.apply(this,arguments);
- const list=by('inventoryList');if(!list)return result;
+function enhance(){
+ const list=by('inventoryList');if(!list)return;
  const ids=[...list.querySelectorAll('.nexv16-entry[data-item-id]')].map(e=>e.dataset.itemId);
  if(ids.length)list.innerHTML=ids.map(find).filter(Boolean).map(card).join('');
- return result;
-};
+}
+const priorRender=renderInventory;
+renderInventory=function(){const result=priorRender.apply(this,arguments);enhance();return result;};
 document.addEventListener('click',event=>{
  const button=event.target.closest('[data-nex-item-edit],[data-nex-item-remove]');
  if(!button)return;
@@ -175,5 +174,5 @@ by('nexEditorForm').addEventListener('submit',event=>{
 });
 document.addEventListener('keydown',event=>{if(!modal.hidden&&event.key==='Escape'){event.preventDefault();close();}});
 renderInventory();
-window.NEX_ITEM_EDITOR={open};
+window.NEX_ITEM_EDITOR={open,enhance};
 })();
