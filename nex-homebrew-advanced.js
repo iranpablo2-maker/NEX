@@ -297,7 +297,7 @@
       if(!character||ritualUnlocked(item.discenteCircle,character))fields.push(['Dados Discente',item.discenteDice]);
       if(!character||ritualUnlocked(item.verdadeiroCircle,character))fields.push(['Dados Verdadeiro',item.verdadeiroDice]);
    }
-   return '<div class="nex53-ritual-details">'+fields.filter(([label,value])=>value).map(([label,value])=>'<div><strong>'+esc(label)+'</strong><p>'+esc(value)+'</p></div>').join('')+'</div>'+(item.image?'<img class="nex53-ritual-detail-image" src="'+esc(item.image)+'" alt="Imagem do ritual '+esc(item.name)+'">':'');
+   return '<div class="nex53-ritual-details">'+fields.filter(([label,value])=>value).map(([label,value])=>'<div><strong>'+esc(label)+'</strong><p>'+esc(value)+'</p></div>').join('')+'</div>';
  }
  function view(item){
    opened=item.id;const info=meta(item);
