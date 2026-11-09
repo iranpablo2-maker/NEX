@@ -40,14 +40,12 @@ for(const record of [...(window.NEX_ITEM_BOOKS||[]),...(window.NEX_BASE_WEAPONS|
  if(existing)Object.assign(existing,item);
  else items.push(item);
 }
-// Descrições curtas e originais, sem copiar passagens longas dos livros.
+// Preenche cada descrição com seu texto específico; só gera resumo quando faltar conteúdo.
 const bookDescriptions=window.NEX_ITEM_COMPLEMENTS?.descriptions||{};
 for(const item of items){
  const key=Object.keys(bookDescriptions).find(k=>norm(k)===norm(item.name));
- if(key)item.description=bookDescriptions[key];
- if(!item.description||/detalhes a conferir|preencher após consultar|equipamento listado na tabela|estatísticas de jogo conforme a tabela|item amaldiçoado listado na tabela/i.test(item.description)){
-  item.description=(item.subtitle||'Equipamento do RPG')+'. '+(item.stats.length?'Consulte os valores informados no cartão.':'Consulte os efeitos com o mestre.');
- }
+ if(key && !item.description)item.description=bookDescriptions[key];
+ item.description=window.NEX_ITEM_DESCRIBE?.(item)||item.description||'';
 }
 items.sort((a,b)=>a.name.localeCompare(b.name,'pt-BR'));
 function homebrewItems(){
@@ -117,6 +115,8 @@ style.textContent=[
 '#nexItemModal .nex-item-plus .nex-lock-icon{display:block;width:20px;height:20px;min-width:20px;max-width:20px;max-height:20px;flex:none;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;transform:none!important}',
 '#nexItemModal .nex-item-detail{font-size:12px;color:#ddd;padding:5px 16px 16px 60px;line-height:1.5}',
 '#nexItemModal .nex-item-detail[hidden]{display:none}',
+'#nexItemModal .nex-item-detail-source{font-size:11px;font-weight:700;color:#c18bdf;margin-bottom:7px}',
+'#nexItemModal .nex-item-detail{white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.65}',
 '#nexItemModal .nex-item-empty{color:#bbb;padding:24px;text-align:center}',
 'body.nex-item-modal-open{overflow:hidden}',
 '@media(max-width:600px){#nexItemModal{padding:4px}#nexItemModal .nex-item-dialog{max-height:98dvh}#nexItemModal h2{font-size:20px}#nexItemModal .nex-item-tabs{gap:17px;padding:0 12px}#nexItemModal .nex-item-card-header{grid-template-columns:28px minmax(0,1fr) 38px;gap:5px}#nexItemModal .nex-item-name{font-size:15px}#nexItemModal .nex-item-desc{display:block;margin:3px 0 0}#nexItemModal .nex-item-meta{font-size:11px;gap:4px 8px}#nexItemModal .nex-item-detail{padding-left:38px}}'
@@ -156,7 +156,7 @@ function render(){
    '<div><span class="nex-item-name">'+escape(item.name)+'</span><span class="nex-item-desc">'+escape(item.subtitle||item.source||'Item')+' · '+escape(item.source||'')+'</span>'+ 
    '<div class="nex-item-meta">'+(item.stats.length?item.stats.map(m=>'<span><b>'+escape(m[0])+':</b> '+escape(m[1])+'</span>').join(''):'<span><b>Espaços:</b> '+item.spaces+'</span>')+'</div></div>'+
    '<button type="button" class="nex-item-plus" data-add="'+index+'" '+(blocked?'disabled title="'+(blockedByTier?'Categoria indisponível nesta patente':'Limite de categoria ou carga atingido')+'"':'')+' aria-label="'+(blocked?'Bloqueado: ':'Adicionar ')+escape(item.name)+'">'+(blocked?'<svg class="nex-lock-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>':'+')+'</button></div>'+
-   '<div class="nex-item-detail" hidden>'+escape((item.source?item.source+' · ':'')+(item.description||'Confira as estatísticas nas regras do livro.'))+'</div></article>';
+   '<div class="nex-item-detail" hidden><div class="nex-item-detail-source">'+escape(item.source||'Equipamento')+'</div><div>'+escape(item.description||window.NEX_ITEM_DESCRIBE?.(item)||'Descrição personalizada não cadastrada.')+'</div></div></article>';
  }).join(''):'<div class="nex-item-empty">'+(selectedSource==='Itens Homebrew'?'Nenhum item homebrew nesta categoria. Cadastre um na biblioteca Homebrew.':'Nenhum item encontrado nesta categoria.')+'</div>';
 }
 function open(){lastFocus=document.activeElement;selectedSource='Itens';selected='Armas';search.value='';render();modal.hidden=false;document.body.classList.add('nex-item-modal-open');search.focus();}
