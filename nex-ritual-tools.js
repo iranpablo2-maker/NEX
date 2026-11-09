@@ -23,6 +23,7 @@ function kit(){
 function learned(){return Array.isArray(state.rituals)?state.rituals:[];}
 const signature=r=>[norm(r.name),norm(r.element),Number(r.circle)||1].join('|');
 function catalog(){
+ if(typeof window.NEX_RITUAL_CATALOG==='function')return window.NEX_RITUAL_CATALOG();
  const sah=new Set((window.NEX_SAH?.rituals||[]).map(signature));
  const official=(window.NEX_RITUAL_META||[]).map(r=>({...r,source:sah.has(signature(r))?'Sobrevivendo ao Horror':'Livro básico'}));
  const hb=(window.NEX51?.readLibrary?.()||[]).filter(x=>x&&x.type==='ritual'&&x.name)
