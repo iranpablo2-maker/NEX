@@ -20,7 +20,7 @@ function detail(item){
  const sub=String(model.subtitle||'').split('·').map(x=>x.trim());
  const fallback={
   name:item.name||'',category:cats.includes(item.category)?item.category:'Geral',quantity:number(item.quantity,1),spaces:number(item.spaces,model.spaces??1),
-  proficiency:sub[0]||'',kind:sub[1]||'',wield:sub[2]||'',
+  proficiency:({'simples':'Armas Simples','tatica':'Armas Táticas','pesada':'Armas Pesadas'}[norm(sub[0])]||sub[0]||''),kind:sub[1]||'',wield:sub[2]||'',
   damage:pairs.dano||stat(model,'Dano')||'',secondary:'',
   critical:cr.match(/^\d{2}/)?.[0]||'20',multiplier:cr.match(/[x×](\d+)/i)?.[1]||'2',
   damageType:stat(model,'Tipo')||pairs.tipo||'',range:pairs.alcance||stat(model,'Alcance')||'—',
@@ -59,6 +59,7 @@ style.textContent=[
 '#nexItemEditor .nex-editor-close{background:transparent;border:0;font-size:28px;color:white}',
 '#nexItemEditor #nexEditorForm{padding:12px 18px;flex:1;overflow-y:auto;min-height:0}',
 '#nexItemEditor .nex-editor-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}',
+'#nexItemEditor .nex-editor-weapon-grid{row-gap:14px}',
 '#nexItemEditor .nex-editor-field{display:flex;flex-direction:column;gap:6px;font-size:13px;color:white}',
 '#nexItemEditor .nex-editor-field input,#nexItemEditor .nex-editor-field textarea,#nexItemEditor .nex-editor-field select{background:#111;color:white;border:1px solid #484049;padding:9px;min-width:0;width:100%;font:inherit;border-radius:3px}',
 '#nexItemEditor textarea{min-height:110px;resize:vertical;line-height:1.6}',
@@ -95,13 +96,24 @@ function select(key,label,value,opts){
 }
 let current=null,lastFocus=null;
 function editorFields(d){
- let html='<div class="nex-editor-grid">'+field('name','Nome*',d.name,'text',2)+select('category','Tipo de item',d.category,cats)+field('quantity','Quantidade',d.quantity,'number')+
- field('tier','Categoria do livro',d.tier)+field('spaces','Espaços*',d.spaces,'number')+'</div>';
- if(d.category==='Arma')html+='<h3>Informações da arma</h3><div class="nex-editor-grid">'+
- field('proficiency','Proficiência',d.proficiency)+field('kind','Tipo',d.kind)+field('wield','Empunhadura',d.wield,'text',2)+
- field('damage','Dano*',d.damage)+field('secondary','Dano secundário',d.secondary)+
- field('critical','Crítico*',d.critical)+field('multiplier','Multiplicador*',d.multiplier)+
- field('damageType','Tipo de dano',d.damageType,'text',2)+field('range','Alcance',d.range,'text',2)+'</div>';
+ let html;
+ if(d.category==='Arma'){
+  // Mesma ordem da janela de edição de armas: os campos de combate vêm antes das melhorias.
+  // A categoria de inventário fica preservada sem ocupar espaço na interface.
+  html='<input type="hidden" data-edit="category" value="Arma"><div class="nex-editor-grid nex-editor-weapon-grid">'+
+   field('name','Nome*',d.name,'text',4)+
+   field('proficiency','Proficiência',d.proficiency)+field('kind','Tipo',d.kind)+
+   field('wield','Empunhadura',d.wield,'text',2)+
+   field('damage','Dano*',d.damage)+field('secondary','Dano secundário',d.secondary)+
+   field('critical','Crítico*',d.critical)+field('multiplier','Multiplicador*',d.multiplier)+
+   field('damageType','Tipo de Dano',d.damageType,'text',2)+field('range','Alcance',d.range,'text',2)+
+   field('tier','Categoria',d.tier)+field('spaces','Espaços*',d.spaces,'number')+
+   field('quantity','Quantidade',d.quantity,'number')+'</div>';
+ }else{
+  html='<div class="nex-editor-grid">'+field('name','Nome*',d.name,'text',2)+
+   select('category','Tipo de item',d.category,cats)+field('quantity','Quantidade',d.quantity,'number')+
+   field('tier','Categoria',d.tier)+field('spaces','Espaços*',d.spaces,'number')+'</div>';
+ }
  html+='<h3>Melhorias</h3><div class="nex-editor-inline"><input id="nexEditorNewUpgrade" placeholder="Nome da melhoria"><button type="button" data-nex-add-upgrade>Adicionar</button></div>'+field('upgrades','Melhorias cadastradas',d.upgrades,'textarea',4)+
  '<h3>Imagem</h3>'+field('image','URL HTTPS da imagem',d.image,'text',4)+
  '<h3>Descrição</h3><div class="nex-editor-rich"><button type="button" data-nex-rich="**"><b>B</b></button><button type="button" data-nex-rich="*"><i>I</i></button><button type="button" data-nex-rich="__"><u>U</u></button></div>'+field('description','Descrição do item (negrito roxo)',d.description,'textarea',4);
@@ -110,7 +122,7 @@ function editorFields(d){
 function open(id){
  const item=find(id);if(!item)return;
  current=String(id);lastFocus=document.activeElement;
- by('nexEditorTitle').textContent='Editar '+item.name;
+ by('nexEditorTitle').textContent='Editar';
  by('nexEditorFields').innerHTML=editorFields(detail(item));
  modal.hidden=false;document.body.classList.add('nex-editor-open');
  by('nexEditorFields').querySelector('[data-edit="name"]')?.focus();
