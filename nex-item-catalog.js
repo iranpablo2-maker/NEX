@@ -145,11 +145,15 @@ function render(){
  if(countLabel)countLabel.textContent=list.length+' '+(list.length===1?'item encontrado':'itens encontrados')+' em '+selected+' · '+selectedSource;
  results.innerHTML=list.length?list.map(item=>{
    const index=list.indexOf(item);
+   const categoryStat=String((item.stats||[]).find(x=>norm(x[0])==='categoria')?.[1]||'0');
+   const preview={name:item.name,quantity:1,spaces:item.spaces,nexInfo:{tier:categoryStat}};
+   const blocked=window.NEX_CARRY && !window.NEX_CARRY.canAddItem(preview);
+   const blockedByTier=window.NEX_CARRY && !window.NEX_CARRY.isMundane() && window.NEX_CARRY.tier(preview)>0 && (window.NEX_CARRY.prestige().limits[window.NEX_CARRY.tier(preview)-1]||0)<=0;
    return '<article class="nex-item-card" data-item-index="'+index+'"><div class="nex-item-card-header">'+
    '<button type="button" class="nex-item-expand" data-expand="'+index+'" aria-expanded="false" aria-label="Detalhes do item">⌄</button>'+
    '<div><span class="nex-item-name">'+escape(item.name)+'</span><span class="nex-item-desc">'+escape(item.subtitle||item.source||'Item')+' · '+escape(item.source||'')+'</span>'+ 
    '<div class="nex-item-meta">'+(item.stats.length?item.stats.map(m=>'<span><b>'+escape(m[0])+':</b> '+escape(m[1])+'</span>').join(''):'<span><b>Espaços:</b> '+item.spaces+'</span>')+'</div></div>'+
-   '<button type="button" class="nex-item-plus" data-add="'+index+'" aria-label="Adicionar '+escape(item.name)+'">+</button></div>'+
+   '<button type="button" class="nex-item-plus" data-add="'+index+'" '+(blocked?'disabled title="'+(blockedByTier?'Categoria indisponível nesta patente':'Limite de categoria ou carga atingido')+'" style="opacity:.35;cursor:not-allowed"':'')+' aria-label="'+(blocked?'Bloqueado: ':'Adicionar ')+escape(item.name)+'">'+(blocked?'🔒':'+')+'</button></div>'+
    '<div class="nex-item-detail" hidden>'+escape((item.source?item.source+' · ':'')+(item.description||'Confira as estatísticas nas regras do livro.'))+'</div></article>';
  }).join(''):'<div class="nex-item-empty">'+(selectedSource==='Itens Homebrew'?'Nenhum item homebrew nesta categoria. Cadastre um na biblioteca Homebrew.':'Nenhum item encontrado nesta categoria.')+'</div>';
 }
@@ -172,7 +176,7 @@ function add(index){
    range:getStat('Alcance')||'—',tier:getStat('Categoria')||'0',upgrades:'',
    description:String(item.description||''),image:''
  };
- if(!window.NEX_CARRY?.canAddItem({...nexInfo,quantity:1})){toast('Limite de carga ou de itens da categoria atingido para a patente atual.');return;}
+ if(!window.NEX_CARRY?.canAddItem({...nexInfo,quantity:1})){toast('Este item está bloqueado pelo limite de carga ou de categoria da patente.');render();return;}
  state.items.push({id:'nexitem_'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,6),name:item.name,quantity:1,category:mapCategory[item.section],spaces:item.spaces,description:nexInfo.description,nexInfo,detail:[item.description,...item.stats.map(m=>m.join(': '))].filter(Boolean).join(' · ').slice(0,2000)});
  renderInventory();save();toast(item.name+' adicionado ao inventário.');
 }
