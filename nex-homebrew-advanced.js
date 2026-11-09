@@ -1,4 +1,4 @@
-/* NEX 2.0.53 - Categorias de habilidades e quatro habilidades por trilha; dados anteriores preservados. */
+/* NEX 2.0.54 - Trilhas: três classes, sem campo de NEX mínimo e sem título redundante. */
 (()=>{
  'use strict';
  const KEY='nex_homebrew_advanced_v2051';
@@ -65,12 +65,12 @@
  '<label>Tipo de ameaça<input id="nex52CreatureType" maxlength="70" placeholder="Criatura"></label>'+
  '<label>Porte<select id="nex52Size"><option>Minúsculo</option><option>Pequeno</option><option selected>Médio</option><option>Grande</option><option>Enorme</option><option>Colossal</option></select></label></div>'+
  '<div class="nex52-specific" id="nex52AbilityFields" hidden><label>Classe<select id="nex51Class"><option>Livre</option><option>Combatente</option><option>Especialista</option><option>Ocultista</option></select></label>'+
- '<label>NEX mínimo<input id="nex51Nex" type="number" min="0" max="99" value="5"></label></div>'+
+ '<label id="nex51NexField">NEX mínimo<input id="nex51Nex" type="number" min="0" max="99" value="5"></label></div>'+
  '<div class="nex52-specific" id="nex52RitualFields" hidden><label>Círculo<select id="nex51Circle"><option value="1">1º</option><option value="2">2º</option><option value="3">3º</option><option value="4">4º</option></select></label>'+
  '<label>Elemento<select id="nex51Element"><option>Conhecimento</option><option>Energia</option><option>Morte</option><option>Sangue</option><option>Medo</option><option>Personalizado</option></select></label>'+
  '<label>PE indicado<input id="nex51Cost" type="number" min="0" max="99" value="0"></label></div>'+
  '<div class="nex52-specific" id="nex52ItemFields" hidden><label>Categoria<input id="nex52Category" maxlength="70" placeholder="Ex.: Equipamento"></label></div>'+
- '<div id="nex53TrailFields" class="nex53-trail-fields nex52-full" hidden><h4>As quatro habilidades da trilha</h4><p>Configure o nome e o efeito de cada marco de NEX.</p>'+
+ '<div id="nex53TrailFields" class="nex53-trail-fields nex52-full" hidden><p>Configure o nome e o efeito de cada marco de NEX.</p>'+
  TRAIL_NEX.map((n,i)=>'<fieldset class="nex53-trail-step"><legend>NEX '+n+'% · Habilidade '+(i+1)+'</legend>'+
  '<label>Nome da habilidade<input type="text" id="nex53TrailName'+n+'" maxlength="90" placeholder="Nome da habilidade de '+n+'%"></label>'+
  '<label>Descrição e efeitos<textarea id="nex53TrailDescription'+n+'" maxlength="1600" rows="3" placeholder="Descreva o efeito concedido em '+n+'% de NEX"></textarea></label></fieldset>').join('')+'</div>'+
@@ -85,6 +85,13 @@
  sheet.innerHTML='<details class="nex51-sheet"><summary>Homebrews associados à ficha (<span id="nex51SheetCount">0</span>)</summary><div id="nex51SheetItems" class="nex52-sheet-list"></div></details>';
  function editorFields(){
    const type=$('nex51Type').value;
+   // Apenas Trilhas exigem uma das três classes oficiais, sem a opção Livre.
+   // Nos outros tipos preservamos a opção Livre e as escolhas anteriores.
+   const classSelect=$('nex51Class'),oldClass=classSelect.value;
+   const choices=type==='trilha'?['Combatente','Especialista','Ocultista']:['Livre','Combatente','Especialista','Ocultista'];
+   classSelect.innerHTML=choices.map(name=>'<option value="'+name+'">'+name+'</option>').join('');
+   classSelect.value=choices.includes(oldClass)?oldClass:(type==='trilha'?'Combatente':'Livre');
+   $('nex51NexField').hidden=type==='trilha';
    $('nex52ThreatFields').hidden=type!=='ameaca';
    $('nex52AbilityFields').hidden=!['origem','poder_paranormal','poder_geral','poder','trilha','habilidade'].includes(type);
    $('nex53TrailFields').hidden=type!=='trilha';
@@ -208,7 +215,7 @@
    const record=normalize({
      id:editing||'hb51_'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,9),
      type,name,description:$('nex51Description').value,requirements:$('nex51Requirements').value,
-     className:$('nex51Class').value,minNex:$('nex51Nex').value,circle:$('nex51Circle').value,
+     className:$('nex51Class').value,minNex:type==='trilha'?(old?.minNex??10):$('nex51Nex').value,circle:$('nex51Circle').value,
      element:$('nex51Element').value,cost:$('nex51Cost').value,vd:$('nex52VD').value,
      size:$('nex52Size').value,creatureType:$('nex52CreatureType').value,category:$('nex52Category').value,
      trailAbilities:type==='trilha'?TRAIL_NEX.map(n=>({nex:n,name:$('nex53TrailName'+n).value,description:$('nex53TrailDescription'+n).value})):(old?.trailAbilities||[])
