@@ -4,8 +4,8 @@
 const by=id=>document.getElementById(id);
 const escape=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const norm=s=>String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLocaleLowerCase('pt-BR');
-const sections=['Armas','Munições','Proteções','Geral','Itens Amaldiçoados'];
-const mapCategory={'Armas':'Arma','Munições':'Munição','Proteções':'Proteção','Geral':'Geral','Itens Amaldiçoados':'Item Amaldiçoado'};
+const sections=['Itens','Itens Homebrew','Armas','Munições','Proteções','Geral','Itens Amaldiçoados'];
+const mapCategory={'Itens':'Geral','Itens Homebrew':'Geral','Armas':'Arma','Munições':'Munição','Proteções':'Proteção','Geral':'Geral','Itens Amaldiçoados':'Item Amaldiçoado'};
 const items=[];
 function put(name,section,description,stats,spaces){
  if(items.some(x=>norm(x.name)===norm(name)&&x.section===section))return;
@@ -33,13 +33,40 @@ for(const model of (typeof NEX12_CATALOG!=='undefined'?NEX12_CATALOG:[])){
  if(existing){if(existing.description.startsWith('Detalhes a conferir'))existing.description=desc;continue}
  put(name,section,kind+'. '+desc,[['Espaços',String(spaces)]],spaces);
 }
-for(const record of [...(window.NEX_ITEM_BOOKS||[]),...(window.NEX_BASE_WEAPONS||[])]){
+for(const record of [...(window.NEX_ITEM_BOOKS||[]),...(window.NEX_BASE_WEAPONS||[]),...(window.NEX_ITEM_COMPLEMENTS?.items||[])]){
  const item={name:record.name,section:record.section,description:record.description||'',stats:record.stats||[],spaces:record.spaces??1,source:record.source||'Livro de regras'};
  const existing=items.find(x=>norm(x.name)===norm(item.name)&&x.section===item.section);
  if(existing)Object.assign(existing,item);
  else items.push(item);
 }
+// Descrições curtas e originais, sem copiar passagens longas dos livros.
+const bookDescriptions=window.NEX_ITEM_COMPLEMENTS?.descriptions||{};
+for(const item of items){
+ const key=Object.keys(bookDescriptions).find(k=>norm(k)===norm(item.name));
+ if(key)item.description=bookDescriptions[key];
+ if(!item.description||/detalhes a conferir|preencher após consultar|equipamento listado na tabela|estatísticas de jogo conforme a tabela|item amaldiçoado listado na tabela/i.test(item.description)){
+  item.description=(item.subtitle||'Equipamento do RPG')+'. '+(item.stats.length?'Consulte os valores informados no cartão.':'Consulte os efeitos com o mestre.');
+ }
+}
 items.sort((a,b)=>a.name.localeCompare(b.name,'pt-BR'));
+function homebrewItems(){
+ const fromLibrary=typeof window.NEX51?.readLibrary==='function'?window.NEX51.readLibrary():[];
+ const fromSheet=Array.isArray(state?.nex51Items)?state.nex51Items:[];
+ const dedup=new Map();
+ for(const record of [...fromLibrary,...fromSheet]){
+  if(!record||record.type!=='item'||!record.name)continue;
+  if(record.id&&dedup.has(record.id))continue;
+  const category=String(record.category||'Geral');
+  const section=/amaldiçoad/i.test(category)?'Itens Amaldiçoados':/muniç/i.test(category)?'Munições':/proteç/i.test(category)?'Proteções':/arma/i.test(category)?'Armas':'Geral';
+  dedup.set(record.id||record.name,{id:record.id,name:String(record.name),section,
+   source:'Itens Homebrew',isHomebrew:true,
+   subtitle:'Homebrew · '+category,
+   description:String(record.description||'Item criado na biblioteca de homebrews.'),
+   spaces:Number.isFinite(Number(record.spaces))?Number(record.spaces):1,
+   stats:[['Categoria',category],['Origem','Homebrew']]});
+ }
+ return [...dedup.values()].sort((a,b)=>a.name.localeCompare(b.name,'pt-BR'));
+}
 const style=document.createElement('style');
 style.id='nex-item-modal-styles';
 style.textContent=[
@@ -84,28 +111,29 @@ modal.innerHTML='<section class="nex-item-dialog" role="dialog" aria-modal="true
 document.body.appendChild(modal);
 const search=by('nexItemModalSearch'),results=by('nexItemModalResults');
 const originalAddItem=by('addItem')?.onclick;
-let selected='Armas',lastFocus=null;
+let selected='Itens',lastFocus=null;
 function render(){
  modal.querySelectorAll('[data-cat]').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.cat===selected)));
  const term=norm(search.value.trim());
- const list=items.filter(i=>i.section===selected&&norm([i.name,i.description,...i.stats.map(s=>s.join(' '))].join(' ')).includes(term));
+ const visible=[...items,...homebrewItems()];
+ const list=visible.filter(i=>(selected==='Itens'||selected==='Itens Homebrew'&&i.isHomebrew||i.section===selected)&&norm([i.name,i.description,i.subtitle,i.source,...i.stats.map(s=>s.join(' '))].join(' ')).includes(term));
  results.innerHTML=list.length?list.map(item=>{
-   const index=items.indexOf(item);
+   const index=visible.indexOf(item);
    return '<article class="nex-item-card" data-item-index="'+index+'"><div class="nex-item-card-header">'+
    '<button type="button" class="nex-item-expand" data-expand="'+index+'" aria-expanded="false" aria-label="Detalhes do item">⌄</button>'+
-   '<div><span class="nex-item-name">'+escape(item.name)+'</span><span class="nex-item-desc">'+escape(item.description.slice(0,80))+'</span>'+
+   '<div><span class="nex-item-name">'+escape(item.name)+'</span><span class="nex-item-desc">'+escape(item.subtitle||item.source||'Item')+'</span>'+
    '<div class="nex-item-meta">'+(item.stats.length?item.stats.map(m=>'<span><b>'+escape(m[0])+':</b> '+escape(m[1])+'</span>').join(''):'<span><b>Espaços:</b> '+item.spaces+'</span>')+'</div></div>'+
    '<button type="button" class="nex-item-plus" data-add="'+index+'" aria-label="Adicionar '+escape(item.name)+'">+</button></div>'+
    '<div class="nex-item-detail" hidden>'+escape((item.source?item.source+' · ':'')+(item.description||'Confira as estatísticas nas regras do livro.'))+'</div></article>';
  }).join(''):'<div class="nex-item-empty">Nenhum item encontrado nesta categoria.</div>';
 }
-function open(){lastFocus=document.activeElement;selected='Armas';search.value='';render();modal.hidden=false;document.body.classList.add('nex-item-modal-open');search.focus();}
+function open(){lastFocus=document.activeElement;selected='Itens';search.value='';render();modal.hidden=false;document.body.classList.add('nex-item-modal-open');search.focus();}
 function close(){modal.hidden=true;document.body.classList.remove('nex-item-modal-open');lastFocus?.focus?.();}
 function add(index){
- const item=items[index];if(!item)return;
+ const item=[...items,...homebrewItems()][index];if(!item)return;
  if(!Array.isArray(state.items))state.items=[];
  if(state.items.length>=100){toast('Limite de 100 itens no inventário.');return;}
- state.items.push({id:'nexitem_'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,6),name:item.name,quantity:1,category:mapCategory[item.section],spaces:item.spaces,detail:[item.description,...item.stats.map(m=>m.join(': '))].filter(Boolean).join(' · ').slice(0,1000)});
+ state.items.push({id:'nexitem_'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,6),name:item.name,quantity:1,category:mapCategory[item.section],spaces:item.spaces,detail:[item.description,...item.stats.map(m=>m.join(': '))].filter(Boolean).join(' · ').slice(0,2000)});
  renderInventory();save();toast(item.name+' adicionado ao inventário.');
 }
 modal.addEventListener('click',event=>{
