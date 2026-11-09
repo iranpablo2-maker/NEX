@@ -48,7 +48,7 @@
  }
  const mount=$('nex51AdvancedMount'),sheet=$('nex51SheetMount');
  if(!mount||!sheet)return;
- let tab='ameacas',skillTab='origens',opened=null;
+ let tab='ameacas',skillTab='origens',ritualFilter='Todas',opened=null;
  const titleFor=t=>t==='ameacas'?'Ameaças':t==='habilidades'?'Habilidades':t==='rituais'?'Rituais':'Itens';
  const currentTypes=()=>tab==='habilidades'?SKILL_TABS[skillTab]:TABS[tab];
  const defaultType=()=>({ameacas:'ameaca',habilidades:({origens:'origem',paranormais:'poder_paranormal',gerais:'poder_geral',trilhas:'trilha'})[skillTab],rituais:'ritual',itens:'item'})[tab];
@@ -65,6 +65,7 @@
  '<button type="button" data-nex53-skill="paranormais" role="tab" aria-selected="false">Poderes Paranormais</button>'+
  '<button type="button" data-nex53-skill="gerais" role="tab" aria-selected="false">Poderes Gerais</button>'+
  '<button type="button" data-nex53-skill="trilhas" role="tab" aria-selected="false">Trilhas</button></div>'+
+ '<div class="nex53-ritual-filter" id="nex53RitualFilter" hidden aria-label="Tipos de ritual"></div>'+ 
  '<div class="nex52-toolbar"><strong id="nex52Count">Homebrew 0/50</strong><button type="button" id="nex52Add">Adicionar</button></div>'+
  '<label class="nex52-search" for="nex51Search"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><circle cx="10.7" cy="10.7" r="7.2"/><path d="m16 16 5 5"/></svg><input type="search" id="nex51Search" placeholder="Buscar" autocomplete="off" aria-label="Buscar homebrew"></label>'+
  '<section id="nex52Editor" class="nex52-editor" hidden><div class="nex52-editor-head"><strong id="nex52EditorTitle">Adicionar homebrew</strong><button type="button" id="nex52CloseEditor" aria-label="Fechar editor">×</button></div>'+
@@ -244,8 +245,10 @@
    $('nex53SkillTabs').hidden=tab!=='habilidades';
    mount.querySelectorAll('[data-nex53-skill]').forEach(button=>{const selected=tab==='habilidades'&&button.dataset.nex53Skill===skillTab;button.setAttribute('aria-selected',String(selected));button.classList.toggle('active',selected);});
    const visible=records.filter(x=>types.includes(x.type));
+   $('nex53RitualFilter').hidden=tab!=='rituais';
+   if(tab==='rituais')$('nex53RitualFilter').innerHTML=['Todas','Dano','Suporte','Cura'].map(t=>'<button type="button" data-ritual-filter="'+t+'" aria-pressed="'+String(t===ritualFilter)+'">'+t+'</button>').join('');
    const query=$('nex51Search').value.trim().toLocaleLowerCase('pt-BR');
-   const filtered=visible.filter(x=>!query||[x.name,x.description,x.requirements,x.className,x.creatureType,x.category,x.element].join(' ').toLocaleLowerCase('pt-BR').includes(query));
+   const filtered=visible.filter(x=>(tab!=='rituais'||ritualFilter==='Todas'||x.ritualType===ritualFilter)&&(!query||[x.name,x.description,x.requirements,x.className,x.creatureType,x.category,x.element,x.ritualType].join(' ').toLocaleLowerCase('pt-BR').includes(query)));
    $('nex52Count').textContent='Homebrew '+visible.length+'/50';
    mount.querySelectorAll('[data-nex52-tab]').forEach(button=>{
      const selected=button.dataset.nex52Tab===tab;
@@ -255,20 +258,45 @@
     '<div class="nex52-empty">Nenhum '+(tab==='habilidades'?({origens:'origem',paranormais:'poder paranormal',gerais:'poder geral',trilhas:'trilha'})[skillTab]:titleFor(tab).toLocaleLowerCase('pt-BR'))+' cadastrado'+(query?' para esta busca':'')+'. Use <strong>Adicionar</strong> para criar um.</div>';
    renderSheet();
  }
+ // NEX por círculo do Ocultista: 1º=5%, 2º=25%, 3º=55%, 4º=85%.
+ // Aprimoramentos ainda exigem PE, afinidade e condições específicas do ritual.
+ const nexForCircle=[0,5,25,55,85];
+ function ritualUnlocked(circle,character){
+   const required=nexForCircle[Number(circle)]??Infinity;
+   return character?.className==='Ocultista'&&Number(character?.nex)>=required;
+ }
+ function sheetRitualDetails(ritual,character){
+   if(ritual.type!=='ritual')return '';
+   let html='<details class="nex53-attached-ritual"><summary>Ver ritual e versões disponíveis</summary><p>'+esc(ritual.ritualType)+' · '+esc(ritual.circle)+'º círculo · '+esc(ritual.element)+'</p>';
+   if(ritual.ritualType==='Dano'){
+     if(ritualUnlocked(ritual.circle,character)&&ritual.ritualDice)html+='<p><strong>Dados:</strong> '+esc(ritual.ritualDice)+'</p>';
+     else html+='<p class="nex53-advanced-status">Forma básica: exige acesso ao '+esc(ritual.circle)+'º círculo.</p>';
+     if(ritual.discenteDice&&ritualUnlocked(ritual.discenteCircle,character))html+='<p><strong>Discente:</strong> '+esc(ritual.discenteDice)+'</p>';
+     if(ritual.verdadeiroDice&&ritualUnlocked(ritual.verdadeiroCircle,character))html+='<p><strong>Verdadeiro:</strong> '+esc(ritual.verdadeiroDice)+'</p>';
+     if(ritual.discenteDice&&!ritualUnlocked(ritual.discenteCircle,character))html+='<p class="nex53-advanced-status">Discente: exige '+esc(ritual.discenteCircle)+'º círculo.</p>';
+     if(ritual.verdadeiroDice&&!ritualUnlocked(ritual.verdadeiroCircle,character))html+='<p class="nex53-advanced-status">Verdadeiro: exige '+esc(ritual.verdadeiroCircle)+'º círculo.</p>';
+   }
+   html+='<p class="nex53-advanced-status">A liberação por NEX não dispensa custo de PE, afinidade ou outros pré-requisitos do ritual.</p></details>';
+   return html;
+ }
  function renderSheet(){
    const current=api()?.ready()?api().current():null;
    const items=Array.isArray(current?.items)?current.items.filter(valid).map(normalize):[];
    $('nex51SheetCount').textContent=String(items.length);
    $('nex51SheetItems').innerHTML=items.length?items.map(item=>
-     '<div class="nex52-attached"><span><strong>'+esc(item.name)+'</strong><small>'+esc(LABEL[item.type])+'</small>'+(item.type==='trilha'?'<details class="nex53-attached-trail"><summary>Ver as 4 habilidades</summary>'+trailDetails(item)+'</details>':'')+'</span>'+
+     '<div class="nex52-attached"><span><strong>'+esc(item.name)+'</strong><small>'+esc(LABEL[item.type])+'</small>'+(item.type==='trilha'?'<details class="nex53-attached-trail"><summary>Ver as 4 habilidades</summary>'+trailDetails(item)+'</details>':'')+sheetRitualDetails(item,current)+'</span>'+
      '<button type="button" class="btn sm" data-nex52-detach="'+esc(item.id)+'">Remover</button></div>').join(''):
      '<p class="nex52-empty">Nenhum homebrew associado a esta ficha.</p>';
  }
  function closeDialog(){const d=$('nex52Detail');if(typeof d.close==='function')d.close();else d.removeAttribute('open');opened=null;}
- function ritualDetails(item){
+ function ritualDetails(item,character=null){
    if(item.type!=='ritual')return '';
    const fields=[['Categoria',item.ritualType],['Execução',item.execution],['Alcance',item.range],['Área',item.area],['Alvo',item.target],['Duração',item.duration],['Efeito',item.effect],['Resistência',item.resistance]];
-   if(item.ritualType==='Dano')fields.push(['Dados',item.ritualDice],['Dados Discente',item.discenteDice],['Dados Verdadeiro',item.verdadeiroDice]);
+   if(item.ritualType==='Dano'){
+      if(!character||ritualUnlocked(item.circle,character))fields.push(['Dados',item.ritualDice]);
+      if(!character||ritualUnlocked(item.discenteCircle,character))fields.push(['Dados Discente',item.discenteDice]);
+      if(!character||ritualUnlocked(item.verdadeiroCircle,character))fields.push(['Dados Verdadeiro',item.verdadeiroDice]);
+   }
    return '<div class="nex53-ritual-details">'+fields.filter(([label,value])=>value).map(([label,value])=>'<div><strong>'+esc(label)+'</strong><p>'+esc(value)+'</p></div>').join('')+'</div>'+(item.image?'<img class="nex53-ritual-detail-image" src="'+esc(item.image)+'" alt="Imagem do ritual '+esc(item.name)+'">':'');
  }
  function view(item){
@@ -277,7 +305,7 @@
      '<p class="nex52-detail-meta">'+esc(info.join(' · '))+'</p>'+
      (item.description?'<h4>Descrição</h4><p>'+esc(item.description)+'</p>':'<p>Sem descrição.</p>')+
      (item.requirements?'<h4>Pré-requisitos</h4><p>'+esc(item.requirements)+'</p>':'')+
-     (item.type==='origem'?'<h4>Perícias treinadas</h4><p>'+esc((item.skills||[]).join(' e ')||'Não configuradas')+'</p>':'')+ritualDetails(item)+trailDetails(item);
+     (item.type==='origem'?'<h4>Perícias treinadas</h4><p>'+esc((item.skills||[]).join(' e ')||'Não configuradas')+'</p>':'')+ritualDetails(item,api()?.ready()?api().listAgents().find(a=>a.id===$('nex51Target').value):null)+trailDetails(item);
    targetOptions();const d=$('nex52Detail');if(typeof d.showModal==='function')d.showModal();else d.setAttribute('open','');
  }
  $('nex51Type').addEventListener('change',editorFields);
@@ -307,9 +335,10 @@
  $('nex52Close').addEventListener('click',closeDialog);
  $('nex52Detail').addEventListener('close',()=>{opened=null;});
  $('nex51Search').addEventListener('input',renderLibrary);
+ $('nex53RitualFilter').addEventListener('click',e=>{const t=e.target.closest('[data-ritual-filter]');if(!t)return;ritualFilter=t.dataset.ritualFilter;renderLibrary();});
  mount.querySelector('.nex52-tabs').addEventListener('click',e=>{
    const btn=e.target.closest('[data-nex52-tab]');if(!btn)return;
-   tab=btn.dataset.nex52Tab;$('nex51Search').value='';closeEditor();renderLibrary();
+   tab=btn.dataset.nex52Tab;ritualFilter='Todas';$('nex51Search').value='';closeEditor();renderLibrary();
  });
  $('nex53SkillTabs').addEventListener('click',e=>{
    const btn=e.target.closest('[data-nex53-skill]');
