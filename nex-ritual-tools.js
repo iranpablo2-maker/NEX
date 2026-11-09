@@ -303,7 +303,6 @@ function quickDamageRoll(rid,version='Normal'){
  const fields=effectSettings(r,version);
  if(!['Dano','Dano + Cura'].includes(fields.type)||!rollSimpleDicePattern(fields.damageDice)){toast('Dados de dano não cadastrados.');return;}
  if(/Afinidade necessária/i.test(enhance)&&!confirm('Esta versão exige afinidade. Confirma que o personagem possui?'))return;
- if(!confirm('Conjurar '+r.name+' — '+version+' por '+cost+' PE e rolar Ocultismo + dano?'))return;
  const effect=computeEffect(fields);
  if(!effect){toast('Falha na fórmula de dano.');return;}
  const check=norm(r.element)==='medo'?null:occultismRoll(cost,0);
