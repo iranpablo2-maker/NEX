@@ -503,6 +503,8 @@ body{background:#101011;color:#e9e8ec;font-family:Arial,Helvetica,sans-serif;fon
 #sheetScreen .nex-class-choice:hover,#sheetScreen .nex-class-choice[aria-selected="true"]{background:#2a1b32;border-color:#bf74ef;}
 #sheetScreen .nex-origin-search {width:100%;min-height:31px!important;padding:7px 8px!important;margin-bottom:6px;background:#0d0d12!important;color:#fff!important;border:1px solid #534559!important;border-radius:3px!important;font-size:12px!important;}
 #sheetScreen .nex-origin-categories{display:flex;flex-wrap:wrap;gap:5px;margin:0 0 9px;padding:3px 0 7px;border-bottom:1px solid #45334c}
+#sheetScreen .nex-origin-group-caption{display:flex;justify-content:space-between;align-items:center;font-size:11px;color:#e6c7fb;font-weight:700;letter-spacing:.06em;padding:6px 3px 10px}
+#sheetScreen .nex-origin-build{font-size:10px;color:#b997c9;font-weight:500}
 #sheetScreen .nex-origin-category{border:1px solid #594464;border-radius:3px;padding:6px 8px;font-size:11px;background:#24192d;color:#e7d5ed;cursor:pointer;line-height:1.3}
 #sheetScreen .nex-origin-category[aria-pressed="true"]{border-color:#b25ae6;background:#713294;color:#fff;font-weight:700}
 #sheetScreen .nex-origin-group-title{display:block!important;position:sticky!important;top:0!important;background:#24192d!important;padding:7px 9px!important;color:#e8c2ff!important;border-left:3px solid #b25ae6!important}
@@ -3422,7 +3424,7 @@ update();
   if(!field) return;
   field.classList.add('nex-origin-field');
   const wrapper=document.createElement('div'); wrapper.id='nexOriginControl'; wrapper.className='nex-origin-control';
-  wrapper.innerHTML=`<button type="button" class="nex-origin-trigger" aria-expanded="false" aria-controls="nexOriginPopup" aria-haspopup="listbox"><span class="nex-origin-current">Escolher origem</span><span class="nex-origin-arrow" aria-hidden="true">▾</span></button><div class="nex-origin-popup" id="nexOriginPopup" hidden><div class="nex-origin-categories" role="group" aria-label="Filtrar origens por livro"></div><input class="nex-origin-search" type="search" aria-label="Buscar origem" placeholder="Buscar origem..." autocomplete="off"><div class="nex-origin-options" role="listbox" aria-label="Origens disponíveis"></div></div>`;
+  wrapper.innerHTML=`<button type="button" class="nex-origin-trigger" aria-expanded="false" aria-controls="nexOriginPopup" aria-haspopup="listbox"><span class="nex-origin-current">Escolher origem</span><span class="nex-origin-arrow" aria-hidden="true">▾</span></button><div class="nex-origin-popup" id="nexOriginPopup" hidden><div class="nex-origin-group-caption">ORIGENS POR LIVRO <span class="nex-origin-build">v2.0.58</span></div><div class="nex-origin-categories" role="group" aria-label="Filtrar origens por livro"></div><input class="nex-origin-search" type="search" aria-label="Buscar origem" placeholder="Buscar origem..." autocomplete="off"><div class="nex-origin-options" role="listbox" aria-label="Origens disponíveis"></div></div>`;
   select.insertAdjacentElement('afterend',wrapper);
   select.classList.add('nex-origin-native');
   select.tabIndex=-1;
