@@ -95,11 +95,13 @@ function addRecord(template){
 }
 function lines(label,value){return value?'<p><span>'+esc(label)+':</span> '+esc(value)+'</p>':'';}
 function render(){
+ // Sincroniza a ficha com Conjurar ao adicionar, editar ou remover um ritual.
+ const refreshCasting=()=>window.NEX_RITUAL_TOOLS?.refresh?.();
  const can=typeof nex12CanShowRituals==='function'?nex12CanShowRituals():true;
  if(typeof nex12UpdateTabVisibility==='function')nex12UpdateTabVisibility();
  $('nexRitualDT').textContent=ritualDT();
  $('nexRitualDTBonus').value=String(Number(state.ritualDtBonus)||0);
- if(!can){list.innerHTML='<p class="nex-ritual-hint">Acesso a rituais depende de classe ou habilidade específica.</p>';return;}
+ if(!can){list.innerHTML='<p class="nex-ritual-hint">Acesso a rituais depende de classe ou habilidade específica.</p>';refreshCasting();return;}
  list.innerHTML=(state.rituals||[]).length?state.rituals.map(r=>{
   const d=metadata(r),cost=(costByCircle[Number(r.circle)]||1)+Math.max(0,Number(r.extra)||0);
   const blocked=state.class==='Ocultista'&&Number(r.circle)>circleAccess();
@@ -112,6 +114,7 @@ function render(){
    '<div class="nex-ritual-actions"><button type="button" data-ritual-remove="'+esc(r.id)+'">Remover</button><button type="button" data-ritual-edit="'+esc(r.id)+'">Editar</button></div>'+
    '<small>'+esc(d.source||'Ritual personalizado')+' · '+esc(cost)+' PE'+(blocked?' · Círculo acima do disponível':'')+'</small></div></details></article>';
  }).join(''):'<p class="nex-ritual-hint">Nenhum ritual aprendido. Clique em Adicionar para escolher um.</p>';
+ refreshCasting();
 }
 $('nexRitualAddButton').addEventListener('click',openSelector);
 $('nexRitualNewButton').addEventListener('click',()=>openEditor());
