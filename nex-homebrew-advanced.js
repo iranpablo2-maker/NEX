@@ -15,7 +15,7 @@
    id:x.id,type:x.type,name:cut(x.name,90),description:cut(x.description,2000),
    requirements:cut(x.requirements,650),minNex:num(x.minNex,0,99,5),
    className:['Livre','Geral','Combatente','Especialista','Ocultista'].includes(x.className)?(x.className==='Livre'&&['poder_geral','poder','habilidade'].includes(x.type)?'Geral':x.className):(['poder_geral','poder','habilidade'].includes(x.type)?'Geral':'Livre'),
-   ritualType:['Dano','Suporte','Cura'].includes(x.ritualType)?x.ritualType:'Suporte',
+   ritualType:['Dano','Suporte','Cura'].includes(x.ritualType)?x.ritualType:(x.ritualDice||x.discenteDice||x.verdadeiroDice?'Dano':'Suporte'),
    discenteCircle:num(x.discenteCircle,1,4,Math.min(4,num(x.circle,1,4,1)+1)),
    verdadeiroCircle:num(x.verdadeiroCircle,1,4,Math.min(4,num(x.circle,1,4,1)+2)),
    circle:num(x.circle,1,4,1),element:['Conhecimento','Energia','Morte','Sangue','Medo','Personalizado'].includes(x.element)?x.element:'Conhecimento',
@@ -305,7 +305,7 @@
      '<p class="nex52-detail-meta">'+esc(info.join(' · '))+'</p>'+
      (item.description?'<h4>Descrição</h4><p>'+esc(item.description)+'</p>':'<p>Sem descrição.</p>')+
      (item.requirements?'<h4>Pré-requisitos</h4><p>'+esc(item.requirements)+'</p>':'')+
-     (item.type==='origem'?'<h4>Perícias treinadas</h4><p>'+esc((item.skills||[]).join(' e ')||'Não configuradas')+'</p>':'')+ritualDetails(item,api()?.ready()?api().listAgents().find(a=>a.id===$('nex51Target').value):null)+trailDetails(item);
+     (item.type==='origem'?'<h4>Perícias treinadas</h4><p>'+esc((item.skills||[]).join(' e ')||'Não configuradas')+'</p>':'')+ritualDetails(item)+trailDetails(item);
    targetOptions();const d=$('nex52Detail');if(typeof d.showModal==='function')d.showModal();else d.setAttribute('open','');
  }
  $('nex51Type').addEventListener('change',editorFields);
@@ -354,6 +354,7 @@
    if(!editing&&count>=50){message('Limite de 50 homebrews para esta categoria.');return;}
    if(type==='trilha'&&TRAIL_NEX.some(n=>!cut($('nex53TrailName'+n).value,90))){message('Informe o nome das quatro habilidades da trilha: 10%, 40%, 65% e 99%.');return;}
    if(type==='poder_paranormal' && !cut($('nex51Description').value,2000)){message('Preencha a descrição do poder paranormal.');return;}
+   if(type==='ritual'&&$('nex53RitualType').value==='Dano'&&(Number($('nex53DiscenteCircle').value)<Number($('nex51Circle').value)||Number($('nex53VerdadeiroCircle').value)<Number($('nex53DiscenteCircle').value))){message('O círculo Discente deve ser igual ou superior ao básico; o Verdadeiro não pode ser menor que o Discente.');return;}
    if(type==='origem'){
      const first=$('nex55Skill1').value,second=$('nex55Skill2').value,available=api()?.skillNames?.()||FALLBACK_SKILLS;
      if(!first||!second||first===second||!available.includes(first)||!available.includes(second)){
