@@ -25,7 +25,15 @@ function detail(item){
   critical:cr.match(/^\d{2}/)?.[0]||'20',multiplier:cr.match(/[x×](\d+)/i)?.[1]||'2',
   damageType:stat(model,'Tipo')||pairs.tipo||'',range:pairs.alcance||stat(model,'Alcance')||'—',
   tier:pairs.categoria||stat(model,'Categoria')||'0',upgrades:'',
-  image:'',description:item.description||model.description||String(item.detail||'').split(' · ')[0]||''
+  image:'',description:(()=>{
+   // Descrições específicas escolhidas pelo jogador têm prioridade.
+   const existing=String(item.description||'').trim();
+   if(existing)return existing;
+   const saved=String(item.detail||'').split(/\s*·\s*/)[0].trim();
+   const auto=/^(?:Estatísticas de jogo conforme|Dados de jogo da tabela|Equipamento listado na tabela|Item amaldiçoado listado na tabela|Detalhes a conferir|Arma [·:]|Equipamento [·:]|Proteção [·:])/i;
+   return saved && !auto.test(saved) && !/^(?:dano|categoria|crítico|espaços|tipo|alcance)\s*:/i.test(saved)
+      ?saved:(model.description||saved);
+  })()
  };
  return {...fallback,...(item.nexInfo||{})};
 }
