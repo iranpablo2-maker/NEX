@@ -17,12 +17,15 @@ function detail(item){
   const match=fragment.match(/^([^:]+):\s*(.+)$/);if(match)pairs[norm(match[1])]=match[2];
  }
  const cr=String(pairs['critico']||stat(model,'Crítico')||'');
+ const cleanCritical=cr.replace(/\s/g,'');
+ const inferredCritical=cleanCritical.match(/^(\d{2})(?:[x×](\d+))?$/i);
+ const inferredMultiplier=cleanCritical.match(/[x×](\d+)/i);
  const sub=String(model.subtitle||'').split('·').map(x=>x.trim());
  const fallback={
   name:item.name||'',category:cats.includes(item.category)?item.category:'Geral',quantity:number(item.quantity,1),spaces:number(item.spaces,model.spaces??1),
   proficiency:({'simples':'Armas Simples','tatica':'Armas Táticas','pesada':'Armas Pesadas'}[norm(sub[0])]||sub[0]||''),kind:sub[1]||'',wield:sub[2]||'',
   damage:pairs.dano||stat(model,'Dano')||'',secondary:'',
-  critical:cr.match(/^\d{2}/)?.[0]||'20',multiplier:cr.match(/[x×](\d+)/i)?.[1]||'2',
+  critical:inferredCritical?.[1]||'20',multiplier:inferredMultiplier?.[1]||'2',
   damageType:stat(model,'Tipo')||pairs.tipo||'',range:pairs.alcance||stat(model,'Alcance')||'—',
   tier:pairs.categoria||stat(model,'Categoria')||'0',upgrades:'',
   image:'',description:(()=>{
@@ -155,7 +158,7 @@ function descriptionText(s){
 function card(item){
  const d=detail(item),weapon=d.category==='Arma',id=safe(item.id);
  const quick=weapon?[['Dano',d.damage],['Crítico',d.critical+(d.multiplier?' ×'+d.multiplier:'')]]:[['Categoria',d.tier],['Espaços',d.spaces]];
- const stats=weapon?[['Proficiência',d.proficiency],['Tipo',d.kind],['Empunhadura',d.wield],['Categoria',d.tier],['Tipo de dano',d.damageType],['Alcance',d.range],['Espaços',d.spaces]]:
+ const stats=weapon?[['Proficiência',d.proficiency],['Tipo',d.kind],['Empunhadura',d.wield],['Categoria',d.tier],['Tipo de dano',d.damageType],['Alcance',d.range],['Dano secundário',d.secondary],['Espaços',d.spaces]]:
  [['Categoria',d.tier],['Tipo',d.category],['Espaços',d.spaces]];
  const img=/^https:\/\//i.test(d.image)?'<img class="nex-item-card-image" src="'+safe(d.image)+'" alt="Imagem de '+safe(d.name)+'">':'';
  return '<details class="nex-item-card-new" data-item-id="'+id+'"><summary><span class="nex-item-chevron">⌄</span>'+
@@ -203,6 +206,7 @@ by('nexEditorForm').addEventListener('submit',event=>{
  if(!cats.includes(values.category)){toast('Categoria inválida.');return}
  if(values.image&&!/^https:\/\//i.test(values.image)){toast('A imagem precisa de um endereço HTTPS.');return}
  const d={...detail(item),...values};
+ if(d.category==='Arma' && (!String(d.damage||'').trim() || !String(d.critical||'').trim() || !String(d.multiplier||'').trim())){toast('Preencha dano, crítico e multiplicador.');return;}
  d.name=String(d.name).trim().slice(0,100);
  d.quantity=Math.max(0,Math.min(9999,Math.trunc(number(d.quantity,1))));
  d.spaces=Math.max(0,Math.min(100,Math.round(number(d.spaces,1)*2)/2));
@@ -212,7 +216,7 @@ by('nexEditorForm').addEventListener('submit',event=>{
  d.image=detail(item).image;
  item.name=d.name;item.category=d.category;item.quantity=d.quantity;item.spaces=d.spaces;item.nexInfo=d;
  item.description=d.description;
- item.detail=[d.description,d.category==='Arma'?'Dano: '+d.damage:'',d.category==='Arma'?'Crítico: '+d.critical+' ×'+d.multiplier:''].filter(Boolean).join(' · ').slice(0,2500);
+ item.detail=[d.description,d.category==='Arma'?'Dano: '+d.damage:'',d.category==='Arma'?'Crítico: '+d.critical+' ×'+d.multiplier:'',d.category==='Arma'?'Tipo: '+d.damageType:'','Categoria: '+d.tier].filter(Boolean).join(' · ').slice(0,2500);
  close();renderInventory();save();toast('Item atualizado.');
 });
 document.addEventListener('keydown',event=>{if(!modal.hidden&&event.key==='Escape'){event.preventDefault();close();}});
