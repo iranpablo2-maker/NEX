@@ -14,7 +14,7 @@ const baseCost={1:1,2:3,3:6,4:10};
 const maxCost=99;
 const isOccultist=()=>state.class==='Ocultista';
 const PE_LIMIT=()=>Math.max(0,(Number(maxValues().peLimit)||0)+(state.origin==='Universitário'?1:0));
-const availableTurnPE=()=>Math.max(0,PE_LIMIT()-kit().turnSpent);
+const availableTurnPE=()=>PE_LIMIT(); // sem controle manual de turnos: limite é verificado em cada conjuração
 const permittedCircle=()=>typeof nex12RitualAllowed==='function'?Number(nex12RitualAllowed())||0:0;
 let view='conjurar',query='',element='',circle='',source='';
 let castingId='';
@@ -178,19 +178,14 @@ style.textContent+="\n#nexTkCastDialog.nex-tk-result-compact{width:min(320px,cal
 document.head.append(style);
 function top(){
  if(!isOccultist()){host.innerHTML='';if(modal.open&&typeof modal.close==='function')modal.close();return;}
- host.innerHTML='<div class="tk-row"><strong>CONJURAR · RITUAIS DE DANO</strong><small id="tkCounts" class="tk-sub"></small></div>'+
- '<div id="tkBody"></div>';
- document.getElementById('tkCounts').textContent=badgeInfo();
+ host.innerHTML='<div id="tkBody"></div>';
  renderBody();
 }
 function renderBody(){
  if(!host.isConnected)return;
  const el=document.getElementById('tkBody');if(!el)return;
- document.getElementById('tkCounts').textContent=badgeInfo();
  if(view==='conjurar'){
-  const budget=availableTurnPE();
-  el.innerHTML='<div class="tk-row tk-dmg-resources"><div><strong>PE: '+pe()+'</strong><p class="tk-sub">Limite/turno: '+PE_LIMIT()+' PE · Disponíveis neste turno: '+budget+' PE · NEX '+esc(state.nex)+'% · Círculo até '+permittedCircle()+'º</p></div><button type="button" class="tk-button" data-tk-next-turn="1">Próximo turno</button></div>'+
-  '<div class="tk-fields"><input id="tkLearnedSearch" type="search" placeholder="Buscar ritual de dano…" aria-label="Buscar ritual de dano" value="'+esc(query)+'"></div>'+
+  el.innerHTML='<div class="tk-fields"><input id="tkLearnedSearch" type="search" placeholder="Buscar ritual de dano…" aria-label="Buscar ritual de dano" value="'+esc(query)+'"></div>'+
   '<div id="tkLearnedCards" class="tk-dmg-list"></div>';
   drawLearned();return;
  }
@@ -495,7 +490,7 @@ function handleLearn(key){
 host.addEventListener('click',e=>{
  const btn=e.target.closest('button');if(!btn)return;
  if(btn.dataset.tkTab){view=btn.dataset.tkTab;top();return;}
- if(btn.dataset.tkNextTurn){if(!isOccultist())return;const k=kit();k.turnSpent=0;k.turnNumber++;addHistory('Novo turno',{note:'Turno '+k.turnNumber+', limite renovado',cost:0});update();return;}
+ 
  if(btn.dataset.tkLearn){if(isOccultist())handleLearn(btn.dataset.tkLearn);return;}
  if(btn.dataset.tkCast){quickDamageRoll(btn.dataset.tkCast,btn.dataset.tkVersion||'Normal');return;}
  if(btn.dataset.tkRound){handleRound(btn.dataset.tkRound);return;}
