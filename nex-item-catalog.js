@@ -34,7 +34,7 @@ for(const model of (typeof NEX12_CATALOG!=='undefined'?NEX12_CATALOG:[])){
  if(existing){if(existing.description.startsWith('Detalhes a conferir'))existing.description=desc;continue}
  put(name,section,kind+'. '+desc,[['Espaços',String(spaces)]],spaces);
 }
-for(const record of [...(window.NEX_ITEM_BOOKS||[]),...(window.NEX_BASE_WEAPONS||[]),...(window.NEX_ITEM_COMPLEMENTS?.items||[]),...(window.NEX_ITEM_VARIANTS||[])]){
+for(const record of [...(window.NEX_ITEM_BOOKS||[]),...(window.NEX_BASE_WEAPONS||[]),...(window.NEX_ITEM_COMPLEMENTS?.items||[]),...(window.NEX_ITEM_VARIANTS||[]),...(window.NEX_MISSING_EQUIPMENT||[])]){
  const item={name:record.name,section:record.section,description:record.description||'',stats:record.stats||[],spaces:record.spaces??1,source:record.source||'Livro de regras'};
  const existing=items.find(x=>norm(x.name)===norm(item.name)&&x.section===item.section);
  if(existing)Object.assign(existing,item);
@@ -83,6 +83,7 @@ style.textContent=[
 '#nexItemModal .nex-item-category-button{display:inline-flex!important;align-items:center!important;flex:0 0 auto!important;min-height:30px!important;line-height:16px!important}',
 '#nexItemModal .nex-item-search-wrap{flex:0 0 auto!important;min-height:58px!important;padding:8px 16px!important}',
 '#nexItemModal .nex-item-results{flex:1 1 0%!important;min-height:0!important;overflow-y:auto!important}',
+'#nexItemModal .nex-item-count{font-size:11px;color:#bca9c9;padding:3px 18px 9px;flex:0 0 auto!important}',
 '#nexItemModal .nex-item-footer{flex:0 0 auto!important}',
 '@media(max-width:600px){#nexItemModal .nex-item-dialog{height:calc(100dvh - 8px)!important;max-height:calc(100dvh - 8px)!important}#nexItemModal .nex-item-categories{gap:5px!important;padding:5px 10px 9px!important}#nexItemModal .nex-item-category-button{padding:6px 8px!important;font-size:11px!important}}',
 '#nexItemModal[hidden]{display:none!important}',
@@ -125,7 +126,8 @@ modal.innerHTML='<section class="nex-item-dialog" role="dialog" aria-modal="true
 '<div class="nex-item-tabs" role="tablist" aria-label="Tipo de item">'+sources.map((c,i)=>'<button type="button" class="nex-item-tab" role="tab" data-source="'+escape(c)+'" aria-selected="'+String(i===0)+'">'+escape(c)+'</button>').join('')+'</div>'+ 
 '<div class="nex-item-category-label">CATEGORIAS</div>'+ 
 '<div class="nex-item-categories" role="tablist" aria-label="Categorias de itens">'+sections.map((c,i)=>'<button type="button" class="nex-item-category-button" role="tab" data-cat="'+escape(c)+'" aria-selected="'+String(i===0)+'">'+escape(c)+'</button>').join('')+'</div>'+ 
-'<div class="nex-item-search-wrap"><input type="search" id="nexItemModalSearch" placeholder="⌕  Buscar" aria-label="Buscar itens"></div>'+
+'<div class="nex-item-search-wrap"><input type="search" id="nexItemModalSearch" placeholder="⌕  Buscar" aria-label="Buscar itens"></div>'+ 
+'<div class="nex-item-count" id="nexItemCatalogCount" aria-live="polite"></div>'+ 
 '<div id="nexItemModalResults" class="nex-item-results" aria-live="polite"></div>'+ 
 '<div class="nex-item-footer"><button type="button" class="nex-item-custom">+ Criar item personalizado</button></div></section>';
 document.body.appendChild(modal);
@@ -139,11 +141,13 @@ function render(){
  const visible=selectedSource==='Itens'?items:homebrewItems();
  const list=visible.filter(i=>i.section===selected&&norm([i.name,i.description,i.subtitle,i.source,...i.stats.map(s=>s.join(' '))].join(' ')).includes(term));
  renderedItems=list;
+ const countLabel=by('nexItemCatalogCount');
+ if(countLabel)countLabel.textContent=list.length+' '+(list.length===1?'item encontrado':'itens encontrados')+' em '+selected+' · '+selectedSource;
  results.innerHTML=list.length?list.map(item=>{
    const index=list.indexOf(item);
    return '<article class="nex-item-card" data-item-index="'+index+'"><div class="nex-item-card-header">'+
    '<button type="button" class="nex-item-expand" data-expand="'+index+'" aria-expanded="false" aria-label="Detalhes do item">⌄</button>'+
-   '<div><span class="nex-item-name">'+escape(item.name)+'</span><span class="nex-item-desc">'+escape(item.subtitle||item.source||'Item')+'</span>'+
+   '<div><span class="nex-item-name">'+escape(item.name)+'</span><span class="nex-item-desc">'+escape(item.subtitle||item.source||'Item')+' · '+escape(item.source||'')+'</span>'+ 
    '<div class="nex-item-meta">'+(item.stats.length?item.stats.map(m=>'<span><b>'+escape(m[0])+':</b> '+escape(m[1])+'</span>').join(''):'<span><b>Espaços:</b> '+item.spaces+'</span>')+'</div></div>'+
    '<button type="button" class="nex-item-plus" data-add="'+index+'" aria-label="Adicionar '+escape(item.name)+'">+</button></div>'+
    '<div class="nex-item-detail" hidden>'+escape((item.source?item.source+' · ':'')+(item.description||'Confira as estatísticas nas regras do livro.'))+'</div></article>';
