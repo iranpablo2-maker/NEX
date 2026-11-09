@@ -1,4 +1,4 @@
-/* NEX — descrições originais resumidas conforme Sobrevivendo ao Horror. */
+/* NEX — descrições resumidas em linguagem própria do suplemento. */
 window.NEX_SAH={
   "origins": [
     {
@@ -817,82 +817,98 @@ window.NEX_SAH={
     {
       "name": "Esfolar",
       "circle": 1,
-      "element": "Sangue"
+      "element": "Sangue",
+      "description": "Sangue • 1º círculo. Afeta um alvo a curta distância com dano cortante e condição de sangramento; Reflexos pode reduzir os efeitos."
     },
     {
       "name": "Sede de Adrenalina",
       "circle": 2,
-      "element": "Sangue"
+      "element": "Sangue",
+      "description": "Sangue • 2º círculo. Como reação, permite repetir um teste falho de Acrobacia ou Atletismo usando Presença, ou reduzir dano de impacto recebido. Limitado a um uso por rodada."
     },
     {
       "name": "Odor da Caçada",
       "circle": 3,
-      "element": "Sangue"
+      "element": "Sangue",
+      "description": "Sangue • 3º círculo. Apura o olfato do conjurador e melhora a movimentação e a resistência em perseguições durante a cena."
     },
     {
       "name": "Martírio de Sangue",
       "circle": 4,
-      "element": "Sangue"
+      "element": "Sangue",
+      "description": "Sangue • 4º círculo. Provoca uma transformação corporal extrema que amplifica capacidades físicas e resistência, mas impõe limitações e riscos mentais."
     },
     {
       "name": "Apagar as Luzes",
       "circle": 1,
-      "element": "Morte"
+      "element": "Morte",
+      "description": "Morte • 1º círculo. Interrompe a iluminação de fontes naturais ou sobrenaturais nas proximidades, deixando a área escura ou em penumbra."
     },
     {
       "name": "Língua Morta",
       "circle": 2,
-      "element": "Morte"
+      "element": "Morte",
+      "description": "Morte • 2º círculo. Permite fazer um número limitado de perguntas sobre o passado de um cadáver enquanto o ritual estiver sustentado."
     },
     {
       "name": "Fedor Pútrido",
       "circle": 3,
-      "element": "Morte"
+      "element": "Morte",
+      "description": "Morte • 3º círculo. Disfarça temporariamente os sinais de vida do conjurador, favorecendo Furtividade e certos disfarces, mas piora interações sociais."
     },
     {
       "name": "Singularidade Temporal",
       "circle": 4,
-      "element": "Morte"
+      "element": "Morte",
+      "description": "Morte • 4º círculo. Acelera drasticamente o envelhecimento e a degradação de um objeto não paranormal; o efeito depende do tipo de material e da avaliação do mestre."
     },
     {
       "name": "Desfazer Sinapses",
       "circle": 1,
-      "element": "Conhecimento"
+      "element": "Conhecimento",
+      "description": "Conhecimento • 1º círculo. Interfere nas funções mentais de um ser e causa efeitos adversos, com resistência de Vontade para atenuá-los."
     },
     {
       "name": "Aurora da Verdade",
       "circle": 2,
-      "element": "Conhecimento"
+      "element": "Conhecimento",
+      "description": "Conhecimento • 2º círculo. Cria uma região luminosa que dificulta mentiras e revela seres ocultos. Vontade permite resistir parcialmente à compulsão."
     },
     {
       "name": "Relembrar Fragmento",
       "circle": 3,
-      "element": "Conhecimento"
+      "element": "Conhecimento",
+      "description": "Conhecimento • 3º círculo. Recupera informações antes ilegíveis de uma fonte escrita danificada, possibilitando consultar parte de seu conteúdo."
     },
     {
       "name": "Pronunciar Sigilo",
       "circle": 4,
-      "element": "Conhecimento"
+      "element": "Conhecimento",
+      "description": "Conhecimento • 4º círculo. Pronuncia uma palavra sobrenatural que pode desorientar, cegar ou afetar a presença de um ser; Vontade reduz determinados efeitos."
     },
     {
       "name": "Overclock",
       "circle": 1,
-      "element": "Energia"
+      "element": "Energia",
+      "description": "Energia • 1º círculo. Como reação a um teste de Tecnologia, ajuda a obter informações ou operar sistemas eletrônicos por meio de energia paranormal."
     },
     {
       "name": "Tremeluzir",
       "circle": 2,
-      "element": "Energia"
+      "element": "Energia",
+      "description": "Energia • 2º círculo. Faz o conjurador atravessar obstáculos sólidos de maneira instável, podendo ajudar em fugas e deslocamentos arriscados."
     },
     {
       "name": "Mutar",
       "circle": 3,
-      "element": "Energia"
+      "element": "Energia",
+      "description": "Energia • 3º círculo. Bloqueia os sons emitidos e recebidos pelo personagem; concede forte bônus à Furtividade, mas também impede ouvir e falar normalmente."
     },
     {
       "name": "Milagre Ionizante",
       "circle": 3,
-      "element": "Energia"
+      "element": "Energia",
+      "description": "Energia • 3º círculo. Usa energia paranormal para remover uma condição prejudicial de um ser tocado, respeitando as condições e limites previstos na descrição do ritual."
     }
   ],
   "items": [
@@ -900,115 +916,134 @@ window.NEX_SAH={
       "name": "Ampulheta do Tempo Sofrido",
       "element": "Morte",
       "category": "II",
-      "spaces": 1
+      "spaces": 1,
+      "description": "Morte • Categoria II, 1 espaço. Gastando 5 PE, permite receber imediatamente o benefício de uma ação de interlúdio. Para usar novamente, é preciso devolver o tempo emprestado com outro interlúdio."
     },
     {
       "name": "Arreio Neural",
       "element": "Energia",
       "category": "II",
-      "spaces": 1
+      "spaces": 1,
+      "description": "Energia • Categoria II, 1 espaço. Enquanto equipado, converte parte do dano elétrico ou de Energia sofrido em recuperação de PE, com limite diário relacionado ao Vigor."
     },
     {
       "name": "Câmera Obscura",
       "element": "Conhecimento",
       "category": "III",
-      "spaces": 1
+      "spaces": 1,
+      "description": "Conhecimento • Categoria III, 1 espaço. Câmera ritualística que pode revelar e prejudicar entidades difíceis de enxergar, elevando a dificuldade de resistir ao seu efeito."
     },
     {
       "name": "Centrifugador Existencial",
       "element": "Energia",
       "category": "III",
-      "spaces": 1
+      "spaces": 1,
+      "description": "Energia • Categoria III, 1 espaço. Gastando 3 PE, concede um turno extra por uma rodada. Um teste de Ocultismo evita uma penalidade grave nos atributos após o uso."
     },
     {
       "name": "Conector de Membros",
       "element": "Sangue",
       "category": "III",
-      "spaces": 1
+      "spaces": 1,
+      "description": "Sangue • Categoria III, 1 espaço. Dispositivo ritual que reconecta partes do corpo recentemente perdidas. O efeito não recupera automaticamente todos os PV e pode trazer efeitos colaterais."
     },
     {
       "name": "Dose d’A Praga",
       "element": "Sangue",
       "category": "III",
-      "spaces": 1
+      "spaces": 1,
+      "description": "Sangue • Categoria III, 1 espaço. Frasco que concede temporariamente vários poderes associados ao Sangue; o término do efeito pode provocar consequências negativas."
     },
     {
       "name": "Enxame Fantasmagórico",
       "element": "Conhecimento",
       "category": "III",
-      "spaces": 1
+      "spaces": 1,
+      "description": "Conhecimento • Categoria III, 1 espaço. Manto que torna o usuário invisível enquanto usado, mas cobra dano mental contínuo como custo."
     },
     {
       "name": "Espelho Refletor",
       "element": "Energia",
       "category": "II",
-      "spaces": 1
+      "spaces": 1,
+      "description": "Energia • Categoria II, 1 espaço. Permite observar pontos fora da visão normal com bônus de Percepção. Pode ser sacrificado para refletir dano de Energia à sua fonte."
     },
     {
       "name": "Fuzil Alheio",
       "element": "Energia",
       "category": "IV",
-      "spaces": 2
+      "spaces": 2,
+      "description": "Energia • Categoria IV, 2 espaços. Arma de precisão paranormal que causa dano do elemento Energia e dispensa munição convencional."
     },
     {
       "name": "Injeção de Lodo",
       "element": "Morte",
       "category": "II",
-      "spaces": 0.5
+      "spaces": 0.5,
+      "description": "Morte • Categoria II, 0,5 espaço. Pode impedir que uma criatura voluntária seja reduzida a zero PV uma vez na cena, mas aumenta sua vulnerabilidade a determinados danos."
     },
     {
       "name": "Instantâneo Mortal",
       "element": "Morte",
       "category": "II",
-      "spaces": 0.5
+      "spaces": 0.5,
+      "description": "Morte • Categoria II, 0,5 espaço. Fotografia sobrenatural que pode auxiliar testes de busca por pistas relacionados à história representada na imagem, mediante gasto de PE."
     },
     {
       "name": "Mandíbula Agonizante",
       "element": "Sangue",
       "category": "II",
-      "spaces": 1
+      "spaces": 1,
+      "description": "Sangue • Categoria II, 1 espaço. Objeto que produz uma distração sonora intensa, útil em furtividade e capaz de atrair criaturas associadas ao Sangue."
     },
     {
       "name": "A Primeira Adaga",
       "element": "Medo",
       "category": "III",
-      "spaces": 1
+      "spaces": 1,
+      "description": "Medo • Categoria III, 1 espaço. Relíquia ritualística que aplica vários efeitos de catalisadores a um ritual, exigindo um preço muito alto do conjurador."
     },
     {
       "name": "Projétil de Lodo, Curto",
       "element": "Morte",
       "category": "I",
-      "spaces": 1
+      "spaces": 1,
+      "description": "Morte • Categoria I, 1 espaço. Munição curta amaldiçoada que converte o dano da arma para Morte, mas causa a deterioração da arma após a cena."
     },
     {
       "name": "Projétil de Lodo, Longo",
       "element": "Morte",
       "category": "II",
-      "spaces": 1
+      "spaces": 1,
+      "description": "Morte • Categoria II, 1 espaço. Munição longa amaldiçoada que converte o dano da arma para Morte, mas causa a deterioração da arma após a cena."
     },
     {
       "name": "Rádio Chiador",
       "element": "Morte",
       "category": "II",
-      "spaces": 1
+      "spaces": 1,
+      "description": "Morte • Categoria II, 1 espaço. Rádio que detecta a proximidade aproximada de criaturas paranormais por variações no chiado; o som também pode chamar sua atenção."
     },
     {
       "name": "Repositório do Fracasso",
       "element": "Conhecimento",
       "category": "II",
-      "spaces": 1
+      "spaces": 1,
+      "description": "Conhecimento • Categoria II, 1 espaço. Acumula cargas quando criaturas paranormais obtêm maus resultados em seus dados. As cargas restauram PE, mas geram penalidade cumulativa em Vontade."
     },
     {
       "name": "Retalho Tenebroso",
       "element": "Sangue",
       "category": "II",
-      "spaces": 1
+      "spaces": 1,
+      "description": "Sangue • Categoria II, 1 espaço. Máscara paranormal que aprimora sentidos e dano ao longo dos dias, mas provoca desgaste e é difícil de remover."
     },
     {
       "name": "Tablet do Saber Custoso",
       "element": "Conhecimento",
       "category": "II",
-      "spaces": 1
+      "spaces": 1,
+      "description": "Conhecimento • Categoria II, 1 espaço. Conhecido no livro como Tábula do Saber Custoso. Permite ser considerado treinado em uma perícia durante um teste, ao custo de Sanidade proporcional ao atributo-chave."
     }
   ]
 };
