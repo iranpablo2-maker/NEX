@@ -1478,7 +1478,47 @@ html,body{background:#000!important;background-image:none!important}
  }
 }
 </style>
-</head><body>
+<style id="nex-ritual-ficha-style">
+#rituals > [hidden]{display:none!important}
+#nexRitualsControls{padding:10px 0 20px}
+.nex-ritual-top,.nex-ritual-bottom{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px}
+.nex-ritual-dt{display:flex;align-items:center;gap:10px;font-weight:700;color:#afb0b8}
+.nex-ritual-dt output{display:grid;place-items:center;width:55px;height:40px;color:#fff;border:1px solid #a77bc4;font-size:18px;background:#0d0b11}
+.nex-ritual-bottom{justify-content:flex-end}
+.nex-ritual-bottom label{font-size:11px;color:#9c8ba8}
+#nexRitualDTBonus{width:60px;padding:6px;border:1px solid #755785;color:white;background:#100e15}
+.nex-ritual-hint{padding:7px 3px;color:#a9a0ad;font-size:12px}
+.nex-ritual-card{border-bottom:1px solid #563865;padding:8px 6px;margin-bottom:6px;background:#1a181d}
+.nex-ritual-card summary{display:flex;align-items:center;gap:12px;list-style:none;font-size:14px;color:#fff;cursor:pointer;padding:10px 8px}
+.nex-ritual-card summary::-webkit-details-marker{display:none}
+.nex-ritual-arrow{font-size:22px;line-height:1;color:#ad5bec;transform:rotate(180deg)}
+.nex-ritual-card details[open] .nex-ritual-arrow{transform:rotate(0)}
+.nex-ritual-detail{padding:2px 10px 14px;color:#eee;line-height:1.6;position:relative;min-height:150px;overflow:hidden}
+.nex-ritual-pill{display:inline-block;font-weight:750;padding:3px 8px;border-radius:3px;background:#7439a7;color:#fff;font-size:11px;margin:4px 0 10px}
+.nex-ritual-Morte{background:#555761}.nex-ritual-Sangue{background:#8c313e}.nex-ritual-Conhecimento{background:#ac8a32;color:#161014}.nex-ritual-Energia{background:#8333d6}.nex-ritual-Medo{background:#d4d4d4;color:#111}
+.nex-ritual-image{float:right;max-width:135px;max-height:140px;object-fit:contain;margin-left:12px}
+.nex-ritual-properties p{margin:2px 0;color:#eee}
+.nex-ritual-properties span,.nex-ritual-enhance b{color:#b45bfa}
+.nex-ritual-summary{margin:18px 0 12px;white-space:pre-wrap}
+.nex-ritual-enhance{margin:10px 0;white-space:pre-wrap}
+.nex-ritual-actions{display:flex;justify-content:space-between;clear:both;padding:12px 0 6px}
+.nex-ritual-actions button{border:0;background:transparent;font-size:12px;cursor:pointer}
+.nex-ritual-actions button:first-child{color:#ed696d}.nex-ritual-actions button:last-child{color:#68b87e}
+#nexRitualDialog{background:#1b181f;color:#fff;border:1px solid #76518a;border-radius:8px;width:min(680px,96vw);max-height:85vh;padding:17px}
+#nexRitualDialog::backdrop{background:#000b}
+#nexRitualDialog header{display:flex;justify-content:space-between;align-items:center;margin-bottom:15px}
+.nex-ritual-filter{display:grid;grid-template-columns:2fr 1fr 1fr;gap:8px;margin-bottom:10px}
+#nexRitualDialog input,#nexRitualDialog select,#nexRitualDialog textarea{background:#100e14;border:1px solid #6c5378;padding:9px;color:white;width:100%;border-radius:4px}
+#nexRitualEditor{display:grid;gap:10px}
+#nexRitualEditor[hidden],#nexRitualSelector[hidden]{display:none!important}
+#nexRitualEditor label{font-size:12px;color:#d8cae3;display:grid;gap:4px}
+.nex-ritual-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.nex-ritual-choices{overflow-y:auto;max-height:55vh;display:grid;gap:6px}
+.nex-ritual-option{display:flex;justify-content:space-between;align-items:center;gap:8px;border:1px solid #46364f;border-radius:5px;background:#231d28;padding:9px}
+.nex-ritual-option strong{display:block}.nex-ritual-option small{display:block;color:#b6abbc;font-size:11px;margin-top:3px}
+.nex-ritual-option button[disabled]{opacity:.45;cursor:not-allowed}
+@media(max-width:550px){.nex-ritual-filter{grid-template-columns:1fr}.nex-ritual-top{flex-wrap:wrap}.nex-ritual-fields{grid-template-columns:1fr}}
+</style></head><body>
 <script src="nex-sobrevivendo-ao-horror.js?v=2072"></script>
 <header class="topbar"><div class="topinner"><button type="button" id="n17MenuToggle" class="n17-menu-button" aria-expanded="false" aria-controls="n17Drawer" aria-label="Abrir menu">☰</button><button type="button" class="brand" id="nexBrandHome" aria-label="Voltar ao menu principal" title="Voltar ao menu principal"><span class="brand-mark" aria-hidden="true">◈</span><span><h1>NEX</h1><span class="subtitle">SISTEMA DE FICHAS · ORDEM PARANORMAL</span></span></button><div class="actions"><button class="btn sm" id="menuHeaderButton" type="button" style="display:none!important" hidden tabindex="-1" aria-hidden="true">⌂ Menu principal</button><button class="btn sm" id="newChar" type="button" style="display:none!important" hidden tabindex="-1" aria-hidden="true">＋ Nova ficha</button><button class="btn sm" id="importBtn" style="display:none!important" aria-hidden="true" tabindex="-1">Importar</button><button class="btn sm" id="exportBtn" style="display:none!important" aria-hidden="true" tabindex="-1">↓ Exportar</button><input type="file" id="fileInput" accept="application/json,.json" hidden><span id="n17SaveIndicator" hidden aria-hidden="true"></span></div></div></header>
 <nav class="nex-ref-nav" aria-label="Navegação principal">
@@ -3883,6 +3923,7 @@ const PARANORMAL=[
 </script>
 <script src="nex-duplicate-review.js?v=2055"></script>
 <script src="nex-homebrew-advanced.js?v=2106"></script>
+<script src="nex-rituais-ficha.js?v=2107"></script>
 <script src="nex-livros-itens.js?v=2076"></script>
 <script src="nex-armas-livro-basico.js?v=2082"></script>
 <script src="nex-complementos-itens.js?v=2078"></script>
