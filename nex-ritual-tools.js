@@ -18,12 +18,15 @@ const availableTurnPE=()=>Math.max(0,PE_LIMIT()-kit().turnSpent);
 const permittedCircle=()=>typeof nex12RitualAllowed==='function'?Number(nex12RitualAllowed())||0:0;
 let view='conjurar',query='',element='',circle='',source='';
 let castingId='';
+let castCommitted=false;
 function kit(){
  if(!state.ritualToolkit||typeof state.ritualToolkit!=='object'||Array.isArray(state.ritualToolkit))state.ritualToolkit={};
  const k=state.ritualToolkit;
  for(const field of ['active','history','combos'])if(!Array.isArray(k[field]))k[field]=[];
  k.turnSpent=Math.max(0,Math.floor(Number(k.turnSpent)||0));
  k.turnNumber=Math.max(1,Math.floor(Number(k.turnNumber)||1));
+ k.permanentSanLoss=Math.max(0,Math.floor(Number(k.permanentSanLoss)||0));
+ if(!k.effectConfigs||typeof k.effectConfigs!=='object'||Array.isArray(k.effectConfigs))k.effectConfigs={};
  return k;
 }
 function learned(){return Array.isArray(state.rituals)?state.rituals:[];}
@@ -60,6 +63,101 @@ function hasEnhance(text){return Boolean(text&&!/^(Não consta|N[aã]o possui|Se
 function finalPrice(r,version,additional){
  const d=info(r),v=version==='Discente'?d.discente:version==='Verdadeiro'?d.verdadeiro:'';
  return Math.max(0,(baseCost[Number(r.circle)]||1)+Math.max(0,Number(r.extra)||0)+(enhancePrice(v)||0)+Math.max(0,Number(additional)||0));
+}
+function effectSettings(r,version){
+ const d=info(r),key=signature(r),preset=window.NEX_RITUAL_EFFECTS?.[key]||{};
+ const homeType=d.ritualType==='Suporte'?'Buff':d.ritualType;
+ const type=homeType||preset.type||'Buff';
+ const configured=kit().effectConfigs[key+'|'+version];
+ const summary=String(d.note||d.description||d.effect||'Consulte as condições do ritual no grimório.').slice(0,500);
+ let damageDice=String(preset.damageDice||'');
+ let healDice=String(preset.healDice||'');
+ const typedDice=version==='Discente'?d.discenteDice:version==='Verdadeiro'?d.verdadeiroDice:d.ritualDice;
+ const summaryDice=String(version==='Discente'?d.discente:version==='Verdadeiro'?d.verdadeiro:'').match(/\bDados:\s*(\d+d\d+(?:[+-]\d+)?)\b/i)?.[1]||'';
+ const currentDice=String(typedDice||summaryDice||'').match(/\b\d+d\d+(?:[+-]\d+)?\b/i)?.[0]||'';
+ if(currentDice){
+  if(type==='Cura')healDice=currentDice;
+  else damageDice=currentDice;
+ }
+ const defaults={type,damageDice,healDice,healFromDamage:Boolean(preset.healFromDamage),buffText:summary};
+ return {...defaults,...configured};
+}
+const die=faces=>{
+ const out=new Uint32Array(1);
+ if(typeof crypto!=='undefined'&&crypto.getRandomValues)crypto.getRandomValues(out);
+ else out[0]=Math.floor(Math.random()*4294967296);
+ return (out[0]%faces)+1;
+};
+function rollSimpleDice(expression){
+ const value=String(expression||'').trim().replace(/\s+/g,'').toLowerCase();
+ const matched=/^(\d{1,2})d(\d{1,3})([+-]\d{1,3})?$/.exec(value);
+ if(!matched)return null;
+ const count=Number(matched[1]),faces=Number(matched[2]),bonus=Number(matched[3]||0);
+ if(count<1||count>50||faces<2||faces>1000)return null;
+ const rolls=Array.from({length:count},()=>die(faces));
+ return {expression:value,rolls,bonus,total:rolls.reduce((a,b)=>a+b,bonus)};
+}
+function occultismRoll(cost,bonus){
+ const sk=state.skills?.Ocultismo||{};
+ const attr=sk.attr||'int';
+ const pool=Math.max(0,Math.min(20,Math.floor(Number(state.attributes?.[attr])||0)));
+ const rolls=Array.from({length:pool===0?2:pool},()=>die(20));
+ const chosen=pool===0?Math.min(...rolls):Math.max(...rolls);
+ const training=Math.floor(Number(sk.training)||0);
+ const total=chosen+training+bonus,dt=20+cost;
+ return {rolls,chosen,training,bonus,total,dt,passed:total>=dt,shortfall:Math.max(0,dt-total),attr};
+}
+function targetRitualDT(){
+ return 10+(Number(maxValues().peLimit)||0)+(Number(state.attributes?.pre)||0)+(Number(state.ritualDtBonus)||0);
+}
+function applyCastSanity(element,version,cost,check){
+ const fear=norm(element)==='medo';
+ const lost=fear?cost:check?.passed?0:cost;
+ const permanent=fear?(version==='Verdadeiro'?3:version==='Discente'?2:1):check&&check.shortfall>=5?1:0;
+ state.sanCurrent=Math.max(0,(Number(state.sanCurrent)||0)-lost);
+ if(permanent)kit().permanentSanLoss+=permanent;
+ return {lost,permanent};
+}
+function formEffect(){
+ const el=modal.querySelector.bind(modal);
+ return {type:el('#tkEffectType')?.value||'Buff',
+  damageDice:String(el('#tkDamageDice')?.value||'').trim(),healDice:String(el('#tkHealDice')?.value||'').trim(),
+  healFromDamage:Boolean(el('#tkHealHalf')?.checked),buffText:String(el('#tkBuffText')?.value||'').trim().slice(0,500)};
+}
+function syncEffectFields(reset){
+ const m=castMath();if(!m)return;
+ if(reset){
+  const config=effectSettings(m.r,m.v);
+  for(const [id,value] of [['tkEffectType',config.type],['tkDamageDice',config.damageDice],['tkHealDice',config.healDice],['tkBuffText',config.buffText]]){
+   const field=modal.querySelector('#'+id);if(field)field.value=value||'';
+  }
+  const half=modal.querySelector('#tkHealHalf');if(half)half.checked=Boolean(config.healFromDamage);
+ }
+ const type=formEffect().type;
+ const damage=modal.querySelector('#tkDamageLine'),heal=modal.querySelector('#tkHealLine'),buff=modal.querySelector('#tkBuffLine');
+ const half=modal.querySelector('#tkHealHalf'),halfWrapper=modal.querySelector('#tkHalfLine');
+ if(damage)damage.hidden=!['Dano','Dano + Cura'].includes(type);
+ if(heal)heal.hidden=!['Cura','Dano + Cura'].includes(type);
+ if(buff)buff.hidden=type!=='Buff';
+ if(halfWrapper)halfWrapper.hidden=type!=='Dano + Cura';
+ if(half&&type!=='Dano + Cura')half.checked=false;
+ if(modal.querySelector('#tkHealDice'))modal.querySelector('#tkHealDice').disabled=type==='Dano + Cura'&&Boolean(half?.checked);
+}
+function computeEffect(fields){
+ const result={type:fields.type,buffText:fields.buffText||'',damage:null,healing:null};
+ if(['Dano','Dano + Cura'].includes(fields.type)){
+  result.damage=rollSimpleDice(fields.damageDice);
+  if(!result.damage)return null;
+ }
+ if(['Cura','Dano + Cura'].includes(fields.type)){
+  if(fields.type==='Dano + Cura'&&fields.healFromDamage){
+   result.healing={expression:'Metade do dano',rolls:[],bonus:0,total:Math.floor(result.damage.total/2)};
+  }else{
+   result.healing=rollSimpleDice(fields.healDice);
+   if(!result.healing)return null;
+  }
+ }
+ return result;
 }
 function badgeInfo(){
  const n=learned().length,a=kit().active.length,h=kit().history.length,c=kit().combos.length;
