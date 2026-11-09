@@ -1559,7 +1559,7 @@ html,body{background:#000!important;background-image:none!important}
         <option>Combatente</option>
         <option>Especialista</option>
         <option>Ocultista</option>
-        
+        <option>Mundano</option>
       </select>
     </div>
   </div>
@@ -1715,8 +1715,8 @@ html,body{background:#000!important;background-image:none!important}
 
 'use strict';
 const KEY='nex_ficha_v1'; // preserva os dados dos usuários da versão anterior
-const CLASS_RULES={Combatente:{pv:20,pvStep:4,pe:2,peStep:2,san:12,sanStep:3},Especialista:{pv:16,pvStep:3,pe:3,peStep:3,san:16,sanStep:4},Ocultista:{pv:12,pvStep:2,pe:4,peStep:4,san:20,sanStep:5}};
-const LEVELS=[...Array.from({length:19},(_,i)=>(i+1)*5),99];
+const CLASS_RULES={Mundano:{pv:8,pvStep:0,pe:1,peStep:0,san:8,sanStep:0},Combatente:{pv:20,pvStep:4,pe:2,peStep:2,san:12,sanStep:3},Especialista:{pv:16,pvStep:3,pe:3,peStep:3,san:16,sanStep:4},Ocultista:{pv:12,pvStep:2,pe:4,peStep:4,san:20,sanStep:5}};
+const LEVELS=[0,...Array.from({length:19},(_,i)=>(i+1)*5),99];
 const AUTO_ORIGIN=['Ex-Militar'];
 const ATTRIBUTE_NAMES={agi:'Agilidade',for:'Força',int:'Intelecto',pre:'Presença',vig:'Vigor'};
 const SKILL_DATA=[['Acrobacia','agi'],['Adestramento','pre'],['Artes','pre'],['Atletismo','for'],['Atualidades','int'],['Ciências','int'],['Crime','agi'],['Diplomacia','pre'],['Enganação','pre'],['Fortitude','vig'],['Furtividade','agi'],['Iniciativa','agi'],['Intimidação','pre'],['Intuição','pre'],['Investigação','int'],['Luta','for'],['Medicina','int'],['Ocultismo','int'],['Percepção','pre'],['Pilotagem','agi'],['Pontaria','agi'],['Profissão','int'],['Reflexos','agi'],['Religião','pre'],['Sobrevivência','int'],['Tática','int'],['Tecnologia','int'],['Vontade','pre']];
@@ -1757,9 +1757,9 @@ const int=(value,def=0)=>{let n=Number(value);return Number.isFinite(n)?Math.tru
 const clamp=(n,min,max)=>Math.max(min,Math.min(max,n));
 const defaults=()=>({name:'Novo personagem',age:30,player:'',photo:'',resistances:'',proficiencies:'',protectionName:'',protectionDefense:0,nex:5,class:'Combatente',origin:'',concept:'',basePv:20,pvStep:4,basePe:2,peStep:2,baseSan:12,sanStep:3,pvCurrent:23,peCurrent:3,sanCurrent:12,defense:12,defenseBonus:0,autoRules:true,speed:9,attributes:{agi:2,for:2,int:2,pre:1,vig:2},skills:Object.fromEntries(SKILL_DATA.map(([name,attr])=>[name,{attr,training:0}])),attacks:[{id:1,name:'Ataque principal',test:'1d20+5',damage:'1d8',detail:''}],items:[{id:2,name:'Equipamento de investigação',quantity:1,detail:''}],backstory:'',notes:'',abilities:''});
 function load(){try{let raw=localStorage.getItem(KEY)||localStorage.getItem('arquivo_sombrio_v1');if(!raw)return defaults();return normalize(JSON.parse(raw));}catch(e){return defaults();}}
-function normalize(obj){const d=defaults();if(!obj||typeof obj!=='object'||Array.isArray(obj))return d;const result={...d,...obj};result.attributes=Object.fromEntries(Object.entries({...d.attributes,...(obj.attributes||{})}).map(([k,v])=>[k,clamp(int(v,1),0,9)]));result.skills={...d.skills,...(obj.skills||{})};result.attacks=Array.isArray(obj.attacks)?obj.attacks.slice(0,60):d.attacks;result.items=Array.isArray(obj.items)?obj.items.slice(0,100):d.items;result.nex=LEVELS.includes(int(result.nex,5))?int(result.nex,5):5;result.player=String(result.player||'');result.photo=String(result.photo||'');if(obj.autoRules===undefined)result.autoRules=true;if(obj.defenseBonus===undefined)result.defenseBonus=Math.max(0,int(obj.defense,10)-(10+int(result.attributes.agi,1)));return result;}
+function normalize(obj){const d=defaults();if(!obj||typeof obj!=='object'||Array.isArray(obj))return d;const result={...d,...obj};result.attributes=Object.fromEntries(Object.entries({...d.attributes,...(obj.attributes||{})}).map(([k,v])=>[k,clamp(int(v,1),0,9)]));result.skills={...d.skills,...(obj.skills||{})};result.attacks=Array.isArray(obj.attacks)?obj.attacks.slice(0,60):d.attacks;result.items=Array.isArray(obj.items)?obj.items.slice(0,100):d.items;result.nex=LEVELS.includes(int(result.nex,5))?int(result.nex,5):5;if(result.nex===0)result.class='Mundano';result.player=String(result.player||'');result.photo=String(result.photo||'');if(obj.autoRules===undefined)result.autoRules=true;if(obj.defenseBonus===undefined)result.defenseBonus=Math.max(0,int(obj.defense,10)-(10+int(result.attributes.agi,1)));return result;}
 let state=load();let log=[];let idCounter=Date.now();
-function maxValues(){const level=LEVELS.indexOf(int(state.nex,5))+1;const steps=Math.max(0,level-1);const bonus=state.origin==='Ex-Militar'?level:0;const vig=int(state.attributes.vig),pre=int(state.attributes.pre);const rules=CLASS_RULES[state.class];if(rules&&state.autoRules!==false){return {pv:Math.max(0,rules.pv+vig+steps*(rules.pvStep+vig)+bonus),pe:Math.max(0,rules.pe+pre+steps*(rules.peStep+pre)),san:Math.max(0,rules.san+steps*rules.sanStep-(state.origin==='Cultista Arrependido'?Math.ceil(rules.san/2):0)),bonus,peLimit:level};}return {pv:Math.max(0,int(state.basePv)+steps*int(state.pvStep)+bonus),pe:Math.max(0,int(state.basePe)+steps*int(state.peStep)),san:Math.max(0,int(state.baseSan)+steps*int(state.sanStep)-(state.origin==='Cultista Arrependido'?Math.ceil(int(state.baseSan)/2):0)),bonus,peLimit:level};}
+function maxValues(){if(int(state.nex)===0){return {pv:Math.max(0,8+int(state.attributes.vig)),pe:Math.max(0,1+int(state.attributes.pre)),san:8,bonus:0,peLimit:1};}const level=LEVELS.indexOf(int(state.nex,5));const steps=Math.max(0,level-1);const bonus=state.origin==='Ex-Militar'?level:0;const vig=int(state.attributes.vig),pre=int(state.attributes.pre);const rules=CLASS_RULES[state.class];if(rules&&state.autoRules!==false){return {pv:Math.max(0,rules.pv+vig+steps*(rules.pvStep+vig)+bonus),pe:Math.max(0,rules.pe+pre+steps*(rules.peStep+pre)),san:Math.max(0,rules.san+steps*rules.sanStep-(state.origin==='Cultista Arrependido'?Math.ceil(rules.san/2):0)),bonus,peLimit:level};}return {pv:Math.max(0,int(state.basePv)+steps*int(state.pvStep)+bonus),pe:Math.max(0,int(state.basePe)+steps*int(state.peStep)),san:Math.max(0,int(state.baseSan)+steps*int(state.sanStep)-(state.origin==='Cultista Arrependido'?Math.ceil(int(state.baseSan)/2):0)),bonus,peLimit:level};}
 function save(show=false){try{localStorage.setItem(KEY,JSON.stringify(state));if(show)toast('Ficha salva neste navegador.');}catch(e){toast('Não foi possível salvar. Exporte um backup em JSON.');}}
 function toast(msg){const el=$('toast');el.textContent=msg;el.classList.add('show');clearTimeout(toast.timer);toast.timer=setTimeout(()=>el.classList.remove('show'),2800);}
 function escapeHtml(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
@@ -1769,14 +1769,14 @@ function renderSkills(){ $('skillsList').innerHTML=SKILL_DATA.map(([name,attr])=
 function renderAttacks(){ $('attacksList').innerHTML=state.attacks.length?state.attacks.map(a=>`<div class="item" data-attack-id="${escapeHtml(a.id)}"><div class="item-head"><strong>${escapeHtml(a.name||'Ataque')}</strong><button class="btn sm" data-delete-attack="${escapeHtml(a.id)}">Excluir</button></div><div class="item-grid"><div class="field"><label>Nome</label><input data-attack-field="name" value="${escapeHtml(a.name||'')}"></div><div class="field"><label>Teste (ex.: 1d20+5)</label><input data-attack-field="test" value="${escapeHtml(a.test||'')}"></div><div class="field"><label>Dano (ex.: 1d8)</label><input data-attack-field="damage" value="${escapeHtml(a.damage||'')}"></div></div><div class="field"><label>Detalhes</label><input data-attack-field="detail" value="${escapeHtml(a.detail||'')}"></div><div class="inline"><button class="btn sm" data-roll-attack="${escapeHtml(a.id)}">Rolar ataque</button><button class="btn sm primary" data-roll-damage="${escapeHtml(a.id)}">Rolar dano ${state.origin==='Ex-Militar'?'(+2)':''}</button></div></div>`).join(''):'<p class="hint">Nenhum ataque cadastrado.</p>';}
 function renderInventory(){ $('inventoryList').innerHTML=state.items.length?state.items.map(i=>`<div class="item" data-item-id="${escapeHtml(i.id)}"><div class="item-head"><strong>${escapeHtml(i.name||'Item')}</strong><button class="btn sm" data-delete-item="${escapeHtml(i.id)}">Excluir</button></div><div class="item-grid"><div class="field"><label>Nome</label><input data-item-field="name" value="${escapeHtml(i.name||'')}"></div><div class="field"><label>Quantidade</label><input type="number" min="0" data-item-field="quantity" value="${clamp(int(i.quantity),0,9999)}"></div><div class="field"><label>Detalhes</label><input data-item-field="detail" value="${escapeHtml(i.detail||'')}"></div></div></div>`).join(''):'<p class="hint">Inventário vazio.</p>';}
 function renderPortrait(){const box=$('portraitPreview'); if(!box) return; if(state.photo){box.innerHTML='<img src="'+escapeHtml(state.photo)+'" alt="Foto do personagem">';}else{box.textContent='♙';}}
-function renderFields(){document.querySelectorAll('[data-field]').forEach(el=>{let k=el.dataset.field;el.value=k==='autoRules'?String(state.autoRules!==false):(state[k]??'');});renderPortrait();renderStats();renderAttributes();renderSkills();renderAttacks();renderInventory();}
+function renderFields(){document.querySelectorAll('[data-field]').forEach(el=>{let k=el.dataset.field;el.value=k==='autoRules'?String(state.autoRules!==false):(state[k]??'');});const classSelect=$('class');if(classSelect){const mundane=classSelect.querySelector('option[value="Mundano"],option:last-child');if(mundane)mundane.hidden=int(state.nex)!==0;classSelect.disabled=int(state.nex)===0;}renderPortrait();renderStats();renderAttributes();renderSkills();renderAttacks();renderInventory();}
 function logResult(label,expression,rolls,total){log.unshift({label,expression,rolls,total});log=log.slice(0,40);$('rollLog').innerHTML=log.map(r=>`<div class="logrow"><strong>${escapeHtml(r.label)}: ${r.total}</strong><div class="muted">${escapeHtml(r.expression)} → ${escapeHtml(r.rolls)}</div></div>`).join('');}
 function dice(expr,label,extra=0){const clean=String(expr).replace(/\s/g,'').toLowerCase();if(!/^[+-]?(?:\d*d\d+|\d+)(?:[+-](?:\d*d\d+|\d+))*$/.test(clean)||clean.length>90){toast('Expressão inválida. Use, por exemplo, 2d6+3.');return;}const tokens=clean.match(/[+-]?(?:\d*d\d+|\d+)/g)||[];let total=extra;let parts=[];let rolled=0;for(let token of tokens){const sign=token.startsWith('-')?-1:1;const core=token.replace(/^[+-]/,'');if(core.includes('d')){let [count,faces]=core.split('d').map(Number);if(!count)count=1;if(count>50||faces>1000||faces<2||count<1||rolled+count>70){toast('Limite: 50 dados por termo, até d1000.');return;}let results=[];for(let j=0;j<count;j++){const rand=new Uint32Array(1);crypto.getRandomValues(rand);const value=rand[0]%faces+1;results.push(value);total+=sign*value;}rolled+=count;parts.push(`${sign<0?'-':''}[${results.join(', ')}]`);}else{total+=sign*Number(core);parts.push(token);}}if(extra)parts.push(`bônus ${extra>=0?'+':''}${extra}`);logResult(label,clean+(extra?(extra>=0?'+':'')+extra:''),parts.join(' '),total);}
 function attributeRoll(key,label,bonus=0){const value=int(state.attributes[key],1);const num=value===0?2:Math.max(1,Math.min(20,value));let rolls=[];for(let i=0;i<num;i++){const buf=new Uint32Array(1);crypto.getRandomValues(buf);rolls.push(buf[0]%20+1);}const die=value===0?Math.min(...rolls):Math.max(...rolls);logResult(label,(value===0?'2d20 (pior)':num+'d20 (melhor)')+(bonus?' + '+bonus:''),'['+rolls.join(', ')+'] → '+die,die+bonus);}
 function applyClass(){const m=maxValues();state.pvCurrent=Math.min(Math.max(0,int(state.pvCurrent)),m.pv);state.peCurrent=Math.min(Math.max(0,int(state.peCurrent)),m.pe);state.sanCurrent=Math.min(Math.max(0,int(state.sanCurrent)),m.san);renderStats();save();}
 function bind(){for(const n of LEVELS){let opt=document.createElement('option');opt.value=n;opt.textContent=n+'%';$('nex').append(opt);}
- document.addEventListener('input',e=>{const el=e.target;if(el.matches('[data-field]')){const k=el.dataset.field;state[k]=k==='autoRules'?(el.value==='true'):(el.type==='number'?int(el.value):el.value);renderStats();save();}if(el.matches('[data-attr]')){state.attributes[el.dataset.attr]=clamp(int(el.value),0,9);el.classList.toggle("nex-digit-12",[1,2].includes(state.attributes[el.dataset.attr]));const d=document.querySelector('[data-attr-display="'+el.dataset.attr+'"]');if(d)d.textContent=state.attributes[el.dataset.attr];renderStats();save();}if(el.matches('[data-attack-field]')){const a=state.attacks.find(x=>String(x.id)===el.closest('[data-attack-id]').dataset.attackId);if(a){a[el.dataset.attackField]=el.value;save();}}if(el.matches('[data-item-field]')){const i=state.items.find(x=>String(x.id)===el.closest('[data-item-id]').dataset.itemId);if(i){i[el.dataset.itemField]=el.type==='number'?int(el.value):el.value;save();}}});
- document.addEventListener('change',e=>{const el=e.target;if(el.matches('[data-field]')){state[el.dataset.field]=el.dataset.field==='autoRules'?(el.value==='true'):(el.type==='number'?int(el.value):el.value);if(el.dataset.field==='origin'){const advanced=nex55AdvancedOrigins().find(o=>o.name===state.origin);if(advanced&&advanced.skills.length===2){nex55ApplyOriginToData(state,advanced);renderSkills();}}renderStats();if(el.dataset.field==='origin')renderAttacks();if(el.dataset.field==='class'||el.dataset.field==='nex'||el.dataset.field==='origin')applyClass();save();}if(el.matches('[data-skill]')){state.skills[el.dataset.skill].training=int(el.value);save();}});
+ document.addEventListener('input',e=>{const el=e.target;if(el.matches('[data-field]')){const k=el.dataset.field;state[k]=k==='autoRules'?(el.value==='true'):(el.type==='number'?int(el.value):el.value);if(k==='nex'){if(int(state.nex)===0){if(state.class!=='Mundano')state.nex0PreviousClass=state.class;state.class='Mundano';}else if(state.class==='Mundano')state.class=['Combatente','Especialista','Ocultista'].includes(state.nex0PreviousClass)?state.nex0PreviousClass:'Combatente';renderFields();}renderStats();save();}if(el.matches('[data-attr]')){state.attributes[el.dataset.attr]=clamp(int(el.value),0,9);el.classList.toggle("nex-digit-12",[1,2].includes(state.attributes[el.dataset.attr]));const d=document.querySelector('[data-attr-display="'+el.dataset.attr+'"]');if(d)d.textContent=state.attributes[el.dataset.attr];renderStats();save();}if(el.matches('[data-attack-field]')){const a=state.attacks.find(x=>String(x.id)===el.closest('[data-attack-id]').dataset.attackId);if(a){a[el.dataset.attackField]=el.value;save();}}if(el.matches('[data-item-field]')){const i=state.items.find(x=>String(x.id)===el.closest('[data-item-id]').dataset.itemId);if(i){i[el.dataset.itemField]=el.type==='number'?int(el.value):el.value;save();}}});
+ document.addEventListener('change',e=>{const el=e.target;if(el.matches('[data-field]')){state[el.dataset.field]=el.dataset.field==='autoRules'?(el.value==='true'):(el.type==='number'?int(el.value):el.value);if(el.dataset.field==='nex'){if(int(state.nex)===0){if(state.class!=='Mundano')state.nex0PreviousClass=state.class;state.class='Mundano';}else if(state.class==='Mundano')state.class=['Combatente','Especialista','Ocultista'].includes(state.nex0PreviousClass)?state.nex0PreviousClass:'Combatente';renderFields();}if(el.dataset.field==='origin'){const advanced=nex55AdvancedOrigins().find(o=>o.name===state.origin);if(advanced&&advanced.skills.length===2){nex55ApplyOriginToData(state,advanced);renderSkills();}}renderStats();if(el.dataset.field==='origin')renderAttacks();if(el.dataset.field==='class'||el.dataset.field==='nex'||el.dataset.field==='origin')applyClass();save();}if(el.matches('[data-skill]')){state.skills[el.dataset.skill].training=int(el.value);save();}});
  document.addEventListener('click',e=>{const attr=e.target.closest('#attributes .attr');if(attr){const inp=attr.querySelector('.attr-hidden-input');if(inp){inp.focus();inp.select&&inp.select();}return;}const b=e.target.closest('button');if(!b)return;if(b.matches('[data-tab]')){document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t===b));document.querySelectorAll('.view').forEach(v=>v.classList.toggle('active',v.id===b.dataset.tab));}if(b.matches('[data-reset]')){const k=b.dataset.reset;const m=maxValues();state[k==='san'?'sanCurrent':k+'Current']=m[k];renderStats();save();}if(b.matches('[data-roll-attr]')){const k=b.dataset.rollAttr;attributeRoll(k,ATTRIBUTE_NAMES[k],0);}if(b.matches('[data-roll-skill]')){const name=b.dataset.rollSkill;const s=state.skills[name];attributeRoll(s.attr,name,int(s.training));}if(b.matches('[data-delete-attack]')){state.attacks=state.attacks.filter(x=>String(x.id)!==b.dataset.deleteAttack);renderAttacks();save();}if(b.matches('[data-delete-item]')){state.items=state.items.filter(x=>String(x.id)!==b.dataset.deleteItem);renderInventory();save();}if(b.matches('[data-roll-attack]')){const a=state.attacks.find(x=>String(x.id)===b.dataset.rollAttack);if(a)dice(a.test,a.name+' — teste');}if(b.matches('[data-roll-damage]')){const a=state.attacks.find(x=>String(x.id)===b.dataset.rollDamage);if(a)dice(a.damage,a.name+' — dano',state.origin==='Ex-Militar'?2:0);}});
  $('rollCustom').addEventListener('click',()=>dice($('diceExpr').value,'Rolagem livre'));$('diceExpr').addEventListener('keydown',e=>{if(e.key==='Enter')dice(e.target.value,'Rolagem livre');});$('addAttack').onclick=()=>{state.attacks.push({id:++idCounter,name:'Novo ataque',test:'1d20',damage:'1d6',detail:''});renderAttacks();save();};$('addItem').onclick=()=>{state.items.push({id:++idCounter,name:'Novo item',quantity:1,detail:''});renderInventory();save();};$('clearLog').onclick=()=>{log=[];$('rollLog').innerHTML='<p class="hint">Nenhuma rolagem ainda.</p>';};
 $('portraitPick')?.addEventListener('click',()=>$('portraitInput').click());
@@ -2459,6 +2459,7 @@ $('nexHomebrewFilter')?.addEventListener('input',()=>nex12RenderHomebrew());
  let wStep=0,wCategory='ordem',wOpen='',wDraft=null;
  const W_CATEGORIES=[['ordem','Ordem Paranormal'],['horror','Sobrevivendo ao Horror'],['arquivos','Arquivos Secretos'],['homebrew','Homebrew']];
  const W_CLASS_INFO={
+ Mundano:{description:'Pessoa comum ainda sem treinamento da Ordem. Classe exclusiva para NEX 0%.',style:'Dedicação e investigação'}, 
  Combatente:{description:'Preparado para lidar com ameaças frente a frente. Favorece resistência física, combate e proteção do grupo.',style:'Proteção e confronto direto'},
  Especialista:{description:'Resolve problemas com conhecimento, perícias e improvisação. É valioso em investigações e desafios técnicos.',style:'Perícias e soluções criativas'},
  Ocultista:{description:'Estuda fenômenos do Outro Lado e canaliza conhecimentos paranormais, aceitando os riscos que isso implica.',style:'Rituais e conhecimento paranormal'}
@@ -2534,7 +2535,7 @@ $('nexHomebrewFilter')?.addEventListener('input',()=>nex12RenderHomebrew());
      $('wCultistPowerOther').value=wDraft.cultistPowerOther||'';
    }
  }
- function wPoints(){return 9-Object.values(wDraft.attributes).reduce((a,x)=>a+int(x),0);}
+ function wPoints(){return (int(wDraft.nex)===0?8:9)-Object.values(wDraft.attributes).reduce((a,x)=>a+int(x),0);}
  function wRenderAttrs(){
   const keys=['agi','for','int','pre','vig'];
   const names={agi:'Agilidade',for:'Força',int:'Intelecto',pre:'Presença',vig:'Vigor'};
@@ -2550,7 +2551,7 @@ $('nexHomebrewFilter')?.addEventListener('input',()=>nex12RenderHomebrew());
    if(row)row.appendChild($('wSkillsPanel'));
    else $('wOriginChoice').after($('wSkillsPanel'));
  }
- function wRenderClass(){$('wClassList').innerHTML=Object.entries(W_CLASS_INFO).map(([name,o])=>{const r=CLASS_RULES[name];return `<article class="wizard-class ${wDraft.class===name?'selected':''}"><h3>${name}</h3><p>${escapeHtml(o.description)}</p><p class="wizard-state">Especialidade: ${escapeHtml(o.style)}</p><div class="wizard-class-stats"><div><small>PV iniciais</small><strong>${r.pv} + Vigor</strong><small>Por NEX: +${r.pvStep} + VIG</small></div><div><small>PE iniciais</small><strong>${r.pe} + Presença</strong><small>Por NEX: +${r.peStep} + PRE</small></div><div><small>Sanidade inicial</small><strong>${r.san}</strong><small>Por NEX: +${r.sanStep}</small></div></div><button type="button" class="wizard-choose ${wDraft.class===name?'selected':''}" data-wclass="${name}">${wDraft.class===name?'✓ Selecionado':'Escolher '+name}</button></article>`}).join('');}
+ function wRenderClass(){$('wClassList').innerHTML=Object.entries(W_CLASS_INFO).filter(([name])=>int(wDraft.nex)===0?name==='Mundano':name!=='Mundano').map(([name,o])=>{const r=CLASS_RULES[name];return `<article class="wizard-class ${wDraft.class===name?'selected':''}"><h3>${name}</h3><p>${escapeHtml(o.description)}</p><p class="wizard-state">Especialidade: ${escapeHtml(o.style)}</p><div class="wizard-class-stats"><div><small>PV iniciais</small><strong>${r.pv} + Vigor</strong><small>Por NEX: +${r.pvStep} + VIG</small></div><div><small>PE iniciais</small><strong>${r.pe} + Presença</strong><small>Por NEX: +${r.peStep} + PRE</small></div><div><small>Sanidade inicial</small><strong>${r.san}</strong><small>Por NEX: +${r.sanStep}</small></div></div><button type="button" class="wizard-choose ${wDraft.class===name?'selected':''}" data-wclass="${name}">${wDraft.class===name?'✓ Selecionado':'Escolher '+name}</button></article>`}).join('');}
  function wCreationOriginSkills(){
    return wOriginChoicesValid()?wOriginChosenSkills():[];
  }
@@ -2567,9 +2568,9 @@ $('nexHomebrewFilter')?.addEventListener('input',()=>nex12RenderHomebrew());
  function wCreationRules(complete=false){
    const grants=wCreationOriginSkills(),required=wCreationRequired();
    const intValue=Math.max(0,int(wDraft.attributes.int));
-   const extraQuota=({Combatente:1,Especialista:7,Ocultista:3}[wDraft.class]||0)+intValue;
+   const extraQuota=({Mundano:1,Combatente:1,Especialista:7,Ocultista:3}[wDraft.class]||0)+intValue;
    const nex=int(wDraft.nex,5),maxTrain=nex>=70?15:nex>=35?10:5;
-   const promotionQuota=({Combatente:2,Especialista:5,Ocultista:3}[wDraft.class]||0)+intValue;
+   const promotionQuota=({Mundano:0,Combatente:2,Especialista:5,Ocultista:3}[wDraft.class]||0)+intValue;
    const extras=SKILL_DATA.map(([name])=>name).filter(name=>int(wDraft.skills[name]?.training)>0&&!grants.includes(name)&&!required.includes(name));
    const ranks=SKILL_DATA.map(([name])=>Math.max(grants.includes(name)||required.includes(name)?5:0,int(wDraft.skills[name]?.training)));
    const veterans=ranks.filter(value=>value>=10).length,experts=ranks.filter(value=>value>=15).length;
@@ -2626,7 +2627,7 @@ $('nexHomebrewFilter')?.addEventListener('input',()=>nex12RenderHomebrew());
  function wFinish(){
   const name=$('wName').value.trim();if(!name){toast('Informe o nome do personagem.');$('wName').focus();return;}
   if(!wDraft.origin){toast('Escolha uma origem antes de finalizar.');return;}
-  if(!W_CLASS_INFO[wDraft.class]){toast('Escolha uma classe antes de finalizar.');return;}
+  if(!W_CLASS_INFO[wDraft.class]||(int(wDraft.nex)===0)!==(wDraft.class==='Mundano')){toast('NEX 0% exige Mundano; NEX 5% ou maior exige uma classe de agente.');return;}
   const rules=wCreationRules(true);if(rules.issue){toast(rules.issue);wStep=3;wRender();return;}
   wDraft.name=name;wDraft.player=$('wPlayer').value.trim();wDraft.appearance=$('wAppearance').value.trim();wDraft.personality=$('wPersonality').value.trim();wDraft.backstory=$('wHistory').value.trim();wDraft.objective=$('wObjective').value.trim();wDraft.age=0;wDraft.concept='';
   const catalog=[...wAvail('ordem'),...wAvail('homebrew'),...wAvail('horror'),...wAvail('arquivos')];
@@ -2640,7 +2641,7 @@ $('nexHomebrewFilter')?.addEventListener('input',()=>nex12RenderHomebrew());
   for(const skill of rules.required){if(wDraft.skills[skill])wDraft.skills[skill].training=Math.max(5,int(wDraft.skills[skill].training));}
   if(!Array.isArray(wDraft.powers))wDraft.powers=[];
   wDraft.powers=wDraft.powers.filter(power=>power?.source!=='origin-cultista');
-  if(wDraft.origin==='Cultista Arrependido')
+  if(wDraft.origin==='Cultista Arrependido'&&int(wDraft.nex)>0)
     wDraft.powers.push({id:createId(),name:wCultistPowerName(),nex:5,source:'origin-cultista',note:'Poder paranormal escolhido pela origem Cultista Arrependido. Consulte o livro para os efeitos e pré-requisitos.'});
   persist();
   const created=normalize(JSON.parse(JSON.stringify(wDraft)));
@@ -2654,7 +2655,7 @@ $('nexHomebrewFilter')?.addEventListener('input',()=>nex12RenderHomebrew());
  }
  $('wBack').addEventListener('click',()=>{if(wStep===0){showHome();return;}wStep--;wRender();});
  $('wCancel').addEventListener('click',()=>showHome());
- $('wNext').addEventListener('click',()=>{if(wStep===0&&wPoints()!==0){toast('Distribua todos os 4 pontos antes de continuar.');return;}if(wStep===1&&!wDraft.origin){toast('Escolha uma origem antes de continuar.');return;}if(wStep===1&&!wOriginChoicesValid()){toast('Escolha duas perícias válidas e diferentes para esta origem.');return;}if(wStep===1&&!wCultistPowerValid()){toast('Escolha um poder paranormal para Cultista Arrependido.');return;}if(wStep===3){const rule=wCreationRules(true);if(rule.issue){toast(rule.issue);wRenderTrainSkills();return;}}if(wStep===4){wFinish();return;}wStep++;wRender();});
+ $('wNext').addEventListener('click',()=>{if(wStep===0&&wPoints()!==0){toast('Distribua os '+(int(wDraft.nex)===0?3:4)+' pontos de atributo antes de continuar.');return;}if(wStep===1&&!wDraft.origin){toast('Escolha uma origem antes de continuar.');return;}if(wStep===1&&!wOriginChoicesValid()){toast('Escolha duas perícias válidas e diferentes para esta origem.');return;}if(wStep===1&&!wCultistPowerValid()){toast('Escolha um poder paranormal para Cultista Arrependido.');return;}if(wStep===3){const rule=wCreationRules(true);if(rule.issue){toast(rule.issue);wRenderTrainSkills();return;}}if(wStep===4){wFinish();return;}wStep++;wRender();});
  document.querySelectorAll('[data-wstep]').forEach(b=>b.addEventListener('click',()=>{const target=Number(b.dataset.wstep);if(target>wStep)return;wStep=target;wRender();}));
  $('wSearch').addEventListener('input',wRenderOrigins);
  for(const id of ['wSkillOne','wSkillTwo'])$(id).addEventListener('change',()=>{wDraft.originSkillChoices=[$('wSkillOne').value,$('wSkillTwo').value];wRenderOriginSkills();});
@@ -2670,6 +2671,7 @@ $('nexHomebrewFilter')?.addEventListener('input',()=>nex12RenderHomebrew());
    if(!wDraft)return;
    if(el.id==='wNexSelect'){
      const level=int(el.value);wDraft.nex=LEVELS.includes(level)?level:5;
+     if(wDraft.nex===0){if(wDraft.class!=='Mundano')wDraft.nex0PreviousClass=wDraft.class;wDraft.class='Mundano';}else if(wDraft.class==='Mundano')wDraft.class=wDraft.nex0PreviousClass||'Combatente';
      const cap=wDraft.nex>=70?15:wDraft.nex>=35?10:5;
      for(const skill of Object.values(wDraft.skills))if(int(skill.training)>cap)skill.training=cap;
      wRenderTrainSkills();
@@ -2703,8 +2705,8 @@ $('nexHomebrewFilter')?.addEventListener('input',()=>nex12RenderHomebrew());
   if(String(el.value).trim()==='')next=0;
   next=clamp(next,0,3);
   const total=Object.entries(wDraft.attributes).reduce((acc,[key,val])=>acc+(key===k?next:int(val)),0);
-  if(total>9){
-    next=Math.max(0,9-(Object.entries(wDraft.attributes).reduce((acc,[key,val])=>acc+(key===k?0:int(val)),0)));
+  if(total>(int(wDraft.nex)===0?8:9)){
+    next=Math.max(0,(int(wDraft.nex)===0?8:9)-(Object.entries(wDraft.attributes).reduce((acc,[key,val])=>acc+(key===k?0:int(val)),0)));
   }
   wDraft.attributes[k]=clamp(next,0,3);
   el.value=wDraft.attributes[k];
@@ -2722,7 +2724,7 @@ $('nexHomebrewFilter')?.addEventListener('input',()=>nex12RenderHomebrew());
  if(b.dataset.wcat){wCategory=b.dataset.wcat;wOpen='';wRenderOrigins();return;}
  if(b.dataset.wexpand){wOpen=wOpen===b.dataset.wexpand?'':b.dataset.wexpand;wRenderOrigins();return;}
  if(b.dataset.wchoose){if(wDraft.origin!==b.dataset.wchoose){wDraft.originSkillChoices=[];wDraft.cultistPowerChoice='';wDraft.cultistPowerOther='';}wDraft.origin=b.dataset.wchoose;wRenderOrigins();return;}
- if(b.dataset.wclass){wDraft.class=b.dataset.wclass;wRenderClass();return;}
+ if(b.dataset.wclass){if(int(wDraft.nex)===0&&b.dataset.wclass!=='Mundano'||int(wDraft.nex)!==0&&b.dataset.wclass==='Mundano')return;wDraft.class=b.dataset.wclass;wRenderClass();return;}
  });
 
  $('menuHeaderButton').onclick=showHome;
@@ -2878,6 +2880,7 @@ $('nexHomebrewFilter')?.addEventListener('input',()=>nex12RenderHomebrew());
    const entries=[];
    const origin=typeof nex12Orig==='function'?nex12Orig():null;
    if(origin)entries.push({name:origin.ability||origin.name,source:`Origem: ${origin.name}`,detail:origin.description||'Consulte o livro para os efeitos.',id:null});
+   if(int(state.nex)===0)entries.push({name:'Empenho',source:'Classe: Mundano',detail:'Pode gastar 1 PE para receber +2 em um teste de perícia.',id:null});
    for(const [name,detail] of N19_CLASS_ABILITIES[state.class]||[])entries.push({name,source:`Classe: ${state.class}`,detail,id:null});
    const trail=state.trailByClass?.[state.class]||'';
    const abilities=nexTrailAbilities(state.class,trail);
@@ -3554,7 +3557,7 @@ const PARANORMAL=[
  function updateProgress(){
    const node=by('nexProgressPanel');
    if(!node||typeof state==='undefined'||typeof maxValues!=='function')return;
-   const nex=Number(state.nex)||5;
+   const nex=Number(state.nex);
    const index=LEVELS.indexOf(nex);
    const next=index>=0&&index<LEVELS.length-1?LEVELS[index+1]:null;
    by('nexProgressCurrent').textContent='NEX '+nex+'%';
