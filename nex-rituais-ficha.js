@@ -131,6 +131,7 @@ $('nexRitualEditor').addEventListener('submit',e=>{
 });
 document.addEventListener('change',e=>{if(['nex','class'].includes(e.target?.id)||e.target?.dataset?.field==='class')queueMicrotask(render);});
 document.addEventListener('input',e=>{if(e.target?.dataset?.attribute==='pre'||e.target?.id==='pre')queueMicrotask(render);});
+window.NEX_RITUAL_CATALOG=()=>catalogue();
 nex12RenderRitualList=render;
 render();
 })();
