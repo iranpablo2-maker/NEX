@@ -26,8 +26,8 @@ const basic={
 for(const [section,names] of Object.entries(basic)){if(section==='Armas'||section==='Munições')continue;for(const name of names)put(name,section,'Detalhes a conferir no livro de regras.',[],1);}
 for(const model of (typeof NEX12_CATALOG!=='undefined'?NEX12_CATALOG:[])){
  const name=model[0],kind=String(model[1]||''),desc=String(model[2]||'');
- const slug=norm(kind+' '+desc);
- const section=slug.includes('amaldicoado')?'Itens Amaldiçoados':slug.includes('municao')?'Munições':slug.includes('protecao')?'Proteções':slug.includes('arma')?'Armas':'Geral';
+ const label=norm(kind);
+ const section=/amaldicoado|paranormal/.test(label)?'Itens Amaldiçoados':/municao|bala|cartucho|flecha/.test(label)?'Munições':/protecao|escudo|colete/.test(label)?'Proteções':/arma/.test(label)?'Armas':'Geral';
  const m=desc.match(/(?:espaços?)\s*:?\s*(\d+)|(\d+)\s*espaços?/i);
  const spaces=m?Number(m[1]||m[2]):1;
  const existing=items.find(x=>norm(x.name)===norm(name)&&x.section===section);
@@ -159,7 +159,19 @@ function add(index){
  const item=renderedItems[index];if(!item)return;
  if(!Array.isArray(state.items))state.items=[];
  if(state.items.length>=100){toast('Limite de 100 itens no inventário.');return;}
- state.items.push({id:'nexitem_'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,6),name:item.name,quantity:1,category:mapCategory[item.section],spaces:item.spaces,detail:[item.description,...item.stats.map(m=>m.join(': '))].filter(Boolean).join(' · ').slice(0,2000)});
+ const getStat=(name)=>String((item.stats||[]).find(x=>norm(x[0])===norm(name))?.[1]||'');
+ const s=String(item.subtitle||'').split('·').map(x=>x.trim());
+ const crit=getStat('Crítico').replace(/\s/g,'');
+ const nexInfo={
+   name:item.name,category:mapCategory[item.section],quantity:1,spaces:item.spaces,
+   proficiency:({'simples':'Armas Simples','tatica':'Armas Táticas','pesada':'Armas Pesadas'}[norm(s[0])]||s[0]||''),
+   kind:s[1]||'',wield:s[2]||'',damage:getStat('Dano'),secondary:'',
+   critical:crit.match(/^\d{2}/)?.[0]||'20',
+   multiplier:crit.match(/[x×](\d+)/i)?.[1]||'2',damageType:getStat('Tipo'),
+   range:getStat('Alcance')||'—',tier:getStat('Categoria')||'0',upgrades:'',
+   description:String(item.description||''),image:''
+ };
+ state.items.push({id:'nexitem_'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,6),name:item.name,quantity:1,category:mapCategory[item.section],spaces:item.spaces,description:nexInfo.description,nexInfo,detail:[item.description,...item.stats.map(m=>m.join(': '))].filter(Boolean).join(' · ').slice(0,2000)});
  renderInventory();save();toast(item.name+' adicionado ao inventário.');
 }
 modal.addEventListener('click',event=>{
