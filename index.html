@@ -3104,8 +3104,13 @@ update();
 (function(){
  function skillsOf(origin){
    const official=NEX12_ORIGIN_MAP[origin];
+   const supplemental=(NEX_EXTRA_ORIGINS.horror||[]).find(o=>o.name===origin);
    const custom=(state.homebrew||[]).find(o=>o.name===origin);
-   const entry=official||custom;
+   const entry=official||supplemental||custom;
+   if(supplemental && supplemental.skills.length===1){
+     const chosen=(state.originSkillChoices||[]).filter(n=>n&&n!==supplemental.skills[0]&&!!state.skills[n]);
+     return [supplemental.skills[0],...chosen.slice(0,1)].filter(n=>!!state.skills[n]);
+   }
    return (entry?.skills||[]).filter(n=>!!state.skills[n]);
  }
  function syncOriginSkills(){
