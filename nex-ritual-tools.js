@@ -153,7 +153,7 @@ function computeEffect(fields){
   if(fields.type==='Dano + Cura'&&fields.healFromDamage){
    result.healing={expression:'Metade do dano',rolls:[],bonus:0,total:Math.floor(result.damage.total/2)};
   }else{
-   result.healing=rollSimpleDice(fields.healDice);
+   result.healing=fields.healDice?rollSimpleDice(fields.healDice):{expression:'Conforme efeito do ritual',rolls:[],bonus:0,total:'—'};
    if(!result.healing)return null;
   }
  }
@@ -399,21 +399,21 @@ function castingResultHTML(m,check,sanity,effect){
  rows.push('<p><strong>PE:</strong> '+m.total+' gastos · '+pe()+' restantes.</p>');
  rows.push('<p><strong>Sanidade:</strong> -'+sanity.lost+' atual'+(sanity.permanent?' · -'+sanity.permanent+' permanente':'')+'</p>');
  if(effect.damage)rows.push('<p><strong>Dano:</strong> '+esc(effect.damage.expression)+' → ['+esc(effect.damage.rolls.join(', '))+'] = '+effect.damage.total+'</p>');
- if(effect.healing)rows.push('<p><strong>Cura:</strong> '+esc(effect.healing.expression)+' = '+effect.healing.total+'</p>');
- if(effect.type==='Buff')rows.push('<p><strong>Buff:</strong> '+esc(effect.buffText||'Consultar ritual')+'</p>');
+ if(effect.healing)rows.push('<p><strong>Cura:</strong> '+esc(effect.healing.expression)+' = '+effect.healing.total+' (não aplicada automaticamente ao alvo)</p>');
+ if(effect.type==='Buff')rows.push('<p><strong>Suporte/Buff:</strong> '+esc(effect.buffText||'Consultar ritual')+'</p>');
  rows.push('<p><strong>DT de resistência do alvo:</strong> '+targetRitualDT()+' (quando aplicável).</p>');
  rows.push('<p class="tk-sub">Falhar no TO não impede a conjuração básica, mas pode causar perda de Sanidade. Confira os efeitos e resistências com o mestre.</p>');
  const infoRows=rows.join('');
- if(effect.damage){
-  const toValue=check?check.total:'—';
-  const toLabel=check?'OCULTISMO':'SEM TO';
+ if(effect.damage||effect.healing||effect.type==='Buff'){
+  const toValue=check?check.total:'—',toLabel=check?'OCULTISMO':'SEM TO';
+  const secondValue=effect.damage?effect.damage.total:effect.healing?effect.healing.total:'✓';
+  const secondLabel=effect.damage?'DANO':effect.healing?'CURA':'EFEITO';
   return '<div class="tk-roll-result">'+
    '<header class="tk-roll-header"><strong>'+esc(m.r.name)+'</strong><button type="button" data-tk-modal-close="1" aria-label="Fechar resultado">×</button></header>'+
    '<div class="tk-roll-content"><div class="tk-roll-symbol" aria-hidden="true"><svg viewBox="0 0 36 36" width="38" height="38"><path fill="#8510c6" d="M18 0 35.5 9v18L18 36 .5 27V9Z"/></svg></div>'+
    '<div class="tk-roll-stat"><strong>'+esc(toValue)+'</strong><span>'+toLabel+'</span></div>'+
    '<div class="tk-roll-divider" aria-hidden="true"></div>'+
-   '<div class="tk-roll-stat"><strong>'+esc(effect.damage.total)+'</strong><span>DANO</span></div></div>'+
-
+   '<div class="tk-roll-stat"><strong>'+esc(secondValue)+'</strong><span>'+secondLabel+'</span></div></div>'+
    '<details class="tk-roll-more"><summary>Detalhes da conjuração</summary><div class="tk-roll-more-body">'+infoRows+'</div></details>'+
    '</div>';
  }
