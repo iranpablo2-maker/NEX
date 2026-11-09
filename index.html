@@ -1224,20 +1224,20 @@ html,body{background:#000!important;background-image:none!important}
 
 </style>
 <style id="nex-sheet-abilities-cards-v2062">
-/* Habilidades na ficha: ações à direita e cartões expansíveis, sem filtro. */
-#sheetScreen #overview .nex-sheet-ability-actions{display:flex;flex-direction:column;gap:26px;margin:4px 0 15px;align-items:stretch}
+/* Habilidades na ficha: ações lado a lado e cartões compactos, sem filtro. */
+#sheetScreen #overview .nex-sheet-ability-actions{display:flex;flex-direction:row;justify-content:flex-end;align-items:center;flex-wrap:wrap;gap:8px;margin:0 0 10px}
 #sheetScreen #overview .nex-sheet-ability-action-row{display:flex;justify-content:flex-end}
 #sheetScreen #overview .nex-sheet-ability-action-row .btn{min-height:37px;font-size:12px;font-weight:700;border-radius:2px;padding:8px 12px}
 #sheetScreen #overview #n215AddAbility{background:#9d38e9;border:1px solid #9d38e9;color:#fff}
 #sheetScreen #overview #n16ShowAbility{background:transparent;color:#c1b9c7;border:1px solid #9d38e9}
-#sheetScreen #overview #n16AbilityList{display:grid;gap:8px}
+#sheetScreen #overview #n16AbilityList{display:grid;gap:5px}
 #sheetScreen #overview #n16AbilityList .nex-sheet-ability-entry{margin:0;border:0;border-radius:3px;background:#202023}
-#sheetScreen #overview #n16AbilityList .nex-sheet-ability-entry>summary{min-height:53px;padding:12px 16px;gap:18px;display:flex;align-items:center;font-size:13px;font-weight:700;color:#fff;list-style:none}
+#sheetScreen #overview #n16AbilityList .nex-sheet-ability-entry>summary{min-height:43px;padding:9px 14px;gap:12px;display:flex;align-items:center;font-size:13px;font-weight:700;color:#fff;list-style:none}
 #sheetScreen #overview #n16AbilityList .nex-sheet-ability-entry>summary::before{content:'⌄';font-size:21px;line-height:1;color:#b04df4;margin:0}
 #sheetScreen #overview #n16AbilityList .nex-sheet-ability-entry[open]>summary::before{transform:rotate(180deg)}
 #sheetScreen #overview #n16AbilityList .nex-sheet-ability-entry .nexv16-detail{padding:12px 16px 15px;background:#17171a;color:#ddd;white-space:normal}
 #sheetScreen #overview .nex-sheet-ability-source{display:block;margin-bottom:7px;color:#b38ac9;font-size:10px}
-@media(max-width:600px){#sheetScreen #overview .nex-sheet-ability-actions{gap:23px}#sheetScreen #overview #n16AbilityList .nex-sheet-ability-entry>summary{padding:12px 14px}}
+@media(max-width:600px){#sheetScreen #overview .nex-sheet-ability-actions{gap:7px;margin-bottom:9px}#sheetScreen #overview .nex-sheet-ability-action-row .btn{min-height:35px;padding:7px 10px}#sheetScreen #overview #n16AbilityList .nex-sheet-ability-entry>summary{padding:9px 12px}}
 </style>
 </head><body>
 <header class="topbar"><div class="topinner"><button type="button" id="n17MenuToggle" class="n17-menu-button" aria-expanded="false" aria-controls="n17Drawer" aria-label="Abrir menu">☰</button><button type="button" class="brand" id="nexBrandHome" aria-label="Voltar ao menu principal" title="Voltar ao menu principal"><span class="brand-mark" aria-hidden="true">◈</span><span><h1>NEX</h1><span class="subtitle">SISTEMA DE FICHAS · ORDEM PARANORMAL</span></span></button><div class="actions"><button class="btn sm" id="menuHeaderButton" type="button" style="display:none!important" hidden tabindex="-1" aria-hidden="true">⌂ Menu principal</button><button class="btn sm" id="newChar" type="button" style="display:none!important" hidden tabindex="-1" aria-hidden="true">＋ Nova ficha</button><button class="btn sm" id="importBtn" style="display:none!important" aria-hidden="true" tabindex="-1">Importar</button><button class="btn sm" id="exportBtn" style="display:none!important" aria-hidden="true" tabindex="-1">↓ Exportar</button><input type="file" id="fileInput" accept="application/json,.json" hidden><span id="n17SaveIndicator" hidden aria-hidden="true"></span></div></div></header>
