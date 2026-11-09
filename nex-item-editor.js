@@ -32,7 +32,7 @@ function detail(item){
    // Descrições específicas escolhidas pelo jogador têm prioridade.
    const existing=String(item.description||'').trim();
    if(existing && !/detalhes a conferir|consulte (o livro|as regras|os valores|o mestre)|equipamento listado na tabela|estatísticas de jogo conforme|dados de jogo da tabela|munição listada na tabela|item amaldiçoado listado na tabela|é um equipamento geral de|é um artefato paranormal/i.test(existing))return existing;
-   const replacement=window.NEX_ITEM_DESCRIBE?.(model);
+   const replacement=model.name?window.NEX_ITEM_DESCRIBE?.(model):'';
    if(replacement)return replacement;
    const saved=String(item.detail||'').split(/\s*·\s*/)[0].trim();
    const auto=/^(?:Estatísticas de jogo conforme|Dados de jogo da tabela|Equipamento listado na tabela|Item amaldiçoado listado na tabela|Detalhes a conferir|Arma [·:]|Equipamento [·:]|Proteção [·:])/i;
