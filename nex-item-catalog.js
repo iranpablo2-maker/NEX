@@ -178,7 +178,7 @@ function add(index){
  };
  if(!window.NEX_CARRY?.canAddItem({...nexInfo,quantity:1})){toast('Este item está bloqueado pelo limite de carga ou de categoria da patente.');render();return;}
  state.items.push({id:'nexitem_'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,6),name:item.name,quantity:1,category:mapCategory[item.section],spaces:item.spaces,description:nexInfo.description,nexInfo,detail:[item.description,...item.stats.map(m=>m.join(': '))].filter(Boolean).join(' · ').slice(0,2000)});
- renderInventory();save();toast(item.name+' adicionado ao inventário.');
+ renderInventory();save();render();toast(item.name+' adicionado ao inventário.');
 }
 modal.addEventListener('click',event=>{
  if(event.target===modal){close();return;}
