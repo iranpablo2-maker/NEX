@@ -269,9 +269,10 @@ function drawGrimoire(){
 }
 function openCast(rid){
  if(!isOccultist()){toast('A conjuração nesta aba é exclusiva para Ocultistas.');return;}
- const r=learned().find(x=>String(x.id)===String(rid));if(!r){toast('Ritual não encontrado nesta ficha.');return;}
+ const r=learned().find(x=>String(x.id)===String(rid));
+ if(!r){toast('Ritual não encontrado nesta ficha.');return;}
  if(Number(r.circle)>permittedCircle()){toast('Este círculo ainda não foi liberado pelo NEX.');return;}
- castingId=String(rid);
+ castingId=String(rid);castCommitted=false;
  const d=info(r);
  const options=['Normal'].concat(hasEnhance(d.discente)?['Discente']:[],hasEnhance(d.verdadeiro)?['Verdadeiro']:[]);
  const isActive=!/instant[aâ]nea|instant[aâ]neo/i.test(d.duration||'');
@@ -280,11 +281,20 @@ function openCast(rid){
  '<form id="tkCastForm"><div class="tk-modal-fields">'+
  '<label>Versão<select id="tkCastVersion">'+options.map(v=>'<option>'+esc(v)+'</option>').join('')+'</select></label>'+
  '<label>PE adicional por ajustes<input id="tkCastExtra" type="number" min="0" max="99" step="1" value="0"></label>'+
+ '<label>Bônus extra no TO<input id="tkTOBonus" type="number" min="-99" max="99" step="1" value="0"></label>'+
  '<label>Custo de sustentação (PE/rodada)<input id="tkCastUpkeep" type="number" min="0" max="99" step="1" value="'+(/sustentad/i.test(d.duration||'')?'1':'0')+'"></label>'+
  '</div><label><input id="tkCastActive" type="checkbox" '+(isActive?'checked':'')+'>Manter ativo e acompanhar rodadas</label>'+
+ '<h3>TO + efeito do ritual</h3>'+
+ '<div class="tk-modal-fields"><label>Tipo de efeito<select id="tkEffectType"><option>Dano</option><option>Cura</option><option>Buff</option><option>Dano + Cura</option></select></label>'+
+ '<label id="tkDamageLine">Dados de dano<input id="tkDamageDice" placeholder="Ex.: 3d6, 2d8+2" maxlength="24"></label>'+
+ '<label id="tkHealLine">Dados de cura<input id="tkHealDice" placeholder="Ex.: 3d8+3" maxlength="24"></label></div>'+
+ '<label id="tkHalfLine"><input type="checkbox" id="tkHealHalf">Cura igual à metade do dano rolado</label>'+
+ '<label id="tkBuffLine">Buff / suporte (efeito para aplicar)<textarea id="tkBuffText" rows="3" maxlength="500" style="width:100%;background:#120f18;color:#fff;border:1px solid #59466a"></textarea></label>'+
+ '<p id="tkToPreview" class="tk-sub"></p>'+
  '<p id="tkCostPreview" class="tk-warning"></p><p id="tkRulesPreview" class="tk-sub"></p>'+
- '<div class="tk-foot"><button type="button" data-tk-modal-close="1">Cancelar</button><button type="submit">Confirmar conjuração</button></div></form>';
+ '<div class="tk-foot"><button type="button" data-tk-modal-close="1">Cancelar</button><button type="submit">Rolar TO e conjurar</button></div></form>';
  if(typeof modal.showModal==='function')modal.showModal();else modal.open=true;
+ syncEffectFields(true);
  preview();
 }
 function castMath(){
@@ -297,48 +307,84 @@ function castMath(){
 }
 function preview(){
  const v=castMath();if(!v)return;
- const price=enhancePrice(v.enhance);
  const costNode=modal.querySelector('#tkCostPreview');
  const rulesNode=modal.querySelector('#tkRulesPreview');
- costNode.textContent='Custo total: '+v.total+' PE · PE atuais: '+pe()+' · Disponíveis neste turno: '+availableTurnPE()+' de '+PE_LIMIT()+' PE.';
+ const toNode=modal.querySelector('#tkToPreview');
+ const effect=formEffect();
+ const hasDamage=['Dano','Dano + Cura'].includes(effect.type);
+ const hasHeal=['Cura','Dano + Cura'].includes(effect.type);
+ const missingDice=(hasDamage&&!rollSimpleDicePattern(effect.damageDice))||(hasHeal&&!(effect.type==='Dano + Cura'&&effect.healFromDamage)&&!rollSimpleDicePattern(effect.healDice));
+ const toDt=20+v.total;
+ if(toNode)toNode.textContent=norm(v.r.element)==='medo'?'Medo: sem TO. Sanidade reduzida conforme a versão.':'Teste de Ocultismo (TO): '+(Number(state.attributes?.[state.skills?.Ocultismo?.attr||'int'])||0)+'d20 (atributo) + '+(Number(state.skills?.Ocultismo?.training)||0)+' de treino + bônus extra. DT '+toDt+'.';
+ if(costNode)costNode.textContent='Custo total: '+v.total+' PE · PE atuais: '+pe()+' · Disponíveis neste turno: '+availableTurnPE()+' de '+PE_LIMIT()+' PE.';
  let note=v.enhance||'Versão básica. Verifique o limite de PE por turno.';
- if(v.v!=='Normal'&&price===null)note+=' Custo adicional não informado; preencha o campo de ajustes.';
- const required=requirement(v.enhance);
+ const required=Math.max(requirement(v.enhance),v.v==='Discente'?Number(v.d.discenteCircle)||0:v.v==='Verdadeiro'?Number(v.d.verdadeiroCircle)||0:0);
  const circleBlocked=Number(v.r.circle)>permittedCircle()||(required>0&&required>permittedCircle());
  const turnBlocked=v.total>availableTurnPE(),peBlocked=v.total>pe();
+ const missingCost=v.v!=='Normal'&&enhancePrice(v.enhance)===null&&v.extra===0;
  if(turnBlocked)note+=' BLOQUEADO: excede os PE restantes neste turno.';
  if(peBlocked)note+=' PE insuficientes.';
  if(circleBlocked)note+=' Bloqueado: círculo não liberado pelo NEX.';
- rulesNode.textContent=note;
+ if(missingCost)note+=' Informe o PE adicional desta versão.';
+ if(missingDice)note+=' Informe os dados do efeito (ex.: 2d6+2).';
+ if(effect.type==='Buff')note+=' O buff será registrado para aplicar no alvo; não altera automaticamente os atributos da ficha.';
+ if(rulesNode)rulesNode.textContent=note;
  const submit=modal.querySelector('#tkCastForm button[type="submit"]');
- if(submit){submit.disabled=turnBlocked||peBlocked||circleBlocked;submit.title=submit.disabled?'Conjuração indisponível pelos limites de PE ou NEX':'';}
+ if(submit){submit.disabled=turnBlocked||peBlocked||circleBlocked||missingDice||missingCost;submit.title=submit.disabled?'Corrija os dados ou os limites de conjuração':'';}
+}
+function rollSimpleDicePattern(expr){return /^\d{1,2}d\d{1,3}(?:[+-]\d{1,3})?$/.test(String(expr||'').trim().replace(/\s+/g,'').toLowerCase());}
+function castingResultHTML(m,check,sanity,effect){
+ const kind=effect.type==='Buff'?'TO + Buff':effect.type==='Cura'?'TO + Cura':effect.type==='Dano + Cura'?'TO + Dano + Cura':'TO + Dano';
+ const rows=[];
+ if(check)rows.push('<p><strong>TO:</strong> ['+esc(check.rolls.join(', '))+'] → '+check.chosen+' + '+check.training+' treino + '+check.bonus+' bônus = <strong>'+check.total+'</strong> contra DT '+check.dt+' · <strong>'+(check.passed?'Sucesso':'Falha')+'</strong></p>');
+ else rows.push('<p><strong>Ritual de Medo:</strong> não faz teste de Ocultismo.</p>');
+ rows.push('<p><strong>PE gastos:</strong> '+m.total+' · <strong>PE restantes:</strong> '+pe()+'</p>');
+ if(sanity.lost||sanity.permanent)rows.push('<p><strong>Sanidade:</strong> -'+sanity.lost+' atual'+(sanity.permanent?', -'+sanity.permanent+' máxima permanente':'')+'</p>');
+ else rows.push('<p><strong>Sanidade:</strong> sem perda no TO.</p>');
+ if(effect.damage)rows.push('<p><strong>Dano:</strong> '+esc(effect.damage.expression)+' = '+effect.damage.total+' ['+esc(effect.damage.rolls.join(', '))+']</p>');
+ if(effect.healing)rows.push('<p><strong>Cura:</strong> '+esc(effect.healing.expression)+' = '+effect.healing.total+(effect.healing.rolls.length?' ['+esc(effect.healing.rolls.join(', '))+']':'')+'</p>');
+ if(effect.type==='Buff')rows.push('<p><strong>Buff/Suporte:</strong> '+esc(effect.buffText||'Verifique o efeito no ritual.')+'</p>');
+ rows.push('<p><strong>DT de resistência do alvo:</strong> '+targetRitualDT()+' (quando o ritual permitir resistência).</p>');
+ rows.push('<p class="tk-sub">A falha no TO básico causa perda de Sanidade, mas o ritual ainda é conjurado. Aplique dano, cura ou buff ao alvo conforme as condições do ritual.</p>');
+ return '<div class="tk-row"><h3>Conjuração concluída — '+kind+'</h3><button type="button" data-tk-modal-close="1">✕</button></div>'+
+ '<p><strong>'+esc(m.r.name)+'</strong> · '+esc(m.v)+'</p>'+rows.join('')+
+ '<div class="tk-foot"><button type="button" data-tk-modal-close="1">Fechar resultado</button></div>';
 }
 function confirmCast(){
+ if(castCommitted)return;
  const m=castMath();if(!m)return;
  const {r,d,v,total,enhance,extra}=m;
  if(!isOccultist()){toast('Somente Ocultistas podem conjurar nesta aba.');return;}
- if(v!=='Normal'&&enhancePrice(enhance)===null&&extra===0){toast('Informe os PE extras da versão aprimorada antes de conjurar.');return;}
- const required=requirement(enhance);
- if(required&&state.class==='Ocultista'&&typeof nex12RitualAllowed==='function'&&nex12RitualAllowed()<required){toast('A versão exige um círculo ainda não liberado.');return;}
- if(state.class==='Ocultista'&&typeof nex12RitualAllowed==='function'&&Number(r.circle)>nex12RitualAllowed()){toast('Círculo ainda não liberado.');return;}
+ if(v!=='Normal'&&enhancePrice(enhance)===null&&extra===0){toast('Informe o custo extra da versão aprimorada.');return;}
+ const required=Math.max(requirement(enhance),v==='Discente'?Number(d.discenteCircle)||0:v==='Verdadeiro'?Number(d.verdadeiroCircle)||0:0);
+ if(required>permittedCircle()||Number(r.circle)>permittedCircle()){toast('Círculo ainda não liberado para este NEX.');return;}
  if(/Afinidade necessária/i.test(enhance)&&!confirm('O aprimoramento exige afinidade. Confirma que seu personagem cumpre este requisito?'))return;
  if(total>pe()){toast('PE insuficientes: necessários '+total+', disponíveis '+pe()+'.');return;}
- const limit=typeof maxValues==='function'?Number(maxValues().peLimit)||0:0;
  if(total>availableTurnPE()){toast('Limite de PE por turno excedido. Restam '+availableTurnPE()+' PE neste turno.');return;}
- if(!confirm('Conjurar '+r.name+' ('+v+') por '+total+' PE?'))return;
+ const fields=formEffect();
+ const effect=computeEffect(fields);
+ if(!effect){toast('Dados inválidos: informe uma expressão como 2d6+2.');return;}
+ if(!confirm('Conjurar '+r.name+' ('+v+') por '+total+' PE e rolar o TO?'))return;
+ // A confirmação acontece antes de qualquer gasto; todas as rolagens e recursos são registrados uma única vez.
+ castCommitted=true;
+ const isFear=norm(r.element)==='medo';
+ const toBonus=Math.max(-99,Math.min(99,Math.floor(Number(modal.querySelector('#tkTOBonus')?.value)||0)));
+ const check=isFear?null:occultismRoll(total,toBonus);
+ const sanity=applyCastSanity(r.element,v,total,check);
  const active=Boolean(modal.querySelector('#tkCastActive')?.checked);
  const upkeep=Math.min(99,Math.max(0,Number(modal.querySelector('#tkCastUpkeep')?.value)||0));
  state.peCurrent=Math.max(0,pe()-total);
  kit().turnSpent+=total;
- addHistory('Conjuração',{name:r.name,ritualId:String(r.id),version:v,cost:total,peAfter:pe()});
+ kit().effectConfigs[signature(r)+'|'+v]=fields;
+ addHistory('Conjuração',{name:r.name,ritualId:String(r.id),version:v,cost:total,peAfter:pe(),to:check,effect,sanLoss:sanity.lost,permanentSanLoss:sanity.permanent,targetDT:targetRitualDT()});
  if(active){
   kit().active.unshift({id:id(),ritualId:String(r.id),name:r.name,version:v,duration:d.duration||'',upkeep,rounds:0,at:new Date().toISOString()});
   if(kit().active.length>60)kit().active.length=60;
  }
- if(typeof modal.close==='function')modal.close();else modal.open=false;
- castingId='';
  update();
- toast('Ritual conjurado: '+total+' PE descontados.');
+ modal.innerHTML=castingResultHTML(m,check,sanity,effect);
+ castingId='';
+ toast('Conjuração registrada: '+total+' PE descontados.');
 }
 function handleRound(aid){
  if(!isOccultist()){toast('Apenas Ocultistas podem sustentar rituais nesta aba.');return;}
@@ -412,8 +458,8 @@ host.addEventListener('submit',e=>{
 modal.addEventListener('click',e=>{
  if(e.target.closest('[data-tk-modal-close]')){if(typeof modal.close==='function')modal.close();else modal.open=false;castingId='';}
 });
-modal.addEventListener('input',e=>{if(['tkCastVersion','tkCastExtra'].includes(e.target.id))preview();});
-modal.addEventListener('change',e=>{if(e.target.id==='tkCastVersion')preview();});
+modal.addEventListener('input',e=>{if(['tkCastExtra','tkTOBonus','tkDamageDice','tkHealDice','tkBuffText'].includes(e.target.id))preview();});
+modal.addEventListener('change',e=>{if(e.target.id==='tkCastVersion'){syncEffectFields(true);preview();}if(['tkEffectType','tkHealHalf'].includes(e.target.id)){syncEffectFields(false);preview();}});
 modal.addEventListener('submit',e=>{if(e.target.id==='tkCastForm'){e.preventDefault();confirmCast();}});
 const previous=nex12RenderRitualList;
 nex12RenderRitualList=function(...args){const result=previous.apply(this,args);top();return result;};
