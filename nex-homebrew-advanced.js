@@ -1,4 +1,4 @@
-/* NEX 2.0.54 - Trilhas: três classes, sem campo de NEX mínimo e sem título redundante. */
+/* NEX 2.0.55 - Editores de habilidades por categoria; origens com duas perícias treinadas. */
 (()=>{
  'use strict';
  const KEY='nex_homebrew_advanced_v2051';
@@ -20,6 +20,7 @@
    size:['Minúsculo','Pequeno','Médio','Grande','Enorme','Colossal'].includes(x.size)?x.size:'Médio',
    creatureType:cut(x.creatureType||'Criatura',70),
    category:cut(x.category||'Geral',70),
+   skills:x.type==='origem'&&Array.isArray(x.skills)?[...new Set(x.skills.filter(v=>typeof v==='string').map(v=>cut(v,60)))].slice(0,2):[],
    trailAbilities:x.type==='trilha'?TRAIL_NEX.map((n,i)=>{
      const list=Array.isArray(x.trailAbilities)?x.trailAbilities:[];
      const saved=list.find(item=>item&&Number(item.nex)===n)||list[i]||{};
@@ -59,12 +60,12 @@
  '<label class="nex52-search" for="nex51Search"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><circle cx="10.7" cy="10.7" r="7.2"/><path d="m16 16 5 5"/></svg><input type="search" id="nex51Search" placeholder="Buscar" autocomplete="off" aria-label="Buscar homebrew"></label>'+
  '<section id="nex52Editor" class="nex52-editor" hidden><div class="nex52-editor-head"><strong id="nex52EditorTitle">Adicionar homebrew</strong><button type="button" id="nex52CloseEditor" aria-label="Fechar editor">×</button></div>'+
  '<form id="nex51Form" class="nex52-form"><input id="nex51Edit" type="hidden">'+
- '<label>Categoria<select id="nex51Type"><option value="ameaca">Ameaça</option></select></label>'+
+ '<label id="nex55TypeField">Categoria<select id="nex51Type"><option value="ameaca">Ameaça</option></select></label>'+
  '<label>Nome<input id="nex51Name" maxlength="90" placeholder="Nome do homebrew" required></label>'+
  '<div class="nex52-specific" id="nex52ThreatFields" hidden><label>VD<input id="nex52VD" type="number" min="0" max="9999" value="0"></label>'+
  '<label>Tipo de ameaça<input id="nex52CreatureType" maxlength="70" placeholder="Criatura"></label>'+
  '<label>Porte<select id="nex52Size"><option>Minúsculo</option><option>Pequeno</option><option selected>Médio</option><option>Grande</option><option>Enorme</option><option>Colossal</option></select></label></div>'+
- '<div class="nex52-specific" id="nex52AbilityFields" hidden><label>Classe<select id="nex51Class"><option>Livre</option><option>Combatente</option><option>Especialista</option><option>Ocultista</option></select></label>'+
+ '<div class="nex52-specific" id="nex52AbilityFields" hidden><label id="nex55ClassField">Classe<select id="nex51Class"><option>Livre</option><option>Combatente</option><option>Especialista</option><option>Ocultista</option></select></label>'+
  '<label id="nex51NexField">NEX mínimo<input id="nex51Nex" type="number" min="0" max="99" value="5"></label></div>'+
  '<div class="nex52-specific" id="nex52RitualFields" hidden><label>Círculo<select id="nex51Circle"><option value="1">1º</option><option value="2">2º</option><option value="3">3º</option><option value="4">4º</option></select></label>'+
  '<label>Elemento<select id="nex51Element"><option>Conhecimento</option><option>Energia</option><option>Morte</option><option>Sangue</option><option>Medo</option><option>Personalizado</option></select></label>'+
@@ -74,8 +75,11 @@
  TRAIL_NEX.map((n,i)=>'<fieldset class="nex53-trail-step"><legend>NEX '+n+'% · Habilidade '+(i+1)+'</legend>'+
  '<label>Nome da habilidade<input type="text" id="nex53TrailName'+n+'" maxlength="90" placeholder="Nome da habilidade de '+n+'%"></label>'+
  '<label>Descrição e efeitos<textarea id="nex53TrailDescription'+n+'" maxlength="1600" rows="3" placeholder="Descreva o efeito concedido em '+n+'% de NEX"></textarea></label></fieldset>').join('')+'</div>'+
- '<label class="nex52-full">Descrição e efeitos<textarea id="nex51Description" maxlength="2000" rows="4" placeholder="Descreva seu homebrew"></textarea></label>'+
- '<label class="nex52-full">Pré-requisitos ou observações<textarea id="nex51Requirements" maxlength="650" rows="2"></textarea></label>'+
+ '<div class="nex55-origin-skills nex52-full" id="nex55OriginSkills" hidden><label>Primeira perícia<select id="nex55Skill1"><option value="">Escolha a primeira perícia</option></select></label>'+
+ '<label>Segunda perícia<select id="nex55Skill2"><option value="">Escolha a segunda perícia</option></select></label>'+
+ '<p>Ao aplicar esta origem, as duas perícias ficam treinadas (+5) automaticamente na ficha, sem reduzir treinamentos existentes.</p></div>'+
+ '<label class="nex52-full" id="nex55DescriptionField"><span id="nex55DescriptionLabel">Descrição e efeitos</span><textarea id="nex51Description" maxlength="2000" rows="4" placeholder="Descreva seu homebrew"></textarea></label>'+
+ '<label class="nex52-full" id="nex55RequirementsField">Pré-requisitos ou observações<textarea id="nex51Requirements" maxlength="650" rows="2"></textarea></label>'+
  '<div class="nex52-form-actions"><button type="submit" class="btn primary" id="nex52Save">Salvar</button><button type="button" class="btn" id="nex52Cancel">Cancelar</button></div></form></section>'+
  '<div id="nex51List" class="nex52-list" role="tabpanel" aria-label="Lista de homebrews"></div>'+
  '<p id="nex52Message" role="status" aria-live="polite" class="nex52-message"></p>'+
@@ -85,21 +89,35 @@
  sheet.innerHTML='<details class="nex51-sheet"><summary>Homebrews associados à ficha (<span id="nex51SheetCount">0</span>)</summary><div id="nex51SheetItems" class="nex52-sheet-list"></div></details>';
  function editorFields(){
    const type=$('nex51Type').value;
-   // Apenas Trilhas exigem uma das três classes oficiais, sem a opção Livre.
-   // Nos outros tipos preservamos a opção Livre e as escolhas anteriores.
+   const isTrail=type==='trilha',isOrigin=type==='origem',isGeneral=['poder_geral','poder','habilidade'].includes(type);
+   // Ao escolher a subcategoria, não é preciso selecionar "Categoria" novamente.
+   $('nex55TypeField').hidden=tab==='habilidades';
    const classSelect=$('nex51Class'),oldClass=classSelect.value;
-   const choices=type==='trilha'?['Combatente','Especialista','Ocultista']:['Livre','Combatente','Especialista','Ocultista'];
+   const choices=isTrail?['Combatente','Especialista','Ocultista']:['Livre','Combatente','Especialista','Ocultista'];
    classSelect.innerHTML=choices.map(name=>'<option value="'+name+'">'+name+'</option>').join('');
-   classSelect.value=choices.includes(oldClass)?oldClass:(type==='trilha'?'Combatente':'Livre');
-   $('nex51NexField').hidden=type==='trilha';
+   classSelect.value=choices.includes(oldClass)?oldClass:(isTrail?'Combatente':'Livre');
+   $('nex55ClassField').hidden=isOrigin||isGeneral;
+   $('nex51NexField').hidden=isTrail||isOrigin||isGeneral;
    $('nex52ThreatFields').hidden=type!=='ameaca';
    $('nex52AbilityFields').hidden=!['origem','poder_paranormal','poder_geral','poder','trilha','habilidade'].includes(type);
-   $('nex53TrailFields').hidden=type!=='trilha';
+   $('nex53TrailFields').hidden=!isTrail;
+   $('nex55OriginSkills').hidden=!isOrigin;
+   $('nex55DescriptionField').hidden=isTrail;
+   $('nex55RequirementsField').hidden=isTrail||isOrigin||isGeneral;
+   $('nex55DescriptionLabel').textContent=isOrigin||isGeneral?'Descrição':'Descrição e efeitos';
    $('nex52RitualFields').hidden=type!=='ritual';
    $('nex52ItemFields').hidden=type!=='item';
  }
+ const FALLBACK_SKILLS=['Acrobacia','Adestramento','Artes','Atletismo','Atualidades','Ciências','Crime','Diplomacia','Enganação','Fortitude','Furtividade','Iniciativa','Intimidação','Intuição','Investigação','Luta','Medicina','Ocultismo','Percepção','Pilotagem','Pontaria','Profissão','Reflexos','Religião','Sobrevivência','Tática','Tecnologia','Vontade'];
+ function loadSkillChoices(){
+   const skills=api()?.skillNames?.()||FALLBACK_SKILLS;
+   const options=skills.filter(name=>typeof name==='string').map(name=>'<option value="'+esc(name)+'">'+esc(name)+'</option>').join('');
+   $('nex55Skill1').innerHTML='<option value="">Escolha a primeira perícia</option>'+options;
+   $('nex55Skill2').innerHTML='<option value="">Escolha a segunda perícia</option>'+options;
+ }
  function resetForm(){
    $('nex51Form').reset();$('nex51Edit').value='';
+   loadSkillChoices();
    $('nex51Type').innerHTML=currentTypes().map(type=>'<option value="'+type+'">'+LABEL[type]+'</option>').join('');
    $('nex51Type').value=defaultType();$('nex52EditorTitle').textContent='Adicionar '+LABEL[defaultType()].toLocaleLowerCase('pt-BR');
    editorFields();
@@ -115,6 +133,7 @@
      $('nex51Element').value=item.element;$('nex51Cost').value=item.cost;
      $('nex52VD').value=item.vd;$('nex52Size').value=item.size;
      $('nex52CreatureType').value=item.creatureType;$('nex52Category').value=item.category;
+     if(item.type==='origem'){$('nex55Skill1').value=item.skills?.[0]||'';$('nex55Skill2').value=item.skills?.[1]||'';}
      if(item.type==='trilha')TRAIL_NEX.forEach((n,i)=>{const step=(item.trailAbilities||[])[i]||{};$('nex53TrailName'+n).value=step.name||'';$('nex53TrailDescription'+n).value=step.description||'';});
      $('nex52EditorTitle').textContent='Editar '+item.name;
    }
@@ -126,6 +145,8 @@
    if(item.type==='ritual')return [item.circle+'º círculo · '+item.element,item.cost+' PE'];
    if(item.type==='item')return [item.category,'Item personalizado'];
    if(item.type==='trilha')return ['Trilha · '+item.className,'4 marcos · NEX 10%, 40%, 65% e 99%'];
+   if(item.type==='origem')return ['Origem personalizada',(item.skills||[]).join(' · ')||'Duas perícias'];
+   if(['poder_geral','poder','habilidade'].includes(item.type))return ['Poder Geral','Personalizado'];
    return [LABEL[item.type]+' · '+item.className,'NEX '+item.minNex+'%'];
  }
  function trailDetails(item){
@@ -184,7 +205,8 @@
    $('nex52DetailBody').innerHTML='<div class="nex52-detail-top"><span>'+esc(LABEL[item.type])+'</span><h3>'+esc(item.name)+'</h3></div>'+
      '<p class="nex52-detail-meta">'+esc(info.join(' · '))+'</p>'+
      (item.description?'<h4>Descrição</h4><p>'+esc(item.description)+'</p>':'<p>Sem descrição.</p>')+
-     (item.requirements?'<h4>Pré-requisitos</h4><p>'+esc(item.requirements)+'</p>':'')+trailDetails(item);
+     (item.requirements?'<h4>Pré-requisitos</h4><p>'+esc(item.requirements)+'</p>':'')+
+     (item.type==='origem'?'<h4>Perícias treinadas</h4><p>'+esc((item.skills||[]).join(' e ')||'Não configuradas')+'</p>':'')+trailDetails(item);
    targetOptions();const d=$('nex52Detail');if(typeof d.showModal==='function')d.showModal();else d.setAttribute('open','');
  }
  $('nex51Type').addEventListener('change',editorFields);
@@ -211,14 +233,21 @@
    const count=all.filter(x=>currentTypes().includes(x.type)).length;
    if(!editing&&count>=50){message('Limite de 50 homebrews para esta categoria.');return;}
    if(type==='trilha'&&TRAIL_NEX.some(n=>!cut($('nex53TrailName'+n).value,90))){message('Informe o nome das quatro habilidades da trilha: 10%, 40%, 65% e 99%.');return;}
+   if(type==='origem'){
+     const first=$('nex55Skill1').value,second=$('nex55Skill2').value,available=api()?.skillNames?.()||FALLBACK_SKILLS;
+     if(!first||!second||first===second||!available.includes(first)||!available.includes(second)){
+       message('Escolha duas perícias diferentes para a origem.');return;
+     }
+   }
    if(!editing&&all.length>=300){message('Limite total da biblioteca atingido.');return;}
    const record=normalize({
      id:editing||'hb51_'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,9),
      type,name,description:$('nex51Description').value,requirements:$('nex51Requirements').value,
-     className:$('nex51Class').value,minNex:type==='trilha'?(old?.minNex??10):$('nex51Nex').value,circle:$('nex51Circle').value,
+     className:$('nex51Class').value,minNex:['trilha','origem','poder_geral','poder','habilidade'].includes(type)?(old?.minNex??(type==='trilha'?10:5)):$('nex51Nex').value,circle:$('nex51Circle').value,
      element:$('nex51Element').value,cost:$('nex51Cost').value,vd:$('nex52VD').value,
      size:$('nex52Size').value,creatureType:$('nex52CreatureType').value,category:$('nex52Category').value,
-     trailAbilities:type==='trilha'?TRAIL_NEX.map(n=>({nex:n,name:$('nex53TrailName'+n).value,description:$('nex53TrailDescription'+n).value})):(old?.trailAbilities||[])
+     trailAbilities:type==='trilha'?TRAIL_NEX.map(n=>({nex:n,name:$('nex53TrailName'+n).value,description:$('nex53TrailDescription'+n).value})):(old?.trailAbilities||[]),
+     skills:type==='origem'?[$('nex55Skill1').value,$('nex55Skill2').value]:(old?.skills||[])
    });
    const group=Object.keys(TABS).find(key=>TABS[key].includes(record.type))||tab;
    if(!editing&&group!==tab){message('Selecione a categoria correta antes de salvar.');return;}
