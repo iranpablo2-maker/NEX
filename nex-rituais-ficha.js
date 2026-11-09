@@ -99,7 +99,7 @@ function render(){
    '<p class="nex-ritual-summary">'+esc(d.note||d.description||'Efeito não cadastrado. Consulte o livro ou edite o resumo.')+'</p>'+(d.summaryKind?'<small class="nex-ritual-summary-kind">'+esc(d.summaryKind)+'</small>':'')+
    (d.discente?'<p class="nex-ritual-enhance"><b>Discente:</b> '+esc(d.discente)+'</p>':'')+
    (d.verdadeiro?'<p class="nex-ritual-enhance"><b>Verdadeiro:</b> '+esc(d.verdadeiro)+'</p>':'')+
-   '<div class="nex-ritual-actions"><button type="button" data-ritual-remove="'+esc(r.id)+'">Remover</button><button type="button" data-ritual-edit="'+esc(r.id)+'">Editar</button><button type="button" data-tk-cast-from-sheet="'+esc(r.id)+'" class="btn sm">Conjurar</button></div>'+
+   '<div class="nex-ritual-actions"><button type="button" data-ritual-remove="'+esc(r.id)+'">Remover</button><button type="button" data-ritual-edit="'+esc(r.id)+'">Editar</button></div>'+
    '<small>'+esc(d.source||'Ritual personalizado')+' · '+esc(cost)+' PE'+(blocked?' · Círculo acima do disponível':'')+'</small></div></details></article>';
  }).join(''):'<p class="nex-ritual-hint">Nenhum ritual aprendido. Clique em Adicionar para escolher um.</p>';
 }
