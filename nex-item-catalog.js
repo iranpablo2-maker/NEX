@@ -34,7 +34,7 @@ for(const model of (typeof NEX12_CATALOG!=='undefined'?NEX12_CATALOG:[])){
  if(existing){if(existing.description.startsWith('Detalhes a conferir'))existing.description=desc;continue}
  put(name,section,kind+'. '+desc,[['Espaços',String(spaces)]],spaces);
 }
-for(const record of [...(window.NEX_ITEM_BOOKS||[]),...(window.NEX_BASE_WEAPONS||[]),...(window.NEX_ITEM_COMPLEMENTS?.items||[])]){
+for(const record of [...(window.NEX_ITEM_BOOKS||[]),...(window.NEX_BASE_WEAPONS||[]),...(window.NEX_ITEM_COMPLEMENTS?.items||[]),...(window.NEX_ITEM_VARIANTS||[])]){
  const item={name:record.name,section:record.section,description:record.description||'',stats:record.stats||[],spaces:record.spaces??1,source:record.source||'Livro de regras'};
  const existing=items.find(x=>norm(x.name)===norm(item.name)&&x.section===item.section);
  if(existing)Object.assign(existing,item);
