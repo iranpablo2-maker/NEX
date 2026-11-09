@@ -1368,6 +1368,40 @@ html,body{background:#000!important;background-image:none!important}
 #nexItemTemplateDescription,#nexRitualTemplateDescription{font-size:12px;line-height:1.55;color:#d9c9e5;white-space:normal;margin:10px 0 15px;padding:10px 12px;border-left:2px solid #8d4eba;background:#17121b;border-radius:3px}
 #nexItemTemplateDescription:empty,#nexRitualTemplateDescription:empty{display:none}
 </style>
+<style id="nex-pericias-outros-alignment-v2073">
+/* Todas as colunas usam a mesma grade, inclusive em telas menores. */
+#sheetScreen .nexv16-skill-head,
+#sheetScreen .nexv16-skill-row{
+ grid-template-columns:minmax(107px,1fr) 37px 42px 60px 42px!important;
+ align-items:center!important;
+ column-gap:3px!important;
+ box-sizing:border-box!important;
+}
+#sheetScreen .nexv16-skill-head>span:last-child{
+ display:block;text-align:center!important;
+ min-width:0;justify-self:stretch;
+}
+#sheetScreen .nexv16-skill-row input[data-n16-other]{
+ display:block!important;
+ width:100%!important;
+ max-width:100%!important;
+ height:31px!important;
+ min-height:31px!important;
+ margin:0!important;
+ padding:0!important;
+ line-height:31px!important;
+ text-align:center!important;
+ box-sizing:border-box!important;
+ font-variant-numeric:tabular-nums!important;
+ align-self:center!important;
+ justify-self:center!important;
+}
+@media(max-width:750px){
+ #sheetScreen .nexv16-skill-row input[data-n16-other]{
+ height:34px!important;min-height:34px!important;line-height:34px!important;
+ }
+}
+</style>
 </head><body>
 <script src="nex-sobrevivendo-ao-horror.js?v=2072"></script>
 <header class="topbar"><div class="topinner"><button type="button" id="n17MenuToggle" class="n17-menu-button" aria-expanded="false" aria-controls="n17Drawer" aria-label="Abrir menu">☰</button><button type="button" class="brand" id="nexBrandHome" aria-label="Voltar ao menu principal" title="Voltar ao menu principal"><span class="brand-mark" aria-hidden="true">◈</span><span><h1>NEX</h1><span class="subtitle">SISTEMA DE FICHAS · ORDEM PARANORMAL</span></span></button><div class="actions"><button class="btn sm" id="menuHeaderButton" type="button" style="display:none!important" hidden tabindex="-1" aria-hidden="true">⌂ Menu principal</button><button class="btn sm" id="newChar" type="button" style="display:none!important" hidden tabindex="-1" aria-hidden="true">＋ Nova ficha</button><button class="btn sm" id="importBtn" style="display:none!important" aria-hidden="true" tabindex="-1">Importar</button><button class="btn sm" id="exportBtn" style="display:none!important" aria-hidden="true" tabindex="-1">↓ Exportar</button><input type="file" id="fileInput" accept="application/json,.json" hidden><span id="n17SaveIndicator" hidden aria-hidden="true"></span></div></div></header>
@@ -1703,7 +1737,7 @@ html,body{background:#000!important;background-image:none!important}
  <div class="subhead">Origens personalizadas</div><div id="homebrewList"></div>
  <div class="subhead">Poderes e rituais personalizados</div><p class="hint">Use as abas Progressão e Rituais para cadastrar entradas com qualquer nome e efeito. Essas entradas ficam na ficha, sem alterar o conteúdo oficial.</p>
 </section>
-<div class="panel" style="margin-top:15px"><div class="panel-head"><h3>⚄ Dados rápidos</h3></div><div class="actions"><button class="btn sm" data-fast-roll="1d20">d20</button><button class="btn sm" data-fast-roll="1d12">d12</button><button class="btn sm" data-fast-roll="1d10">d10</button><button class="btn sm" data-fast-roll="1d8">d8</button><button class="btn sm" data-fast-roll="1d6">d6</button><button class="btn sm" data-fast-roll="1d4">d4</button></div><p class="hint" style="margin-top:8px">As rolagens aparecem na aba Habilidades → Rolagem rápida.</p></div>
+
 </main></div><div class="footer">NEX · PROJETO INDEPENDENTE DE FICHAS DE RPG · VERSÃO 1.9.9.2.0 · DADOS SALVOS LOCALMENTE</div></div></div><nav id="n17MobileDock" class="n17-mobile-dock" aria-label="Seções da ficha">
 <button type="button" class="active" data-n17-section="summary"><span class="n17-icon">♙</span>Personagem</button>
 <button type="button" data-n17-section="skills"><span class="n17-icon">⚄</span>Perícias</button>
@@ -1803,7 +1837,7 @@ bind();renderFields();save();
 const originalRenderStats=renderStats;
 renderStats=function(){originalRenderStats();const max=maxValues();$('originPvBonus').value='+'+max.bonus;$('nexMirror').textContent=state.nex+'%';$('bonusDetails').textContent=state.origin==='Ex-Militar'?'Bônus atual: +'+max.bonus+' PV máximos e +2 de dano.':'Esta origem não oferece bônus automático.';document.querySelector('.ability summary span').textContent=state.origin==='Ex-Militar'?'(Ex-Militar)':'(Não disponível)';document.querySelector('.ability').style.display=state.origin==='Ex-Militar'?'block':'none';};
 $('configToggle').addEventListener('click',()=>{const pane=$('configPanel');pane.classList.toggle('hide');$('configToggle').setAttribute('aria-expanded',String(!pane.classList.contains('hide')));});
-document.addEventListener('click',e=>{const b=e.target.closest('[data-fast-roll]');if(!b)return;dice(b.dataset.fastRoll,'Dado rápido');document.querySelector('[data-tab="overview"]').click();document.querySelector('.ability:nth-of-type(2)').open=true;});
+
 renderStats();
 </script><script>
 
