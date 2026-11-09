@@ -292,6 +292,38 @@ function drawGrimoire(){
    '<button type="button" class="tk-button" data-tk-learn="'+esc(signature(r))+'" '+(blocked?'disabled':'')+'>'+(blocked?'Círculo indisponível':'Adicionar à ficha')+'</button>')+'</div></article>';
  }).join(''):'<p class="tk-sub">Nenhum ritual encontrado.</p>';
 }
+function quickDamageRoll(rid,version='Normal'){
+ if(!isOccultist()){toast('A conjuração é exclusiva para Ocultistas.');return;}
+ const r=learned().find(x=>String(x.id)===String(rid));
+ if(!r){toast('Ritual não encontrado.');return;}
+ const d=info(r),enhance=version==='Discente'?d.discente:version==='Verdadeiro'?d.verdadeiro:'';
+ const validVersion=version==='Normal'||(version==='Discente'&&hasEnhance(d.discente))||(version==='Verdadeiro'&&hasEnhance(d.verdadeiro));
+ if(!validVersion){toast('Versão indisponível.');return;}
+ const required=version==='Discente'?Number(d.discenteCircle)||requirement(enhance):version==='Verdadeiro'?Number(d.verdadeiroCircle)||requirement(enhance):0;
+ if(Number(r.circle)>permittedCircle()||required>permittedCircle()){toast('Bloqueado pelo NEX.');return;}
+ const cost=finalPrice(r,version,0);
+ if(version!=='Normal'&&enhancePrice(enhance)===null){toast('Custo da versão não cadastrado.');return;}
+ if(cost>pe()){toast('PE insuficiente.');return;}
+ if(cost>availableTurnPE()){toast('Limite de PE por turno excedido.');return;}
+ const fields=effectSettings(r,version);
+ if(!['Dano','Dano + Cura'].includes(fields.type)||!rollSimpleDicePattern(fields.damageDice)){toast('Dados de dano não cadastrados.');return;}
+ if(/Afinidade necessária/i.test(enhance)&&!confirm('Esta versão exige afinidade. Confirma que o personagem possui?'))return;
+ if(!confirm('Conjurar '+r.name+' — '+version+' por '+cost+' PE e rolar Ocultismo + dano?'))return;
+ const effect=computeEffect(fields);
+ if(!effect){toast('Falha na fórmula de dano.');return;}
+ const check=norm(r.element)==='medo'?null:occultismRoll(cost,0);
+ const sanity=applyCastSanity(r.element,version,cost,check);
+ const result={r,d,v:version,total:cost};
+ state.peCurrent=Math.max(0,pe()-cost);
+ kit().turnSpent+=cost;
+ addHistory('Conjuração',{name:r.name,ritualId:String(r.id),version,cost,peAfter:pe(),to:check,effect,sanLoss:sanity.lost,permanentSanLoss:sanity.permanent,targetDT:targetRitualDT()});
+ update();
+ castingId='';
+ modal.classList.add('nex-tk-result-compact');
+ modal.innerHTML=castingResultHTML(result,check,sanity,effect);
+ if(!modal.open){if(typeof modal.showModal==='function')modal.showModal();else modal.open=true;}
+ toast('Rolagem concluída: '+cost+' PE gastos.');
+}
 function openCast(rid,requestedVersion='Normal'){
  if(!isOccultist()){toast('A conjuração nesta aba é exclusiva para Ocultistas.');return;}
  const r=learned().find(x=>String(x.id)===String(rid));
@@ -465,7 +497,7 @@ host.addEventListener('click',e=>{
  if(btn.dataset.tkTab){view=btn.dataset.tkTab;top();return;}
  if(btn.dataset.tkNextTurn){if(!isOccultist())return;const k=kit();k.turnSpent=0;k.turnNumber++;addHistory('Novo turno',{note:'Turno '+k.turnNumber+', limite renovado',cost:0});update();return;}
  if(btn.dataset.tkLearn){if(isOccultist())handleLearn(btn.dataset.tkLearn);return;}
- if(btn.dataset.tkCast){openCast(btn.dataset.tkCast,btn.dataset.tkVersion||'Normal');return;}
+ if(btn.dataset.tkCast){quickDamageRoll(btn.dataset.tkCast,btn.dataset.tkVersion||'Normal');return;}
  if(btn.dataset.tkRound){handleRound(btn.dataset.tkRound);return;}
  if(btn.dataset.tkEnd){
   const k=kit(),a=k.active.find(x=>x.id===btn.dataset.tkEnd);if(!a)return;
