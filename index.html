@@ -29,7 +29,32 @@
 .wizard-final{display:grid;gap:15px}.wizard-final label{font-weight:700;display:grid;gap:8px;font-size:14px}.wizard-final input,.wizard-final textarea{border:1px solid #49444d;background:#202024;padding:12px;border-radius:4px;font-size:14px}.wizard-final textarea{min-height:100px}
 .wizard-step[hidden],#wSkillsPanel[hidden],#wSelectableSkills[hidden]{display:none!important}.wizard-skill-pill{display:inline-block;border:1px solid #705085;background:#281e32;color:#e6d3f5;padding:5px 10px;margin:5px 6px 0 0;border-radius:6px;font-weight:600}.wizard-state{font-size:12px;color:#b4a4ba;margin-top:6px}
 @media(max-width:650px){.wizard{padding:19px 13px 60px}.wizard-progress{gap:3px;margin-bottom:20px}.wizard-progress button{font-size:11px}.wizard h2{font-size:23px}.wizard-panel{padding:12px}.wizard-entry-head{padding:10px;gap:7px}.wizard-entry-head .btn{padding:8px}.wizard-classes{gap:9px}.wizard-class-stats{grid-template-columns:1fr 1fr}.wizard-attr label{font-size:9px}.wizard-attr b{font-size:25px}.wizard-actions{flex-wrap:wrap}}
-input[type="number"]::-webkit-inner-spin-button,input[type="number"]::-webkit-outer-spin-button{-webkit-appearance:none!important;appearance:none!important;display:none!important;margin:0!important}input[type="number"]{appearance:textfield!important;-moz-appearance:textfield!important}</style>
+input[type="number"]::-webkit-inner-spin-button,input[type="number"]::-webkit-outer-spin-button{-webkit-appearance:none!important;appearance:none!important;display:none!important;margin:0!important}input[type="number"]{appearance:textfield!important;-moz-appearance:textfield!important}
+/* NEX — clique no número para atributo puro; lápis alterna edição/salvar */
+#sheetScreen #attributes .attr .nex-attr-roll{
+ display:flex!important;position:static!important;align-items:center;justify-content:center;
+ width:100%!important;height:100%!important;min-width:0!important;margin:0!important;padding:0!important;
+ background:transparent!important;border:0!important;box-shadow:none!important;color:#fff!important;
+ font-family:Georgia,"Times New Roman",serif!important;font-weight:700!important;
+ font-size:clamp(12px,4vw,19px)!important;text-shadow:0 1px 1px #000!important;
+ line-height:1!important;cursor:pointer;appearance:none!important;
+}
+#sheetScreen #attributes .attr .nex-attr-roll:hover{color:#e5b9ff!important}
+#sheetScreen #attributes .attr .nex-attr-roll:focus-visible{outline:1px solid #bc83ee!important;outline-offset:2px}
+#sheetScreen #attributes .attr .nex-attr-editor{display:none!important}
+#sheetScreen #attributes .attr.nex-attr-editing .nex-attr-editor{display:block!important}
+#sheetScreen #attributes .attr.nex-attr-editing .nex-attr-roll{display:none!important}
+#sheetScreen #attributes .attr .nex-attr-edit-toggle{
+ position:absolute!important;left:calc(100% + 3px)!important;top:50%!important;
+ transform:translateY(-50%)!important;display:flex!important;align-items:center;justify-content:center;
+ background:#21162b!important;border:1px solid #684a7b!important;border-radius:5px!important;
+ color:#d9b6f4!important;width:21px!important;height:23px!important;padding:2px!important;
+ box-shadow:0 1px 4px #0009!important;z-index:12!important;cursor:pointer!important;
+}
+#sheetScreen #attributes .attr .nex-attr-edit-toggle:hover{background:#44215b!important;color:white!important}
+#sheetScreen #attributes .attr.nex-attr-editing .nex-attr-edit-toggle{background:#4e2669!important;color:#fff!important}
+
+</style>
 <style>
 :root{--bg:#0b0d10;--top:#0a0b0e;--panel:#15191d;--panel2:#1b2026;--line:#3c4048;--accent:#e34d56;--red:#c52e38;--violet:#7a458d;--amber:#d59132}
 body{background:radial-gradient(ellipse 85% 55% at 70% -16%,#511f242a,transparent 70%),var(--bg)}
@@ -1930,7 +1955,72 @@ function save(show=false){try{localStorage.setItem(KEY,JSON.stringify(state));if
 function toast(msg){const el=$('toast');el.textContent=msg;el.classList.add('show');clearTimeout(toast.timer);toast.timer=setTimeout(()=>el.classList.remove('show'),2800);}
 function escapeHtml(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function renderStats(){const m=maxValues();for(const key of ['pv','pe','san']){let field=key==='san'?'sanCurrent':key+'Current';const v=clamp(int(state[field]),0,m[key]);state[field]=v;$(key+'NowText').textContent=v;$(key+'MaxText').textContent=m[key];$(key+'Bar').style.width=(m[key]?100*v/m[key]:0)+'%';const resourceBox=$(field)?.closest('.n193-resource-bar');if(resourceBox)resourceBox.style.setProperty('--nex-resource-fill',(m[key]?100*v/m[key]:0)+'%');const inp=$(field);if(document.activeElement!==inp)inp.value=v;inp.max=m[key];} const peLimit=$('peLimit'); if(peLimit) peLimit.textContent=m.peLimit; const peNotice=$('peTurnNoticeValue');if(peNotice){const base=m.peLimit;const universitario=state.origin==='Universitário';const displayed=base+(universitario?1:0);peNotice.textContent=String(displayed);const detail=$('peTurnNoticeDetail');if(detail)detail.textContent='NEX '+state.nex+'%: '+base+' PE base'+(universitario?' + 1 PE da origem Universitário.':'. Poderes e outros efeitos podem alterar esse limite.');} $('defense').value=10+int(state.attributes.agi)+int(state.defenseBonus); $('attributeBudget').textContent='Pontos distribuídos: '+(Object.values(state.attributes).reduce((a,b)=>a+int(b),0)-5)+' / 4 (NEX inicial)'; const rulesStatus=$('rulesStatus'); if(rulesStatus) rulesStatus.textContent=int(state.nex)===0?'Regra opcional: Mundano (NEX 0%)':state.autoRules===false?'Regras personalizadas':'Regras do livro v1.3'; const od=$('originDescription'); if(od) od.innerHTML=state.origin==='Ex-Militar'?'<strong>Veterano de Combate.</strong> Você recebe +1 ponto de vida (PV) para cada 5% de NEX. Além disso, seus ataques causam +2 pontos de dano.<br><br><span class="muted">Bônus atual: +'+m.bonus+' PV máximos e +2 de dano.</span>':'<strong>Origem personalizada.</strong> Nenhum bônus automático configurado para esta origem. Use os campos de regras para ajustar sua ficha.';}
-function renderAttributes(){ $('attributes').innerHTML=Object.entries(ATTRIBUTE_NAMES).map(([key,name])=>`<div class="attr attr-${key}" title="${name}"><input id="attr-${key}" type="number" inputmode="numeric" min="0" max="9" value="${clamp(int(state.attributes[key]),0,9)}" class="${[1,2].includes(clamp(int(state.attributes[key]),0,9))?'nex-digit-12':''}" data-attr="${key}" aria-label="${name}"></div>`).join('');}
+function renderAttributes(){
+ const pencil='<svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="m15 5 4 4M4 20l4.5-1 11-11a2.83 2.83 0 0 0-4-4l-11 11L4 20Z"/></svg>';
+ const floppy='<svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M4 3h14l3 3v15H3V3Z"/><path d="M7 3v7h10V3M7 21v-8h10v8"/></svg>';
+ $('attributes').innerHTML=Object.entries(ATTRIBUTE_NAMES).map(([key,name])=>{
+  const value=clamp(int(state.attributes[key]),0,9);
+  return '<div class="attr attr-'+key+'" title="'+name+'">'+
+   '<button type="button" class="nex-attr-roll '+([1,2].includes(value)?'nex-digit-12':'')+'" data-nex-attr-roll="'+key+'" aria-label="Rolar atributo '+name+' sem perícia" title="Rolar '+name+' puro">'+value+'</button>'+
+   '<input id="attr-'+key+'" class="nex-attr-editor" type="number" inputmode="numeric" min="0" max="9" value="'+value+'" aria-label="Editar '+name+'" tabindex="-1">'+
+   '<button type="button" class="nex-attr-edit-toggle" data-nex-attr-toggle="'+key+'" title="Editar '+name+'" aria-label="Editar '+name+'" aria-pressed="false">'+pencil+'</button>'+
+   '</div>';
+ }).join('');
+}
+const NEX_ATTR_PENCIL='<svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="m15 5 4 4M4 20l4.5-1 11-11a2.83 2.83 0 0 0-4-4l-11 11L4 20Z"/></svg>';
+const NEX_ATTR_SAVE='<svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M4 3h14l3 3v15H3V3Z"/><path d="M7 3v7h10V3M7 21v-8h10v8"/></svg>';
+function nexAttrEdit(card,editing){
+ const key=card.querySelector('[data-nex-attr-toggle]')?.dataset.nexAttrToggle;
+ const btn=card.querySelector('[data-nex-attr-toggle]');
+ const input=card.querySelector('.nex-attr-editor');
+ if(!key||!btn||!input)return;
+ if(editing){
+  document.querySelectorAll('#attributes .attr.nex-attr-editing').forEach(other=>{if(other!==card)nexAttrEdit(other,false);});
+  input.value=clamp(int(state.attributes[key]),0,9);
+  card.classList.add('nex-attr-editing');
+  btn.innerHTML=NEX_ATTR_SAVE;
+  btn.title='Salvar '+ATTRIBUTE_NAMES[key];btn.setAttribute('aria-label',btn.title);btn.setAttribute('aria-pressed','true');
+  input.removeAttribute('tabindex');input.focus();input.select();
+ }else{
+  card.classList.remove('nex-attr-editing');
+  btn.innerHTML=NEX_ATTR_PENCIL;
+  btn.title='Editar '+ATTRIBUTE_NAMES[key];btn.setAttribute('aria-label',btn.title);btn.setAttribute('aria-pressed','false');
+  input.setAttribute('tabindex','-1');
+ }
+}
+function nexAttrSave(card){
+ const key=card.querySelector('[data-nex-attr-toggle]')?.dataset.nexAttrToggle;
+ const input=card.querySelector('.nex-attr-editor');
+ if(!key||!input)return;
+ const parsed=Number(input.value);
+ if(!Number.isFinite(parsed)||input.value.trim()===''){
+  toast('Informe um valor válido de 0 a 9.');input.focus();return;
+ }
+ const value=clamp(Math.trunc(parsed),0,9);
+ state.attributes[key]=value;
+ renderStats();
+ save();
+ renderAttributes();
+}
+$('attributes').addEventListener('click',e=>{
+ const toggle=e.target.closest('[data-nex-attr-toggle]');
+ if(toggle){
+  const card=toggle.closest('.attr');
+  if(card.classList.contains('nex-attr-editing'))nexAttrSave(card);else nexAttrEdit(card,true);
+  return;
+ }
+ const roll=e.target.closest('[data-nex-attr-roll]');
+ if(roll&&!roll.closest('.nex-attr-editing')){
+  const key=roll.dataset.nexAttrRoll;
+  if(ATTRIBUTE_NAMES[key])attributeRoll(key,ATTRIBUTE_NAMES[key],0);
+ }
+});
+$('attributes').addEventListener('keydown',e=>{
+ if(!e.target.matches('.nex-attr-editor'))return;
+ const card=e.target.closest('.attr');
+ if(e.key==='Enter'){e.preventDefault();nexAttrSave(card);}
+ if(e.key==='Escape'){e.preventDefault();nexAttrEdit(card,false);}
+});
 function renderSkills(){ $('skillsList').innerHTML=SKILL_DATA.map(([name,attr])=>{let s=state.skills[name]||{attr,training:0};return `<div class="skill"><div class="skill-name">${escapeHtml(name)}<small>${escapeHtml(ATTRIBUTE_NAMES[s.attr]||'Intelecto')}</small></div><select aria-label="Treino de ${escapeHtml(name)}" data-skill="${escapeHtml(name)}"><option value="0" ${int(s.training)===0?'selected':''}>+0</option><option value="5" ${int(s.training)===5?'selected':''}>+5</option><option value="10" ${int(s.training)===10?'selected':''}>+10</option><option value="15" ${int(s.training)===15?'selected':''}>+15</option></select><button class="btn sm" data-roll-skill="${escapeHtml(name)}">Rolar</button></div>`;}).join('');}
 function renderAttacks(){ $('attacksList').innerHTML=state.attacks.length?state.attacks.map(a=>`<div class="item" data-attack-id="${escapeHtml(a.id)}"><div class="item-head"><strong>${escapeHtml(a.name||'Ataque')}</strong><button class="btn sm" data-delete-attack="${escapeHtml(a.id)}">Excluir</button></div><div class="item-grid"><div class="field"><label>Nome</label><input data-attack-field="name" value="${escapeHtml(a.name||'')}"></div><div class="field"><label>Teste (ex.: 1d20+5)</label><input data-attack-field="test" value="${escapeHtml(a.test||'')}"></div><div class="field"><label>Dano (ex.: 1d8)</label><input data-attack-field="damage" value="${escapeHtml(a.damage||'')}"></div></div><div class="field"><label>Detalhes</label><input data-attack-field="detail" value="${escapeHtml(a.detail||'')}"></div><div class="inline"><button class="btn sm" data-roll-attack="${escapeHtml(a.id)}">Rolar ataque</button><button class="btn sm primary" data-roll-damage="${escapeHtml(a.id)}">Rolar dano ${state.origin==='Ex-Militar'?'(+2)':''}</button></div></div>`).join(''):'<p class="hint">Nenhum ataque cadastrado.</p>';}
 function renderInventory(){ $('inventoryList').innerHTML=state.items.length?state.items.map(i=>`<div class="item" data-item-id="${escapeHtml(i.id)}"><div class="item-head"><strong>${escapeHtml(i.name||'Item')}</strong><button class="btn sm" data-delete-item="${escapeHtml(i.id)}">Excluir</button></div><div class="item-grid"><div class="field"><label>Nome</label><input data-item-field="name" value="${escapeHtml(i.name||'')}"></div><div class="field"><label>Quantidade</label><input type="number" min="0" data-item-field="quantity" value="${clamp(int(i.quantity),0,9999)}"></div><div class="field"><label>Detalhes</label><input data-item-field="detail" value="${escapeHtml(i.detail||'')}"></div></div></div>`).join(''):'<p class="hint">Inventário vazio.</p>';}
