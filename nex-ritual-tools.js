@@ -41,7 +41,11 @@ function catalog(){
 }
 function info(r){
  const found=catalog().find(x=>signature(x)===signature(r)&&(!r.source||r.source==='Personalizado'||!x.source||x.source===r.source));
- return {...found,...r,execution:r.execution||found?.execution||'',range:r.range||found?.range||'',target:r.target||found?.target||'',duration:r.duration||found?.duration||'',resistance:r.resistance||found?.resistance||'',discente:r.discente||found?.discente||'',verdadeiro:r.verdadeiro||found?.verdadeiro||'',description:r.note||r.description||found?.description||''};
+ const guide=window.NEX_RITUAL_GUIDES?.[signature(r)]?.description||'';
+ const official=Boolean(guide)&&r.source!=='Personalizado'&&r.source!=='Homebrew';
+ const customNote=String(r.note||'').trim(),sourceNote=String(found?.description||'').trim();
+ const description=official?guide+(customNote&&customNote!==sourceNote&&!sourceNote.startsWith(customNote)?'\nAnotação da ficha: '+customNote:''):(customNote||r.description||sourceNote);
+ return {...found,...r,execution:r.execution||found?.execution||'',range:r.range||found?.range||'',target:r.target||found?.target||'',duration:r.duration||found?.duration||'',resistance:r.resistance||found?.resistance||'',discente:r.discente||found?.discente||'',verdadeiro:r.verdadeiro||found?.verdadeiro||'',description,note:description};
 }
 function addHistory(type,entry={}){
  const k=kit();
@@ -69,7 +73,7 @@ function effectSettings(r,version){
  const homeType=d.ritualType==='Suporte'?'Buff':d.ritualType;
  const type=homeType||preset.type||'Buff';
  const configured=kit().effectConfigs[key+'|'+version];
- const baseEffect=String(d.note||d.description||d.effect||'Efeito não cadastrado. Consulte a descrição do ritual.').trim();
+ const baseEffect=String(d.description||d.note||d.effect||'Efeito não cadastrado. Consulte a descrição do ritual.').trim();
  const upgrade=version==='Discente'?d.discente:version==='Verdadeiro'?d.verdadeiro:'';
  const upgradeText=String(upgrade||'').trim();
  const usefulUpgrade=upgradeText&&!/^N[aã]o consta|^Sem aprimoramento/i.test(upgradeText);
@@ -280,7 +284,7 @@ function drawLearned(){
   const type=effectSettings(r,'Normal').type;
   const categories=window.NEX_RITUAL_EFFECTS?.[signature(r)]?.categories;
   const category=categories?.length>1?categories.join(' + '):type==='Cura'?'Cura':type==='Buff'?'Suporte':type==='Dano + Cura'?'Dano + Cura':'Dano';
-  const summary=String(d.note||d.description||'Efeito não cadastrado. Consulte o livro ou edite o ritual.').trim();
+  const summary=String(d.description||d.note||'Efeito não cadastrado. Consulte o livro ou edite o ritual.').trim();
   const parameters=[['Execução',d.execution],['Alcance',d.range],['Alvo',d.target],['Duração',d.duration],['Resistência',d.resistance]].filter(x=>x[1]&&!/^N[aã]o especificad/i.test(String(x[1])));
   return '<details class="tk-dmg-card" open><summary><span class="tk-dmg-chevron">⌄</span><strong>'+esc(r.name)+'</strong><span class="tk-dmg-element">'+esc(category)+' · '+esc(r.element)+' · '+esc(r.circle)+'º</span></summary>'+
   '<div class="tk-dmg-grid">'+columns+'</div>'+
