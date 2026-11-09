@@ -159,6 +159,7 @@ function add(index){
  const item=renderedItems[index];if(!item)return;
  if(!Array.isArray(state.items))state.items=[];
  if(state.items.length>=100){toast('Limite de 100 itens no inventário.');return;}
+ if(!window.NEX_CARRY?.canAdd(item.spaces,1)){toast('Carga máxima atingida. Só é possível adicionar itens de 0 espaços.');return;}
  const getStat=(name)=>String((item.stats||[]).find(x=>norm(x[0])===norm(name))?.[1]||'');
  const s=String(item.subtitle||'').split('·').map(x=>x.trim());
  const crit=getStat('Crítico').replace(/\s/g,'');
@@ -178,7 +179,7 @@ modal.addEventListener('click',event=>{
  if(event.target===modal){close();return;}
  const button=event.target.closest('button');if(!button)return;
  if(button.classList.contains('nex-item-close')){close();return;}
- if(button.classList.contains('nex-item-custom')){close();if(typeof originalAddItem==='function')originalAddItem.call(by('addItem'),event);else{state.items.push({id:'manual_'+Date.now(),name:'Novo item',quantity:1,spaces:1,category:'Geral',detail:''});renderInventory();save();}return;}
+ if(button.classList.contains('nex-item-custom')){close();if(typeof originalAddItem==='function')originalAddItem.call(by('addItem'),event);else{state.items.push({id:'manual_'+Date.now(),name:'Novo item',quantity:1,spaces:window.NEX_CARRY?.remaining?.()<=0?0:1,category:'Geral',detail:''});renderInventory();save();}return;}
  if(button.dataset.source){selectedSource=button.dataset.source;search.value='';render();return;}
  if(button.dataset.cat){selected=button.dataset.cat;search.value='';render();return;}
  if(button.dataset.add!==undefined){add(Number(button.dataset.add));return;}
