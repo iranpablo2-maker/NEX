@@ -1153,36 +1153,35 @@ html,body{background:#000!important;background-image:none!important}
  #sheetScreen .nex57-training-select{min-height:39px;font-size:13px}
  #sheetScreen .nexv16-skill-row{min-height:43px}
 }
-</style><style id="nex-skill-accordion-v2058">
-#sheetScreen .nexv16-table-scroll{overflow-x:visible}
-#sheetScreen #skillsList{display:grid;gap:0}
-#sheetScreen .nex-skill-fold{background:transparent;border:0;border-bottom:1px solid #27262b;border-radius:0;overflow:visible;color:#eee}
-#sheetScreen .nex-skill-fold>summary{list-style:none;display:flex;align-items:center;gap:9px;min-height:45px;padding:7px 5px;cursor:pointer}
-#sheetScreen .nex-skill-fold>summary::-webkit-details-marker{display:none}
-#sheetScreen .nex-skill-fold>summary::before{content:'⌄';flex:none;font-size:16px;line-height:1;color:#ad6dec;margin-right:2px}
-#sheetScreen .nex-skill-fold[open]>summary::before{transform:rotate(180deg)}
-#sheetScreen .nex-skill-fold[open]>summary{border-bottom:0}
-#sheetScreen .nex-skill-fold .nexv16-name{flex:1;min-width:0;font-size:12px;font-weight:700;color:#f4f1f7}
-#sheetScreen .nex-skill-fold .sub{display:block;margin-top:3px;font-weight:400;font-size:10px;color:#ae9aae}
-#sheetScreen .nex-skill-fold.trained .nex-skill-summary-total{color:#9ddeaf}
-#sheetScreen .nex-skill-summary-total{font-size:11px;font-weight:750;color:#a8a1ad;white-space:nowrap;padding-right:5px}
-#sheetScreen .nex-skill-fold .nex-skill-expanded{padding:3px 5px 13px 30px;white-space:normal;display:flex;gap:12px;align-items:end;flex-wrap:wrap}
-#sheetScreen .nex-skill-training-field{flex:1 1 170px;min-width:148px}
-#sheetScreen .nex-skill-field-label{display:block;font-size:10px;color:#a9a0b1;margin-bottom:5px}
-#sheetScreen .nex-skill-training-options{display:flex;gap:14px;align-items:center}
-#sheetScreen .nex-skill-train-option{appearance:none;border:0;background:none;color:#aaa3b2;padding:4px 2px;font-size:12px;font-weight:650;line-height:1.2;border-bottom:2px solid transparent}
-#sheetScreen .nex-skill-train-option:hover{color:#e1b9ff}
-#sheetScreen .nex-skill-train-option.is-selected{color:#d5a5ff;border-bottom-color:#a46ad6}
-#sheetScreen .nex-skill-train-option:focus-visible{outline:2px solid #c999ff;outline-offset:2px}
-#sheetScreen .nex-skill-other-field{flex:0 0 78px;min-width:70px}
-#sheetScreen .nex-skill-other-field input{width:100%;height:29px;text-align:center;padding:4px;border:0;border-bottom:1px solid #615a6a;border-radius:0;background:transparent;color:#eee;font-size:12px}
-#sheetScreen .nex-skill-roll-action{display:inline-flex;align-items:center;gap:5px;appearance:none;border:0;background:transparent;color:#c7a5ec;padding:5px 0;font-size:11px;font-weight:650;white-space:nowrap}
-#sheetScreen .nex-skill-roll-action img{width:16px;height:19px;object-fit:contain}
-#sheetScreen .nex-skill-roll-action:hover{color:#fff}
+</style>
+<style id="nex-skills-compact-select-v2059">
+/* Same 5-column table as the original sheet, with a bare, small native dropdown. */
+#sheetScreen .nexv16-table-scroll{overflow-x:auto}
+#sheetScreen #skillsList{display:block}
+#sheetScreen .nexv16-skill-head,
+#sheetScreen .nexv16-skill-row{display:grid!important;grid-template-columns:minmax(120px,1fr) 42px 46px 43px 37px!important;gap:4px!important;align-items:center!important;min-width:300px!important}
+#sheetScreen .nexv16-skill-row{min-height:35px;padding:4px 2px;border-bottom:1px solid #27252a}
+#sheetScreen .nexv16-skill-row .nexv16-skill-name{display:flex;gap:5px;align-items:center;min-width:0;font-size:11px;font-weight:600}
+#sheetScreen .nexv16-skill-row .nexv16-attr,
+#sheetScreen .nexv16-skill-row .nexv16-total{text-align:center;font-size:11px}
+#sheetScreen .nexv16-skill-row .nex-compact-training{
+ appearance:none!important;-webkit-appearance:none!important;
+ display:block!important;box-sizing:border-box!important;
+ width:100%!important;min-width:0!important;height:29px!important;min-height:29px!important;
+ margin:0!important;padding:2px 3px!important;text-align:center!important;text-align-last:center!important;
+ border:0!important;border-bottom:1px solid #6b496e!important;border-radius:0!important;
+ background:transparent!important;color:#b987ee!important;
+ font-size:12px!important;font-weight:700!important;line-height:1.2!important;
+ cursor:pointer!important;color-scheme:dark
+}
+#sheetScreen .nexv16-skill-row .nex-compact-training option{background:#17151b;color:#f1e5fa}
+#sheetScreen .nexv16-skill-row.trained .nex-compact-training{color:#9adfb1!important;border-bottom-color:#4e8460!important}
+#sheetScreen .nexv16-skill-row .nex-compact-training:hover{border-bottom-color:#bb8fea!important}
+#sheetScreen .nexv16-skill-row .nex-compact-training:focus-visible{outline:1px solid #bd88e9!important;outline-offset:1px}
+#sheetScreen .nexv16-skill-row input[data-n16-other]{width:100%;min-width:0;padding:4px 0;border:0;border-bottom:1px solid #626168;border-radius:0;background:transparent;text-align:center;font-size:11px}
 @media(max-width:750px){
- #sheetScreen .nex-skill-fold>summary{min-height:48px}
- #sheetScreen .nex-skill-training-options{gap:17px}
- #sheetScreen .nex-skill-fold .nex-skill-expanded{gap:10px}
+ #sheetScreen .nexv16-skill-row{min-height:38px}
+ #sheetScreen .nexv16-skill-row .nex-compact-training{height:31px!important;min-height:31px!important}
 }
 </style>
 </head><body>
@@ -1430,7 +1429,7 @@ html,body{background:#000!important;background-image:none!important}
 <div class="panel" hidden style="display:none"><div class="panel-head"><h3>Origem e habilidade</h3></div><div class="origin-box" id="originDescription"></div></div>
 <div class="panel" hidden style="display:none"><div class="two" style="margin-bottom:10px"><div class="field"><label for="defenseBonus">Modificador de Defesa</label><input id="defenseBonus" type="number" data-field="defenseBonus" value="0"></div><div class="field"><label for="autoRules">Cálculo de recursos</label><select id="autoRules" data-field="autoRules"><option value="true">Livro v1.3 (automático)</option><option value="false">Personalizado</option></select></div></div><button type="button" class="config-toggle" id="configToggle" aria-expanded="false">⚙ Configurar progressão de PV, PE e Sanidade ▾</button><div class="config-content stack hide" id="configPanel"><p class="hint">Os campos abaixo são usados somente no modo Personalizado. Para as três classes do livro, PV e PE incluem Vigor e Presença por nível de NEX.</p><div class="two"><div class="field"><label for="basePv">PV base (5%)</label><input id="basePv" type="number" min="0" data-field="basePv"></div><div class="field"><label for="pvStep">PV por +5%</label><input id="pvStep" type="number" min="0" data-field="pvStep"></div><div class="field"><label for="basePe">PE base (5%)</label><input id="basePe" type="number" min="0" data-field="basePe"></div><div class="field"><label for="peStep">PE por +5%</label><input id="peStep" type="number" min="0" data-field="peStep"></div><div class="field"><label for="baseSan">SAN base (5%)</label><input id="baseSan" type="number" min="0" data-field="baseSan"></div><div class="field"><label for="sanStep">SAN por +5%</label><input id="sanStep" type="number" min="0" data-field="sanStep"></div></div></div></div>
 </aside>
-<section class="col middle nexv16-skills"><div class="panel-head"><h2>✧ Perícias</h2><span class="hint">Abra a seta para ajustar o treino</span></div><div class="nexv16-table-scroll"><div id="nexSkillRollResult" class="nex-skill-roll-result" role="status" aria-live="polite" hidden></div><div id="skillsList" class="skills-list"></div></div><p class="hint nexv16-footnote">Treino: +5 Treinado · +10 Veterano · +15 Expert<br>* Requer treinamento · + Pode sofrer penalidade de carga</p></section>
+<section class="col middle nexv16-skills"><div class="panel-head"><h2>✧ Perícias</h2><span class="hint">DADOS · BÔNUS · TREINO · OUTROS</span></div><div class="nexv16-table-scroll"><div id="nexSkillRollResult" class="nex-skill-roll-result" role="status" aria-live="polite" hidden></div><div id="skillsList" class="skills-list"></div></div><p class="hint nexv16-footnote">Treino: +5 Treinado · +10 Veterano · +15 Expert<br>* Requer treinamento · + Pode sofrer penalidade de carga</p></section>
 <main class="col right"><nav class="tabs" aria-label="Abas da ficha"><button class="tab" data-tab="attacks">Combate</button><button class="tab active" data-tab="overview">Habilidades</button><button class="tab ritual-tab" data-tab="rituals">Rituais</button><button class="tab" data-tab="inventory">Inventário</button><button class="tab" data-tab="notes">Descrição</button></nav>
 <section class="view active" id="overview">
 <div class="nexv16-toolbar"><div><h2>Habilidades</h2><p class="hint">Habilidades da origem, poderes e habilidades personalizadas</p></div><div class="n215-toolbar-actions"><button type="button" class="btn primary sm" id="n215AddAbility">＋ Adicionar</button><button type="button" class="btn sm" id="n16ShowAbility">Nova habilidade</button></div></div>
@@ -2430,34 +2429,25 @@ $('nexHomebrewFilter')?.addEventListener('input',()=>nex12RenderHomebrew());
    for(const item of state.items||[]){if(!item.category)item.category='Geral';if(item.spaces===undefined)item.spaces=1;}
  }
  function drawSkills(){
-   ensure();
-   const skillsElement=$id('skillsList');
-   const expanded=new Set(Array.from(skillsElement.querySelectorAll('.nex-skill-fold[open]')).map(el=>el.dataset.skillName));
-   skillsElement.innerHTML=SKILL_DATA.map(([name,attr])=>{
-     const skill=state.skills[name]||{attr,training:0};
-     const training=int(skill.training),other=int(skill.other),total=training+other;
-     return `<details class="nexv16-entry nex-skill-fold ${training>0?'trained':''}" data-skill-name="${escape(name)}" ${expanded.has(name)?'open':''}>
-       <summary><span class="nexv16-name">${escape(name)}${skillOnly.has(name)?'*':''}${skillLoad.has(name)?'+':''}
-         <span class="sub">Atributo: ${n16SkillAttr[skill.attr]||n16SkillAttr[attr]||'INT'} · Treino: ${training===0?'—':'+'+training}</span></span>
-         <span class="nex-skill-summary-total">${total>=0?'+':''}${total}</span>
-       </summary>
-       <div class="nexv16-detail nex-skill-expanded">
-         <div class="nex-skill-training-field"><span class="nex-skill-field-label">Treinamento</span><div class="nex-skill-training-options" role="group" aria-label="Treinamento de ${escape(name)}">${[0,5,10,15].map(value=>`<button type="button" class="nex-skill-train-option ${training===value?'is-selected':''}" data-n16-set-train="${escape(name)}" data-n16-set-value="${value}" aria-pressed="${training===value}" aria-label="${value===0?'Sem treinamento':'Treinamento +'+value} em ${escape(name)}">${value===0?'—':'+'+value}</button>`).join('')}</div></div>
-         <label class="nex-skill-other-field"><span class="nex-skill-field-label">Outros bônus</span><input type="number" aria-label="Outros bônus de ${escape(name)}" data-n16-other="${escape(name)}" min="-99" max="99" value="${other}"></label>
-         <button class="nex-skill-roll-action" type="button" data-nex-skill-roll="${escape(name)}" aria-label="Rolar teste de ${escape(name)}"><img src="${NEX_SKILL_DICE_ICON}" alt="" aria-hidden="true"><span>Rolar teste</span></button>
-       </div>
-     </details>`;
-   }).join('');
+  ensure();
+  $id('skillsList').innerHTML='<div class="nexv16-skill-head"><span>Perícia</span><span>Dados</span><span>Bônus</span><span>Treino</span><span>Outros</span></div>'+
+  SKILL_DATA.map(([name,attr])=>{
+   const skill=state.skills[name]||{attr,training:0};
+   const training=int(skill.training),other=int(skill.other),total=training+other;
+   return `<div class="nexv16-skill-row ${training>0?'trained':''}">
+     <div class="nexv16-skill-name">
+       <button class="nex-skill-dice-button" type="button" title="Rolar teste de ${escape(name)}" aria-label="Rolar teste de ${escape(name)}" data-nex-skill-roll="${escape(name)}"><img src="${NEX_SKILL_DICE_ICON}" alt="" aria-hidden="true"></button>
+       <span>${escape(name)}${skillOnly.has(name)?'*':''}${skillLoad.has(name)?'+':''}</span>
+     </div>
+     <span class="nexv16-attr">(${n16SkillAttr[skill.attr]||n16SkillAttr[attr]||'INT'})</span>
+     <span class="nexv16-total">(${total>=0?'+':''}${total})</span>
+     <select class="nex-compact-training" aria-label="Treinamento de ${escape(name)}" data-n16-train="${escape(name)}" title="Treino: 0, 5, 10 ou 15">
+       ${[0,5,10,15].map(value=>`<option value="${value}" ${training===value?'selected':''}>${value}</option>`).join('')}
+     </select>
+     <input type="number" aria-label="Outros bônus de ${escape(name)}" data-n16-other="${escape(name)}" min="-99" max="99" value="${other}">
+   </div>`;
+  }).join('');
  }
- document.addEventListener('click',event=>{
-   const button=event.target.closest('button[data-n16-set-train]');
-   if(!button||!$id('skillsList').contains(button))return;
-   if(!state.skills?.[button.dataset.n16SetTrain])return;
-   // Reuse the existing change flow so save, rerender and defense bonuses remain synchronized.
-   button.dataset.n16Train=button.dataset.n16SetTrain;
-   button.value=button.dataset.n16SetValue;
-   button.dispatchEvent(new Event('change',{bubbles:true}));
- });
  function abilityRecords(){
    const entries=[];
    const origin=typeof nex12Orig==='function'?nex12Orig():null;
