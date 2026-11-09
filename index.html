@@ -2981,10 +2981,14 @@ $('nexHomebrewFilter')?.addEventListener('input',()=>nex12RenderHomebrew());
  {min:200,rank:'Agente de Elite',credit:'Ilimitado',limits:[3,3,3,2]}
  ];
  function prestigeTier(){const pts=Math.max(0,Number(state.n16?.prestige)||0);return prestigeTiers.slice().reverse().find(t=>pts>=t.min)||prestigeTiers[0];}
+ function isMundane(){return state.n16.mundaneMode===true || (state.n16.mundaneMode===undefined&&state.n16.rank==='Mundano');}
  function rankSync(){
-   const t=prestigeTier();state.n16.rank=t.rank;state.n16.credit=t.credit;
-   if($id('n16Rank'))$id('n16Rank').value=t.rank;
-   if($id('n16Credit'))$id('n16Credit').value=t.credit;
+   if(state.n16.mundaneMode===undefined)state.n16.mundaneMode=state.n16.rank==='Mundano';
+   const mundane=isMundane(),t=prestigeTier();
+   if(mundane){state.n16.rank='Mundano';state.n16.credit=state.n16.credit||'Baixo';}
+   else{state.n16.rank=t.rank;state.n16.credit=t.credit;}
+   if($id('n16Rank'))$id('n16Rank').value=state.n16.rank;
+   if($id('n16Credit')){$id('n16Credit').value=state.n16.credit;$id('n16Credit').disabled=!mundane;}
  }
  function itemTier(item){
    const raw=String(item?.nexInfo?.tier??(String(item?.detail||'').match(/(?:^| · )Categoria:\s*([^·]+)/i)?.[1])??'0').trim().toUpperCase();
@@ -2999,14 +3003,14 @@ $('nexHomebrewFilter')?.addEventListener('input',()=>nex12RenderHomebrew());
  }
  window.NEX_CARRY={
    capacity,used:spacesUsed,remaining(){return Math.max(0,capacity()-spacesUsed());},
-   tier:itemTier,prestige:prestigeTier,
+   tier:itemTier,prestige:prestigeTier,isMundane,
    canAdd(spaces,qty=1){const extra=Math.max(0,Number(spaces)||0)*Math.max(0,Number(qty)||0);return extra===0||spacesUsed()+extra<=capacity()+1e-9;},
    canAddItem(item){
      const tier=itemTier(item),qty=Math.max(0,Math.trunc(Number(item.quantity??1)||0));
      const candidateCapacity=capacity()+(!(state.items||[]).some(isBackpack)&&isBackpack(item)?2:0);
      const addedLoad=Math.max(0,Number(item.spaces??1)||0)*qty;
      const loadAllowed=addedLoad===0||addedLoad+spacesUsed()<=candidateCapacity+1e-9;
-     return loadAllowed && (tier===0||(tier<=4&&categoryUsed(tier)+qty<=prestigeTier().limits[tier-1]));
+     return loadAllowed && (isMundane()||tier===0||(tier<=4&&categoryUsed(tier)+qty<=prestigeTier().limits[tier-1]));
    },
    canUpdate(item,spaces,qty,newTier=itemTier(item),newName=item.name){
      const oldLoad=Math.max(0,Number(item.spaces??1)||0)*Math.max(0,Number(item.quantity)||0);
@@ -3020,7 +3024,7 @@ $('nexHomebrewFilter')?.addEventListener('input',()=>nex12RenderHomebrew());
      const n=Number(newTier);
      if(n<0||n>4||!Number.isInteger(n))return false;
      const currentQty=categoryUsed(n),oldQty=itemTier(item)===n?Math.max(0,Math.trunc(Number(item.quantity)||0)):0;
-     const categoryAllowed=n===0||Math.max(0,Math.trunc(Number(qty)||0))<=oldQty||currentQty-oldQty+Math.max(0,Math.trunc(Number(qty)||0))<=prestigeTier().limits[n-1];
+     const categoryAllowed=isMundane()||n===0||Math.max(0,Math.trunc(Number(qty)||0))<=oldQty||currentQty-oldQty+Math.max(0,Math.trunc(Number(qty)||0))<=prestigeTier().limits[n-1];
      return loadAllowed&&categoryAllowed;
    }
  };
@@ -3031,7 +3035,7 @@ $('nexHomebrewFilter')?.addEventListener('input',()=>nex12RenderHomebrew());
    $id('n16Capacity').textContent=String(capacity());
    rankSync();
    const lim=prestigeTier().limits;
-   $id('nexPrestigeLimits').textContent='Limites · I: '+categoryUsed(1)+'/'+lim[0]+' · II: '+categoryUsed(2)+'/'+lim[1]+' · III: '+categoryUsed(3)+'/'+lim[2]+' · IV: '+categoryUsed(4)+'/'+lim[3];
+   $id('nexPrestigeLimits').textContent=isMundane()?'Mundano · Categorias liberadas, limite decidido pelo mestre · I: '+categoryUsed(1)+' · II: '+categoryUsed(2)+' · III: '+categoryUsed(3)+' · IV: '+categoryUsed(4):'Limites · I: '+categoryUsed(1)+'/'+lim[0]+' · II: '+categoryUsed(2)+'/'+lim[1]+' · III: '+categoryUsed(3)+'/'+lim[2]+' · IV: '+categoryUsed(4)+'/'+lim[3];
    const show=list.filter(i=>(category==='Todos'||itemCategory(i)===category) && (String(i.name||'')+' '+String(i.detail||'')).toLocaleLowerCase('pt-BR').includes(inventoryFilter));
    $id('inventoryList').innerHTML=show.length?show.map(i=>`<details class="nexv16-entry" data-item-id="${escape(i.id)}"><summary><span class="nexv16-name">${escape(i.name||'Item')}<span class="nexv16-item-meta" style="display:block">${escape(itemCategory(i))} · Quantidade: ${Math.max(0,int(i.quantity,1))} · Espaços: ${int(i.spaces,1)}</span></span><span class="hint">⌄</span></summary><div class="nexv16-detail"><div class="nexv16-item-fields"><label>Nome<input data-item-field="name" value="${escape(i.name||'')}"></label><label>Categoria<select data-item-field="category">${['Arma','Munição','Proteção','Geral','Item Amaldiçoado'].map(c=>`<option ${itemCategory(i)===c?'selected':''}>${c}</option>`).join('')}</select></label><label>Quantidade<input type="number" min="0" data-item-field="quantity" value="${Math.max(0,int(i.quantity,1))}"></label><label>Espaços por item<input type="number" min="-20" max="100" data-item-field="spaces" value="${int(i.spaces,1)}"></label><label style="grid-column:1/-1">Detalhes<input data-item-field="detail" value="${escape(i.detail||'')}"></label></div><div class="actions"><button class="btn sm" type="button" data-delete-item="${escape(i.id)}">Excluir item</button></div></div></details>`).join(''):'<div class="nexv16-empty">Nenhum item nesta categoria.</div>';
    window.NEX_ITEM_EDITOR?.enhance?.();
@@ -3063,7 +3067,9 @@ $('nexHomebrewFilter')?.addEventListener('input',()=>nex12RenderHomebrew());
    if(el.dataset.itemField){queueMicrotask(()=>{drawInventory();save();});}
  });
  $id('n16Prestige').addEventListener('input',e=>{ensure();state.n16.prestige=Math.max(0,int(e.target.value));rankSync();drawInventory();save();});
- $id('n16Rank').disabled=true;$id('n16Credit').disabled=true;
+ $id('n16Rank').disabled=false;
+ $id('n16Rank').addEventListener('change',e=>{ensure();state.n16.mundaneMode=e.target.value==='Mundano';rankSync();drawInventory();save();});
+ $id('n16Credit').addEventListener('change',e=>{if(!isMundane())return;state.n16.credit=e.target.value;save();});
  // Restore controls for the current character at startup.
  ensure();drawSkills();drawInventory();drawAbilities();$id('n16Prestige').value=state.n16.prestige;$id('n16Rank').value=state.n16.rank;$id('n16Credit').value=state.n16.credit;
 })();
@@ -3726,8 +3732,8 @@ const PARANORMAL=[
 <script src="nex-municoes-adicionais.js?v=2082"></script>
 <script src="nex-itens-amaldicoados-basico.js?v=2083"></script>
 <script src="nex-descricoes-completas.js?v=2087"></script>
-<script src="nex-item-catalog.js?v=2090"></script>
-<script src="nex-item-editor.js?v=2090"></script>
+<script src="nex-item-catalog.js?v=2091"></script>
+<script src="nex-item-editor.js?v=2091"></script>
 <!-- Sincronização em nuvem desativada a pedido do proprietário: mantém salvamento local. -->
 
 </body></html>
