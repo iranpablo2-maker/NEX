@@ -15,6 +15,7 @@ const canonical=x=>String(x||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'')
 const ritualMetaKey=r=>[canonical(r.name),canonical(r.element),Number(r.circle)||1].join('|');
 const RITUAL_METADATA=new Map((window.NEX_RITUAL_META||[]).map(r=>[ritualMetaKey(r),r]));
 const ritualMetaFor=r=>RITUAL_METADATA.get(ritualMetaKey(r))||{};
+const ritualGuideFor=r=>window.NEX_RITUAL_GUIDES?.[ritualMetaKey(r)]?.description||'';
 
 const special={
  'Alterar Destino':{execution:'Reação',range:'Pessoal',target:'Você',duration:'Instantânea',description:'Em reação, concede +15 à Defesa contra um ataque ou a um teste de resistência.',verdadeiro:'(+5 PE) A forma Verdadeira permite estender o benefício a um aliado em alcance curto.'},
@@ -25,10 +26,10 @@ const special={
  'Tecer Ilusão':{description:'Manifesta uma imagem ou som ilusório.'}
 };
 function catalogue(){
- const result=BASE.map((b,i)=>({...b,key:'base:'+i,description:special[b.name]?.description||RITUAL_SUMMARIES[b.name]||'',...special[b.name],...ritualMetaFor(b),summaryKind:'Resumo original; consulte o livro para regras e aprimoramentos.'}));
+ const result=BASE.map((b,i)=>({...b,key:'base:'+i,description:ritualGuideFor(b)||special[b.name]?.description||RITUAL_SUMMARIES[b.name]||'',...special[b.name],...ritualMetaFor(b),summaryKind:'Resumo original; consulte o livro para regras e aprimoramentos.'}));
  for(const r of window.NEX_SAH?.rituals||[]){
    if(!r?.name)continue;
-   result.push({name:r.name,circle:Number(r.circle)||1,element:r.element||'Conhecimento',source:'Sobrevivendo ao Horror',description:r.description||'',key:'sah:'+r.name,...ritualMetaFor(r)});
+   result.push({name:r.name,circle:Number(r.circle)||1,element:r.element||'Conhecimento',source:'Sobrevivendo ao Horror',description:ritualGuideFor(r)||r.description||'',key:'sah:'+r.name,...ritualMetaFor(r)});
  }
  const hb=window.NEX51?.readLibrary?.()||[];
  for(const r of hb.filter(x=>x?.type==='ritual'&&x?.name)){
@@ -44,6 +45,8 @@ function metadata(record){
   if(!String(resolved[field]??'').trim())resolved[field]=match?.[field]||'';
  }
  if(!String(resolved.note??'').trim())resolved.note=match?.description||'';
+ const guide=ritualGuideFor(resolved);
+ if(guide && resolved.source!=='Homebrew' && resolved.source!=='Personalizado')resolved.guide=guide;
  return resolved;
 }
 function ritualDT(){const limit=Math.max(0,Number(maxValues().peLimit)||0);const pre=Math.max(0,Number(state.attributes?.pre)||0);return 10+limit+pre+(Number(state.ritualDtBonus)||0);}
@@ -108,7 +111,7 @@ function render(){
   return '<article class="nex-ritual-card"><details><summary><span class="nex-ritual-arrow">⌃</span><strong>'+esc(r.name)+'</strong></summary>'+
    '<div class="nex-ritual-detail"><div class="nex-ritual-pill nex-ritual-'+esc(r.element)+'">'+esc(r.element).toUpperCase()+' '+esc(r.circle)+'</div>'+
    '<div class="nex-ritual-properties">'+lines('Execução',d.execution)+lines('Alcance',d.range)+lines('Alvo',d.target)+lines('Duração',d.duration)+lines('Resistência',d.resistance)+'</div>'+
-   '<p class="nex-ritual-summary">'+esc(d.note||d.description||'Efeito não cadastrado. Consulte o livro ou edite o resumo.')+'</p>'+(d.summaryKind?'<small class="nex-ritual-summary-kind">'+esc(d.summaryKind)+'</small>':'')+
+   '<p class="nex-ritual-summary">'+esc(d.guide||d.note||d.description||'Efeito não cadastrado. Consulte o livro ou edite o resumo.')+'</p>'+(d.summaryKind?'<small class="nex-ritual-summary-kind">'+esc(d.summaryKind)+'</small>':'')+
    (d.discente?'<p class="nex-ritual-enhance"><b>Discente:</b> '+esc(d.discente)+'</p>':'')+
    (d.verdadeiro?'<p class="nex-ritual-enhance"><b>Verdadeiro:</b> '+esc(d.verdadeiro)+'</p>':'')+
    '<div class="nex-ritual-actions"><button type="button" data-ritual-remove="'+esc(r.id)+'">Remover</button><button type="button" data-ritual-edit="'+esc(r.id)+'">Editar</button></div>'+
