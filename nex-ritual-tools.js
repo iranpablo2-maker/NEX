@@ -174,6 +174,7 @@ const style=document.createElement('style');
 style.id='nexTkStyle';
 style.textContent='#nexTkPanel{border:1px solid #3b314b;border-radius:8px;padding:13px;margin:10px 0 18px;background:#17131c;color:#eee7f4}#nexTkPanel .tk-tabs{display:flex;flex-wrap:wrap;gap:6px;margin:9px 0 13px}#nexTkPanel .tk-tabs button{border:1px solid #53465e;background:#211b28;color:#e2d4ed;border-radius:5px;padding:8px 10px}#nexTkPanel .tk-tabs button[aria-pressed="true"]{background:#63398a;color:#fff;border-color:#a06bc9}#nexTkPanel h3{font-size:12px;color:#e4d0f6;margin:12px 0 7px}#nexTkPanel .tk-sub{font-size:12px;color:#ad9fba}#nexTkPanel .tk-fields{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}#nexTkPanel .tk-fields>*{flex:1 1 130px;max-width:100%}#nexTkPanel .tk-cards{display:grid;gap:8px;max-height:530px;overflow:auto;padding-right:2px}#nexTkPanel .tk-card{background:#221b2a;border:1px solid #493a55;padding:10px;border-radius:6px}#nexTkPanel .tk-row{display:flex;align-items:center;justify-content:space-between;gap:9px;flex-wrap:wrap}#nexTkPanel .tk-card details>summary{cursor:pointer;font-weight:700;margin-top:7px}#nexTkPanel .tk-card p{white-space:pre-wrap;margin:6px 0;font-size:12px}#nexTkPanel .tk-actions{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 0}#nexTkPanel button.tk-button,#nexTkCastDialog button{border:1px solid #665071;color:#f0e6fb;background:#3b284d;border-radius:5px;padding:7px 10px;cursor:pointer}#nexTkPanel button[disabled],#nexTkCastDialog button[disabled]{opacity:.5;cursor:not-allowed}#nexTkPanel input,#nexTkPanel select,#nexTkPanel textarea,#nexTkCastDialog input,#nexTkCastDialog select{background:#120f18;border:1px solid #59466a;border-radius:4px;padding:8px;color:white;width:100%;font:inherit}#nexTkPanel label,#nexTkCastDialog label{display:block;color:#d4c2de;font-size:12px}#nexTkPanel .tk-select-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:5px;max-height:230px;overflow:auto}#nexTkPanel .tk-select-list label{padding:7px;border:1px solid #473652;border-radius:5px}#nexTkPanel input[type=checkbox],#nexTkCastDialog input[type=checkbox]{width:auto;margin-right:7px}#nexTkCastDialog{background:#1a1421;border:1px solid #79549a;color:#f3ebfa;border-radius:9px;width:min(480px,calc(100vw - 24px));max-height:88vh;overflow:auto;padding:18px}#nexTkCastDialog::backdrop{background:#000b}#nexTkCastDialog .tk-modal-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:12px 0}#nexTkCastDialog .tk-modal-fields>label:first-child{grid-column:1/-1}#nexTkCastDialog .tk-foot{display:flex;justify-content:flex-end;gap:8px;margin-top:12px}#nexTkCastDialog .tk-warning{font-size:12px;color:#f0bd8c;margin-top:7px}#nexTkPanel .tk-mono{font-variant-numeric:tabular-nums}';
 style.textContent+="\n#nexTkPanel{background:transparent;border:0;padding:0;margin:12px 0 24px}\n#nexTkPanel .tk-dmg-resources{border:1px solid #353139;border-radius:7px;background:#17151a;padding:12px;margin-bottom:12px}\n#nexTkPanel .tk-dmg-list{display:flex;flex-direction:column;gap:9px}\n#nexTkPanel .tk-dmg-card{background:#202022;border:1px solid #29292e;border-radius:5px;overflow:hidden}\n#nexTkPanel .tk-dmg-card>summary{list-style:none;display:flex;gap:14px;align-items:center;padding:14px 16px 7px;cursor:pointer}\n#nexTkPanel .tk-dmg-card>summary::-webkit-details-marker{display:none}\n#nexTkPanel .tk-dmg-card .tk-dmg-chevron{font-size:23px;line-height:12px;color:#ae54ed;transform:rotate(0deg);transition:transform .16s}\n#nexTkPanel .tk-dmg-card:not([open]) .tk-dmg-chevron{transform:rotate(-90deg)}\n#nexTkPanel .tk-dmg-card>summary strong{font-size:14px;color:#fbf9fd}\n#nexTkPanel .tk-dmg-element{margin-left:auto;font-size:11px;color:#a399ac;white-space:nowrap}\n#nexTkPanel .tk-dmg-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;padding:9px 12px 15px 64px}\n#nexTkPanel .tk-dmg-version{min-width:0;text-align:left}\n#nexTkPanel .tk-dmg-label{font-size:11px;color:#b8c1cb;display:block;margin-bottom:4px;letter-spacing:.02em}\n#nexTkPanel .tk-dmg-roll{display:flex;align-items:center;gap:5px;min-height:25px}\n#nexTkPanel .tk-dmg-formula{font-size:14px;font-weight:650;color:#fff;white-space:nowrap}\n#nexTkPanel .tk-dmg-die{background:transparent;border:0;color:#dddce4;cursor:pointer;padding:2px;line-height:0;border-radius:4px}\n#nexTkPanel .tk-dmg-die:hover:not(:disabled){color:#bd75ef;background:#35233e}\n#nexTkPanel .tk-dmg-die:focus-visible{outline:2px solid #b96bef;outline-offset:2px}\n#nexTkPanel .tk-dmg-die:disabled{opacity:.28;cursor:not-allowed}\n#nexTkPanel .tk-dmg-cost,#nexTkPanel .tk-dmg-lock{font-size:10px;color:#8e8595}\n#nexTkPanel .tk-dmg-lock{color:#bc8094}\n#nexTkPanel .tk-dmg-disabled .tk-dmg-formula{opacity:.6}\n@media(max-width:540px){#nexTkPanel .tk-dmg-card>summary{padding:13px 12px 6px;gap:8px}#nexTkPanel .tk-dmg-grid{padding:10px 10px 14px 12px;gap:6px}#nexTkPanel .tk-dmg-element{font-size:9px}#nexTkPanel .tk-dmg-formula{font-size:12px}#nexTkPanel .tk-dmg-label{font-size:10px}#nexTkPanel .tk-dmg-roll{gap:2px}}\n";
+style.textContent+="\n#nexTkCastDialog.nex-tk-result-compact{width:min(320px,calc(100vw - 24px));max-height:90vh;overflow:auto;padding:0;background:#202022;border:1px solid #5b2288;border-radius:2px;color:#f9f9fb;box-shadow:0 18px 60px #0009}\n#nexTkCastDialog .tk-roll-result{font-family:inherit}\n#nexTkCastDialog .tk-roll-header{height:40px;display:flex;align-items:center;justify-content:center;position:relative;padding:5px 38px}\n#nexTkCastDialog .tk-roll-header strong{font-size:17px;color:#f5f3f8;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}\n#nexTkCastDialog .tk-roll-header button{position:absolute;right:6px;top:3px;border:0;padding:0 5px;background:transparent;color:#fff;font-size:29px;font-weight:200;line-height:32px}\n#nexTkCastDialog .tk-roll-content{display:grid;grid-template-columns:50px 1fr 1px 1fr;align-items:center;min-height:76px;gap:3px;padding:0 12px 0 12px}\n#nexTkCastDialog .tk-roll-symbol{display:flex;align-items:center;justify-content:center}\n#nexTkCastDialog .tk-roll-stat{display:flex;flex-direction:column;gap:8px;align-items:center;min-width:0}\n#nexTkCastDialog .tk-roll-stat strong{font-size:32px;color:#fff;font-weight:750;line-height:1}\n#nexTkCastDialog .tk-roll-stat span{font-size:12px;letter-spacing:.02em;color:#a7a7ab;font-weight:700}\n#nexTkCastDialog .tk-roll-divider{background:#68656e;height:47px;align-self:center}\n#nexTkCastDialog .tk-roll-status{font-size:11px;color:#bca6cf;text-align:center;padding:9px 6px 11px}\n#nexTkCastDialog .tk-roll-more{border-top:1px solid #36313e}\n#nexTkCastDialog .tk-roll-more>summary{padding:8px 13px;cursor:pointer;font-size:11px;color:#c9bbc9;text-align:center}\n#nexTkCastDialog .tk-roll-more-body{padding:2px 15px 15px;font-size:12px;line-height:1.5}\n#nexTkCastDialog .tk-roll-more-body p{margin:8px 0;overflow-wrap:anywhere}\n";
 document.head.append(style);
 function top(){
  if(!isOccultist()){host.innerHTML='';if(modal.open&&typeof modal.close==='function')modal.close();return;}
@@ -319,6 +320,7 @@ function openCast(rid,requestedVersion='Normal'){
  '<p id="tkCostPreview" class="tk-warning"></p><p id="tkRulesPreview" class="tk-sub"></p>'+
  '<div class="tk-foot"><button type="button" data-tk-modal-close="1">Cancelar</button><button type="submit">Rolar TO e conjurar</button></div></form>';
  const versionField=modal.querySelector('#tkCastVersion');if(versionField)versionField.value=requestedVersion;
+ modal.classList.remove('nex-tk-result-compact');
  if(typeof modal.showModal==='function')modal.showModal();else modal.open=true;
  syncEffectFields(true);
  preview();
@@ -363,20 +365,33 @@ function rollSimpleDicePattern(expr){
  return Boolean(matched&&Number(matched[1])>=1&&Number(matched[1])<=50&&Number(matched[2])>=2&&Number(matched[2])<=1000);
 }
 function castingResultHTML(m,check,sanity,effect){
- const kind=effect.type==='Buff'?'TO + Buff':effect.type==='Cura'?'TO + Cura':effect.type==='Dano + Cura'?'TO + Dano + Cura':'TO + Dano';
  const rows=[];
- if(check)rows.push('<p><strong>TO:</strong> ['+esc(check.rolls.join(', '))+'] → '+check.chosen+' + '+check.training+' treino + '+check.bonus+' bônus = <strong>'+check.total+'</strong> contra DT '+check.dt+' · <strong>'+(check.passed?'Sucesso':'Falha')+'</strong></p>');
- else rows.push('<p><strong>Ritual de Medo:</strong> não faz teste de Ocultismo.</p>');
- rows.push('<p><strong>PE gastos:</strong> '+m.total+' · <strong>PE restantes:</strong> '+pe()+'</p>');
- if(sanity.lost||sanity.permanent)rows.push('<p><strong>Sanidade:</strong> -'+sanity.lost+' atual'+(sanity.permanent?', -'+sanity.permanent+' máxima permanente':'')+'</p>');
- else rows.push('<p><strong>Sanidade:</strong> sem perda no TO.</p>');
- if(effect.damage)rows.push('<p><strong>Dano:</strong> '+esc(effect.damage.expression)+' = '+effect.damage.total+' ['+esc(effect.damage.rolls.join(', '))+']</p>');
- if(effect.healing)rows.push('<p><strong>Cura:</strong> '+esc(effect.healing.expression)+' = '+effect.healing.total+(effect.healing.rolls.length?' ['+esc(effect.healing.rolls.join(', '))+']':'')+'</p>');
- if(effect.type==='Buff')rows.push('<p><strong>Buff/Suporte:</strong> '+esc(effect.buffText||'Verifique o efeito no ritual.')+'</p>');
- rows.push('<p><strong>DT de resistência do alvo:</strong> '+targetRitualDT()+' (quando o ritual permitir resistência).</p>');
- rows.push('<p class="tk-sub">A falha no TO básico causa perda de Sanidade, mas o ritual ainda é conjurado. Aplique dano, cura ou buff ao alvo conforme as condições do ritual.</p>');
- return '<div class="tk-row"><h3>Conjuração concluída — '+kind+'</h3><button type="button" data-tk-modal-close="1">✕</button></div>'+
- '<p><strong>'+esc(m.r.name)+'</strong> · '+esc(m.v)+'</p>'+rows.join('')+
+ if(check)rows.push('<p><strong>Teste de Ocultismo:</strong> ['+esc(check.rolls.join(', '))+'] → '+check.chosen+' + '+check.training+' treino + '+check.bonus+' bônus = <strong>'+check.total+'</strong> · DT '+check.dt+' ('+(check.passed?'Sucesso':'Falha')+')</p>');
+ else rows.push('<p><strong>Ritual de Medo:</strong> sem teste de Ocultismo.</p>');
+ rows.push('<p><strong>PE:</strong> '+m.total+' gastos · '+pe()+' restantes.</p>');
+ rows.push('<p><strong>Sanidade:</strong> -'+sanity.lost+' atual'+(sanity.permanent?' · -'+sanity.permanent+' permanente':'')+'</p>');
+ if(effect.damage)rows.push('<p><strong>Dano:</strong> '+esc(effect.damage.expression)+' → ['+esc(effect.damage.rolls.join(', '))+'] = '+effect.damage.total+'</p>');
+ if(effect.healing)rows.push('<p><strong>Cura:</strong> '+esc(effect.healing.expression)+' = '+effect.healing.total+'</p>');
+ if(effect.type==='Buff')rows.push('<p><strong>Buff:</strong> '+esc(effect.buffText||'Consultar ritual')+'</p>');
+ rows.push('<p><strong>DT de resistência do alvo:</strong> '+targetRitualDT()+' (quando aplicável).</p>');
+ rows.push('<p class="tk-sub">Falhar no TO não impede a conjuração básica, mas pode causar perda de Sanidade. Confira os efeitos e resistências com o mestre.</p>');
+ const infoRows=rows.join('');
+ if(effect.damage){
+  const toValue=check?check.total:'—';
+  const toLabel=check?'OCULTISMO':'SEM TO';
+  const detail=check?(check.passed?'Sucesso no TO':'Falha no TO · ritual executado'):'Ritual de Medo: sem TO';
+  return '<div class="tk-roll-result">'+
+   '<header class="tk-roll-header"><strong>'+esc(m.r.name)+'</strong><button type="button" data-tk-modal-close="1" aria-label="Fechar resultado">×</button></header>'+
+   '<div class="tk-roll-content"><div class="tk-roll-symbol" aria-hidden="true"><svg viewBox="0 0 36 36" width="38" height="38"><path fill="#8510c6" d="M18 0 35.5 9v18L18 36 .5 27V9Z"/></svg></div>'+
+   '<div class="tk-roll-stat"><strong>'+esc(toValue)+'</strong><span>'+toLabel+'</span></div>'+
+   '<div class="tk-roll-divider" aria-hidden="true"></div>'+
+   '<div class="tk-roll-stat"><strong>'+esc(effect.damage.total)+'</strong><span>DANO</span></div></div>'+
+   '<div class="tk-roll-status">'+esc(detail)+' · '+esc(m.v.toUpperCase())+'</div>'+
+   '<details class="tk-roll-more"><summary>Detalhes da conjuração</summary><div class="tk-roll-more-body">'+infoRows+'</div></details>'+
+   '</div>';
+ }
+ return '<div class="tk-row"><h3>Conjuração concluída</h3><button type="button" data-tk-modal-close="1">✕</button></div>'+
+ '<p><strong>'+esc(m.r.name)+'</strong> · '+esc(m.v)+'</p>'+infoRows+
  '<div class="tk-foot"><button type="button" data-tk-modal-close="1">Fechar resultado</button></div>';
 }
 function confirmCast(){
@@ -415,6 +430,7 @@ function confirmCast(){
   if(kit().active.length>60)kit().active.length=60;
  }
  update();
+ modal.classList.toggle('nex-tk-result-compact',Boolean(effect.damage));
  modal.innerHTML=castingResultHTML(m,check,sanity,effect);
  castingId='';
  toast('Conjuração registrada: '+total+' PE descontados.');
