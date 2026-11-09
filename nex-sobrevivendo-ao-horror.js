@@ -1,4 +1,4 @@
-/* NEX — descrições resumidas e originais baseadas nas regras do suplemento. */
+/* NEX — descrições originais resumidas conforme Sobrevivendo ao Horror. */
 window.NEX_SAH={
   "origins": [
     {
@@ -648,55 +648,55 @@ window.NEX_SAH={
       "Agente Secreto": [
         [
           "Carteirada",
-          "Habilidade de Agente Secreto no NEX 10%. Consulte as condições no suplemento."
+          "NEX 10%. Treina Diplomacia ou Enganação, ou recebe +2 se já for treinado. Também dispõe de credenciais especiais que podem facilitar o acesso a áreas e investigações."
         ],
         [
           "O Sorriso",
-          "Habilidade de Agente Secreto no NEX 40%. Consulte as condições no suplemento."
+          "NEX 40%. Recebe +2 em Diplomacia e Enganação; pode gastar 2 PE para repetir testes falhos dessas perícias. Uma vez por cena também consegue tentar se acalmar."
         ],
         [
           "Método Investigativo",
-          "Habilidade de Agente Secreto no NEX 65%. Consulte as condições no suplemento."
+          "NEX 65%. Acrescenta uma rodada a investigações e pode gastar PE para cancelar eventos inconvenientes, com custo crescente em novos usos."
         ],
         [
           "Multifacetado",
-          "Habilidade de Agente Secreto no NEX 99%. Consulte as condições no suplemento."
+          "NEX 99%. Uma vez por cena, pode gastar Sanidade para acessar temporariamente habilidades de outra trilha de Combatente ou Especialista até NEX 65%, respeitando restrições."
         ]
       ],
       "Caçador": [
         [
           "Rastrear o Paranormal",
-          "Habilidade de Caçador no NEX 10%. Consulte as condições no suplemento."
+          "NEX 10%. Treina Sobrevivência ou recebe +2 nessa perícia, podendo utilizá-la para identificar criaturas e rastrear vestígios paranormais."
         ],
         [
           "Estudar Fraquezas",
-          "Habilidade de Caçador no NEX 40%. Consulte as condições no suplemento."
+          "NEX 40%. Usa um interlúdio e uma pista ligada a um ser para descobrir vulnerabilidades e maneiras de enfrentá-lo, conforme a investigação."
         ],
         [
           "Atacar das Sombras",
-          "Habilidade de Caçador no NEX 65%. Consulte as condições no suplemento."
+          "NEX 65%. Reduz penalidades em Furtividade ao correr e atacar com armas discretas, começando cenas furtivas com menor visibilidade."
         ],
         [
           "Estudar a Presa",
-          "Habilidade de Caçador no NEX 99%. Consulte as condições no suplemento."
+          "NEX 99%. Pode definir um tipo de inimigo estudado como presa, ganhando bônus em testes, críticos e resistência contra esse tipo de adversário."
         ]
       ],
       "Monstruoso": [
         [
           "Ser Amaldiçoado",
-          "Habilidade de Monstruoso no NEX 10%. Consulte as condições no suplemento."
+          "NEX 10%. Treina Ocultismo e escolhe um elemento paranormal. Uma rotina ritualística concede resistências e benefícios ligados ao elemento, mas gera custos e fraquezas."
         ],
         [
           "Ser Macabro",
-          "Habilidade de Monstruoso no NEX 40%. Consulte as condições no suplemento."
+          "NEX 40%. Reforça as resistências e os poderes associados ao elemento escolhido, ampliando também as penalidades previstas pela transformação."
         ],
         [
           "Ser Assustador",
-          "Habilidade de Monstruoso no NEX 65%. Consulte as condições no suplemento."
+          "NEX 65%. Amplia ainda mais a resistência e os efeitos da transformação elemental, com perda permanente de Presença."
         ],
         [
           "Ser Aterrorizante",
-          "Habilidade de Monstruoso no NEX 99%. Consulte as condições no suplemento."
+          "NEX 99%. A transformação ganha caráter permanente e concede habilidades muito fortes próprias do elemento, com consequências graves para a identidade e a vida do personagem."
         ]
       ]
     },
@@ -704,55 +704,55 @@ window.NEX_SAH={
       "Bibliotecário": [
         [
           "Conhecimento Prático",
-          "Habilidade de Bibliotecário no NEX 10%. Consulte as condições no suplemento."
+          "NEX 10%. Gastando 2 PE, pode usar Intelecto como atributo-base em diversos testes de perícia, exceto Luta e Pontaria."
         ],
         [
           "Leitor Contumaz",
-          "Habilidade de Bibliotecário no NEX 40%. Consulte as condições no suplemento."
+          "NEX 40%. Aprimora os dados de bônus obtidos com leitura, permite usá-los em qualquer perícia e pode ampliá-los pagando PE."
         ],
         [
           "Rato de Biblioteca",
-          "Habilidade de Bibliotecário no NEX 65%. Consulte as condições no suplemento."
+          "NEX 65%. Em locais ricos em livros, pode reproduzir uma ação de interlúdio de leitura ou revisão de caso, limitado a uma vez por cena."
         ],
         [
           "A Força do Saber",
-          "Habilidade de Bibliotecário no NEX 99%. Consulte as condições no suplemento."
+          "NEX 99%. Aumenta Intelecto, acrescenta esse atributo aos PE totais e permite usar Intelecto como base para uma perícia escolhida."
         ]
       ],
       "Perseverante": [
         [
           "Soluções Improvisadas",
-          "Habilidade de Perseverante no NEX 10%. Consulte as condições no suplemento."
+          "NEX 10%. Gastando 2 PE, permite repetir um dado de um teste recém-realizado e utilizar o melhor resultado."
         ],
         [
           "Fuga Obstinada",
-          "Habilidade de Perseverante no NEX 40%. Consulte as condições no suplemento."
+          "NEX 40%. Concede dado adicional em testes de fuga e aumenta a quantidade de falhas toleradas antes de ser alcançado numa perseguição."
         ],
         [
           "Determinação Inquestionável",
-          "Habilidade de Perseverante no NEX 65%. Consulte as condições no suplemento."
+          "NEX 65%. Uma vez por cena, pode gastar 5 PE para remover de si uma condição de medo, mental ou de paralisia, respeitando exceções do mestre."
         ],
         [
           "Só Mais um Passo...",
-          "Habilidade de Perseverante no NEX 99%. Consulte as condições no suplemento."
+          "NEX 99%. Pode gastar 5 PE uma vez por rodada para permanecer com 1 PV quando um dano o reduziria a zero; não evita dano massivo."
         ]
       ],
       "Muambeiro": [
         [
           "Mascate",
-          "Habilidade de Muambeiro no NEX 10%. Consulte as condições no suplemento."
+          "NEX 10%. Ganha treinamento em uma profissão de fabricação, amplia a carga e melhora a dificuldade para criar equipamentos improvisados."
         ],
         [
           "Fabricação Própria",
-          "Habilidade de Muambeiro no NEX 40%. Consulte as condições no suplemento."
+          "NEX 40%. Reduz pela metade o tempo necessário para fabricar equipamentos comuns, consumíveis e proteções."
         ],
         [
           "Laboratório de Campo",
-          "Habilidade de Muambeiro no NEX 65%. Consulte as condições no suplemento."
+          "NEX 65%. Amplia conhecimento profissional e permite fabricar ou reparar itens paranormais durante interlúdios, segundo regras específicas."
         ],
         [
           "Achado Conveniente",
-          "Habilidade de Muambeiro no NEX 99%. Consulte as condições no suplemento."
+          "NEX 99%. Gastando 5 PE e uma ação completa, improvisa um item não paranormal de até categoria III que dura até o fim da cena."
         ]
       ]
     },
@@ -760,55 +760,55 @@ window.NEX_SAH={
       "Exorcista": [
         [
           "Revelação do Mal",
-          "Habilidade de Exorcista no NEX 10%. Consulte as condições no suplemento."
+          "NEX 10%. Treina Religião ou recebe +2 e pode empregá-la para identificar manifestações paranormais e encontrar vestígios ocultos."
         ],
         [
           "Poder da Fé",
-          "Habilidade de Exorcista no NEX 40%. Consulte as condições no suplemento."
+          "NEX 40%. Torna-se veterano em Religião ou melhora seus testes; gastando PE, pode repetir uma resistência com essa perícia."
         ],
         [
           "Parareligiosidade",
-          "Habilidade de Exorcista no NEX 65%. Consulte as condições no suplemento."
+          "NEX 65%. Ao conjurar um ritual, pode gastar 2 PE extras para adicionar o efeito de um catalisador ritualístico escolhido."
         ],
         [
           "Chagas da Resistência",
-          "Habilidade de Exorcista no NEX 99%. Consulte as condições no suplemento."
+          "NEX 99%. Pode gastar 10 PV para evitar ficar com Sanidade zero, permanecendo com 1 ponto de Sanidade."
         ]
       ],
       "Possuído": [
         [
           "Poder Não Desejado",
-          "Habilidade de Possuído no NEX 10%. Consulte as condições no suplemento."
+          "NEX 10%. Passa a receber Transcender no lugar de novos poderes de Ocultista e desenvolve pontos de possessão, que podem recuperar PV ou PE."
         ],
         [
           "As Sombras Dentro de Mim",
-          "Habilidade de Possuído no NEX 40%. Consulte as condições no suplemento."
+          "NEX 40%. Recupera mais pontos de possessão ao dormir e pode gastar PE para obter dados extras em testes físicos e agir de modo mais furtivo."
         ],
         [
           "Ele Me Ensina",
-          "Habilidade de Possuído no NEX 65%. Consulte as condições no suplemento."
+          "NEX 65%. Escolhe entre Transcender ou aprender o primeiro poder de outra trilha de Ocultista, respeitando os pré-requisitos."
         ],
         [
           "Tornamo-nos Um",
-          "Habilidade de Possuído no NEX 99%. Consulte as condições no suplemento."
+          "NEX 99%. Recebe um benefício especial definido pela afinidade elemental, oferecendo efeitos poderosos de recuperação, mobilidade ou aprendizado, com custos importantes."
         ]
       ],
       "Parapsicólogo": [
         [
           "Terapia",
-          "Habilidade de Parapsicólogo no NEX 10%. Consulte as condições no suplemento."
+          "NEX 10%. Usa Profissão (psicólogo) para interações de Diplomacia e para substituir resistências falhas contra dano mental, gastando PE. Exige treinamento na profissão."
         ],
         [
           "Palavras-chave",
-          "Habilidade de Parapsicólogo no NEX 40%. Consulte as condições no suplemento."
+          "NEX 40%. Ao acalmar alguém com sucesso, pode gastar PE para recuperar parte da Sanidade do paciente."
         ],
         [
           "Reprogramação Mental",
-          "Habilidade de Parapsicólogo no NEX 65%. Consulte as condições no suplemento."
+          "NEX 65%. Com um interlúdio e 5 PE, ajuda um voluntário a adquirir temporariamente um poder elegível até o próximo interlúdio."
         ],
         [
           "A Sanidade Está Lá Fora",
-          "Habilidade de Parapsicólogo no NEX 99%. Consulte as condições no suplemento."
+          "NEX 99%. Gasta 5 PE e uma ação de movimento para retirar condições mentais e de medo de um alvo adjacente, inclusive de si."
         ]
       ]
     }
