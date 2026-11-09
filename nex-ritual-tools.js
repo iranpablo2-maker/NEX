@@ -98,12 +98,12 @@ const die=faces=>{
 };
 function rollSimpleDice(expression){
  const value=String(expression||'').trim().replace(/\s+/g,'').toLowerCase();
- const matched=/^(\d{1,2})d(\d{1,3})([+-]\d{1,3})?$/.exec(value);
+ const matched=/^(\d{1,2})d(\d{1,3})([+-]\d{1,3})?(?:x(\d{1,3}))?$/.exec(value);
  if(!matched)return null;
- const count=Number(matched[1]),faces=Number(matched[2]),bonus=Number(matched[3]||0);
- if(count<1||count>50||faces<2||faces>1000)return null;
+ const count=Number(matched[1]),faces=Number(matched[2]),bonus=Number(matched[3]||0),multiplier=Number(matched[4]||1);
+ if(count<1||count>50||faces<2||faces>1000||multiplier<1||multiplier>100)return null;
  const rolls=Array.from({length:count},()=>die(faces));
- return {expression:value,rolls,bonus,total:rolls.reduce((a,b)=>a+b,bonus)};
+ return {expression:value,rolls,bonus,multiplier,total:rolls.reduce((a,b)=>a+b,bonus)*multiplier};
 }
 function occultismRoll(cost,bonus){
  const sk=state.skills?.Ocultismo||{};
@@ -421,8 +421,8 @@ function preview(){
  if(submit){submit.disabled=turnBlocked||peBlocked||circleBlocked||missingDice||missingCost;submit.title=submit.disabled?'Corrija os dados ou os limites de conjuração':'';}
 }
 function rollSimpleDicePattern(expr){
- const matched=/^(\d{1,2})d(\d{1,3})(?:[+-]\d{1,3})?$/.exec(String(expr||'').trim().replace(/\s+/g,'').toLowerCase());
- return Boolean(matched&&Number(matched[1])>=1&&Number(matched[1])<=50&&Number(matched[2])>=2&&Number(matched[2])<=1000);
+ const matched=/^(\d{1,2})d(\d{1,3})(?:[+-]\d{1,3})?(?:x(\d{1,3}))?$/.exec(String(expr||'').trim().replace(/\s+/g,'').toLowerCase());
+ return Boolean(matched&&Number(matched[1])>=1&&Number(matched[1])<=50&&Number(matched[2])>=2&&Number(matched[2])<=1000&&Number(matched[3]||1)<=100);
 }
 function resistanceTestType(r){
  const value=String(info(r).resistance||'');
