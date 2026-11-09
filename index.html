@@ -2851,7 +2851,7 @@ $('nexHomebrewFilter')?.addEventListener('input',()=>nex12RenderHomebrew());
    listAgents:()=>{
      if(!storageReady)return [];
      persist();
-     return agents.map(a=>({id:a.id,name:String(a.data?.name||'Personagem sem nome')}));
+     return agents.map(a=>({id:a.id,name:String(a.data?.name||'Personagem sem nome'),className:String(a.data?.class||'')}));
    },
    current:()=>{
      if(!storageReady)return null;
@@ -2863,6 +2863,10 @@ $('nexHomebrewFilter')?.addEventListener('input',()=>nex12RenderHomebrew());
      if(!item||typeof item.id!=='string'||!/^hb51_[\w-]{3,99}$/.test(item.id))throw Error('Homebrew inválido');
      if(!persist())throw Error('Não foi possível salvar a ficha antes de adicionar');
      const target=agents.find(a=>a.id===agentId);if(!target)throw Error('Personagem não encontrado');
+     const generalPower=['poder_geral','poder','habilidade'].includes(item.type);
+     const restrictedClass=String(item.className||'Geral');
+     if(generalPower && !['Geral','Livre'].includes(restrictedClass) && target.data.class!==restrictedClass)
+       throw Error('Este poder é exclusivo da classe '+restrictedClass+'. O personagem selecionado é '+(target.data.class||'sem classe')+'.');
      const current=Array.isArray(target.data.nex51Items)?target.data.nex51Items:[];
      if(current.some(x=>x.id===item.id))return false;
      if(current.length>=80)throw Error('Limite de 80 conteúdos por ficha');
@@ -3784,7 +3788,7 @@ const PARANORMAL=[
 })();
 </script>
 <script src="nex-duplicate-review.js?v=2055"></script>
-<script src="nex-homebrew-advanced.js?v=2100"></script>
+<script src="nex-homebrew-advanced.js?v=2101"></script>
 <script src="nex-livros-itens.js?v=2076"></script>
 <script src="nex-armas-livro-basico.js?v=2082"></script>
 <script src="nex-complementos-itens.js?v=2078"></script>
