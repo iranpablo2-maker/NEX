@@ -114,7 +114,7 @@ style.textContent=[
 '#nexItemModal .nex-item-meta b{color:#b947f4;font-weight:normal}',
 '#nexItemModal .nex-item-plus{width:35px;height:35px;min-width:35px;min-height:35px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;padding:0;background:#a634ef;color:#fff;border:0;border-radius:3px;font-size:25px;line-height:1;cursor:pointer}',
 '#nexItemModal .nex-item-plus:disabled{background:#29232e;border:1px solid #65576c;color:#b6a5c2;opacity:1!important;cursor:not-allowed}',
-'#nexItemModal .nex-item-plus svg{display:block;width:17px;height:17px;max-width:17px;max-height:17px;stroke:currentColor;fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}',
+'#nexItemModal .nex-item-plus .nex-lock-icon{display:block;width:20px;height:20px;min-width:20px;max-width:20px;max-height:20px;flex:none;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;transform:none!important}',
 '#nexItemModal .nex-item-detail{font-size:12px;color:#ddd;padding:5px 16px 16px 60px;line-height:1.5}',
 '#nexItemModal .nex-item-detail[hidden]{display:none}',
 '#nexItemModal .nex-item-empty{color:#bbb;padding:24px;text-align:center}',
@@ -155,7 +155,7 @@ function render(){
    '<button type="button" class="nex-item-expand" data-expand="'+index+'" aria-expanded="false" aria-label="Detalhes do item">⌄</button>'+
    '<div><span class="nex-item-name">'+escape(item.name)+'</span><span class="nex-item-desc">'+escape(item.subtitle||item.source||'Item')+' · '+escape(item.source||'')+'</span>'+ 
    '<div class="nex-item-meta">'+(item.stats.length?item.stats.map(m=>'<span><b>'+escape(m[0])+':</b> '+escape(m[1])+'</span>').join(''):'<span><b>Espaços:</b> '+item.spaces+'</span>')+'</div></div>'+
-   '<button type="button" class="nex-item-plus" data-add="'+index+'" '+(blocked?'disabled title="'+(blockedByTier?'Categoria indisponível nesta patente':'Limite de categoria ou carga atingido')+'"':'')+' aria-label="'+(blocked?'Bloqueado: ':'Adicionar ')+escape(item.name)+'">'+(blocked?'<svg viewBox="0 0 24 24" width="17" height="17" aria-hidden="true" focusable="false"><rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>':'+')+'</button></div>'+
+   '<button type="button" class="nex-item-plus" data-add="'+index+'" '+(blocked?'disabled title="'+(blockedByTier?'Categoria indisponível nesta patente':'Limite de categoria ou carga atingido')+'"':'')+' aria-label="'+(blocked?'Bloqueado: ':'Adicionar ')+escape(item.name)+'">'+(blocked?'<svg class="nex-lock-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>':'+')+'</button></div>'+
    '<div class="nex-item-detail" hidden>'+escape((item.source?item.source+' · ':'')+(item.description||'Confira as estatísticas nas regras do livro.'))+'</div></article>';
  }).join(''):'<div class="nex-item-empty">'+(selectedSource==='Itens Homebrew'?'Nenhum item homebrew nesta categoria. Cadastre um na biblioteca Homebrew.':'Nenhum item encontrado nesta categoria.')+'</div>';
 }
