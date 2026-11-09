@@ -61,13 +61,14 @@
  '<section id="nex52Editor" class="nex52-editor" hidden><div class="nex52-editor-head"><strong id="nex52EditorTitle">Adicionar homebrew</strong><button type="button" id="nex52CloseEditor" aria-label="Fechar editor">×</button></div>'+
  '<form id="nex51Form" class="nex52-form"><input id="nex51Edit" type="hidden">'+
  '<label id="nex55TypeField">Categoria<select id="nex51Type"><option value="ameaca">Ameaça</option></select></label>'+
- '<label>Nome<input id="nex51Name" maxlength="90" placeholder="Nome do homebrew" required></label>'+
+ '<label id="nex53NameField">Nome<input id="nex51Name" maxlength="90" placeholder="Nome do homebrew" required></label>'+
+ '<div class="nex53-paranormal-fields nex52-full" id="nex53ParanormalElementField" hidden><label>Elemento<select id="nex53ParanormalElement" required><option value="Sangue">Sangue</option><option value="Morte">Morte</option><option value="Energia">Energia</option><option value="Conhecimento">Conhecimento</option><option value="Medo">Medo</option></select></label></div>'+
  '<div class="nex52-specific" id="nex52ThreatFields" hidden><label>VD<input id="nex52VD" type="number" min="0" max="9999" value="0"></label>'+
  '<label>Tipo de ameaça<input id="nex52CreatureType" maxlength="70" placeholder="Criatura"></label>'+
  '<label>Porte<select id="nex52Size"><option>Minúsculo</option><option>Pequeno</option><option selected>Médio</option><option>Grande</option><option>Enorme</option><option>Colossal</option></select></label></div>'+
  '<div class="nex52-specific" id="nex52AbilityFields" hidden><label id="nex55ClassField">Classe<select id="nex51Class"><option>Livre</option><option>Combatente</option><option>Especialista</option><option>Ocultista</option></select></label>'+
  '<label id="nex51NexField">NEX mínimo<input id="nex51Nex" type="number" min="0" max="99" value="5"></label></div>'+
- '<div class="nex52-specific nex52-full" id="nex53ParanormalElementField" hidden><label>Elemento<select id="nex53ParanormalElement" required><option value="Sangue">Sangue</option><option value="Morte">Morte</option><option value="Energia">Energia</option><option value="Conhecimento">Conhecimento</option><option value="Medo">Medo</option></select></label></div>'+
+ 
  '<div class="nex52-specific" id="nex52RitualFields" hidden><label>Círculo<select id="nex51Circle"><option value="1">1º</option><option value="2">2º</option><option value="3">3º</option><option value="4">4º</option></select></label>'+
  '<label>Elemento<select id="nex51Element"><option>Conhecimento</option><option>Energia</option><option>Morte</option><option>Sangue</option><option>Medo</option><option>Personalizado</option></select></label>'+
  '<label>PE indicado<input id="nex51Cost" type="number" min="0" max="99" value="0"></label></div>'+
@@ -102,12 +103,17 @@
    $('nex51NexField').hidden=isTrail||isOrigin||isGeneral||type==='poder_paranormal';
    $('nex53ParanormalElementField').hidden=type!=='poder_paranormal';
    $('nex52ThreatFields').hidden=type!=='ameaca';
-   $('nex52AbilityFields').hidden=!['origem','poder_paranormal','poder_geral','poder','trilha','habilidade'].includes(type);
+   $('nex52AbilityFields').hidden=!['origem','poder_geral','poder','trilha','habilidade'].includes(type);
    $('nex53TrailFields').hidden=!isTrail;
    $('nex55OriginSkills').hidden=!isOrigin;
    $('nex55DescriptionField').hidden=isTrail;
    $('nex55RequirementsField').hidden=isTrail||isOrigin||isGeneral||type==='poder_paranormal';
-   $('nex55DescriptionLabel').textContent=isOrigin||isGeneral||type==='poder_paranormal'?'Descrição':'Descrição e efeitos';
+   $('nex55DescriptionLabel').textContent=isOrigin||isGeneral||isParanormal?'Descrição':'Descrição e efeitos';
+   $('nex51Name').placeholder=isParanormal?'Nome do homebrew':'Nome';
+   $('nex51Description').placeholder=isParanormal?'Descreva o poder paranormal...':'Descreva seu homebrew';
+   $('nex51Description').required=isParanormal;
+   $('nex51Element').disabled=false;
+   $('nex53ParanormalElement').disabled=!isParanormal;
    $('nex52RitualFields').hidden=type!=='ritual';
    $('nex52ItemFields').hidden=type!=='item';
  }
@@ -238,6 +244,7 @@
    const count=all.filter(x=>currentTypes().includes(x.type)).length;
    if(!editing&&count>=50){message('Limite de 50 homebrews para esta categoria.');return;}
    if(type==='trilha'&&TRAIL_NEX.some(n=>!cut($('nex53TrailName'+n).value,90))){message('Informe o nome das quatro habilidades da trilha: 10%, 40%, 65% e 99%.');return;}
+   if(type==='poder_paranormal' && !cut($('nex51Description').value,2000)){message('Preencha a descrição do poder paranormal.');return;}
    if(type==='origem'){
      const first=$('nex55Skill1').value,second=$('nex55Skill2').value,available=api()?.skillNames?.()||FALLBACK_SKILLS;
      if(!first||!second||first===second||!available.includes(first)||!available.includes(second)){
