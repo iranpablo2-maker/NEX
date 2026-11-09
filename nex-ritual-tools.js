@@ -70,14 +70,14 @@ function effectSettings(r,version){
  const type=homeType||preset.type||'Buff';
  const configured=kit().effectConfigs[key+'|'+version];
  const summary=String(d.note||d.description||d.effect||'Consulte as condições do ritual no grimório.').slice(0,500);
- let damageDice=String(preset.damageDice||'');
+ let damageDice=String(preset.versions?.[version]||preset.damageDice||'');
  let healDice=String(preset.healDice||'');
  const typedDice=version==='Discente'?d.discenteDice:version==='Verdadeiro'?d.verdadeiroDice:d.ritualDice;
  const summaryDice=String(version==='Discente'?d.discente:version==='Verdadeiro'?d.verdadeiro:'').match(/\bDados:\s*(\d+d\d+(?:[+-]\d+)?)\b/i)?.[1]||'';
  const currentDice=String(typedDice||summaryDice||'').match(/\b\d+d\d+(?:[+-]\d+)?\b/i)?.[0]||'';
  if(currentDice){
   if(type==='Cura')healDice=currentDice;
-  else damageDice=currentDice;
+  else if(!preset.versions?.[version])damageDice=currentDice;
  }
  const defaults={type,damageDice,healDice,healFromDamage:Boolean(preset.healFromDamage),buffText:summary};
  return {...defaults,...configured};
@@ -161,7 +161,7 @@ function computeEffect(fields){
 }
 function badgeInfo(){
  const n=learned().length,a=kit().active.length,h=kit().history.length,c=kit().combos.length;
- return 'PE: '+pe()+' · Turno: '+kit().turnSpent+'/'+PE_LIMIT()+' PE · Aprendidos: '+n+' · Ativos: '+a+' · Histórico: '+h+' · Combinações: '+c;
+ return 'PE atuais: '+pe()+' · Gasto do turno: '+kit().turnSpent+'/'+PE_LIMIT()+' PE';
 }
 const host=document.createElement('section');
 host.id='nexTkPanel';
@@ -173,13 +173,12 @@ document.body.append(modal);
 const style=document.createElement('style');
 style.id='nexTkStyle';
 style.textContent='#nexTkPanel{border:1px solid #3b314b;border-radius:8px;padding:13px;margin:10px 0 18px;background:#17131c;color:#eee7f4}#nexTkPanel .tk-tabs{display:flex;flex-wrap:wrap;gap:6px;margin:9px 0 13px}#nexTkPanel .tk-tabs button{border:1px solid #53465e;background:#211b28;color:#e2d4ed;border-radius:5px;padding:8px 10px}#nexTkPanel .tk-tabs button[aria-pressed="true"]{background:#63398a;color:#fff;border-color:#a06bc9}#nexTkPanel h3{font-size:12px;color:#e4d0f6;margin:12px 0 7px}#nexTkPanel .tk-sub{font-size:12px;color:#ad9fba}#nexTkPanel .tk-fields{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}#nexTkPanel .tk-fields>*{flex:1 1 130px;max-width:100%}#nexTkPanel .tk-cards{display:grid;gap:8px;max-height:530px;overflow:auto;padding-right:2px}#nexTkPanel .tk-card{background:#221b2a;border:1px solid #493a55;padding:10px;border-radius:6px}#nexTkPanel .tk-row{display:flex;align-items:center;justify-content:space-between;gap:9px;flex-wrap:wrap}#nexTkPanel .tk-card details>summary{cursor:pointer;font-weight:700;margin-top:7px}#nexTkPanel .tk-card p{white-space:pre-wrap;margin:6px 0;font-size:12px}#nexTkPanel .tk-actions{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 0}#nexTkPanel button.tk-button,#nexTkCastDialog button{border:1px solid #665071;color:#f0e6fb;background:#3b284d;border-radius:5px;padding:7px 10px;cursor:pointer}#nexTkPanel button[disabled],#nexTkCastDialog button[disabled]{opacity:.5;cursor:not-allowed}#nexTkPanel input,#nexTkPanel select,#nexTkPanel textarea,#nexTkCastDialog input,#nexTkCastDialog select{background:#120f18;border:1px solid #59466a;border-radius:4px;padding:8px;color:white;width:100%;font:inherit}#nexTkPanel label,#nexTkCastDialog label{display:block;color:#d4c2de;font-size:12px}#nexTkPanel .tk-select-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:5px;max-height:230px;overflow:auto}#nexTkPanel .tk-select-list label{padding:7px;border:1px solid #473652;border-radius:5px}#nexTkPanel input[type=checkbox],#nexTkCastDialog input[type=checkbox]{width:auto;margin-right:7px}#nexTkCastDialog{background:#1a1421;border:1px solid #79549a;color:#f3ebfa;border-radius:9px;width:min(480px,calc(100vw - 24px));max-height:88vh;overflow:auto;padding:18px}#nexTkCastDialog::backdrop{background:#000b}#nexTkCastDialog .tk-modal-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:12px 0}#nexTkCastDialog .tk-modal-fields>label:first-child{grid-column:1/-1}#nexTkCastDialog .tk-foot{display:flex;justify-content:flex-end;gap:8px;margin-top:12px}#nexTkCastDialog .tk-warning{font-size:12px;color:#f0bd8c;margin-top:7px}#nexTkPanel .tk-mono{font-variant-numeric:tabular-nums}';
+style.textContent+="\n#nexTkPanel{background:transparent;border:0;padding:0;margin:12px 0 24px}\n#nexTkPanel .tk-dmg-resources{border:1px solid #353139;border-radius:7px;background:#17151a;padding:12px;margin-bottom:12px}\n#nexTkPanel .tk-dmg-list{display:flex;flex-direction:column;gap:9px}\n#nexTkPanel .tk-dmg-card{background:#202022;border:1px solid #29292e;border-radius:5px;overflow:hidden}\n#nexTkPanel .tk-dmg-card>summary{list-style:none;display:flex;gap:14px;align-items:center;padding:14px 16px 7px;cursor:pointer}\n#nexTkPanel .tk-dmg-card>summary::-webkit-details-marker{display:none}\n#nexTkPanel .tk-dmg-card .tk-dmg-chevron{font-size:23px;line-height:12px;color:#ae54ed;transform:rotate(0deg);transition:transform .16s}\n#nexTkPanel .tk-dmg-card:not([open]) .tk-dmg-chevron{transform:rotate(-90deg)}\n#nexTkPanel .tk-dmg-card>summary strong{font-size:14px;color:#fbf9fd}\n#nexTkPanel .tk-dmg-element{margin-left:auto;font-size:11px;color:#a399ac;white-space:nowrap}\n#nexTkPanel .tk-dmg-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;padding:9px 12px 15px 64px}\n#nexTkPanel .tk-dmg-version{min-width:0;text-align:left}\n#nexTkPanel .tk-dmg-label{font-size:11px;color:#b8c1cb;display:block;margin-bottom:4px;letter-spacing:.02em}\n#nexTkPanel .tk-dmg-roll{display:flex;align-items:center;gap:5px;min-height:25px}\n#nexTkPanel .tk-dmg-formula{font-size:14px;font-weight:650;color:#fff;white-space:nowrap}\n#nexTkPanel .tk-dmg-die{background:transparent;border:0;color:#dddce4;cursor:pointer;padding:2px;line-height:0;border-radius:4px}\n#nexTkPanel .tk-dmg-die:hover:not(:disabled){color:#bd75ef;background:#35233e}\n#nexTkPanel .tk-dmg-die:focus-visible{outline:2px solid #b96bef;outline-offset:2px}\n#nexTkPanel .tk-dmg-die:disabled{opacity:.28;cursor:not-allowed}\n#nexTkPanel .tk-dmg-cost,#nexTkPanel .tk-dmg-lock{font-size:10px;color:#8e8595}\n#nexTkPanel .tk-dmg-lock{color:#bc8094}\n#nexTkPanel .tk-dmg-disabled .tk-dmg-formula{opacity:.6}\n@media(max-width:540px){#nexTkPanel .tk-dmg-card>summary{padding:13px 12px 6px;gap:8px}#nexTkPanel .tk-dmg-grid{padding:10px 10px 14px 12px;gap:6px}#nexTkPanel .tk-dmg-element{font-size:9px}#nexTkPanel .tk-dmg-formula{font-size:12px}#nexTkPanel .tk-dmg-label{font-size:10px}#nexTkPanel .tk-dmg-roll{gap:2px}}\n";
 document.head.append(style);
 function top(){
  if(!isOccultist()){host.innerHTML='';if(modal.open&&typeof modal.close==='function')modal.close();return;}
- host.innerHTML='<div class="tk-row"><strong>GRIMÓRIO E CONTROLE DE RITUAIS</strong><small id="tkCounts" class="tk-sub"></small></div>'+
- '<nav class="tk-tabs" aria-label="Módulos de rituais">'+
- [['conjurar','Conjurar'],['grimorio','Grimório'],['ativos','Rituais ativos'],['historico','Histórico'],['combos','Combinações']].map(x=>'<button type="button" data-tk-tab="'+x[0]+'" aria-pressed="'+String(view===x[0])+'">'+x[1]+'</button>').join('')+
- '</nav><div id="tkBody"></div>';
+ host.innerHTML='<div class="tk-row"><strong>CONJURAR · RITUAIS DE DANO</strong><small id="tkCounts" class="tk-sub"></small></div>'+
+ '<div id="tkBody"></div>';
  document.getElementById('tkCounts').textContent=badgeInfo();
  renderBody();
 }
@@ -188,12 +187,10 @@ function renderBody(){
  const el=document.getElementById('tkBody');if(!el)return;
  document.getElementById('tkCounts').textContent=badgeInfo();
  if(view==='conjurar'){
-  const learnedRituals=learned();
   const budget=availableTurnPE();
-  el.innerHTML='<div class="tk-row"><div><strong>PE disponíveis: '+pe()+'</strong><p class="tk-sub">Limite por turno: '+PE_LIMIT()+' PE · Usados: '+kit().turnSpent+' PE · Restantes no turno: '+budget+' PE · NEX '+esc(state.nex)+'% · Até '+permittedCircle()+'º círculo</p></div><button type="button" class="tk-button" data-tk-next-turn="1">Próximo turno</button></div>'+
-  '<p class="tk-sub">Conjure apenas rituais aprendidos e liberados pelo NEX. A conjuração desconta o PE automaticamente e registra o uso.</p>'+
-  '<div class="tk-fields"><input id="tkLearnedSearch" type="search" placeholder="Buscar ritual aprendido" aria-label="Buscar ritual aprendido" value="'+esc(query)+'"></div>'+
-  '<div class="tk-cards" id="tkLearnedCards"></div>';
+  el.innerHTML='<div class="tk-row tk-dmg-resources"><div><strong>PE: '+pe()+'</strong><p class="tk-sub">Limite/turno: '+PE_LIMIT()+' PE · Disponíveis neste turno: '+budget+' PE · NEX '+esc(state.nex)+'% · Círculo até '+permittedCircle()+'º</p></div><button type="button" class="tk-button" data-tk-next-turn="1">Próximo turno</button></div>'+
+  '<div class="tk-fields"><input id="tkLearnedSearch" type="search" placeholder="Buscar ritual de dano…" aria-label="Buscar ritual de dano" value="'+esc(query)+'"></div>'+
+  '<div id="tkLearnedCards" class="tk-dmg-list"></div>';
   drawLearned();return;
  }
  if(view==='grimorio'){
@@ -240,15 +237,36 @@ function renderBody(){
 }
 function drawLearned(){
  const container=document.getElementById('tkLearnedCards');if(!container)return;
- const list=learned().filter(r=>norm(r.name+' '+r.element).includes(norm(query)));
+ const list=learned().filter(r=>{
+  if(!norm(r.name+' '+r.element).includes(norm(query)))return false;
+  const cfg=effectSettings(r,'Normal');
+  return ['Dano','Dano + Cura'].includes(cfg.type)&&rollSimpleDicePattern(cfg.damageDice);
+ });
+ const diceIcon='<svg aria-hidden="true" viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1.7 20.7 6.8v10.4L12 22.3l-8.7-5.1V6.8z"/><path d="m12 1.7-4.2 8.4 4.2 12.2 4.2-12.2L12 1.7ZM3.3 6.8l4.5 3.3h8.4l4.5-3.3m-17.4 10.4 4.5-7.1m12.9 7.1-4.5-7.1"/></svg>';
  container.innerHTML=list.length?list.map(r=>{
-  const cost=finalPrice(r,'Normal',0),circleOK=Number(r.circle)<=permittedCircle();
-  const enough=cost<=pe()&&cost<=availableTurnPE();
-  const text=!circleOK?'Bloqueado pelo NEX':cost>PE_LIMIT()?'Acima do limite de PE':cost>availableTurnPE()?'Limite de PE deste turno':cost>pe()?'PE insuficiente':'Conjurar';
-  return '<article class="tk-card"><div class="tk-row"><strong>'+esc(r.name)+'</strong><small>'+esc(r.element)+' · '+esc(r.circle)+'º círculo · '+cost+' PE base</small></div>'+
-   '<p class="tk-sub">'+esc(info(r).description||'Consulte o efeito no grimório.')+'</p>'+
-   '<div class="tk-actions"><button type="button" class="tk-button" data-tk-cast="'+esc(r.id)+'" '+(!circleOK||!enough?'disabled':'')+'>'+text+'</button></div></article>';
- }).join(''):'<p class="tk-sub">Nenhum ritual aprendido encontrado. Adicione rituais na aba Rituais.</p>';
+  const d=info(r),allowedCircle=permittedCircle();
+  const columns=['Normal','Discente','Verdadeiro'].map(version=>{
+   const enhanced=version==='Discente'?d.discente:d.verdadeiro;
+   const optionAvailable=version==='Normal'||hasEnhance(enhanced)||Boolean(version==='Discente'?d.discenteDice:d.verdadeiroDice);
+   const config=effectSettings(r,version);
+   const formula=optionAvailable?String(config.damageDice||''):'';
+   const required=version==='Discente'?Number(d.discenteCircle)||requirement(d.discente):version==='Verdadeiro'?Number(d.verdadeiroCircle)||requirement(d.verdadeiro):0;
+   const price=finalPrice(r,version,0);
+   const needsCost=version!=='Normal'&&enhancePrice(enhanced)===null;
+   const blockReason=!optionAvailable?'Versão não disponível':
+    required>allowedCircle||Number(r.circle)>allowedCircle?'Bloqueado pelo NEX':
+    !rollSimpleDicePattern(formula)?'Dados não cadastrados':
+    price>availableTurnPE()?'Limite de PE neste turno':
+    price>pe()?'PE insuficiente':'';
+   const disabled=Boolean(blockReason)||needsCost&&price>availableTurnPE();
+   return '<div class="tk-dmg-version '+(disabled?'tk-dmg-disabled':'')+'">'+
+    '<span class="tk-dmg-label">'+version.toUpperCase()+'</span>'+
+    '<div class="tk-dmg-roll"><span class="tk-dmg-formula">'+esc(formula||'—')+'</span>'+
+    (formula?'<button type="button" class="tk-dmg-die" data-tk-cast="'+esc(r.id)+'" data-tk-version="'+version+'" aria-label="Conjurar '+esc(r.name)+' '+version+': '+esc(formula)+'" title="'+esc(blockReason||('Conjurar '+version+' · '+price+' PE'))+'" '+(disabled?'disabled':'')+'>'+diceIcon+'</button>':'')+'</div>'+
+    (blockReason?'<small class="tk-dmg-lock">'+esc(blockReason)+'</small>':needsCost?'<small class="tk-dmg-lock">Definir custo no painel</small>':'<small class="tk-dmg-cost">'+price+' PE</small>')+'</div>';
+  }).join('');
+  return '<details class="tk-dmg-card" open><summary><span class="tk-dmg-chevron">⌄</span><strong>'+esc(r.name)+'</strong><span class="tk-dmg-element">'+esc(r.element)+' · '+esc(r.circle)+'º círculo</span></summary><div class="tk-dmg-grid">'+columns+'</div></details>';
+ }).join(''):'<p class="tk-sub">Nenhum ritual de dano aprendido encontrado. Adicione rituais de dano na aba Rituais.</p>';
 }
 function drawGrimoire(){
  const dst=document.getElementById('tkResults');if(!dst)return;
@@ -273,14 +291,15 @@ function drawGrimoire(){
    '<button type="button" class="tk-button" data-tk-learn="'+esc(signature(r))+'" '+(blocked?'disabled':'')+'>'+(blocked?'Círculo indisponível':'Adicionar à ficha')+'</button>')+'</div></article>';
  }).join(''):'<p class="tk-sub">Nenhum ritual encontrado.</p>';
 }
-function openCast(rid){
+function openCast(rid,requestedVersion='Normal'){
  if(!isOccultist()){toast('A conjuração nesta aba é exclusiva para Ocultistas.');return;}
  const r=learned().find(x=>String(x.id)===String(rid));
  if(!r){toast('Ritual não encontrado nesta ficha.');return;}
  if(Number(r.circle)>permittedCircle()){toast('Este círculo ainda não foi liberado pelo NEX.');return;}
  castingId=String(rid);castCommitted=false;
  const d=info(r);
- const options=['Normal'].concat(hasEnhance(d.discente)?['Discente']:[],hasEnhance(d.verdadeiro)?['Verdadeiro']:[]);
+ const options=['Normal'].concat(hasEnhance(d.discente)||Boolean(d.discenteDice)?['Discente']:[],hasEnhance(d.verdadeiro)||Boolean(d.verdadeiroDice)?['Verdadeiro']:[]);
+ if(!options.includes(requestedVersion)){toast('Essa versão não está disponível para o ritual.');return;}
  const isActive=!/instant[aâ]nea|instant[aâ]neo/i.test(d.duration||'');
  modal.innerHTML='<div class="tk-row"><h3>Conjurar: '+esc(r.name)+'</h3><button type="button" data-tk-modal-close="1" aria-label="Fechar">✕</button></div>'+
  '<p class="tk-sub">Círculo '+esc(r.circle)+' · '+esc(r.element)+' · Duração: '+esc(d.duration||'não informada')+'</p>'+
@@ -299,6 +318,7 @@ function openCast(rid){
  '<p id="tkToPreview" class="tk-sub"></p>'+
  '<p id="tkCostPreview" class="tk-warning"></p><p id="tkRulesPreview" class="tk-sub"></p>'+
  '<div class="tk-foot"><button type="button" data-tk-modal-close="1">Cancelar</button><button type="submit">Rolar TO e conjurar</button></div></form>';
+ const versionField=modal.querySelector('#tkCastVersion');if(versionField)versionField.value=requestedVersion;
  if(typeof modal.showModal==='function')modal.showModal();else modal.open=true;
  syncEffectFields(true);
  preview();
@@ -429,7 +449,7 @@ host.addEventListener('click',e=>{
  if(btn.dataset.tkTab){view=btn.dataset.tkTab;top();return;}
  if(btn.dataset.tkNextTurn){if(!isOccultist())return;const k=kit();k.turnSpent=0;k.turnNumber++;addHistory('Novo turno',{note:'Turno '+k.turnNumber+', limite renovado',cost:0});update();return;}
  if(btn.dataset.tkLearn){if(isOccultist())handleLearn(btn.dataset.tkLearn);return;}
- if(btn.dataset.tkCast){openCast(btn.dataset.tkCast);return;}
+ if(btn.dataset.tkCast){openCast(btn.dataset.tkCast,btn.dataset.tkVersion||'Normal');return;}
  if(btn.dataset.tkRound){handleRound(btn.dataset.tkRound);return;}
  if(btn.dataset.tkEnd){
   const k=kit(),a=k.active.find(x=>x.id===btn.dataset.tkEnd);if(!a)return;
