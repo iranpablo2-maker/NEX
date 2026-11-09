@@ -75,12 +75,12 @@ function effectSettings(r,version){
  const usefulUpgrade=upgradeText&&!/^N[aã]o consta|^Sem aprimoramento/i.test(upgradeText);
  const summary=(usefulUpgrade?baseEffect+'\n'+version+': '+upgradeText:baseEffect).slice(0,900);
  let damageDice=String(preset.versions?.[version]||preset.damageDice||'');
- let healDice=String(preset.healDice||'');
+ let healDice=String(preset.healVersions?.[version]||preset.healDice||'');
  const typedDice=version==='Discente'?d.discenteDice:version==='Verdadeiro'?d.verdadeiroDice:d.ritualDice;
  const summaryDice=String(version==='Discente'?d.discente:version==='Verdadeiro'?d.verdadeiro:'').match(/\bDados:\s*(\d+d\d+(?:[+-]\d+)?)\b/i)?.[1]||'';
  const currentDice=String(typedDice||summaryDice||'').match(/\b\d+d\d+(?:[+-]\d+)?\b/i)?.[0]||'';
  if(currentDice){
-  if(type==='Cura')healDice=currentDice;
+  if(type==='Cura'&&!preset.healVersions?.[version])healDice=currentDice;
   else if(!preset.versions?.[version])damageDice=currentDice;
  }
  const defaults={type,damageDice,healDice,healFromDamage:Boolean(preset.healFromDamage),buffText:summary};
