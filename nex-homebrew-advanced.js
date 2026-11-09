@@ -14,7 +14,7 @@
  const normalize=x=>({
    id:x.id,type:x.type,name:cut(x.name,90),description:cut(x.description,2000),
    requirements:cut(x.requirements,650),minNex:num(x.minNex,0,99,5),
-   className:['Livre','Geral','Combatente','Especialista','Ocultista'].includes(x.className)?(x.className==='Livre'&&['poder_geral','poder','habilidade'].includes(x.type)?'Geral':x.className):'Geral',
+   className:['Livre','Geral','Combatente','Especialista','Ocultista'].includes(x.className)?(x.className==='Livre'&&['poder_geral','poder','habilidade'].includes(x.type)?'Geral':x.className):(['poder_geral','poder','habilidade'].includes(x.type)?'Geral':'Livre'),
    circle:num(x.circle,1,4,1),element:['Conhecimento','Energia','Morte','Sangue','Medo','Personalizado'].includes(x.element)?x.element:'Personalizado',
    cost:num(x.cost,0,99,0),vd:num(x.vd,0,9999,0),
    size:['Minúsculo','Pequeno','Médio','Grande','Enorme','Colossal'].includes(x.size)?x.size:'Médio',
@@ -180,10 +180,15 @@
  function targetOptions(){
    const sel=$('nex51Target');const previous=sel.value;
    const agents=api()?.ready()?api().listAgents():[];
-   sel.innerHTML='<option value="">Selecione um personagem</option>'+agents.map(a=>'<option value="'+esc(a.id)+'">'+esc(a.name||'Personagem')+'</option>').join('');
+   const power=opened?read().find(x=>x.id===opened):null;
+   const limited=power&&['poder_geral','poder','habilidade'].includes(power.type)&&!['Geral','Livre'].includes(power.className);
+   sel.innerHTML='<option value="">Selecione um personagem</option>'+agents.map(a=>{
+     const locked=limited&&a.className!==power.className;
+     return '<option value="'+esc(a.id)+'"'+(locked?' disabled':'')+'>'+esc(a.name||'Personagem')+' · '+esc(a.className||'Classe não definida')+(locked?' (classe incompatível)':'')+'</option>';
+   }).join('');
    const active=api()?.ready()?api().current()?.id:null;
    const chosen=agents.some(x=>x.id===previous)?previous:active;
-   if(chosen&&agents.some(x=>x.id===chosen))sel.value=chosen;
+   if(chosen&&agents.some(x=>x.id===chosen)&&!sel.querySelector('option[value="'+CSS.escape(chosen)+'"]')?.disabled)sel.value=chosen;
  }
  function renderLibrary(){
    const records=read(),types=currentTypes();
