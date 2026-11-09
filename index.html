@@ -1068,6 +1068,15 @@ html,body{background:#000!important;background-image:none!important}
 #homebrewScreen .nex52-form .nex53-ritual-name{grid-column:1/-1}
 #homebrewScreen .nex52-form #nex52RitualFields{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:12px;grid-column:1/-1}
 #homebrewScreen .nex52-form #nex52RitualFields[hidden]{display:none!important}
+#homebrewScreen #nex52RitualFields .nex53-damage-field[hidden]{display:none!important}
+#homebrewScreen #nex52RitualFields .nex53-ritual-category{grid-column:1/-1}
+#homebrewScreen .nex53-ritual-filter{display:flex;gap:7px;flex-wrap:wrap;margin:12px 0;padding:0 0 8px;border-bottom:1px solid #57435d}
+#homebrewScreen .nex53-ritual-filter[hidden]{display:none!important}
+#homebrewScreen .nex53-ritual-filter button{border:1px solid #57435d;border-radius:5px;background:#222029;color:#ddd1e6;padding:7px 11px;cursor:pointer}
+#homebrewScreen .nex53-ritual-filter button[aria-pressed="true"]{background:#672984;border-color:#bb64e1;color:white}
+#homebrewScreen .nex53-advanced-status{font-size:11px;color:#c9a6df;margin:5px 0}
+#homebrewScreen .nex53-ritual-versions{margin-top:8px}
+#homebrewScreen .nex53-ritual-versions [hidden]{display:none!important}
 #homebrewScreen #nex52RitualFields>label{grid-column:span 3;min-width:0}
 #homebrewScreen #nex52RitualFields>label:nth-child(n+5):nth-child(-n+7){grid-column:span 4}
 #homebrewScreen #nex52RitualFields>label:nth-child(8),#homebrewScreen #nex52RitualFields>label:nth-child(9){grid-column:span 6}
@@ -2874,12 +2883,12 @@ $('nexHomebrewFilter')?.addEventListener('input',()=>nex12RenderHomebrew());
    listAgents:()=>{
      if(!storageReady)return [];
      persist();
-     return agents.map(a=>({id:a.id,name:String(a.data?.name||'Personagem sem nome'),className:String(a.data?.class||'')}));
+     return agents.map(a=>({id:a.id,name:String(a.data?.name||'Personagem sem nome'),className:String(a.data?.class||''),nex:Number(a.data?.nex)||0}));
    },
    current:()=>{
      if(!storageReady)return null;
      persist();
-     return {id:active,items:JSON.parse(JSON.stringify(Array.isArray(state.nex51Items)?state.nex51Items:[]))};
+     return {id:active,className:String(state.class||''),nex:Number(state.nex)||0,items:JSON.parse(JSON.stringify(Array.isArray(state.nex51Items)?state.nex51Items:[]))};
    },
    attach:(agentId,item)=>{
      if(!storageReady)throw Error('O armazenamento ainda não terminou de carregar');
@@ -3873,7 +3882,7 @@ const PARANORMAL=[
 })();
 </script>
 <script src="nex-duplicate-review.js?v=2055"></script>
-<script src="nex-homebrew-advanced.js?v=2104"></script>
+<script src="nex-homebrew-advanced.js?v=2105"></script>
 <script src="nex-livros-itens.js?v=2076"></script>
 <script src="nex-armas-livro-basico.js?v=2082"></script>
 <script src="nex-complementos-itens.js?v=2078"></script>
