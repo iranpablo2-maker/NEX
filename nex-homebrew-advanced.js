@@ -188,7 +188,7 @@
    }).join('');
    const active=api()?.ready()?api().current()?.id:null;
    const chosen=agents.some(x=>x.id===previous)?previous:active;
-   if(chosen&&agents.some(x=>x.id===chosen)&&!sel.querySelector('option[value="'+CSS.escape(chosen)+'"]')?.disabled)sel.value=chosen;
+   if(chosen&&agents.some(x=>x.id===chosen)&&![...sel.options].find(x=>x.value===chosen)?.disabled)sel.value=chosen;
  }
  function renderLibrary(){
    const records=read(),types=currentTypes();
