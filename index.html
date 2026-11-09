@@ -683,6 +683,7 @@ body{background:#101011;color:#e9e8ec;font-family:Arial,Helvetica,sans-serif;fon
 #n215CustomForm[hidden],#n215List[hidden],#n215CatalogControls[hidden],#n215Meta[hidden]{display:none!important}
 .n215-toolbar-actions{display:flex;gap:7px;align-items:center;flex-wrap:wrap}
 .n215-overlay[hidden]{display:none!important}
+#n16ShowAbility[hidden]{display:none!important}
 .n215-overlay{position:fixed;inset:0;z-index:100000;display:flex;align-items:center;justify-content:center;padding:12px;background:#000b;backdrop-filter:blur(3px)}
 .n215-modal{background:#151315;border:1px solid #70507b;box-shadow:0 18px 80px #000e;width:min(740px,100%);max-height:min(90dvh,890px);display:flex;flex-direction:column;overflow:hidden;color:#f3eef4;border-radius:8px}
 .n215-heading{display:flex;gap:12px;align-items:center;justify-content:space-between;padding:15px 16px;border-bottom:1px solid #4b344f;background:#211b23}
@@ -1716,7 +1717,7 @@ html,body{background:#000!important;background-image:none!important}
 <section class="col middle nexv16-skills"><div class="panel-head"><h2>✧ Perícias</h2><span class="hint">DADOS · BÔNUS · TREINO · OUTROS</span></div><div class="nexv16-table-scroll"><div id="nexSkillRollResult" class="nex-skill-roll-result" role="status" aria-live="polite" hidden></div><div id="skillsList" class="skills-list"></div></div><p class="hint nexv16-footnote">Treino: +5 Treinado · +10 Veterano · +15 Expert<br>* Requer treinamento · + Pode sofrer penalidade de carga</p></section>
 <main class="col right"><nav class="tabs" aria-label="Abas da ficha"><button class="tab" data-tab="attacks">Combate</button><button class="tab active" data-tab="overview">Habilidades</button><button class="tab ritual-tab" data-tab="rituals">Rituais</button><button class="tab" data-tab="inventory">Inventário</button><button class="tab" data-tab="notes">Descrição</button></nav>
 <section class="view active" id="overview">
-<div class="nex-sheet-ability-actions" aria-label="Ações de habilidades"><div class="nex-sheet-ability-action-row"><button type="button" class="btn primary sm" id="n215AddAbility">Adicionar</button></div><div class="nex-sheet-ability-action-row"><button type="button" class="btn sm" id="n16ShowAbility">Nova Habilidade</button></div></div>
+<div class="nex-sheet-ability-actions" aria-label="Ações de habilidades"><div class="nex-sheet-ability-action-row"><button type="button" class="btn primary sm" id="n215AddAbility">Adicionar</button></div><div class="nex-sheet-ability-action-row"><button type="button" class="btn sm" id="n16ShowAbility" hidden aria-hidden="true" tabindex="-1">Nova Habilidade</button></div></div>
 
 <form id="n16AbilityForm" class="nexv16-edit hide"><label>Nome<input id="n16AbilityName" maxlength="90" required></label><label>Descrição<textarea id="n16AbilityDesc" maxlength="1800" rows="3"></textarea></label><div class="actions"><button class="btn primary sm" type="submit">Salvar habilidade</button><button class="btn sm" type="button" id="n16CancelAbility">Cancelar</button></div></form>
 <section id="n19TrailPanel" class="n19-trail-panel hide" aria-label="Seleção de trilha">
@@ -3537,7 +3538,7 @@ update();
 </script><div id="n215Overlay" class="n215-overlay" hidden role="presentation">
  <section class="n215-modal" role="dialog" aria-modal="true" aria-labelledby="n215DialogTitle">
   <header class="n215-heading"><div><h2 id="n215DialogTitle">Adicionar Habilidades</h2><p>Catálogo por classe, trilha, origem e poderes paranormais</p></div><button id="n215Close" type="button" class="n215-iconclose" aria-label="Fechar">×</button></header>
-  <div class="n215-top-tabs"><button type="button" class="n215-tab active" data-n215-mode="all">Habilidades</button><button type="button" class="n215-tab" data-n215-mode="mine">Minhas Habilidades</button><button type="button" class="n215-tab" data-n215-mode="custom">Nova habilidade</button></div>
+  <div class="n215-top-tabs"><button type="button" class="n215-tab active" data-n215-mode="all">Habilidades</button><button type="button" class="n215-tab" data-n215-mode="mine">Homebrew</button></div>
   <div id="n215CatalogControls"><nav id="n215MainTabs" class="n215-main-tabs" aria-label="Categorias de habilidades"></nav><nav id="n215SubTabs" class="n215-sub-tabs" aria-label="Subcategorias"></nav><div class="n215-search-row"><input id="n215Search" type="search" placeholder="⌕ Buscar habilidade..." aria-label="Buscar habilidades" autocomplete="off"></div></div>
   <div id="n215Meta" class="n215-result-meta" aria-live="polite"></div><div id="n215List" class="n215-list" aria-live="polite"></div>
   <form id="n215CustomForm" class="n215-custom" hidden><label>Nome da habilidade<input name="name" maxlength="90" required placeholder="Nome da habilidade"></label><label>Descrição<textarea name="description" maxlength="1800" placeholder="Descreva o efeito da habilidade"></textarea></label><button class="btn primary" type="submit">Salvar habilidade</button></form>
@@ -3666,7 +3667,7 @@ const PARANORMAL=[
   if(mode==='custom')return;
   if(mode==='mine'){
    const mine=[...state.n16.abilities.map(a=>({id:a.id,name:a.name,detail:a.description||'Sem descrição.',source:a.source||'Personalizada',type:'ability'})),...state.powers.filter(a=>a.id).map(a=>({id:a.id,name:a.name,detail:a.note||'Poder escolhido.',source:'Poder – NEX '+a.nex+'%',type:'power'}))];
-   get('n215Meta').textContent=mine.length+' habilidade(s) adicionada(s) manualmente';
+   get('n215Meta').textContent=mine.length+' habilidade(s) personalizadas na ficha';
    get('n215List').innerHTML=mine.length?mine.map(a=>`<article class="n215-row"><div class="n215-row-main"><details><summary>${escape(a.name)}<small class="n215-source">${escape(a.source)}</small></summary><div class="n215-description">${escape(a.detail)}</div></details><button type="button" class="n215-add" data-n215-remove="${escape(a.id)}" data-n215-type="${a.type}" title="Remover">×</button></div></article>`).join(''):'<p class="n215-empty">Nenhuma habilidade adicional nesta ficha.</p>';
    return;
   }
@@ -3693,7 +3694,7 @@ const PARANORMAL=[
  function close(){overlay.hidden=true;document.body.style.overflow='';lastFocus?.focus?.();}
  get('n215AddAbility').addEventListener('click',()=>open('all'));
  // Override the old form toggle with the dedicated dialog, leaving old records untouched.
- get('n16ShowAbility').onclick=()=>open('custom');
+ get('n16ShowAbility').onclick=()=>open('mine');
  get('n215Close').addEventListener('click',close);
  overlay.addEventListener('click',e=>{if(e.target===overlay)close();});
  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!overlay.hidden){e.preventDefault();close();}});
