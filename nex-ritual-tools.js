@@ -205,9 +205,15 @@ function preview(){
  costNode.textContent='Custo total: '+v.total+' PE · PE atuais: '+pe()+' · Disponíveis neste turno: '+availableTurnPE()+' de '+PE_LIMIT()+' PE.';
  let note=v.enhance||'Versão básica. Verifique o limite de PE por turno.';
  if(v.v!=='Normal'&&price===null)note+=' Custo adicional não informado; preencha o campo de ajustes.';
- const limit=typeof maxValues==='function'?maxValues().peLimit:0;
- if(v.total>availableTurnPE())note+=' BLOQUEADO: excede os PE restantes neste turno.';
+ const required=requirement(v.enhance);
+ const circleBlocked=Number(v.r.circle)>permittedCircle()||(required>0&&required>permittedCircle());
+ const turnBlocked=v.total>availableTurnPE(),peBlocked=v.total>pe();
+ if(turnBlocked)note+=' BLOQUEADO: excede os PE restantes neste turno.';
+ if(peBlocked)note+=' PE insuficientes.';
+ if(circleBlocked)note+=' Bloqueado: círculo não liberado pelo NEX.';
  rulesNode.textContent=note;
+ const submit=modal.querySelector('#tkCastForm button[type="submit"]');
+ if(submit){submit.disabled=turnBlocked||peBlocked||circleBlocked;submit.title=submit.disabled?'Conjuração indisponível pelos limites de PE ou NEX':'';}
 }
 function confirmCast(){
  const m=castMath();if(!m)return;
@@ -264,8 +270,8 @@ function handleLearn(key){
 host.addEventListener('click',e=>{
  const btn=e.target.closest('button');if(!btn)return;
  if(btn.dataset.tkTab){view=btn.dataset.tkTab;top();return;}
- if(btn.dataset.tkNextTurn){const k=kit();k.turnSpent=0;k.turnNumber++;addHistory('Novo turno',{note:'Turno '+k.turnNumber+', limite renovado',cost:0});update();return;}
- if(btn.dataset.tkLearn){handleLearn(btn.dataset.tkLearn);return;}
+ if(btn.dataset.tkNextTurn){if(!isOccultist())return;const k=kit();k.turnSpent=0;k.turnNumber++;addHistory('Novo turno',{note:'Turno '+k.turnNumber+', limite renovado',cost:0});update();return;}
+ if(btn.dataset.tkLearn){if(isOccultist())handleLearn(btn.dataset.tkLearn);return;}
  if(btn.dataset.tkCast){openCast(btn.dataset.tkCast);return;}
  if(btn.dataset.tkRound){handleRound(btn.dataset.tkRound);return;}
  if(btn.dataset.tkEnd){
