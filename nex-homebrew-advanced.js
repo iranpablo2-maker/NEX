@@ -38,6 +38,18 @@
    bonusValue:Number.isFinite(Number(x.bonusValue))?Math.max(-100,Math.min(100,Number(x.bonusValue))):0,
    itemTier:['0','I','II','III','IV'].includes(String(x.itemTier||''))?String(x.itemTier):'0',
    itemSpaces:num(x.itemSpaces,0,100,1),
+   protectionDefense:num(x.protectionDefense,0,100,1),
+   weaponProficiency:cut(x.weaponProficiency||'Armas Simples',70),
+   weaponKind:cut(x.weaponKind||'Corpo a Corpo',70),
+   weaponWield:cut(x.weaponWield||'Uma Mão',50),
+   weaponDamage:cut(x.weaponDamage||'',90),
+   weaponSecondary:cut(x.weaponSecondary||'',90),
+   weaponSecondaryType:cut(x.weaponSecondaryType||'Normal',40),
+   weaponCritical:cut(x.weaponCritical||'20',16),
+   weaponMultiplier:cut(x.weaponMultiplier||'2',10),
+   weaponDamageType:cut(x.weaponDamageType||'Corte',60),
+   weaponRange:cut(x.weaponRange||'—',60),
+   weaponQuantity:num(x.weaponQuantity,1,9999,1),
    itemTag:['Acessórios','Explosivos','Itens Operacionais'].includes(x.itemTag)?x.itemTag:'Acessórios',
    customImprovements:x.type==='item'&&Array.isArray(x.customImprovements)?[...new Set(x.customImprovements.filter(v=>typeof v==='string').map(v=>cut(v,80)).filter(Boolean))].slice(0,30):[],
    skills:x.type==='origem'&&Array.isArray(x.skills)?[...new Set(x.skills.filter(v=>typeof v==='string').map(v=>cut(v,60)))].slice(0,2):[],
@@ -116,8 +128,27 @@
  '<select id="nex52Category" hidden aria-label="Categoria definida pela aba">'+ITEM_CATEGORIES.map(c=>'<option value="'+esc(c)+'">'+esc(c)+'</option>').join('')+'</select>'+
  '<div class="nex-hb-hidden-item-values" hidden><select id="nexHbElement"><option>Conhecimento</option><option>Energia</option><option>Medo</option><option>Morte</option><option>Sangue</option></select><select id="nexHbTier"><option value="0">0</option><option>I</option><option>II</option><option>III</option><option>IV</option></select><input type="number" id="nexHbSpaces" value="1"><select id="nexHbTag"><option>Acessórios</option><option>Explosivos</option><option>Itens Operacionais</option></select></div>'+
  '<section class="nex-hb-special-form" id="nexHbCursedForm" hidden><div class="nex-hb-cursed-fields"><label>Elemento<select data-hb-sync="nexHbElement"><option>Conhecimento</option><option>Energia</option><option>Medo</option><option>Morte</option><option>Sangue</option></select></label><label>Categoria*<select data-hb-sync="nexHbTier"><option value="0">0</option><option>I</option><option>II</option><option>III</option><option>IV</option></select></label><label>Espaços*<input type="number" min="0" max="100" data-hb-sync="nexHbSpaces" value="1"></label></div></section>'+
- '<section class="nex-hb-special-form" id="nexHbGeneralForm" hidden><div class="nex-hb-general-fields"><label>Categoria*<select data-hb-sync="nexHbTier"><option value="0">0</option><option>I</option><option>II</option><option>III</option><option>IV</option></select></label><label>Espaços*<input type="number" min="0" max="100" data-hb-sync="nexHbSpaces" value="1"></label><label>Tag<select data-hb-sync="nexHbTag"><option>Acessórios</option><option>Explosivos</option><option>Itens Operacionais</option></select></label></div><div class="nex52-full nex-hb-item-improvements"><label for="nex52ImprovementName">Melhorias</label><div class="nex-hb-improvement-add"><input type="text" id="nex52ImprovementName" maxlength="80" placeholder="Nome da melhoria"><button type="button" id="nex52ImprovementAdd">Adicionar</button></div><div id="nex52ImprovementList" class="nex-hb-improvement-list" aria-live="polite"></div></div></section>'+
+ '<section class="nex-hb-special-form" id="nexHbGeneralForm" hidden><div class="nex-hb-general-fields"><label>Categoria*<select data-hb-sync="nexHbTier"><option value="0">0</option><option>I</option><option>II</option><option>III</option><option>IV</option></select></label><label>Espaços*<input type="number" min="0" max="100" data-hb-sync="nexHbSpaces" value="1"></label><label>Tag<select data-hb-sync="nexHbTag"><option>Acessórios</option><option>Explosivos</option><option>Itens Operacionais</option></select></label></div></section>'+
+ '<section class="nex-hb-special-form" id="nexHbWeaponForm" hidden><div class="nex-hb-weapon-fields">'+
+ '<label>Proficiência<select id="nexHbWeaponProficiency"><option>Armas Simples</option><option>Armas Táticas</option><option>Armas Pesadas</option></select></label>'+
+ '<label>Tipo<select id="nexHbWeaponKind"><option>Corpo a Corpo</option><option>Arma de Disparo</option><option>Arma de Fogo</option><option>Arremesso</option></select></label>'+
+ '<label>Empunhadura<select id="nexHbWeaponWield"><option>Uma Mão</option><option>Duas Mãos</option><option>Leve</option></select></label>'+
+ '<label>Dano*<input id="nexHbWeaponDamage" maxlength="90" placeholder="1d8" required></label>'+
+ '<label>Dano secundário<input id="nexHbWeaponSecondary" maxlength="90" placeholder="Opcional"></label>'+
+ '<label>Tipo do dano secundário<select id="nexHbWeaponSecondaryType"><option>Normal</option><option>Sangue</option><option>Morte</option><option>Energia</option><option>Conhecimento</option><option>Medo</option></select></label>'+
+ '<label>Crítico*<input id="nexHbWeaponCritical" maxlength="16" value="20" required></label>'+
+ '<label>Multiplicador*<input id="nexHbWeaponMultiplier" maxlength="10" value="2" required></label>'+
+ '<label>Tipo de Dano<select id="nexHbWeaponDamageType"><option>Corte</option><option>Perfuração</option><option>Impacto</option><option>Balístico</option><option>Fogo</option><option>Energia</option><option>Morte</option><option>Sangue</option><option>Conhecimento</option><option>Medo</option></select></label>'+
+ '<label>Alcance<input id="nexHbWeaponRange" maxlength="60" placeholder="Toque, Curto, Médio..."></label>'+
+ '<label>Categoria base*<select data-hb-sync="nexHbTier"><option value="0">0</option><option>I</option><option>II</option><option>III</option><option>IV</option></select></label>'+
+ '<label>Espaços*<input type="number" min="0" max="100" data-hb-sync="nexHbSpaces" value="1"></label>'+
+ '<label>Quantidade<input id="nexHbWeaponQuantity" type="number" min="1" max="9999" value="1"></label></div></section>'+
+ '<section class="nex-hb-special-form" id="nexHbProtectionForm" hidden><div class="nex-hb-protection-fields">'+
+ '<label>Defesa*<input type="number" id="nexHbProtectionDefense" min="0" max="100" value="1" required></label>'+
+ '<label>Categoria*<select data-hb-sync="nexHbTier"><option value="0">0</option><option>I</option><option>II</option><option>III</option><option>IV</option></select></label>'+
+ '<label>Espaços*<input type="number" min="0" max="100" data-hb-sync="nexHbSpaces" value="1"></label></div></section>'+
  '<section class="nex-hb-special-form" id="nexHbOtherForm" hidden><div class="nex-hb-general-fields"><label>Categoria*<select data-hb-sync="nexHbTier"><option value="0">0</option><option>I</option><option>II</option><option>III</option><option>IV</option></select></label><label>Espaços*<input type="number" min="0" max="100" data-hb-sync="nexHbSpaces" value="1"></label></div></section>'+
+ '<section id="nexHbSharedImprovements" class="nex52-full nex-hb-item-improvements" hidden><div class="nex-hb-improvement-heading"><strong>Melhorias</strong><button type="button" id="nex52ImprovementAdd">Adicionar</button></div><input type="text" id="nex52ImprovementName" maxlength="80" placeholder="Nome da melhoria" aria-label="Nome da melhoria"><div id="nex52ImprovementList" class="nex-hb-improvement-list" aria-live="polite"></div></section>'+
  '<div class="nex-hb-image-area nex52-full"><input id="nexHbImageUrl" type="hidden">'+
  '<label>Imagem<input id="nexHbImageFile" type="file" accept="image/png,image/jpeg,image/webp"></label>'+
  '<img id="nexHbImagePreview" alt="Prévia da imagem do item" hidden></div>'+
@@ -185,7 +216,13 @@
    const general=type==='item'&&itemTab==='Geral';
    $('nexHbCursedForm').hidden=!cursed;
    $('nexHbGeneralForm').hidden=!general;
-   $('nexHbOtherForm').hidden=type!=='item'||cursed||general;
+   const weapon=type==='item'&&itemTab==='Armas';
+   const protection=type==='item'&&itemTab==='Proteções';
+   $('nexHbWeaponForm').hidden=!weapon;
+   $('nexHbProtectionForm').hidden=!protection;
+   $('nexHbOtherForm').hidden=type!=='item'||cursed||general||weapon||protection;
+   $('nexHbSharedImprovements').hidden=type!=='item'||!(general||protection||weapon);
+   ['nexHbProtectionDefense','nexHbWeaponDamage','nexHbWeaponCritical','nexHbWeaponMultiplier'].forEach(id=>{ $(id).required=protection&&id==='nexHbProtectionDefense'||weapon&&id!=='nexHbProtectionDefense'; });
    $('nex52Editor').dataset.itemKind=type==='item'?(cursed?'cursed':general?'general':'other'):'';
    syncItemCategoryFields();
  }
@@ -219,6 +256,11 @@
    $('nex52Category').value=itemTab;
    $('nexHbImprovementTarget').value='Armas';
    $('nexHbBonusType').value='ataque';$('nexHbBonusValue').value='2';
+   $('nexHbProtectionDefense').value='1';
+   $('nexHbWeaponProficiency').value='Armas Simples';$('nexHbWeaponKind').value='Corpo a Corpo';$('nexHbWeaponWield').value='Uma Mão';
+   $('nexHbWeaponDamage').value='';$('nexHbWeaponSecondary').value='';$('nexHbWeaponSecondaryType').value='Normal';
+   $('nexHbWeaponCritical').value='20';$('nexHbWeaponMultiplier').value='2';$('nexHbWeaponDamageType').value='Corte';
+   $('nexHbWeaponRange').value='';$('nexHbWeaponQuantity').value='1';
    $('nexHbTier').value='0';$('nexHbSpaces').value='1';$('nexHbElement').value='Conhecimento';$('nexHbTag').value='Acessórios';
    $('nexHbImageUrl').value='';$('nexHbImageFile').value='';$('nexHbImagePreview').hidden=true;$('nexHbImagePreview').removeAttribute('src');
    editorFields();
@@ -251,6 +293,18 @@
      $('nexHbImprovementTarget').value=item.improvementTarget||'Armas';
      $('nexHbBonusType').value=item.bonusType||'ataque';$('nexHbBonusValue').value=String(item.bonusValue??2);
      customItemImprovements=Array.isArray(item.customImprovements)?[...item.customImprovements]:[];renderItemImprovements();
+     $('nexHbProtectionDefense').value=String(item.protectionDefense??1);
+     $('nexHbWeaponProficiency').value=item.weaponProficiency||'Armas Simples';
+     $('nexHbWeaponKind').value=item.weaponKind||'Corpo a Corpo';
+     $('nexHbWeaponWield').value=item.weaponWield||'Uma Mão';
+     $('nexHbWeaponDamage').value=item.weaponDamage||'';
+     $('nexHbWeaponSecondary').value=item.weaponSecondary||'';
+     $('nexHbWeaponSecondaryType').value=item.weaponSecondaryType||'Normal';
+     $('nexHbWeaponCritical').value=item.weaponCritical||'20';
+     $('nexHbWeaponMultiplier').value=item.weaponMultiplier||'2';
+     $('nexHbWeaponDamageType').value=item.weaponDamageType||'Corte';
+     $('nexHbWeaponRange').value=item.weaponRange==='—'?'':(item.weaponRange||'');
+     $('nexHbWeaponQuantity').value=String(item.weaponQuantity??1);
      $('nexHbTier').value=item.itemTier||'0';$('nexHbSpaces').value=String(item.itemSpaces??1);
      $('nexHbElement').value=['Conhecimento','Energia','Medo','Morte','Sangue'].includes(item.element)?item.element:'Conhecimento';
      $('nexHbTag').value=item.itemTag||'Acessórios';
@@ -268,7 +322,7 @@
    if(item.type==='ameaca')return ['VD: '+item.vd,item.creatureType+' - '+item.size];
    if(item.type==='ritual')return [item.ritualType+' · '+item.circle+'º círculo · '+item.element,item.execution+' · '+item.range];
    if(item.type==='melhoria')return ['Aplicável a '+item.improvementTarget,(BONUS_TYPES.find(([id])=>id===item.bonusType)?.[1]||'Bônus')+': '+(item.bonusValue>=0?'+':'')+item.bonusValue];
-   if(item.type==='item')return [item.category,'Categoria '+item.itemTier+' · '+item.itemSpaces+' espaço(s)',item.category==='Itens Amaldiçoados'?item.element:item.category==='Geral'?item.itemTag:''];
+   if(item.type==='item')return [item.category,(item.category==='Proteções'?'Defesa '+item.protectionDefense+' · ':item.category==='Armas'?'Dano '+(item.weaponDamage||'—')+' · ':'')+'Categoria '+item.itemTier+' · '+item.itemSpaces+' espaço(s)',item.category==='Itens Amaldiçoados'?item.element:item.category==='Geral'?item.itemTag:''];
    if(item.type==='trilha')return ['Trilha · '+item.className,'4 marcos · NEX 10%, 40%, 65% e 99%'];
    if(item.type==='origem')return ['Origem personalizada',(item.skills||[]).join(' · ')||'Duas perícias'];
    if(['poder_geral','poder','habilidade'].includes(item.type))return ['Poder Geral · '+(item.className==='Livre'?'Geral':item.className),'Homebrew'];
@@ -381,6 +435,8 @@
      (item.type==='melhoria'?'<h4>Efeito configurado</h4><p>'+esc(BONUS_TYPES.find(([id])=>id===item.bonusType)?.[1]||'Bônus')+': '+esc((item.bonusValue>=0?'+':'')+item.bonusValue)+'</p>':'')+
      (item.type==='origem'?'<h4>Perícias treinadas</h4><p>'+esc((item.skills||[]).join(' e ')||'Não configuradas')+'</p>':'')+
      (item.type==='item'&&item.image?'<img class="nex-hb-preview-detail" src="'+esc(item.image)+'" alt="Imagem de '+esc(item.name)+'">':'')+
+     (item.type==='item'&&item.category==='Proteções'?'<h4>Defesa</h4><p>'+esc(item.protectionDefense)+'</p>':'')+
+     (item.type==='item'&&item.category==='Armas'?'<h4>Características da arma</h4><p>'+esc([item.weaponProficiency,item.weaponKind,item.weaponWield,'Dano '+item.weaponDamage,'Dano secundário '+(item.weaponSecondary||'—'),'Crítico '+item.weaponCritical+' ×'+item.weaponMultiplier,'Tipo de dano '+item.weaponDamageType,'Alcance '+item.weaponRange,'Quantidade '+item.weaponQuantity].join(' · '))+'</p>':'')+
      (item.type==='item'&&item.customImprovements?.length?'<h4>Melhorias</h4><p>'+item.customImprovements.map(esc).join(' · ')+'</p>':'')+ritualDetails(item)+trailDetails(item);
    targetOptions();$('nex52Apply').hidden=item.type==='melhoria';$('nex51Target').closest('label').hidden=item.type==='melhoria';const d=$('nex52Detail');if(typeof d.showModal==='function')d.showModal();else d.setAttribute('open','');
  }
@@ -468,6 +524,8 @@
    if(type==='trilha'&&TRAIL_NEX.some(n=>!cut($('nex53TrailName'+n).value,90))){message('Informe o nome das quatro habilidades da trilha: 10%, 40%, 65% e 99%.');return;}
    if(type==='melhoria'&&(!BONUS_TYPES.some(([id])=>id===$('nexHbBonusType').value)||$('nexHbBonusValue').value.trim()===''||!Number.isInteger(Number($('nexHbBonusValue').value))||Math.abs(Number($('nexHbBonusValue').value))>100)){message('Informe um bônus inteiro entre -100 e +100.');return;}
    if(type==='melhoria'&&!cut($('nex51Description').value,2000)){message('Preencha a descrição da melhoria.');return;}
+   if(type==='item'&&itemTab==='Armas'&&(!$('nexHbWeaponDamage').value.trim()||!/^([1-9]|1\d|20)(?:[-–]20)?$/.test($('nexHbWeaponCritical').value.trim())||!/^\d+$/.test($('nexHbWeaponMultiplier').value.trim())||Number($('nexHbWeaponMultiplier').value)<1)){message('Confira dano, crítico e multiplicador da arma.');return;}
+   if(type==='item'&&itemTab==='Proteções'&&(!/^\d+$/.test($('nexHbProtectionDefense').value)||Number($('nexHbProtectionDefense').value)>100)){message('Informe defesa válida entre 0 e 100.');return;}
    if(type==='item'&&!cut($('nex51Description').value,2000)){message('Preencha a descrição do item.');return;}
    if(type==='item'&&(!['0','I','II','III','IV'].includes($('nexHbTier').value)||!/^\d+$/.test($('nexHbSpaces').value)||Number($('nexHbSpaces').value)>100)){message('Categoria ou espaços inválidos.');return;}
    if(type==='poder_paranormal' && !cut($('nex51Description').value,2000)){message('Preencha a descrição do poder paranormal.');return;}
@@ -503,6 +561,18 @@
      improvementTarget:type==='melhoria'?$('nexHbImprovementTarget').value:(old?.improvementTarget||'Armas'),
      bonusType:type==='melhoria'?$('nexHbBonusType').value:(old?.bonusType||'ataque'),
      bonusValue:type==='melhoria'?Number($('nexHbBonusValue').value):(old?.bonusValue??0),
+     protectionDefense:type==='item'&&itemTab==='Proteções'?Number($('nexHbProtectionDefense').value):(old?.protectionDefense??1),
+     weaponProficiency:type==='item'&&itemTab==='Armas'?$('nexHbWeaponProficiency').value:(old?.weaponProficiency||'Armas Simples'),
+     weaponKind:type==='item'&&itemTab==='Armas'?$('nexHbWeaponKind').value:(old?.weaponKind||'Corpo a Corpo'),
+     weaponWield:type==='item'&&itemTab==='Armas'?$('nexHbWeaponWield').value:(old?.weaponWield||'Uma Mão'),
+     weaponDamage:type==='item'&&itemTab==='Armas'?$('nexHbWeaponDamage').value:(old?.weaponDamage||''),
+     weaponSecondary:type==='item'&&itemTab==='Armas'?$('nexHbWeaponSecondary').value:(old?.weaponSecondary||''),
+     weaponSecondaryType:type==='item'&&itemTab==='Armas'?$('nexHbWeaponSecondaryType').value:(old?.weaponSecondaryType||'Normal'),
+     weaponCritical:type==='item'&&itemTab==='Armas'?$('nexHbWeaponCritical').value:(old?.weaponCritical||'20'),
+     weaponMultiplier:type==='item'&&itemTab==='Armas'?$('nexHbWeaponMultiplier').value:(old?.weaponMultiplier||'2'),
+     weaponDamageType:type==='item'&&itemTab==='Armas'?$('nexHbWeaponDamageType').value:(old?.weaponDamageType||'Corte'),
+     weaponRange:type==='item'&&itemTab==='Armas'?$('nexHbWeaponRange').value:(old?.weaponRange||'—'),
+     weaponQuantity:type==='item'&&itemTab==='Armas'?$('nexHbWeaponQuantity').value:(old?.weaponQuantity??1),
      itemTier:type==='item'?$('nexHbTier').value:(old?.itemTier||'0'),
      itemSpaces:type==='item'?$('nexHbSpaces').value:(old?.itemSpaces??1),
      itemTag:type==='item'&&itemTab==='Geral'?$('nexHbTag').value:(old?.itemTag||'Acessórios'),
