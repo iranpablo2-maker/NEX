@@ -54,7 +54,7 @@ function detail(item){
   kind:sub[1]||unavailable,
   wield:sub[2]||unavailable,
   damage:pairs.dano||getStat('Dano')||unavailable,
-  secondary:'—',
+  secondary:pairs['dano secundario']||getStat('Dano secundário')||'—',
   critical:critNumber?.[1]||'20',
   multiplier:critMulti?.[1]||'2',
   damageType:pairs['tipo de dano']||pairs.tipo||getStat('Tipo de dano','Tipo')||unavailable,
@@ -343,7 +343,7 @@ function card(item,expanded=false){
  ];
  if(weapon){
   const displayCrit=multi?'x'+safe(multi):(critical?safe(critical):'—');
-  const weaponInfo=[['Categoria',d.tier],['Tipo',d.damageType],['Espaços',d.spaces]];
+  const weaponInfo=[['Categoria',d.tier],['Tipo',d.damageType],['Espaços',d.spaces],...(String(d.secondary||'').trim()&&!/^(?:—|-)$/i.test(String(d.secondary).trim())?[['Dano secundário',d.secondary]]:[])];
   return '<details class="nex-item-card-new nex-ref-weapon" data-item-id="'+id+'"'+(expanded?' open':'')+'>'+
     '<summary class="nex-ref-heading"><span class="nex-item-chevron" aria-hidden="true">⌄</span>'+
       '<span class="nex-ref-titleblock"><strong class="nex-ref-name">'+safe(d.name||'Arma')+'</strong>'+
@@ -479,6 +479,7 @@ renderAttacks=function(){
    '<div class="nex-combat-weapon-details" '+(collapsed?'hidden':'')+'>'+
      '<div class="nex-combat-weapon-summary">Dano: <b>'+safe(damage||'—')+'</b>　Crítico: <b>'+safe(d.critical||'20')+' ×'+safe(w.multiplier)+'</b></div>'+
     '<div><span class="nex-combat-stat-label">Ataque Bônus:</span> <b>'+safe((bonus>=0?'+':'')+bonus)+'</b> ('+safe(w.skillName)+')</div>'+
+    (String(d.secondary||'').trim()&&!/^(?:—|-)$/i.test(String(d.secondary).trim())?'<div><span class="nex-combat-stat-label">Dano secundário:</span> <b>'+safe(d.secondary)+'</b></div>':'')+
     '<div><span class="nex-combat-stat-label">Tipo de Dano:</span> <b>'+safe(d.damageType||'—')+'</b></div>'+
     '<div><span class="nex-combat-stat-label">Alcance:</span> <b>'+safe(d.range||'—')+'</b></div>'+
     '<div><span class="nex-combat-stat-label">Perícia:</span> <b>'+safe(w.skillName)+'</b></div>'+
@@ -535,17 +536,26 @@ document.addEventListener('click',e=>{
  const natural=w.value===0?Math.min(...rolls):Math.max(...rolls);
  const attack=natural+w.bonus;
  const critical=natural>=w.threshold;
+ const secondaryExpression=String(w.d.secondary||'').trim();
+ const hasSecondary=secondaryExpression!==''&&!/^(?:—|-)$/i.test(secondaryExpression);
+ // Crítico multiplica apenas os dados do dano principal, mantendo o secundário independente.
  const damage=weaponDice(w.d.damage,critical?w.multiplier:1);
- if(!damage){toast('Configure um dano válido para esta arma no inventário.');return;}
+ if(!damage){toast('Configure um dano principal válido para esta arma no inventário.');return;}
+ const secondary=hasSecondary?weaponDice(secondaryExpression,1):null;
+ if(hasSecondary&&!secondary){toast('Dano secundário inválido. Use, por exemplo, 1d6 ou 2d4+2.');return;}
  const originBonus=typeof nex12Orig==='function'?Number(nex12Orig()?.damage)||0:0;
- damage.total+=originBonus;
+ const totalDamage=damage.total+(secondary?secondary.total:0)+originBonus;
  const detailAttack=rolls.join(', ')+' → '+natural+' '+(w.bonus>=0?'+ ':'− ')+Math.abs(w.bonus);
  const damageDetail=damage.detail+(originBonus?' + bônus '+originBonus:'');
+ const secondaryDetail=secondary?secondary.detail:'';
  weaponRollPanel.innerHTML='<div class="nex-weapon-roll-head"><strong>'+safe(w.d.name||item.name)+'</strong><button type="button" data-close-weapon-popup aria-label="Fechar resultado">×</button></div>'+
  '<div class="nex-weapon-roll-stats"><span class="nex-weapon-roll-hex"></span>'+
  '<div class="nex-weapon-roll-column"><div class="nex-weapon-roll-value">'+safe(attack)+'</div><div class="nex-weapon-roll-label">ATAQUE</div></div>'+
- '<div class="nex-weapon-roll-column"><div class="nex-weapon-roll-value">'+safe(damage.total)+'</div><div class="nex-weapon-roll-label">DANO</div></div></div>'+
- '<div class="nex-weapon-roll-detail">'+safe(w.skillName)+': '+safe(detailAttack)+'<div>Dano: '+safe(damageDetail)+(critical?' · Crítico!':'')+'</div></div>';
+ '<div class="nex-weapon-roll-column"><div class="nex-weapon-roll-value">'+safe(totalDamage)+'</div><div class="nex-weapon-roll-label">DANO TOTAL</div></div></div>'+
+ '<div class="nex-weapon-roll-detail">'+safe(w.skillName)+': '+safe(detailAttack)+
+ '<div>Dano principal ('+safe(w.d.damage)+'): '+safe(damageDetail)+' = '+safe(damage.total+originBonus)+(critical?' · Crítico!':'')+'</div>'+
+ (secondary?'<div>Dano secundário ('+safe(secondary.expression)+'): '+safe(secondaryDetail)+' = '+safe(secondary.total)+'</div>':'')+
+ (secondary?'<div>Total: '+safe(totalDamage)+'</div>':'')+'</div>';
  weaponRollPanel.hidden=false;
  const rect=button.getBoundingClientRect(),width=310;
  const left=Math.max(8,Math.min(innerWidth-width-8,rect.left-100));
@@ -553,7 +563,9 @@ document.addEventListener('click',e=>{
  weaponRollPanel.style.top=Math.max(8,Math.min(innerHeight-weaponRollPanel.offsetHeight-8,rect.bottom+9))+'px';
  if(typeof logResult==='function'){
   logResult(w.d.name+' — ataque','d20 ('+w.skillName+')', '['+rolls.join(', ')+'] → '+natural,attack);
-  logResult(w.d.name+' — dano',damage.expression,damageDetail,damage.total);
+  logResult(w.d.name+' — dano principal',damage.expression,damageDetail,damage.total+originBonus);
+  if(secondary)logResult(w.d.name+' — dano secundário',secondary.expression,secondaryDetail,secondary.total);
+  if(secondary)logResult(w.d.name+' — dano total',damage.expression+' + '+secondary.expression,damageDetail+' + '+secondaryDetail,totalDamage);
  }
 });
 weaponRollPanel.addEventListener('click',e=>{
@@ -588,7 +600,7 @@ by('nexEditorForm').addEventListener('submit',event=>{
  d.image=detail(item).image;
  item.name=d.name;item.category=d.category;item.quantity=d.quantity;item.spaces=d.spaces;item.nexInfo=d;
  item.description=d.description;
- item.detail=[d.description,d.category==='Arma'?'Dano: '+d.damage:'',d.category==='Arma'?'Crítico: '+d.critical+' ×'+d.multiplier:'',d.category==='Arma'?'Tipo: '+d.damageType:'','Categoria: '+d.tier].filter(Boolean).join(' · ').slice(0,2500);
+ item.detail=[d.description,d.category==='Arma'?'Dano: '+d.damage:'',d.category==='Arma'&&d.secondary&&d.secondary!=='—'?'Dano secundário: '+d.secondary:'',d.category==='Arma'?'Crítico: '+d.critical+' ×'+d.multiplier:'',d.category==='Arma'?'Tipo: '+d.damageType:'','Categoria: '+d.tier].filter(Boolean).join(' · ').slice(0,2500);
  close();renderInventory();renderAttacks();save();toast('Item atualizado.');
 });
 document.addEventListener('keydown',event=>{if(!modal.hidden&&event.key==='Escape'){event.preventDefault();close();}});
