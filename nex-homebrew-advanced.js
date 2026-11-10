@@ -6,6 +6,8 @@
  const TABS={ameacas:['ameaca'],habilidades:['origem','poder_paranormal','poder_geral','poder','habilidade','trilha'],rituais:['ritual'],itens:['item']};
  const SKILL_TABS={origens:['origem'],paranormais:['poder_paranormal'],gerais:['poder_geral','poder','habilidade'],trilhas:['trilha']};
  const TRAIL_NEX=[10,40,65,99];
+ const ITEM_CATEGORIES=['Armas','Munições','Proteções','Geral','Itens Amaldiçoados'];
+ let customItemImprovements=[];
  const $=id=>document.getElementById(id);
  const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','"':'&#39;'}[c]));
  const cut=(v,max)=>String(v??'').trim().slice(0,max);
@@ -29,6 +31,7 @@
    size:['Minúsculo','Pequeno','Médio','Grande','Enorme','Colossal'].includes(x.size)?x.size:'Médio',
    creatureType:cut(x.creatureType||'Criatura',70),
    category:cut(x.category||'Geral',70),
+   customImprovements:x.type==='item'&&Array.isArray(x.customImprovements)?[...new Set(x.customImprovements.filter(v=>typeof v==='string').map(v=>cut(v,80)).filter(Boolean))].slice(0,30):[],
    skills:x.type==='origem'&&Array.isArray(x.skills)?[...new Set(x.skills.filter(v=>typeof v==='string').map(v=>cut(v,60)))].slice(0,2):[],
    trailAbilities:x.type==='trilha'?TRAIL_NEX.map((n,i)=>{
      const list=Array.isArray(x.trailAbilities)?x.trailAbilities:[];
@@ -99,7 +102,12 @@
  '<label>Ou escolher imagem<input id="nex53RitualFile" type="file" accept="image/png,image/jpeg,image/webp"></label>'+
  '<img id="nex53RitualPreview" alt="Prévia da imagem do ritual" hidden></div>'+
  '</div>'+
- '<div class="nex52-specific" id="nex52ItemFields" hidden><label>Categoria<input id="nex52Category" maxlength="70" placeholder="Ex.: Equipamento"></label></div>'+
+ '<div class="nex52-specific nex52-full" id="nex52ItemFields" hidden>'+
+ '<label>Categoria do item<select id="nex52Category">'+ITEM_CATEGORIES.map(c=>'<option value="'+esc(c)+'">'+esc(c)+'</option>').join('')+'</select></label>'+
+ '<div class="nex52-full nex-hb-item-improvements"><label for="nex52ImprovementName">Melhorias homebrew</label>'+
+ '<div class="nex-hb-improvement-add"><input type="text" id="nex52ImprovementName" maxlength="80" placeholder="Nome da melhoria homebrew" aria-label="Nome da melhoria homebrew">'+
+ '<button type="button" id="nex52ImprovementAdd">Adicionar homebrew</button></div>'+
+ '<div id="nex52ImprovementList" class="nex-hb-improvement-list" aria-live="polite"></div></div></div>'+
  '<div id="nex53TrailFields" class="nex53-trail-fields nex52-full" hidden><p>Configure o nome e o efeito de cada marco de NEX.</p>'+
  TRAIL_NEX.map((n,i)=>'<fieldset class="nex53-trail-step"><legend>NEX '+n+'% · Habilidade '+(i+1)+'</legend>'+
  '<label>Nome da habilidade<input type="text" id="nex53TrailName'+n+'" maxlength="90" placeholder="Nome da habilidade de '+n+'%"></label>'+
@@ -158,8 +166,13 @@
    $('nex55Skill1').innerHTML='<option value="">Escolha a primeira perícia</option>'+options;
    $('nex55Skill2').innerHTML='<option value="">Escolha a segunda perícia</option>'+options;
  }
+ function renderItemImprovements(){
+   const list=$('nex52ImprovementList');if(!list)return;
+   list.innerHTML=customItemImprovements.length?customItemImprovements.map((name,i)=>'<span class="nex-hb-improvement-chip">'+esc(name)+' <button type="button" data-nex52-improvement-remove="'+i+'" aria-label="Remover '+esc(name)+'">×</button></span>').join(''):'<small>Nenhuma melhoria homebrew adicionada.</small>';
+ }
  function resetForm(){
    $('nex51Form').reset();$('nex51Edit').value='';
+   customItemImprovements=[];renderItemImprovements();
    loadSkillChoices();
    $('nex51Type').innerHTML=currentTypes().map(type=>'<option value="'+type+'">'+LABEL[type]+'</option>').join('');
    $('nex51Type').value=defaultType();$('nex52EditorTitle').textContent='Adicionar '+LABEL[defaultType()].toLocaleLowerCase('pt-BR');
@@ -192,7 +205,9 @@
      if(item.image)$('nex53RitualPreview').src=item.image;
      $('nex53ParanormalElement').value=['Sangue','Morte','Energia','Conhecimento','Medo'].includes(item.element)?item.element:'Sangue';$('nex51Cost').value=item.cost;
      $('nex52VD').value=item.vd;$('nex52Size').value=item.size;
-     $('nex52CreatureType').value=item.creatureType;$('nex52Category').value=item.category;
+     $('nex52CreatureType').value=item.creatureType;
+     $('nex52Category').value=ITEM_CATEGORIES.includes(item.category)?item.category:({'Arma':'Armas','Munição':'Munições','Proteção':'Proteções','Item Amaldiçoado':'Itens Amaldiçoados'}[item.category]||'Geral');
+     customItemImprovements=Array.isArray(item.customImprovements)?[...item.customImprovements]:[];renderItemImprovements();
      if(item.type==='origem'){$('nex55Skill1').value=item.skills?.[0]||'';$('nex55Skill2').value=item.skills?.[1]||'';}
      if(item.type==='trilha')TRAIL_NEX.forEach((n,i)=>{const step=(item.trailAbilities||[])[i]||{};$('nex53TrailName'+n).value=step.name||'';$('nex53TrailDescription'+n).value=step.description||'';});
      $('nex52EditorTitle').textContent='Editar '+item.name;
@@ -203,7 +218,7 @@
  function meta(item){
    if(item.type==='ameaca')return ['VD: '+item.vd,item.creatureType+' - '+item.size];
    if(item.type==='ritual')return [item.ritualType+' · '+item.circle+'º círculo · '+item.element,item.execution+' · '+item.range];
-   if(item.type==='item')return [item.category,'Item personalizado'];
+   if(item.type==='item')return [item.category,(item.customImprovements?.length||0)+' melhoria(s) homebrew'];
    if(item.type==='trilha')return ['Trilha · '+item.className,'4 marcos · NEX 10%, 40%, 65% e 99%'];
    if(item.type==='origem')return ['Origem personalizada',(item.skills||[]).join(' · ')||'Duas perícias'];
    if(['poder_geral','poder','habilidade'].includes(item.type))return ['Poder Geral · '+(item.className==='Livre'?'Geral':item.className),'Homebrew'];
@@ -345,6 +360,19 @@
    if(!btn||!Object.hasOwn(SKILL_TABS,btn.dataset.nex53Skill))return;
    skillTab=btn.dataset.nex53Skill;$('nex51Search').value='';closeEditor();renderLibrary();
  });
+ $('nex52ImprovementAdd').addEventListener('click',()=>{
+   const input=$('nex52ImprovementName'),name=cut(input.value,80);
+   if(!name){input.focus();return;}
+   if(customItemImprovements.some(x=>x.toLocaleLowerCase('pt-BR')===name.toLocaleLowerCase('pt-BR'))){message('Esta melhoria já foi adicionada.');return;}
+   if(customItemImprovements.length>=30){message('Limite de 30 melhorias homebrew por item.');return;}
+   customItemImprovements.push(name);input.value='';renderItemImprovements();input.focus();
+ });
+ $('nex52ImprovementName').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();$('nex52ImprovementAdd').click();}});
+ $('nex52ImprovementList').addEventListener('click',e=>{
+   const button=e.target.closest('[data-nex52-improvement-remove]');if(!button)return;
+   const index=Number(button.dataset.nex52ImprovementRemove);
+   if(Number.isInteger(index)&&index>=0&&index<customItemImprovements.length){customItemImprovements.splice(index,1);renderItemImprovements();}
+ });
  $('nex51Form').addEventListener('submit',e=>{
    e.preventDefault();const type=$('nex51Type').value,name=cut($('nex51Name').value,90);
    if(!Object.hasOwn(LABEL,type)||!name){message('Informe um nome e um tipo.');return;}
@@ -382,6 +410,7 @@
      verdadeiroDice:type==='ritual'?$('nex53VerdadeiroDice').value:old?.verdadeiroDice,
      image:type==='ritual'?($('nex53RitualFile').files.length?(! $('nex53RitualPreview').hidden ?$('nex53RitualPreview').src:''):($('nex53RitualImage').value||(! $('nex53RitualPreview').hidden?$('nex53RitualPreview').src:''))):(old?.image||''),
      size:$('nex52Size').value,creatureType:$('nex52CreatureType').value,category:$('nex52Category').value,
+     customImprovements:type==='item'?customItemImprovements:(old?.customImprovements||[]),
      trailAbilities:type==='trilha'?TRAIL_NEX.map(n=>({nex:n,name:$('nex53TrailName'+n).value,description:$('nex53TrailDescription'+n).value})):(old?.trailAbilities||[]),
      skills:type==='origem'?[$('nex55Skill1').value,$('nex55Skill2').value]:(old?.skills||[])
    });
