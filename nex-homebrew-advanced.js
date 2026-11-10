@@ -107,13 +107,13 @@
  '<img id="nex53RitualPreview" alt="Prévia da imagem do ritual" hidden></div>'+
  '</div>'+
  '<div class="nex52-specific nex52-full" id="nex52ItemFields" hidden>'+
- '<label hidden>Tipo de item<select id="nex52Category">'+ITEM_CATEGORIES.map(c=>'<option value="'+esc(c)+'">'+esc(c)+'</option>').join('')+'</select></label>'+
+ '<select id="nex52Category" hidden aria-label="Categoria definida pela aba">'+ITEM_CATEGORIES.map(c=>'<option value="'+esc(c)+'">'+esc(c)+'</option>').join('')+'</select>'+
  '<div class="nex-hb-hidden-item-values" hidden><select id="nexHbElement"><option>Conhecimento</option><option>Energia</option><option>Medo</option><option>Morte</option><option>Sangue</option></select><select id="nexHbTier"><option value="0">0</option><option>I</option><option>II</option><option>III</option><option>IV</option></select><input type="number" id="nexHbSpaces" value="1"><select id="nexHbTag"><option>Acessórios</option><option>Explosivos</option><option>Itens Operacionais</option></select></div>'+
  '<section class="nex-hb-special-form" id="nexHbCursedForm" hidden><div class="nex-hb-cursed-fields"><label>Elemento<select data-hb-sync="nexHbElement"><option>Conhecimento</option><option>Energia</option><option>Medo</option><option>Morte</option><option>Sangue</option></select></label><label>Categoria*<select data-hb-sync="nexHbTier"><option value="0">0</option><option>I</option><option>II</option><option>III</option><option>IV</option></select></label><label>Espaços*<input type="number" min="0" max="100" data-hb-sync="nexHbSpaces" value="1"></label></div></section>'+
  '<section class="nex-hb-special-form" id="nexHbGeneralForm" hidden><div class="nex-hb-general-fields"><label>Categoria*<select data-hb-sync="nexHbTier"><option value="0">0</option><option>I</option><option>II</option><option>III</option><option>IV</option></select></label><label>Espaços*<input type="number" min="0" max="100" data-hb-sync="nexHbSpaces" value="1"></label><label>Tag<select data-hb-sync="nexHbTag"><option>Acessórios</option><option>Explosivos</option><option>Itens Operacionais</option></select></label></div><div class="nex52-full nex-hb-item-improvements"><label for="nex52ImprovementName">Melhorias</label><div class="nex-hb-improvement-add"><input type="text" id="nex52ImprovementName" maxlength="80" placeholder="Nome da melhoria"><button type="button" id="nex52ImprovementAdd">Adicionar</button></div><div id="nex52ImprovementList" class="nex-hb-improvement-list" aria-live="polite"></div></div></section>'+
  '<section class="nex-hb-special-form" id="nexHbOtherForm" hidden><div class="nex-hb-general-fields"><label>Categoria*<select data-hb-sync="nexHbTier"><option value="0">0</option><option>I</option><option>II</option><option>III</option><option>IV</option></select></label><label>Espaços*<input type="number" min="0" max="100" data-hb-sync="nexHbSpaces" value="1"></label></div></section>'+
- '<div class="nex-hb-image-area nex52-full"><label>Imagem<input id="nexHbImageUrl" type="url" maxlength="2000" placeholder="https://... (opcional)"></label>'+
- '<label>Ou escolher imagem<input id="nexHbImageFile" type="file" accept="image/png,image/jpeg,image/webp"></label>'+
+ '<div class="nex-hb-image-area nex52-full"><input id="nexHbImageUrl" type="hidden">'+
+ '<label>Imagem<input id="nexHbImageFile" type="file" accept="image/png,image/jpeg,image/webp"></label>'+
  '<img id="nexHbImagePreview" alt="Prévia da imagem do item" hidden></div>'+
  '</div>'+
  '<div id="nex53TrailFields" class="nex53-trail-fields nex52-full" hidden><p>Configure o nome e o efeito de cada marco de NEX.</p>'+
@@ -141,7 +141,7 @@
    const isTrail=type==='trilha',isOrigin=type==='origem',isGeneral=['poder_geral','poder','habilidade'].includes(type);
    const isParanormal=type==='poder_paranormal';
    // Ao escolher a subcategoria, não é preciso selecionar "Categoria" novamente.
-   $('nex55TypeField').hidden=tab==='habilidades';
+   $('nex55TypeField').hidden=tab==='habilidades'||type==='item';
    const classSelect=$('nex51Class'),oldClass=classSelect.value;
    const choices=isTrail?['Combatente','Especialista','Ocultista']:isGeneral?['Geral','Combatente','Especialista','Ocultista']:['Livre','Combatente','Especialista','Ocultista'];
    classSelect.innerHTML=choices.map(name=>'<option value="'+name+'">'+name+'</option>').join('');
@@ -155,9 +155,9 @@
    $('nex55OriginSkills').hidden=!isOrigin;
    $('nex55DescriptionField').hidden=isTrail||type==='ritual';
    $('nex55DescriptionLabel').textContent=type==='item'?'Descrição* (use B, I ou U para formatar)':'Descrição';
-   $('nexHbDescriptionToolbar').hidden=type!=='item';
-   $('nex55RequirementsField').hidden=isTrail||isOrigin||isGeneral||type==='poder_paranormal'||type==='ritual';
-   $('nex55DescriptionLabel').textContent=type==='item'?'Descrição* (utilize negrito para aplicar a cor vermelha)':isOrigin||isGeneral||isParanormal?'Descrição':'Descrição e efeitos';
+   $('nexHbDescriptionToolbar').hidden=true;
+   $('nex55RequirementsField').hidden=isTrail||isOrigin||isGeneral||type==='poder_paranormal'||type==='ritual'||type==='item';
+   $('nex55DescriptionLabel').textContent=type==='item'?'Descrição*':isOrigin||isGeneral||isParanormal?'Descrição':'Descrição e efeitos';
    $('nex51Name').placeholder=type==='ritual'?'Novo Ritual':isParanormal||isGeneral?'Nome do homebrew':'Nome';
    $('nex51Name').parentElement.classList.toggle('nex53-ritual-name',type==='ritual');
    $('nex51Description').placeholder=isParanormal?'Descreva o poder paranormal...':isGeneral?'Descreva o poder geral...':'Descreva seu homebrew';
@@ -169,7 +169,7 @@
    toggleRitualDamageFields();
    $('nex52ItemFields').hidden=type!=='item';
    if(type==='item')$('nex52Category').value=$('nex51Edit').value?$('nex52Category').value:itemTab;
-   $('nex52Category').closest('label').hidden=true;
+   $('nex52Category').hidden=true;
    const cursed=type==='item'&&itemTab==='Itens Amaldiçoados';
    const general=type==='item'&&itemTab==='Geral';
    $('nexHbCursedForm').hidden=!cursed;
