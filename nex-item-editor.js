@@ -236,6 +236,31 @@ style.textContent=[
 '#sheetScreen #inventoryList .nex-item-card-weapon .nex-item-card-buttons button{background:transparent!important;border:0!important;padding:0!important;min-height:20px!important;font-size:12px!important;font-weight:500!important;box-shadow:none!important}',
 '#sheetScreen #inventoryList .nex-item-card-weapon .nex-item-remove{color:#f14953!important}',
 '#sheetScreen #inventoryList .nex-item-card-weapon .nex-item-edit{color:#32b957!important}',
+"#sheetScreen #inventoryList details.nex-ref-weapon{display:block!important;position:relative!important;box-sizing:border-box!important;width:100%!important;margin:7px 0!important;padding:0!important;border:1px solid #252329!important;border-radius:3px!important;background:#1e1e1e!important;color:#fff!important;box-shadow:none!important;overflow:hidden!important;font-family:Arial,Helvetica,sans-serif!important}",
+"#sheetScreen #inventoryList details.nex-ref-weapon>.nex-ref-heading{display:flex!important;align-items:flex-start!important;justify-content:flex-start!important;gap:21px!important;position:relative!important;min-height:55px!important;box-sizing:border-box!important;padding:6px 54px 11px 13px!important;margin:0!important;border:0!important;border-bottom:1px solid #a348ef!important;border-radius:0!important;background:#1e1e1e!important;cursor:pointer!important;list-style:none!important}",
+"#sheetScreen #inventoryList details.nex-ref-weapon>.nex-ref-heading::-webkit-details-marker{display:none!important}",
+"#sheetScreen #inventoryList details.nex-ref-weapon .nex-item-chevron{font-size:24px!important;line-height:24px!important;font-weight:600!important;color:#a446f5!important;display:block!important;width:21px!important;margin:0!important;padding:0!important;flex:none!important;transform:none!important;transition:none!important}",
+"#sheetScreen #inventoryList details.nex-ref-weapon[open] .nex-item-chevron{transform:rotate(180deg)!important}",
+"#sheetScreen #inventoryList details.nex-ref-weapon .nex-ref-titleblock{display:block!important;flex:1!important;min-width:0!important;padding:0!important;margin:0!important}",
+"#sheetScreen #inventoryList details.nex-ref-weapon .nex-ref-name{display:block!important;color:#fff!important;font-size:13px!important;line-height:17px!important;font-weight:700!important;padding:0!important;margin:0!important}",
+"#sheetScreen #inventoryList details.nex-ref-weapon .nex-ref-damage{display:flex!important;gap:16px!important;flex-wrap:wrap!important;margin-top:4px!important;padding:0!important;color:#a94cff!important;font-size:12px!important;line-height:15px!important;font-weight:400!important}",
+"#sheetScreen #inventoryList details.nex-ref-weapon .nex-ref-damage b{color:#fff!important;font-size:12px!important;font-weight:700!important}",
+"#sheetScreen #inventoryList details.nex-ref-weapon .nex-ref-equip{top:8px!important;right:16px!important;width:33px!important;height:33px!important;margin:0!important}",
+"#sheetScreen #inventoryList details.nex-ref-weapon .nex-ref-equip input{box-sizing:border-box!important;width:32px!important;height:32px!important;min-width:32px!important;border-radius:4px!important;border:1px solid #e0e0e0!important;background:#1e1e1e!important;margin:0!important}",
+"#sheetScreen #inventoryList details.nex-ref-weapon .nex-ref-equip input:checked{background:#1e1e1e!important;border-color:#e0e0e0!important}",
+"#sheetScreen #inventoryList details.nex-ref-weapon .nex-ref-equip input:checked::after{color:#a44df3!important;font-size:21px!important}",
+"#sheetScreen #inventoryList details.nex-ref-weapon .nex-ref-body{display:block!important;padding:18px 8px 10px!important;margin:0!important;border:0!important;background:#1e1e1e!important;box-sizing:border-box!important}",
+"#sheetScreen #inventoryList details.nex-ref-weapon .nex-ref-subtitle{font-size:10px!important;line-height:14px!important;font-weight:700!important;color:#fff!important;margin:0 0 2px!important;padding:0!important;font-style:normal!important}",
+"#sheetScreen #inventoryList details.nex-ref-weapon .nex-ref-subtitle em{font-weight:500!important;font-style:italic!important}",
+"#sheetScreen #inventoryList details.nex-ref-weapon .nex-ref-fields{display:block!important;font-size:13px!important;line-height:23px!important;margin:0!important;padding:0!important;color:#a849fa!important}",
+"#sheetScreen #inventoryList details.nex-ref-weapon .nex-ref-fields div{display:block!important;min-height:23px!important;padding:0!important;margin:0!important}",
+"#sheetScreen #inventoryList details.nex-ref-weapon .nex-ref-fields span{font-weight:500!important;color:#a849fa!important}",
+"#sheetScreen #inventoryList details.nex-ref-weapon .nex-ref-fields b{color:#fff!important;font-weight:500!important}",
+"#sheetScreen #inventoryList details.nex-ref-weapon .nex-ref-description{color:#fff!important;font-size:12px!important;line-height:18px!important;margin:17px 0 13px!important;padding:0!important;white-space:pre-wrap!important;overflow-wrap:anywhere!important}",
+"#sheetScreen #inventoryList details.nex-ref-weapon .nex-ref-actions{display:flex!important;justify-content:space-between!important;align-items:center!important;margin:0!important;padding:0!important;gap:12px!important}",
+"#sheetScreen #inventoryList details.nex-ref-weapon .nex-ref-actions button{display:inline-block!important;background:transparent!important;border:0!important;box-shadow:none!important;border-radius:0!important;min-height:18px!important;margin:0!important;padding:0!important;line-height:18px!important;font-size:12px!important;font-weight:400!important;cursor:pointer!important}",
+"#sheetScreen #inventoryList details.nex-ref-weapon .nex-ref-actions .nex-item-remove{color:#f34a56!important}",
+"#sheetScreen #inventoryList details.nex-ref-weapon .nex-ref-actions .nex-item-edit{color:#30b74e!important}",
 'body.nex-editor-open{overflow:hidden}',
 '@media(max-width:620px){#nexItemEditor{padding:3px}#nexItemEditor .nex-editor-dialog{height:calc(100dvh - 6px)}#nexItemEditor .nex-editor-grid{grid-template-columns:repeat(2,minmax(0,1fr))}#nexItemEditor .span-4{grid-column:1/-1}}'
 ].join('\n');
@@ -317,20 +342,21 @@ function card(item,expanded=false){
   ...(Number(d.quantity)>1?[['Quantidade',d.quantity]]:[])
  ];
  if(weapon){
-  const headerCrit=multi?'x'+safe(multi):(critical?safe(critical):'—');
-  const weaponDetails=[['Categoria',d.tier],['Tipo',d.damageType],['Espaços',d.spaces],['Alcance',d.range==='—'?'':d.range],['Dano secundário',d.secondary],...(Number(d.quantity)>1?[['Quantidade',d.quantity]]:[])];
-  const extraImage=/^https:\/\//i.test(d.image)?'<img loading="lazy" class="nex-item-card-image" src="'+safe(d.image)+'" alt="Imagem de '+safe(d.name)+'">':'';
-  return '<details class="nex-item-card-new nex-item-card-weapon" data-item-id="'+id+'"'+(expanded?' open':'')+'>'+
-   '<summary><span class="nex-item-chevron" aria-hidden="true">⌄</span>'+
-   '<span class="nex-item-main"><strong>'+safe(d.name||'Arma')+'</strong>'+
-   '<span class="nex-item-short"><span>Dano: <b>'+safe(d.damage||'—')+'</b></span><span>Crítico: <b>'+headerCrit+'</b></span></span></span></summary>'+
-   '<label class="nex-item-equipped-label" title="Equipar arma" aria-label="Equipar arma: '+safe(d.name)+'"><input type="checkbox" data-nex-item-equipped="'+id+'" aria-label="Equipar '+safe(d.name)+'" '+(item.equipped?'checked':'')+'></label>'+
-   '<div class="nex-item-card-body"><div class="nex-item-subtitle">'+safe(d.proficiency||'')+(d.kind?' <em> - '+safe(d.kind)+'</em>':'')+(d.wield?' <em> - '+safe(d.wield)+'</em>':'')+'</div>'+
-   '<div class="nex-item-card-stats">'+weaponDetails.filter(x=>x[1]!==undefined&&x[1]!==null&&String(x[1]).trim()!=='').map(x=>'<div><span>'+safe(x[0])+':</span> <b>'+safe(x[1])+'</b></div>').join('')+'</div>'+
-   (d.upgrades?'<div class="nex-item-card-description"><b>Melhorias:</b> '+descriptionText(d.upgrades)+'</div>':'')+extraImage+
-   '<div class="nex-item-card-description">'+descriptionText(d.description||'Sem descrição cadastrada.')+'</div>'+
-   '<div class="nex-item-card-buttons"><button type="button" data-nex-item-remove="'+id+'" class="nex-item-remove">Remover</button>'+
-   '<button type="button" data-nex-item-edit="'+id+'" class="nex-item-edit">Editar</button></div></div></details>';
+  const displayCrit=multi?'x'+safe(multi):(critical?safe(critical):'—');
+  const weaponInfo=[['Categoria',d.tier],['Tipo',d.damageType],['Espaços',d.spaces]];
+  return '<details class="nex-item-card-new nex-ref-weapon" data-item-id="'+id+'"'+(expanded?' open':'')+'>'+
+    '<summary class="nex-ref-heading"><span class="nex-item-chevron" aria-hidden="true">⌄</span>'+
+      '<span class="nex-ref-titleblock"><strong class="nex-ref-name">'+safe(d.name||'Arma')+'</strong>'+
+      '<span class="nex-ref-damage"><span>Dano: <b>'+safe(d.damage||'—')+'</b></span><span>Crítico: <b>'+displayCrit+'</b></span></span></span></summary>'+
+    '<label class="nex-item-equipped-label nex-ref-equip" title="Equipar arma"><input type="checkbox" data-nex-item-equipped="'+id+'" aria-label="Equipar '+safe(d.name||'arma')+'" '+(item.equipped?'checked':'')+'></label>'+
+    '<div class="nex-ref-body">'+
+     '<div class="nex-ref-subtitle">'+safe(d.proficiency||'')+
+       (d.kind?' <em>- '+safe(d.kind)+'</em>':'')+(d.wield?' <em>- '+safe(d.wield)+'</em>':'')+'</div>'+
+     '<div class="nex-ref-fields">'+weaponInfo.filter(x=>x[1]!==undefined&&x[1]!==null&&String(x[1]).trim()!=='').map(x=>'<div><span>'+safe(x[0])+':</span> <b>'+safe(x[1])+'</b></div>').join('')+'</div>'+
+     '<p class="nex-ref-description">'+descriptionText(d.description||'Sem descrição cadastrada.')+'</p>'+
+     '<div class="nex-ref-actions"><button type="button" data-nex-item-remove="'+id+'" class="nex-item-remove">Remover</button>'+
+     '<button type="button" data-nex-item-edit="'+id+'" class="nex-item-edit">Editar</button></div>'+
+    '</div></details>';
  }
  const img=/^https:\/\//i.test(d.image)?'<img loading="lazy" class="nex-item-card-image" src="'+safe(d.image)+'" alt="Imagem de '+safe(d.name)+'">':'';
  return '<details class="nex-item-card-new" data-item-id="'+id+'"'+(expanded?' open':'')+'>'+
