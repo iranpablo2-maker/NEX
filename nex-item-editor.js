@@ -131,6 +131,9 @@ style.textContent=[
 '#sheetScreen .nex-combat-weapon-details[hidden]{display:none!important}',
 '#sheetScreen .nex-combat-weapon-remove{border:0!important;background:transparent!important;color:#ef5d65!important;font-size:12px!important;padding:7px 5px!important;margin-top:9px!important;cursor:pointer!important}',
 '#sheetScreen .nex-combat-weapon-remove:hover{text-decoration:underline!important;color:#ff8a90!important}',
+'#sheetScreen .nex-secondary-damage-line{display:flex!important;align-items:center!important;flex-wrap:wrap!important;gap:6px!important}',
+'#sheetScreen .nex-secondary-roll-button{font:inherit!important;font-size:11px!important;cursor:pointer!important;border:1px solid #9d46ea!important;background:#251b30!important;color:#dfb4ff!important;border-radius:4px!important;padding:4px 7px!important;margin-left:8px!important}',
+'#sheetScreen .nex-secondary-roll-button:hover{background:#3c2851!important}',
 
 '#nexWeaponRollPopup[hidden]{display:none!important}',
 '#nexWeaponRollPopup{position:fixed;z-index:110010;width:min(310px,calc(100vw - 20px));background:#211e22;color:#fff;border:1px solid #ae3444;border-radius:4px;box-shadow:0 14px 50px #000c;padding:13px 12px;box-sizing:border-box}',
@@ -479,7 +482,7 @@ renderAttacks=function(){
    '<div class="nex-combat-weapon-details" '+(collapsed?'hidden':'')+'>'+
      '<div class="nex-combat-weapon-summary">Dano: <b>'+safe(damage||'—')+'</b>　Crítico: <b>'+safe(d.critical||'20')+' ×'+safe(w.multiplier)+'</b></div>'+
     '<div><span class="nex-combat-stat-label">Ataque Bônus:</span> <b>'+safe((bonus>=0?'+':'')+bonus)+'</b> ('+safe(w.skillName)+')</div>'+
-    (String(d.secondary||'').trim()&&!/^(?:—|-)$/i.test(String(d.secondary).trim())?'<div><span class="nex-combat-stat-label">Dano secundário:</span> <b>'+safe(d.secondary)+'</b></div>':'')+
+    (String(d.secondary||'').trim()&&!/^(?:—|-)$/i.test(String(d.secondary).trim())?'<div class="nex-secondary-damage-line"><span class="nex-combat-stat-label">Dano secundário:</span> <b>'+safe(d.secondary)+'</b> <button type="button" class="nex-secondary-roll-button" data-nex-secondary-roll="'+id+'" aria-label="Rolar dano secundário de '+safe(d.name||item.name)+'">Rolar dano secundário</button></div>':'')+
     '<div><span class="nex-combat-stat-label">Tipo de Dano:</span> <b>'+safe(d.damageType||'—')+'</b></div>'+
     '<div><span class="nex-combat-stat-label">Alcance:</span> <b>'+safe(d.range||'—')+'</b></div>'+
     '<div><span class="nex-combat-stat-label">Perícia:</span> <b>'+safe(w.skillName)+'</b></div>'+
@@ -523,6 +526,25 @@ document.addEventListener('click',e=>{
   toast('Ataque removido do Combate. A arma permanece no inventário.');
   return;
  }
+ const secondaryButton=e.target.closest('[data-nex-secondary-roll]');
+ if(secondaryButton){
+  e.preventDefault();
+  const secondaryItem=find(secondaryButton.dataset.nexSecondaryRoll);
+  if(!secondaryItem||!secondaryItem.equipped)return;
+  const secondaryWeapon=weaponData(secondaryItem);
+  const expression=String(secondaryWeapon.d.secondary||'').trim();
+  const secondaryRoll=weaponDice(expression,1);
+  if(!secondaryRoll){toast('Dano secundário inválido. Use 1d6, 2d4+2 etc.');return;}
+  weaponRollPanel.innerHTML='<div class="nex-weapon-roll-head"><strong>'+safe(secondaryWeapon.d.name||secondaryItem.name)+'</strong><button type="button" data-close-weapon-popup aria-label="Fechar resultado">×</button></div>'+
+    '<div class="nex-weapon-roll-stats"><span class="nex-weapon-roll-hex"></span><div class="nex-weapon-roll-column"><div class="nex-weapon-roll-value">'+safe(secondaryRoll.total)+'</div><div class="nex-weapon-roll-label">DANO SECUNDÁRIO</div></div></div>'+
+    '<div class="nex-weapon-roll-detail">'+safe(secondaryRoll.expression)+': '+safe(secondaryRoll.detail)+'</div>';
+  weaponRollPanel.hidden=false;
+  const rect=secondaryButton.getBoundingClientRect(),width=310;
+  weaponRollPanel.style.left=Math.max(8,Math.min(innerWidth-width-8,rect.left-100))+'px';
+  weaponRollPanel.style.top=Math.max(8,Math.min(innerHeight-weaponRollPanel.offsetHeight-8,rect.bottom+9))+'px';
+  if(typeof logResult==='function')logResult(secondaryWeapon.d.name+' — dano secundário',secondaryRoll.expression,secondaryRoll.detail,secondaryRoll.total);
+  return;
+ }
  const button=e.target.closest('[data-nex-weapon-roll]');
  if(!button){
   if(!weaponRollPanel.hidden&&!e.target.closest('#nexWeaponRollPopup'))hideWeaponRoll();
@@ -536,7 +558,7 @@ document.addEventListener('click',e=>{
  const natural=w.value===0?Math.min(...rolls):Math.max(...rolls);
  const attack=natural+w.bonus;
  const critical=natural>=w.threshold;
- const secondaryExpression=String(w.d.secondary||'').trim();
+ const secondaryExpression=String(w.d.secondary||'').trim().replace(/\s+/g,'');
  const hasSecondary=secondaryExpression!==''&&!/^(?:—|-)$/i.test(secondaryExpression);
  // Crítico multiplica apenas os dados do dano principal, mantendo o secundário independente.
  const damage=weaponDice(w.d.damage,critical?w.multiplier:1);
