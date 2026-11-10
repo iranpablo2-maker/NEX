@@ -1689,6 +1689,21 @@ body{background:#08090b;color:#f4f0f2}
 #homebrewScreen .nex-hb-item-tabs button{border:1px solid #363036;border-radius:5px;background:#0b0b0b;color:#c7c1c6;padding:9px 12px;font-size:13px;font-weight:650;cursor:pointer}
 #homebrewScreen .nex-hb-item-tabs button.active{background:#36191e;color:#fff;border-color:#e83a4d}
 #homebrewScreen .nex-hb-item-tabs button:focus-visible{outline:2px solid #ed5360;outline-offset:2px}
+</style><style id="nex-homebrew-item-specific-styles">
+#homebrewScreen .nex-hb-item-stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;align-items:end}
+#homebrewScreen .nex-hb-item-stats label,#homebrewScreen .nex-hb-image-area label{display:flex;flex-direction:column;gap:6px;color:#f1e9eb;font-weight:600}
+#homebrewScreen .nex-hb-item-stats select,#homebrewScreen .nex-hb-item-stats input{background:#101010;border:1px solid #49363a;color:#fff;border-radius:4px;padding:10px;min-width:0}
+#homebrewScreen .nex-hb-image-area{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+#homebrewScreen .nex-hb-image-area input{background:#101010;border:1px solid #49363a;color:#fff;padding:10px;border-radius:4px}
+#homebrewScreen #nexHbImagePreview{width:100px;height:100px;object-fit:contain;background:#111;border:1px solid #444;border-radius:3px}
+#homebrewScreen .nex-hb-text-toolbar{display:flex;gap:0;background:#262326;border:1px solid #484049;border-bottom:0;border-radius:5px 5px 0 0;margin-top:5px}
+#homebrewScreen .nex-hb-text-toolbar[hidden]{display:none!important}
+#homebrewScreen .nex-hb-text-toolbar button{background:transparent;border:0;color:#fff;padding:9px 12px;font-size:15px}
+#homebrewScreen .nex-hb-text-toolbar button:hover{background:#3b3035}
+#homebrewScreen #nex51Description{min-height:130px}
+#homebrewScreen .nex-hb-highlight{color:#e74654}
+#homebrewScreen .nex-hb-preview-detail{width:100px;height:100px;object-fit:contain;display:block;margin:10px 0;border:1px solid #51474c}
+@media(max-width:520px){#homebrewScreen .nex-hb-item-stats{grid-template-columns:1fr}}
 </style></head><body>
 <script src="nex-sobrevivendo-ao-horror.js?v=2072"></script>
 <header class="topbar"><div class="topinner"><button type="button" id="n17MenuToggle" class="n17-menu-button" aria-expanded="false" aria-controls="n17Drawer" aria-label="Abrir menu">☰</button><button type="button" class="brand" id="nexBrandHome" aria-label="Voltar ao menu principal" title="Voltar ao menu principal"><span class="brand-mark" aria-hidden="true">◈</span><span><h1>NEX</h1><span class="subtitle">SISTEMA DE FICHAS · ORDEM PARANORMAL</span></span></button><div class="actions"><button class="btn sm" id="menuHeaderButton" type="button" style="display:none!important" hidden tabindex="-1" aria-hidden="true">⌂ Menu principal</button><button class="btn sm" id="newChar" type="button" style="display:none!important" hidden tabindex="-1" aria-hidden="true">＋ Nova ficha</button><button class="btn sm" id="importBtn" style="display:none!important" aria-hidden="true" tabindex="-1">Importar</button><button class="btn sm" id="exportBtn" style="display:none!important" aria-hidden="true" tabindex="-1">↓ Exportar</button><input type="file" id="fileInput" accept="application/json,.json" hidden><span id="n17SaveIndicator" hidden aria-hidden="true"></span></div></div></header>
@@ -4201,7 +4216,7 @@ const PARANORMAL=[
 })();
 </script>
 <script src="nex-duplicate-review.js?v=2055"></script>
-<script src="nex-homebrew-advanced.js?v=20261110itemtabs3"></script>
+<script src="nex-homebrew-advanced.js?v=20261110itemforms4"></script>
 <script src="nex-rituais-metadados.js?v=1"></script>
 <script src="nex-ritual-guides.js?v=1"></script>
 <script src="nex-rituais-ficha.js?v=2119"></script>
