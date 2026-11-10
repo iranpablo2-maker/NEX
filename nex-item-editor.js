@@ -213,6 +213,29 @@ style.textContent=[
 '#sheetScreen .nex-item-card-weapon .nex-item-equipped-label{right:9px!important;top:7px!important}',
 '#sheetScreen .nex-item-card-weapon .nex-item-equipped-label input:checked{background:#202022!important;border-color:#eee!important}',
 '#sheetScreen .nex-item-card-weapon .nex-item-equipped-label input:checked::after{color:#a34dff!important}',
+'#sheetScreen #inventoryList .nex-item-card-weapon{margin:7px 0!important;padding:0!important;background:#1e1e1e!important;border:1px solid #262329!important;border-radius:3px!important;box-shadow:none!important;color:white!important;overflow:hidden!important}',
+'#sheetScreen #inventoryList .nex-item-card-weapon>summary{min-height:55px!important;box-sizing:border-box!important;display:flex!important;align-items:flex-start!important;gap:20px!important;padding:6px 53px 11px 13px!important;background:#1e1e1e!important;border:0!important;border-bottom:1px solid #a846ff!important}',
+'#sheetScreen #inventoryList .nex-item-card-weapon .nex-item-chevron{font-size:23px!important;line-height:24px!important;color:#ac4aff!important;flex:none!important;width:21px!important;display:block!important;transform:rotate(0deg)!important}',
+'#sheetScreen #inventoryList .nex-item-card-weapon[open] .nex-item-chevron{transform:rotate(180deg)!important}',
+'#sheetScreen #inventoryList .nex-item-card-weapon .nex-item-main{min-width:0!important;flex:1!important;display:block!important}',
+'#sheetScreen #inventoryList .nex-item-card-weapon .nex-item-main strong{color:white!important;font-weight:800!important;font-size:13px!important;line-height:1.3!important}',
+'#sheetScreen #inventoryList .nex-item-card-weapon .nex-item-short{display:flex!important;margin-top:4px!important;gap:16px!important;flex-wrap:wrap!important;color:#b44cff!important;font-size:12px!important;line-height:1.35!important;font-weight:500!important}',
+'#sheetScreen #inventoryList .nex-item-card-weapon .nex-item-short b{color:white!important;font-weight:700!important}',
+'#sheetScreen #inventoryList .nex-item-card-weapon .nex-item-equipped-label{right:14px!important;top:8px!important;width:34px!important;height:34px!important}',
+'#sheetScreen #inventoryList .nex-item-card-weapon .nex-item-equipped-label input{width:32px!important;height:32px!important;min-width:32px!important;background:#1e1e1e!important;border:1px solid #dedede!important;border-radius:4px!important}',
+'#sheetScreen #inventoryList .nex-item-card-weapon .nex-item-equipped-label input:checked{background:#1e1e1e!important;border-color:#dcdcdc!important}',
+'#sheetScreen #inventoryList .nex-item-card-weapon .nex-item-equipped-label input:checked::after{color:#aa4dff!important;font-size:21px!important}',
+'#sheetScreen #inventoryList .nex-item-card-weapon .nex-item-card-body{padding:18px 8px 10px!important;border:0!important;background:#1e1e1e!important}',
+'#sheetScreen #inventoryList .nex-item-card-weapon .nex-item-subtitle{color:white!important;font-size:10px!important;line-height:1.4!important;margin:0 0 3px!important;font-style:normal!important;font-weight:800!important}',
+'#sheetScreen #inventoryList .nex-item-card-weapon .nex-item-subtitle em{font-style:italic!important;font-weight:500!important}',
+'#sheetScreen #inventoryList .nex-item-card-weapon .nex-item-card-stats{margin:0!important;color:#b14bff!important;font-size:13px!important;line-height:1.7!important}',
+'#sheetScreen #inventoryList .nex-item-card-weapon .nex-item-card-stats span{color:#ad48ff!important;font-weight:600!important}',
+'#sheetScreen #inventoryList .nex-item-card-weapon .nex-item-card-stats b{color:white!important;font-weight:500!important}',
+'#sheetScreen #inventoryList .nex-item-card-weapon .nex-item-card-description{font-size:12px!important;color:#fff!important;line-height:1.55!important;margin:18px 0 12px!important;white-space:pre-wrap!important}',
+'#sheetScreen #inventoryList .nex-item-card-weapon .nex-item-card-buttons{margin:0!important;padding:0!important;display:flex!important;align-items:center!important;justify-content:space-between!important}',
+'#sheetScreen #inventoryList .nex-item-card-weapon .nex-item-card-buttons button{background:transparent!important;border:0!important;padding:0!important;min-height:20px!important;font-size:12px!important;font-weight:500!important;box-shadow:none!important}',
+'#sheetScreen #inventoryList .nex-item-card-weapon .nex-item-remove{color:#f14953!important}',
+'#sheetScreen #inventoryList .nex-item-card-weapon .nex-item-edit{color:#32b957!important}',
 'body.nex-editor-open{overflow:hidden}',
 '@media(max-width:620px){#nexItemEditor{padding:3px}#nexItemEditor .nex-editor-dialog{height:calc(100dvh - 6px)}#nexItemEditor .nex-editor-grid{grid-template-columns:repeat(2,minmax(0,1fr))}#nexItemEditor .span-4{grid-column:1/-1}}'
 ].join('\n');
@@ -302,7 +325,7 @@ function card(item,expanded=false){
    '<span class="nex-item-main"><strong>'+safe(d.name||'Arma')+'</strong>'+
    '<span class="nex-item-short"><span>Dano: <b>'+safe(d.damage||'—')+'</b></span><span>Crítico: <b>'+headerCrit+'</b></span></span></span></summary>'+
    '<label class="nex-item-equipped-label" title="Equipar arma" aria-label="Equipar arma: '+safe(d.name)+'"><input type="checkbox" data-nex-item-equipped="'+id+'" aria-label="Equipar '+safe(d.name)+'" '+(item.equipped?'checked':'')+'></label>'+
-   '<div class="nex-item-card-body"><div class="nex-item-subtitle">'+safe([d.proficiency,d.kind,d.wield].filter(Boolean).join(' · '))+'</div>'+
+   '<div class="nex-item-card-body"><div class="nex-item-subtitle">'+safe(d.proficiency||'')+(d.kind?' <em> - '+safe(d.kind)+'</em>':'')+(d.wield?' <em> - '+safe(d.wield)+'</em>':'')+'</div>'+
    '<div class="nex-item-card-stats">'+weaponDetails.filter(x=>x[1]!==undefined&&x[1]!==null&&String(x[1]).trim()!=='').map(x=>'<div><span>'+safe(x[0])+':</span> <b>'+safe(x[1])+'</b></div>').join('')+'</div>'+
    (d.upgrades?'<div class="nex-item-card-description"><b>Melhorias:</b> '+descriptionText(d.upgrades)+'</div>':'')+extraImage+
    '<div class="nex-item-card-description">'+descriptionText(d.description||'Sem descrição cadastrada.')+'</div>'+
