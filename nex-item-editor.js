@@ -325,6 +325,7 @@ function editorFields(d){
   '<div class="nex-editor-inline"><select id="nexEditorModifierChoice" aria-label="Escolher melhoria">'+compatible.map(x=>'<option value="'+safe(x.id)+'">'+safe(x.name)+'</option>').join('')+'</select><button type="button" data-nex-add-modifier>Adicionar melhoria</button></div>'+
   '<input type="hidden" data-edit="modifiers" value="'+safe(JSON.stringify(d.modifiers||[]))+'"><div id="nexEditorModifiersList" class="nex-editor-upgrade-list"></div>'+ 
    
+  '<div class="nex-editor-inline"><input id="nexEditorCustomImprovementName" type="text" maxlength="80" placeholder="Nome da melhoria homebrew" aria-label="Nome da melhoria personalizada"><button type="button" data-nex-add-custom-improvement>Adicionar homebrew</button></div>'+ 
   '<input type="hidden" data-edit="customImprovements" value="'+safe(JSON.stringify(d.customImprovements||[]))+'"><div id="nexEditorCustomImprovementsList" class="nex-editor-upgrade-list"></div>'+
   '<h3>Maldições</h3><div class="nex-editor-inline"><select id="nexEditorCurseChoice" aria-label="Maldições compatíveis">'+curseOptions.map(x=>'<option value="'+safe(x.id)+'">'+safe(x.name)+' · '+safe(x.element)+'</option>').join('')+'</select>'+ 
   '<button type="button" data-nex-add-curse>Adicionar maldição</button></div>'+
@@ -357,18 +358,19 @@ function showModifierChoices(){
  const modMenu=by('nexEditorModifierChoice');
  if(modMenu){
   const old=modMenu.value;
-  modMenu.innerHTML=eligible.improvements.filter(x=>!picked.includes(x.id)).map(x=>'<option value="'+safe(x.id)+'">'+safe(x.name)+' — '+safe(x.note)+'</option>').join('');
+  const modChoices=eligible.improvements.filter(x=>!picked.includes(x.id));
+  modMenu.innerHTML='<option value="">'+(modChoices.length?'Selecione uma melhoria':'Nenhuma melhoria oficial compatível')+'</option>'+modChoices.map(x=>'<option value="'+safe(x.id)+'">'+safe(x.name)+' — '+safe(x.note)+'</option>').join('');
   if([...modMenu.options].some(x=>x.value===old))modMenu.value=old;
-  modMenu.disabled=!modMenu.options.length;
+  modMenu.disabled=!modChoices.length;
   const add=by('nexEditorFields').querySelector('[data-nex-add-modifier]');if(add)add.disabled=modMenu.disabled;
  }
  const curseMenu=by('nexEditorCurseChoice');
  if(curseMenu){
   const old=curseMenu.value;
   const choices=eligible.curses.filter(x=>!curses.some(c=>c.id===x.id||c.name===x.name)&&!curses.some(c=>rules.oppressive(c.element,x.element)));
-  curseMenu.innerHTML=choices.map(x=>'<option value="'+safe(x.id)+'">'+safe(x.name)+' · '+safe(x.element)+'</option>').join('');
+  curseMenu.innerHTML='<option value="">'+(choices.length?'Selecione uma maldição':'Nenhuma maldição oficial compatível')+'</option>'+choices.map(x=>'<option value="'+safe(x.id)+'">'+safe(x.name)+' · '+safe(x.element)+'</option>').join('');
   if([...curseMenu.options].some(x=>x.value===old))curseMenu.value=old;
-  curseMenu.disabled=!curseMenu.options.length;
+  curseMenu.disabled=!choices.length;
   const add=by('nexEditorFields').querySelector('[data-nex-add-curse]');if(add)add.disabled=curseMenu.disabled;
  }
  const list=by('nexEditorModifiersList');
