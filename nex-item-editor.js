@@ -20,7 +20,7 @@ function detail(item){
  const getStat=(...labels)=>labels.map(label=>
   String(stat(model,label)||'').trim()).find(Boolean)||'';
  const rawCrit=String(pairs['critico']||getStat('Crítico')||'').replace(/\s/g,'');
- const fromCrit=rawCrit.match(/^(\d{2})(?:[/x×](?:[x×])?(\d+))?$/i);
+ const fromCrit=rawCrit.match(/^(\d{2})(?:[\/x×](?:[x×])?(\d+))?$/i);
  const critNumber=rawCrit.match(/^(\d{2})/);
  const critMulti=rawCrit.match(/[x×](\d+)/i);
  const weaponSources=[
@@ -447,7 +447,7 @@ renderAttacks=function(){
    '<div class="nex-combat-weapon">'+
     '<button type="button" class="nex-combat-weapon-toggle" data-nex-weapon-toggle="'+id+'" aria-expanded="'+(!collapsed)+'" aria-label="'+(collapsed?'Mostrar':'Esconder')+' detalhes de '+safe(d.name||item.name)+'">'+(collapsed?'⌄':'⌃')+'</button>'+
     '<div class="nex-combat-weapon-main"><strong class="nex-combat-weapon-name">'+safe(d.name||item.name)+'</strong>'+
-    ''</div>'+
+    '</div>'+
     '<button type="button" class="nex-combat-die-button" data-nex-weapon-roll="'+id+'" aria-label="Rolar ataque e dano de '+safe(d.name||item.name)+'" title="Rolar ataque e dano">'+weaponDieSvg+'</button>'+
    '</div>'+
    '<div class="nex-combat-weapon-details" '+(collapsed?'hidden':'')+'>'+
