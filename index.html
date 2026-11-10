@@ -4286,5 +4286,11 @@ const PARANORMAL=[
   const observer=new MutationObserver(loadWhenVisible);
   observer.observe(area,{attributes:true,attributeFilter:['class']});
   loadWhenVisible();
+  window.addEventListener('message',event=>{
+    if(event.origin!==location.origin || event.source!==frame.contentWindow)return;
+    if(event.data?.type!=='nex-campaign-height')return;
+    const height=Number(event.data.height);
+    if(Number.isFinite(height))frame.style.height=Math.min(12000,Math.max(800,height+15))+'px';
+  });
 })();
 </script></body></html>
