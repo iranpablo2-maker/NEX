@@ -1722,6 +1722,11 @@ body{background:#08090b;color:#f4f0f2}
 #homebrewScreen #nexHbImprovementFields label{display:flex;flex-direction:column;gap:7px;color:#f0e9eb;font-weight:650}
 #homebrewScreen #nexHbImprovementTarget{background:#101010;border:1px solid #504048;border-radius:4px;color:#fff;padding:10px}
 #homebrewScreen .nex-hb-improvement-info{font-size:12px;color:#a8a0a9;line-height:1.5}
+</style><style id="nex-homebrew-bonus-fields">
+#homebrewScreen .nex-hb-bonus-grid{display:grid;grid-template-columns:minmax(190px,2fr) minmax(110px,1fr);gap:12px;align-items:end}
+#homebrewScreen .nex-hb-bonus-grid label{display:flex;flex-direction:column;gap:7px;color:#f0e9eb;font-weight:650}
+#homebrewScreen .nex-hb-bonus-grid select,#homebrewScreen .nex-hb-bonus-grid input{width:100%;min-width:0;background:#101010;border:1px solid #504048;border-radius:4px;color:#fff;padding:10px}
+@media(max-width:520px){#homebrewScreen .nex-hb-bonus-grid{grid-template-columns:1fr}}
 </style></head><body>
 <script src="nex-sobrevivendo-ao-horror.js?v=2072"></script>
 <header class="topbar"><div class="topinner"><button type="button" id="n17MenuToggle" class="n17-menu-button" aria-expanded="false" aria-controls="n17Drawer" aria-label="Abrir menu">☰</button><button type="button" class="brand" id="nexBrandHome" aria-label="Voltar ao menu principal" title="Voltar ao menu principal"><span class="brand-mark" aria-hidden="true">◈</span><span><h1>NEX</h1><span class="subtitle">SISTEMA DE FICHAS · ORDEM PARANORMAL</span></span></button><div class="actions"><button class="btn sm" id="menuHeaderButton" type="button" style="display:none!important" hidden tabindex="-1" aria-hidden="true">⌂ Menu principal</button><button class="btn sm" id="newChar" type="button" style="display:none!important" hidden tabindex="-1" aria-hidden="true">＋ Nova ficha</button><button class="btn sm" id="importBtn" style="display:none!important" aria-hidden="true" tabindex="-1">Importar</button><button class="btn sm" id="exportBtn" style="display:none!important" aria-hidden="true" tabindex="-1">↓ Exportar</button><input type="file" id="fileInput" accept="application/json,.json" hidden><span id="n17SaveIndicator" hidden aria-hidden="true"></span></div></div></header>
@@ -4234,7 +4239,7 @@ const PARANORMAL=[
 })();
 </script>
 <script src="nex-duplicate-review.js?v=2055"></script>
-<script src="nex-homebrew-advanced.js?v=20261110improvements1"></script>
+<script src="nex-homebrew-advanced.js?v=20261110bonustype2"></script>
 <script src="nex-rituais-metadados.js?v=1"></script>
 <script src="nex-ritual-guides.js?v=1"></script>
 <script src="nex-rituais-ficha.js?v=2119"></script>
