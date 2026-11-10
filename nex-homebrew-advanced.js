@@ -250,6 +250,7 @@
    ['nexHbProtectionDefense','nexHbWeaponDamage','nexHbWeaponCritical','nexHbWeaponMultiplier'].forEach(id=>{ $(id).required=protection&&id==='nexHbProtectionDefense'||weapon&&id!=='nexHbProtectionDefense'; });
    $('nex52Editor').dataset.itemKind=type==='item'?(cursed?'cursed':general?'general':'other'):'';
    syncItemCategoryFields();
+   syncCursedWeaponElement();
  }
  const FALLBACK_SKILLS=['Acrobacia','Adestramento','Artes','Atletismo','Atualidades','Ciências','Crime','Diplomacia','Enganação','Fortitude','Furtividade','Iniciativa','Intimidação','Intuição','Investigação','Luta','Medicina','Ocultismo','Percepção','Pilotagem','Pontaria','Profissão','Reflexos','Religião','Sobrevivência','Tática','Tecnologia','Vontade'];
  function loadSkillChoices(){
@@ -261,8 +262,15 @@
  function syncItemCategoryFields(){
    $('nex52ItemFields').querySelectorAll('[data-hb-sync]').forEach(control=>{const hidden=$(control.dataset.hbSync);if(hidden)control.value=hidden.value;});
  }
- $('nex52ItemFields').addEventListener('input',event=>{const el=event.target.closest('[data-hb-sync]');if(el&&$(el.dataset.hbSync))$(el.dataset.hbSync).value=el.value;});
- $('nex52ItemFields').addEventListener('change',event=>{const el=event.target.closest('[data-hb-sync]');if(el&&$(el.dataset.hbSync))$(el.dataset.hbSync).value=el.value;});
+ function syncCursedWeaponElement(){
+   const isCursedWeapon=tab==='paranormal'&&paranormalSection==='itens'&&cursedKind==='Armas Amaldiçoadas'&&$('nex51Type').value==='item';
+   const secondary=$('nexHbWeaponSecondaryType');
+   const normal=[...secondary.options].find(option=>option.value==='Normal');
+   if(normal){normal.hidden=isCursedWeapon;normal.disabled=isCursedWeapon;}
+   if(isCursedWeapon)secondary.value=$('nexHbElement').value;
+ }
+ $('nex52ItemFields').addEventListener('input',event=>{const el=event.target.closest('[data-hb-sync]');if(el&&$(el.dataset.hbSync)){$(el.dataset.hbSync).value=el.value;if(el.dataset.hbSync==='nexHbElement')syncCursedWeaponElement();}});
+ $('nex52ItemFields').addEventListener('change',event=>{const el=event.target.closest('[data-hb-sync]');if(el&&$(el.dataset.hbSync)){$(el.dataset.hbSync).value=el.value;if(el.dataset.hbSync==='nexHbElement')syncCursedWeaponElement();}});
  function renderItemImprovements(){
    const list=$('nex52ImprovementList');if(!list)return;
    list.innerHTML=customItemImprovements.length?customItemImprovements.map((name,i)=>'<span class="nex-hb-improvement-chip">'+esc(name)+' <button type="button" data-nex52-improvement-remove="'+i+'" aria-label="Remover '+esc(name)+'">×</button></span>').join(''):'<small>Nenhuma melhoria homebrew adicionada.</small>';
@@ -344,6 +352,7 @@
      $('nexHbElement').value=['Conhecimento','Energia','Medo','Morte','Sangue'].includes(item.element)?item.element:'Conhecimento';
      $('nexHbTag').value=item.itemTag||'Acessórios';
      syncItemCategoryFields();
+     syncCursedWeaponElement();
      $('nexHbImageUrl').value=item.image?.startsWith('https://')?item.image:'';
      $('nexHbImagePreview').hidden=!item.image;if(item.image)$('nexHbImagePreview').src=item.image;
      if(item.type==='origem'){$('nex55Skill1').value=item.skills?.[0]||'';$('nex55Skill2').value=item.skills?.[1]||'';}
@@ -627,7 +636,7 @@
      weaponWield:type==='item'&&(tab==='paranormal'&&cursedKind==='Armas Amaldiçoadas'||itemTab==='Armas'&&tab!=='paranormal')?$('nexHbWeaponWield').value:(old?.weaponWield||'Uma Mão'),
      weaponDamage:type==='item'&&(tab==='paranormal'&&cursedKind==='Armas Amaldiçoadas'||itemTab==='Armas'&&tab!=='paranormal')?$('nexHbWeaponDamage').value:(old?.weaponDamage||''),
      weaponSecondary:type==='item'&&(tab==='paranormal'&&cursedKind==='Armas Amaldiçoadas'||itemTab==='Armas'&&tab!=='paranormal')?$('nexHbWeaponSecondary').value:(old?.weaponSecondary||''),
-     weaponSecondaryType:type==='item'&&(tab==='paranormal'&&cursedKind==='Armas Amaldiçoadas'||itemTab==='Armas'&&tab!=='paranormal')?$('nexHbWeaponSecondaryType').value:(old?.weaponSecondaryType||'Normal'),
+     weaponSecondaryType:type==='item'&&tab==='paranormal'&&cursedKind==='Armas Amaldiçoadas'?$('nexHbElement').value:type==='item'&&itemTab==='Armas'&&tab!=='paranormal'?$('nexHbWeaponSecondaryType').value:(old?.weaponSecondaryType||'Normal'),
      weaponCritical:type==='item'&&(tab==='paranormal'&&cursedKind==='Armas Amaldiçoadas'||itemTab==='Armas'&&tab!=='paranormal')?$('nexHbWeaponCritical').value:(old?.weaponCritical||'20'),
      weaponMultiplier:type==='item'&&(tab==='paranormal'&&cursedKind==='Armas Amaldiçoadas'||itemTab==='Armas'&&tab!=='paranormal')?$('nexHbWeaponMultiplier').value:(old?.weaponMultiplier||'2'),
      weaponDamageType:type==='item'&&(tab==='paranormal'&&cursedKind==='Armas Amaldiçoadas'||itemTab==='Armas'&&tab!=='paranormal')?$('nexHbWeaponDamageType').value:(old?.weaponDamageType||'Corte'),
