@@ -317,7 +317,9 @@ function editorFields(d){
  const compatible=(catalog?.improvements||[]).filter(x=>x.items.includes(d.category));
  html+='<h3>Melhorias (regras do livro)</h3>'+
   '<div class="nex-editor-inline"><select id="nexEditorModifierChoice" aria-label="Escolher melhoria">'+compatible.map(x=>'<option value="'+safe(x.id)+'">'+safe(x.name)+'</option>').join('')+'</select><button type="button" data-nex-add-modifier>Adicionar melhoria</button></div>'+
-  '<input type="hidden" data-edit="modifiers" value="'+safe(JSON.stringify(d.modifiers||[]))+'"><div id="nexEditorModifiersList" class="nex-editor-upgrade-list"></div>'+
+  '<input type="hidden" data-edit="modifiers" value="'+safe(JSON.stringify(d.modifiers||[]))+'"><div id="nexEditorModifiersList" class="nex-editor-upgrade-list"></div>'+ 
+  '<div class="nex-editor-inline"><input id="nexEditorCustomImprovementName" maxlength="80" placeholder="Outra melhoria (efeito manual)" aria-label="Nome da melhoria adicional"><button type="button" data-nex-add-custom-improvement>Adicionar</button></div>'+ 
+  '<input type="hidden" data-edit="customImprovements" value="'+safe(JSON.stringify(d.customImprovements||[]))+'"><div id="nexEditorCustomImprovementsList" class="nex-editor-upgrade-list"></div>'+
   '<h3>Maldições</h3><div class="nex-editor-inline"><input id="nexEditorCurseName" maxlength="80" placeholder="Nome da maldição" aria-label="Nome da maldição">'+
   '<select id="nexEditorCurseElement" aria-label="Elemento da maldição">'+(catalog?.elements||[]).map(x=>'<option>'+safe(x)+'</option>').join('')+'</select>'+
   '<button type="button" data-nex-add-curse>Adicionar maldição</button></div>'+
@@ -340,17 +342,19 @@ function writeEditorJson(key,data){
 }
 function showModifierChoices(){
  const rules=window.NEX_ITEM_MODS;if(!rules)return;
- const picked=readEditorJson('modifiers'),curses=readEditorJson('curses');
+ const picked=readEditorJson('modifiers'),custom=readEditorJson('customImprovements'),curses=readEditorJson('curses');
  const chosen=rules.improvements.filter(x=>picked.includes(x.id));
  const list=by('nexEditorModifiersList');
  if(list)list.innerHTML=chosen.map(x=>'<span class="nex-editor-upgrade">'+safe(x.name)+' — '+safe(x.note)+' <button type="button" data-nex-remove-modifier="'+safe(x.id)+'" aria-label="Retirar melhoria '+safe(x.name)+'">×</button></span>').join('');
+ const customList=by('nexEditorCustomImprovementsList');
+ if(customList)customList.innerHTML=custom.map((x,i)=>'<span class="nex-editor-upgrade">'+safe(x)+' (efeito manual) <button type="button" data-nex-remove-custom-improvement="'+i+'" aria-label="Retirar melhoria adicional">×</button></span>').join('');
  const curseList=by('nexEditorCursesList');
  if(curseList)curseList.innerHTML=curses.map((x,i)=>'<span class="nex-editor-upgrade">'+safe(x.name)+' · '+safe(x.element)+' (efeito especial manual) <button type="button" data-nex-remove-curse="'+i+'" aria-label="Retirar maldição">×</button></span>').join('');
  const baseTier=by('nexEditorFields')?.querySelector('[data-edit="baseTier"]')?.value||'0';
  const category=by('nexEditorFields')?.querySelector('[data-edit="category"]')?.value||detail(find(current)).category;
- const calc=rules.calculate({category,baseTier,modifiers:picked,curses,spaces:0});
+ const calc=rules.calculate({category,baseTier,modifiers:picked,customImprovements:custom,curses,spaces:0});
  const target=by('nexEditorCategoryPreview');
- if(target)target.textContent='Categoria: '+baseTier+' + '+chosen.length+' melhoria(s) + '+(curses.length?curses.length+1:0)+' por maldição(ões) = '+(calc.overLimit?'acima de IV':calc.effectiveTier)+'. Efeitos especiais exigem verificação das regras pelo mestre.';
+ if(target)target.textContent='Categoria: '+baseTier+' + '+(chosen.length+custom.length)+' melhoria(s) + '+(curses.length?curses.length+1:0)+' por maldição(ões) = '+(calc.overLimit?'acima de IV':calc.effectiveTier)+'. Efeitos especiais exigem verificação das regras pelo mestre.';
 }
 function showUpgrades(){
  const value=by('nexEditorFields').querySelector('[data-edit="upgrades"]')?.value||'';
@@ -402,7 +406,7 @@ function card(item,expanded=false){
        (d.kind?' <em>- '+safe(d.kind)+'</em>':'')+(d.wield?' <em>- '+safe(d.wield)+'</em>':'')+'</div>'+
      '<div class="nex-ref-fields">'+weaponInfo.filter(x=>x[1]!==undefined&&x[1]!==null&&String(x[1]).trim()!=='').map(x=>'<div><span>'+safe(x[0])+':</span> <b>'+safe(x[1])+'</b></div>').join('')+'</div>'+
      '<p class="nex-ref-description">'+descriptionText(d.description||'Sem descrição cadastrada.')+'</p>'+ 
-     (d.modifiers?.length?'<div class="nex-ref-description">Melhorias: '+safe(d.modifiers.map(id=>window.NEX_ITEM_MODS?.improvements.find(x=>x.id===id)?.name||id).join(', '))+'</div>':'')+
+     (d.modifiers?.length||d.customImprovements?.length?'<div class="nex-ref-description">Melhorias: '+safe([...(d.modifiers||[]).map(id=>window.NEX_ITEM_MODS?.improvements.find(x=>x.id===id)?.name||id),...(d.customImprovements||[])].join(', '))+'</div>':'')+
      (d.curses?.length?'<div class="nex-ref-description">Maldições: '+safe(d.curses.map(c=>c.name+' ('+c.element+')').join(', '))+'</div>':'')+
      '<div class="nex-ref-actions"><button type="button" data-nex-item-remove="'+id+'" class="nex-item-remove">Remover</button>'+
      '<button type="button" data-nex-item-edit="'+id+'" class="nex-item-edit">Editar</button></div>'+
@@ -417,7 +421,7 @@ function card(item,expanded=false){
  '<div class="nex-item-card-body"><div class="nex-item-subtitle">'+safe(subtitle)+'</div>'+
  '<div class="nex-item-card-stats">'+stats.filter(x=>x[1]!==undefined&&x[1]!==null&&String(x[1]).trim()!=='').map(x=>'<div>'+safe(x[0])+': <b>'+safe(x[1])+'</b></div>').join('')+'</div>'+
  (d.upgrades?'<div class="nex-item-card-description"><b>Anotações:</b> '+descriptionText(d.upgrades)+'</div>':'')+img+
- (d.modifiers?.length?'<div class="nex-item-card-description">Melhorias: '+safe(d.modifiers.join(', '))+'</div>':'')+
+ (d.modifiers?.length||d.customImprovements?.length?'<div class="nex-item-card-description">Melhorias: '+safe([...(d.modifiers||[]),...(d.customImprovements||[])].join(', '))+'</div>':'')+
  (d.curses?.length?'<div class="nex-item-card-description">Maldições: '+safe(d.curses.map(c=>c.name+' ('+c.element+')').join(', '))+'</div>':'')+
  '<div class="nex-item-card-description">'+descriptionText(d.description||'Sem descrição cadastrada.')+'</div>'+
  '<div class="nex-item-card-buttons"><button type="button" data-nex-item-remove="'+id+'" class="nex-item-remove">Remover</button>'+
@@ -670,6 +674,21 @@ modal.addEventListener('click',event=>{
  }
  const removeMod=event.target.closest('[data-nex-remove-modifier]');
  if(removeMod){writeEditorJson('modifiers',readEditorJson('modifiers').filter(x=>x!==removeMod.dataset.nexRemoveModifier));return;}
+ const customAdd=event.target.closest('[data-nex-add-custom-improvement]');
+ if(customAdd){
+  const name=by('nexEditorCustomImprovementName')?.value.trim();
+  if(!name)return;
+  const current=readEditorJson('customImprovements');
+  if(current.some(x=>norm(x)===norm(name))){toast('Melhoria já adicionada.');return;}
+  writeEditorJson('customImprovements',[...current,name.slice(0,80)]);
+  by('nexEditorCustomImprovementName').value='';
+  return;
+ }
+ const customRemove=event.target.closest('[data-nex-remove-custom-improvement]');
+ if(customRemove){
+  writeEditorJson('customImprovements',readEditorJson('customImprovements').filter((_,i)=>i!==Number(customRemove.dataset.nexRemoveCustomImprovement)));
+  return;
+ }
  const addCurse=event.target.closest('[data-nex-add-curse]');
  if(addCurse){
   const name=by('nexEditorCurseName')?.value.trim(),element=by('nexEditorCurseElement')?.value;
@@ -730,11 +749,11 @@ by('nexEditorForm').addEventListener('submit',event=>{
  const d={...detail(item),...values};
  const rules=window.NEX_ITEM_MODS;
  if(rules){
-  try{d.modifiers=JSON.parse(values.modifiers||'[]');d.curses=JSON.parse(values.curses||'[]');}catch{toast('Falha ao ler melhorias e maldições.');return;}
+  try{d.modifiers=JSON.parse(values.modifiers||'[]');d.customImprovements=JSON.parse(values.customImprovements||'[]');d.curses=JSON.parse(values.curses||'[]');}catch{toast('Falha ao ler melhorias e maldições.');return;}
   const calc=rules.calculate({...d,baseTier:values.baseTier||d.baseTier||'0'});
   if(calc.overLimit){toast('Melhorias e maldições ultrapassam a categoria IV.');return;}
   d.baseTier=calc.baseTier;d.tier=calc.effectiveTier;
-  d.modifiers=calc.modifiers;d.curses=calc.curses;
+  d.modifiers=calc.modifiers;d.customImprovements=calc.customImprovements;d.curses=calc.curses;
   d.effectiveSpaces=calc.effectiveSpaces;
  }
  if(d.category==='Arma' && (!String(d.damage||'').trim() || !String(d.critical||'').trim() || !String(d.multiplier||'').trim())){toast('Preencha dano, crítico e multiplicador.');return;}
