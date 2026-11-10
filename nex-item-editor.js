@@ -6,7 +6,7 @@ const safe=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'
 const norm=x=>String(x||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
 const cats=['Arma','Munição','Proteção','Geral','Item Amaldiçoado'];
 const sec={'Arma':'Armas','Munição':'Munições','Proteção':'Proteções','Geral':'Geral','Item Amaldiçoado':'Itens Amaldiçoados'};
-const models=[...(window.NEX_BASE_WEAPONS||[]),...(window.NEX_ITEM_BOOKS||[]),...(window.NEX_ITEM_COMPLEMENTS?.items||[]),...(window.NEX_ITEM_VARIANTS||[]),...(window.NEX_MISSING_EQUIPMENT||[]),...(window.NEX_BASE_CURSED||[])];
+const models=[...(window.NEX_ITEM_CATALOG?.items||[]),...(window.NEX_BASE_WEAPONS||[]),...(window.NEX_ITEM_BOOKS||[]),...(window.NEX_ITEM_COMPLEMENTS?.items||[]),...(window.NEX_ITEM_VARIANTS||[]),...(window.NEX_MISSING_EQUIPMENT||[]),...(window.NEX_BASE_CURSED||[])];
 const find=id=>(state.items||[]).find(it=>String(it.id)===String(id));
 const number=(x,def=0)=>Number.isFinite(Number(x))?Number(x):def;
 const lookup=item=>models.find(x=>norm(x.name)===norm(item.name)&&x.section===sec[item.category])||models.find(x=>norm(x.name)===norm(item.name));
@@ -14,22 +14,44 @@ const stat=(obj,name)=>(obj?.stats||[]).find(r=>norm(r[0])===norm(name))?.[1]||'
 function detail(item){
  const model=lookup(item)||{},pairs={};
  for(const fragment of String(item.detail||'').split(/\s*·\s*/)){
-  const match=fragment.match(/^([^:]+):\s*(.+)$/);if(match)pairs[norm(match[1])]=match[2];
+  const match=fragment.trim().match(/^([^:]+):\s*(.+)$/);
+  if(match)pairs[norm(match[1])]=match[2].trim();
  }
- const cr=String(pairs['critico']||stat(model,'Crítico')||'');
- const cleanCritical=cr.replace(/\s/g,'');
- const inferredCritical=cleanCritical.match(/^(\d{2})(?:[x×](\d+))?$/i);
- const inferredMultiplier=cleanCritical.match(/[x×](\d+)/i);
- const sub=String(model.subtitle||'').split('·').map(x=>x.trim());
+ const getStat=(...labels)=>labels.map(label=>
+  String(stat(model,label)||'').trim()).find(Boolean)||'';
+ const rawCrit=String(pairs['critico']||getStat('Crítico')||'').replace(/\s/g,'');
+ const fromCrit=rawCrit.match(/^(\d{2})(?:[/x×](?:[x×])?(\d+))?$/i);
+ const critNumber=rawCrit.match(/^(\d{2})/);
+ const critMulti=rawCrit.match(/[x×](\d+)/i);
+ const sub=String(model.subtitle||(/^(?:Arma (?:simples|tática|tatica|pesada))\s*·/i.test(model.description||'')?model.description:''))
+  .split('·').map(x=>x.trim());
+ const proficiency=(function(){
+  const value=norm(sub[0]||'');
+  if(/(?:^|\s)(?:tatica|taticas)(?:$|\s)/.test(value))return 'Armas Táticas';
+  if(/(?:^|\s)(?:simples)(?:$|\s)/.test(value))return 'Armas Simples';
+  if(/(?:^|\s)(?:pesada|pesadas)(?:$|\s)/.test(value))return 'Armas Pesadas';
+  return String(sub[0]||'').trim();
+ })();
+ const isWeapon=(item.category==='Arma'||sec[item.category]==='Armas');
+ const unavailable=isWeapon?'Não informado':'—';
  const fallback={
-  name:item.name||'',category:cats.includes(item.category)?item.category:'Geral',quantity:number(item.quantity,1),spaces:number(item.spaces,model.spaces??1),
-  proficiency:({'simples':'Armas Simples','tatica':'Armas Táticas','pesada':'Armas Pesadas'}[norm(sub[0])]||sub[0]||''),kind:sub[1]||'',wield:sub[2]||'',
-  damage:pairs.dano||stat(model,'Dano')||'',secondary:'',
-  critical:inferredCritical?.[1]||'20',multiplier:inferredMultiplier?.[1]||'2',
-  damageType:stat(model,'Tipo')||pairs.tipo||'',range:pairs.alcance||stat(model,'Alcance')||'—',
-  tier:pairs.categoria||stat(model,'Categoria')||'0',upgrades:'',
-  image:'',description:(()=>{
-   // Descrições específicas escolhidas pelo jogador têm prioridade.
+  name:item.name||model.name||'',
+  category:cats.includes(item.category)?item.category:(model.section==='Armas'?'Arma':'Geral'),
+  quantity:number(item.quantity,1),
+  spaces:Number.isFinite(Number(item.spaces))?Number(item.spaces):number(model.spaces,1),
+  proficiency:proficiency||unavailable,
+  kind:sub[1]||unavailable,
+  wield:sub[2]||unavailable,
+  damage:pairs.dano||getStat('Dano')||unavailable,
+  secondary:'—',
+  critical:critNumber?.[1]||'20',
+  multiplier:critMulti?.[1]||'2',
+  damageType:pairs['tipo de dano']||pairs.tipo||getStat('Tipo de dano','Tipo')||unavailable,
+  range:pairs.alcance||getStat('Alcance')||'—',
+  tier:pairs.categoria||getStat('Categoria')||'Não informado',
+  upgrades:'',
+  image:'',
+  description:(()=>{
    const existing=String(item.description||'').trim();
    if(existing && !/detalhes a conferir|consulte (o livro|as regras|os valores|o mestre)|equipamento listado na tabela|estatísticas de jogo conforme|dados de jogo da tabela|munição listada na tabela|item amaldiçoado listado na tabela|é um equipamento geral de|é um artefato paranormal/i.test(existing))return existing;
    const replacement=model.name?window.NEX_ITEM_DESCRIBE?.(model):'';
@@ -37,10 +59,22 @@ function detail(item){
    const saved=String(item.detail||'').split(/\s*·\s*/)[0].trim();
    const auto=/^(?:Estatísticas de jogo conforme|Dados de jogo da tabela|Equipamento listado na tabela|Item amaldiçoado listado na tabela|Detalhes a conferir|Arma [·:]|Equipamento [·:]|Proteção [·:])/i;
    return saved && !auto.test(saved) && !/^(?:dano|categoria|crítico|espaços|tipo|alcance)\s*:/i.test(saved)
-      ?saved:(model.description||saved);
+      ?saved:(model.description||saved||'Descrição não cadastrada.');
   })()
  };
- return {...fallback,...(item.nexInfo||{})};
+ const saved=item.nexInfo&&typeof item.nexInfo==='object'?item.nexInfo:{};
+ const merged={...fallback};
+ for(const [key,value] of Object.entries(saved)){
+  // Campos vazios salvos em fichas antigas não podem apagar os dados do catálogo.
+  if(value===null || value===undefined || (typeof value==='string' && !value.trim()))continue;
+  merged[key]=value;
+ }
+ // Caso a ficha seja antiga, preenche com os metadados disponíveis sem
+ // sobrescrever alterações feitas pelo jogador.
+ for(const key of ['proficiency','kind','wield','damage','secondary','critical','multiplier','damageType','range','tier','description']){
+  if(merged[key]===null || merged[key]===undefined || String(merged[key]).trim()==='')merged[key]=fallback[key];
+ }
+ return merged;
 }
 const style=document.createElement('style');style.id='nex-item-details-style';
 style.textContent=[
