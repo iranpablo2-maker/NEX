@@ -590,6 +590,7 @@ renderAttacks=function(){
     '<div><span class="nex-combat-stat-label">Ataque Bônus:</span> <b>'+safe((bonus>=0?'+':'')+bonus)+'</b> ('+safe(w.skillName)+')</div>'+
     (d.modifiers?.length?'<div><span class="nex-combat-stat-label">Melhorias:</span> '+safe(d.modifiers.map(id=>window.NEX_ITEM_MODS?.improvements.find(x=>x.id===id)?.name||id).join(', '))+'</div>':'')+
     (d.curses?.length?'<div><span class="nex-combat-stat-label">Maldições:</span> '+safe(d.curses.map(c=>c.name+' ('+c.element+')').join(', '))+'</div>':'')+
+    (d.curses?.some(c=>c.id==='energetica')?'<label class="nex-energy-option"><input type="checkbox" data-nex-energy-active> Ativar Energética no próximo ataque (2 PE, +5 ataque, dano Energia)</label>':'')+
     (d.damageBonus?'<div><span class="nex-combat-stat-label">Bônus de dano:</span> +'+safe(d.damageBonus)+'</div>':'')+
     (d.specialNotes?.length?'<div><span class="nex-combat-stat-label">Efeitos:</span> '+safe(d.specialNotes.join(' · '))+'</div>':'')+
     (String(d.secondary||'').trim()&&!/^(?:—|-)$/i.test(String(d.secondary).trim())?'<div class="nex-secondary-damage-line"><span class="nex-combat-stat-label">Dano secundário:</span> <b>'+safe(d.secondary)+' ('+safe(d.secondaryType||'Normal')+')</b> <button type="button" class="nex-secondary-roll-button" data-nex-secondary-roll="'+id+'" aria-label="Rolar dano secundário de '+safe(d.name||item.name)+'">Rolar dano secundário</button></div>':'')+
@@ -666,7 +667,10 @@ document.addEventListener('click',e=>{
  const w=weaponData(item);
  const rolls=Array.from({length:w.dieCount},weaponD20);
  const natural=w.value===0?Math.min(...rolls):Math.max(...rolls);
- const attack=natural+w.bonus;
+ const energyRequested=!!button.closest('.nex-combat-equipped')?.querySelector('[data-nex-energy-active]')?.checked;
+ const hasEnergy=w.d.curses?.some(x=>x.id==='energetica')&&energyRequested;
+ if(hasEnergy&&Number(state.peCurrent||0)<2){toast('Energética exige 2 PE disponíveis.');return;}
+ const attack=natural+w.bonus+(hasEnergy?5:0);
  const critical=natural>=w.threshold;
  const secondaryExpression=String(w.d.secondary||'').trim().replace(/\s+/g,'');
  const hasSecondary=secondaryExpression!==''&&!/^(?:—|-)$/i.test(secondaryExpression);
@@ -682,14 +686,22 @@ document.addEventListener('click',e=>{
  const originBonus=typeof nex12Orig==='function'?Number(nex12Orig()?.damage)||0:0;
  const itemBonus=Number(w.d.damageBonus)||0;
  const totalDamage=damage.total+(secondary?secondary.total:0)+(extra?extra.total:0)+(curseExtra?curseExtra.total:0)+originBonus+itemBonus;
- const detailAttack=rolls.join(', ')+' → '+natural+' '+(w.bonus>=0?'+ ':'− ')+Math.abs(w.bonus);
+ const attackBonus=w.bonus+(hasEnergy?5:0);
+ const detailAttack=rolls.join(', ')+' → '+natural+' '+(attackBonus>=0?'+ ':'− ')+Math.abs(attackBonus);
  const damageDetail=damage.detail+(originBonus?' + bônus '+originBonus:'')+(itemBonus?' + melhoria '+itemBonus:'');
  const secondaryDetail=secondary?secondary.detail:'';
+ if(hasEnergy){
+  state.peCurrent=Math.max(0,Number(state.peCurrent||0)-2);
+  const energyCheckbox=button.closest('.nex-combat-equipped')?.querySelector('[data-nex-energy-active]');
+  if(energyCheckbox)energyCheckbox.checked=false;
+  save();if(typeof renderStats==='function')renderStats();
+ }
  weaponRollPanel.innerHTML='<div class="nex-weapon-roll-head"><strong>'+safe(w.d.name||item.name)+'</strong><button type="button" data-close-weapon-popup aria-label="Fechar resultado">×</button></div>'+
  '<div class="nex-weapon-roll-stats"><span class="nex-weapon-roll-hex"></span>'+
  '<div class="nex-weapon-roll-column"><div class="nex-weapon-roll-value">'+safe(attack)+'</div><div class="nex-weapon-roll-label">ATAQUE</div></div>'+
  '<div class="nex-weapon-roll-column"><div class="nex-weapon-roll-value">'+safe(totalDamage)+'</div><div class="nex-weapon-roll-label">DANO TOTAL</div></div></div>'+
  '<div class="nex-weapon-roll-detail">'+safe(w.skillName)+': '+safe(detailAttack)+
+ (hasEnergy?'<div>Energética ativada: -2 PE, +5 ataque, dano Energia (ignora RD)</div>':'')+
  '<div>Dano principal ('+safe(w.damageExpression)+'): '+safe(damageDetail)+' = '+safe(damage.total+originBonus+itemBonus)+(critical?' · '+safe(w.multiplier)+'× dados':'')+'</div>'+
  (extra?'<div>Dano adicional ('+safe(extra.expression)+'): '+safe(extra.detail)+' = '+safe(extra.total)+'</div>':'')+
  (curseExtra?'<div>Dano de maldição ('+safe(curseExtra.expression)+'): '+safe(curseExtra.detail)+' = '+safe(curseExtra.total)+(critical?' · crítico':'')+'</div>':'')+
