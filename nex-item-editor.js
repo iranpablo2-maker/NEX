@@ -94,8 +94,10 @@ function detail(item){
  const baseTier=String(saved.baseTier||merged.tier||'0');
  const calculated=rules.calculate({...merged,baseTier});
  return {...merged,...calculated,baseTier,tier:calculated.effectiveTier,
-  attackBonus:(Number(merged.attackBonus)||0)+calculated.attackBonus,
-  damageBonus:(Number(merged.damageBonus)||0)+calculated.damageBonus};
+  baseAttackBonus:Number(merged.baseAttackBonus??merged.attackBonus)||0,
+  baseDamageBonus:Number(merged.baseDamageBonus??merged.damageBonus)||0,
+  attackBonus:(Number(merged.baseAttackBonus??merged.attackBonus)||0)+calculated.attackBonus,
+  damageBonus:(Number(merged.baseDamageBonus??merged.damageBonus)||0)+calculated.damageBonus};
 }
 const style=document.createElement('style');style.id='nex-item-details-style';
 style.textContent=[
@@ -389,7 +391,7 @@ function card(item,expanded=false){
  ];
  if(weapon){
   const displayCrit=multi?'x'+safe(multi):(critical?safe(critical):'—');
-  const weaponInfo=[['Categoria',d.tier],['Tipo',d.damageType],['Espaços',d.spaces],...(String(d.secondary||'').trim()&&!/^(?:—|-)$/i.test(String(d.secondary).trim())?[['Dano secundário',d.secondary]]:[])];
+  const weaponInfo=[['Categoria',d.tier],['Tipo',d.damageType],['Espaços',d.effectiveSpaces??d.spaces],...(String(d.secondary||'').trim()&&!/^(?:—|-)$/i.test(String(d.secondary).trim())?[['Dano secundário',d.secondary]]:[])];
   return '<details class="nex-item-card-new nex-ref-weapon" data-item-id="'+id+'"'+(expanded?' open':'')+'>'+
     '<summary class="nex-ref-heading"><span class="nex-item-chevron" aria-hidden="true">⌄</span>'+
       '<span class="nex-ref-titleblock"><strong class="nex-ref-name">'+safe(d.name||'Arma')+'</strong>'+
@@ -399,7 +401,9 @@ function card(item,expanded=false){
      '<div class="nex-ref-subtitle">'+safe(d.proficiency||'')+
        (d.kind?' <em>- '+safe(d.kind)+'</em>':'')+(d.wield?' <em>- '+safe(d.wield)+'</em>':'')+'</div>'+
      '<div class="nex-ref-fields">'+weaponInfo.filter(x=>x[1]!==undefined&&x[1]!==null&&String(x[1]).trim()!=='').map(x=>'<div><span>'+safe(x[0])+':</span> <b>'+safe(x[1])+'</b></div>').join('')+'</div>'+
-     '<p class="nex-ref-description">'+descriptionText(d.description||'Sem descrição cadastrada.')+'</p>'+
+     '<p class="nex-ref-description">'+descriptionText(d.description||'Sem descrição cadastrada.')+'</p>'+ 
+     (d.modifiers?.length?'<div class="nex-ref-description">Melhorias: '+safe(d.modifiers.map(id=>window.NEX_ITEM_MODS?.improvements.find(x=>x.id===id)?.name||id).join(', '))+'</div>':'')+
+     (d.curses?.length?'<div class="nex-ref-description">Maldições: '+safe(d.curses.map(c=>c.name+' ('+c.element+')').join(', '))+'</div>':'')+
      '<div class="nex-ref-actions"><button type="button" data-nex-item-remove="'+id+'" class="nex-item-remove">Remover</button>'+
      '<button type="button" data-nex-item-edit="'+id+'" class="nex-item-edit">Editar</button></div>'+
     '</div></details>';
@@ -412,7 +416,9 @@ function card(item,expanded=false){
  '</summary>'+(weapon?'<label class="nex-item-equipped-label" title="Equipar arma" aria-label="Equipar arma: '+safe(d.name)+'"><input type="checkbox" data-nex-item-equipped="'+id+'" aria-label="Equipar '+safe(d.name)+'" '+(item.equipped?'checked':'')+'></label>':'')+
  '<div class="nex-item-card-body"><div class="nex-item-subtitle">'+safe(subtitle)+'</div>'+
  '<div class="nex-item-card-stats">'+stats.filter(x=>x[1]!==undefined&&x[1]!==null&&String(x[1]).trim()!=='').map(x=>'<div>'+safe(x[0])+': <b>'+safe(x[1])+'</b></div>').join('')+'</div>'+
- (d.upgrades?'<div class="nex-item-card-description"><b>Melhorias:</b> '+descriptionText(d.upgrades)+'</div>':'')+img+
+ (d.upgrades?'<div class="nex-item-card-description"><b>Anotações:</b> '+descriptionText(d.upgrades)+'</div>':'')+img+
+ (d.modifiers?.length?'<div class="nex-item-card-description">Melhorias: '+safe(d.modifiers.join(', '))+'</div>':'')+
+ (d.curses?.length?'<div class="nex-item-card-description">Maldições: '+safe(d.curses.map(c=>c.name+' ('+c.element+')').join(', '))+'</div>':'')+
  '<div class="nex-item-card-description">'+descriptionText(d.description||'Sem descrição cadastrada.')+'</div>'+
  '<div class="nex-item-card-buttons"><button type="button" data-nex-item-remove="'+id+'" class="nex-item-remove">Remover</button>'+
  '<button type="button" data-nex-item-edit="'+id+'" class="nex-item-edit">Editar</button></div></div></details>';
@@ -512,7 +518,8 @@ function weaponData(item){
  const value=Math.max(0,Math.min(20,Math.trunc(Number(state.attributes?.[attribute])||0)));
  const bonus=(Number(skill.training)||0)+(Number(skill.other)||0)+(Number(d.attackBonus)||0);
  const dieCount=value===0?2:Math.max(1,value);
- const {threshold,multiplier}=weaponCriticalSettings(d);
+ const {threshold:baseThreshold,multiplier}=weaponCriticalSettings(d);
+ const threshold=Math.max(1,baseThreshold-(Number(d.criticalRangeBonus)||0));
  return {d,skillName,attribute,bonus,dieCount,value,threshold,multiplier};
 }
 const weaponDieSvg='<img class="nex-combat-d20-image" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAG4AAAB+AQAAAADt9hnNAAAEL0lEQVR42m2VTYhbVRTHf++8R5KWMIky2CBj5hVtcVEkxS4GrX2vC7G49AOqC5udulC78mOVWypOEbFdVpBOFqIUEbooSMHSNx1pu1AmCEoXLX2xgw22i8QUTcabd1y895IpeDeXP/97z7n/83EPAOCadJd02xaydS01HoDxQnYJAKd6YbKFLJRXzRa4sL8fb7E8H5YOb2FXbVKemXJ3PSvJpSk5V7fajaZ3t78OlXNTthlbtbUcOWuRVS3khwsvXofexfwh5af3Wo0bUQYb77tWR6dzUd17FdtK6rmo5RtBXNHKciZn8VKCk1S6Bjx4+Ei0d2lp56lKKuqoVWd4wFW7BILz8mRcx7lp3N8A3IoavbNii7oGwrbG5CQx7gXqEcKecOMopQZL/o5zQDcpqq7cUT2W1BDn67+WUv/vHXwXCouuqgZDVXXXjDzy2kKu++Z3Te+VbTFoWADqX0ZEFVW1rbGqalTGqKpatarraj0pAkwQwwjXyJZETXO0iRMxmcI+QGwwUuYyeNAkBF8ggBgYOwYEBUrQuDYHSIGGoQM1GmgoJIeSNFNRatn717ShvBtAPBgpQA0SRIkwIRQAjACDxIDLKiBImEafyAPOtKw7VtWk9aMz3hDAS9nHb6USSpuAE9k2iJMLYu74JkIkVQ+gqR4IOH5vYMZhgxoIBkOn3evQaYIQE3aifjyqwf3UiekWsZD79Ht2zZSfCnoIIaol4x3gIXoIfQghkyRAYsD4bgp9cPqZJkQ/JO0oMVQRYAQfZ3kSp5rFOovkD9xnswQ0aSMWYFQFoIf8bejRbwINLKKlNJeA7kZ4gw6rmJgaLiJg+ISpIw+fsWcvU8YYoaWhwnOGQjJCSk2mwicRXyRWE9y4otZ2v/JcrOso4wZMQFyOARQjxFQReqNp3W03QjevQ+eyhxCdz8nDIJyYFakiWn0rRw0n9Bx/4GSwODKszL4PVzeESUWzdRGE/Us5e83AyuB2ztYXN4Rf5nI3O/sIPxUzmITn4cyibaVnR9rdkKQpwBhw2AGnVAPVOFAdqn1ChipNiGMY+m4sXqLnIAL+6GGkROE6FPuwttkOvX18NA8l4NStIz/LO0LaKerXdI/cOxZ9kL2i+MyT8mf7oGcYVbEH/bd9nOWoHmi0qIO54lXg9lgDjQId1t9cQHi1QBMf7v++ax4oB6N1vRLouvYjhH/iE6dxYjoMI8C54g716qIu6ucg6LefFVDU109B4JvryqN+EiaH0v4JbKvfGukg/VXdk0mgOtCraXlP9jmA8HwWwr26ononyb/chda66vooznrhbrsGnbvtvAqWh6rBlbxT9EYBDV+aDoJfXZLJbIqU97dG42iW9nowuD2bOMlZ5OyWaTX3wmOtDYC0amrfT+b9Gbt5sXZtZgr3ePF/B19ef0cfgAvRAzP0bgb/AwCO4zlQNWGBAAAAAElFTkSuQmCC" alt="Dado d20" draggable="false">';
@@ -622,9 +629,10 @@ document.addEventListener('click',e=>{
  const secondary=hasSecondary?weaponDice(secondaryExpression,1):null;
  if(hasSecondary&&!secondary){toast('Dano secundário inválido. Use, por exemplo, 1d6 ou 2d4+2.');return;}
  const originBonus=typeof nex12Orig==='function'?Number(nex12Orig()?.damage)||0:0;
- const totalDamage=damage.total+(secondary?secondary.total:0)+originBonus;
+ const itemBonus=Number(w.d.damageBonus)||0;
+ const totalDamage=damage.total+(secondary?secondary.total:0)+originBonus+itemBonus;
  const detailAttack=rolls.join(', ')+' → '+natural+' '+(w.bonus>=0?'+ ':'− ')+Math.abs(w.bonus);
- const damageDetail=damage.detail+(originBonus?' + bônus '+originBonus:'');
+ const damageDetail=damage.detail+(originBonus?' + bônus '+originBonus:'')+(itemBonus?' + melhoria '+itemBonus:'');
  const secondaryDetail=secondary?secondary.detail:'';
  weaponRollPanel.innerHTML='<div class="nex-weapon-roll-head"><strong>'+safe(w.d.name||item.name)+'</strong><button type="button" data-close-weapon-popup aria-label="Fechar resultado">×</button></div>'+
  '<div class="nex-weapon-roll-stats"><span class="nex-weapon-roll-hex"></span>'+
@@ -632,7 +640,7 @@ document.addEventListener('click',e=>{
  '<div class="nex-weapon-roll-column"><div class="nex-weapon-roll-value">'+safe(totalDamage)+'</div><div class="nex-weapon-roll-label">DANO TOTAL</div></div></div>'+
  '<div class="nex-weapon-roll-detail">'+safe(w.skillName)+': '+safe(detailAttack)+
  '<div>Crítico configurado: '+safe(w.threshold)+'–20 ×'+safe(w.multiplier)+' · '+(critical?'Crítico ativado!':'Sem crítico nesta rolagem')+'</div>'+ 
- '<div>Dano principal ('+safe(w.d.damage)+'): '+safe(damageDetail)+' = '+safe(damage.total+originBonus)+(critical?' · '+safe(w.multiplier)+'× dados':'')+'</div>'+
+ '<div>Dano principal ('+safe(w.d.damage)+'): '+safe(damageDetail)+' = '+safe(damage.total+originBonus+itemBonus)+(critical?' · '+safe(w.multiplier)+'× dados':'')+'</div>'+
  (secondary?'<div>Dano secundário '+safe(w.d.secondaryType||'Normal')+' ('+safe(secondary.expression)+'): '+safe(secondaryDetail)+' = '+safe(secondary.total)+'</div>':'')+
  (secondary?'<div>Total: '+safe(totalDamage)+'</div>':'')+'</div>';
  weaponRollPanel.hidden=false;
@@ -642,7 +650,7 @@ document.addEventListener('click',e=>{
  weaponRollPanel.style.top=Math.max(8,Math.min(innerHeight-weaponRollPanel.offsetHeight-8,rect.bottom+9))+'px';
  if(typeof logResult==='function'){
   logResult(w.d.name+' — ataque','d20 ('+w.skillName+')', '['+rolls.join(', ')+'] → '+natural,attack);
-  logResult(w.d.name+' — dano principal',damage.expression,damageDetail,damage.total+originBonus);
+  logResult(w.d.name+' — dano principal',damage.expression,damageDetail,damage.total+originBonus+itemBonus);
   if(secondary)logResult(w.d.name+' — dano secundário ('+(w.d.secondaryType||'Normal')+')',secondary.expression,secondaryDetail,secondary.total);
   if(secondary)logResult(w.d.name+' — dano total',damage.expression+' + '+secondary.expression,damageDetail+' + '+secondaryDetail,totalDamage);
  }
@@ -740,9 +748,11 @@ by('nexEditorForm').addEventListener('submit',event=>{
  d.name=String(d.name).trim().slice(0,100);
  d.quantity=Math.max(0,Math.min(9999,Math.trunc(number(d.quantity,1))));
  d.spaces=Math.max(0,Math.min(100,Math.round(number(d.spaces,1)*2)/2));
- if(!window.NEX_CARRY?.canUpdate(item,d.spaces,d.quantity,window.NEX_CARRY.tier({nexInfo:{tier:d.tier}}),d.name)){toast('Limite de carga ou de itens dessa categoria atingido.');return;}
+ if(!window.NEX_CARRY?.canUpdate(item,d.effectiveSpaces??d.spaces,d.quantity,window.NEX_CARRY.tier({nexInfo:{tier:d.tier}}),d.name)){toast('Limite de carga ou de itens dessa categoria atingido.');return;}
  d.description=String(d.description||'').slice(0,2500);
  d.upgrades=String(d.upgrades||'').slice(0,2500);
+ d.attackBonus=d.baseAttackBonus??0;
+ d.damageBonus=d.baseDamageBonus??0;
  // O campo de imagem foi retirado do editor, preservando imagens eventualmente já salvas.
  d.image=detail(item).image;
  item.name=d.name;item.category=d.category;item.quantity=d.quantity;item.spaces=d.effectiveSpaces??d.spaces;item.nexInfo=d;
