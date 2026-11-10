@@ -66,7 +66,7 @@ const improvements=entries;
 const curses=curseEntries;
 function options(item){return {improvements:entries.filter(x=>eligible(x,item)),curses:curseEntries.filter(x=>eligible(x,item)),kind:typeOf(item)}}
 const unique=xs=>[...new Set((Array.isArray(xs)?xs:[]).map(clean).filter(Boolean))];
-const oppressive=(a,b)=>(a==='Sangue'&&b==='Morte')||(a==='Morte'&&b==='Sangue')||(a==='Conhecimento'&&b==='Energia')||(a==='Energia'&&b==='Conhecimento');
+const oppressive=(a,b)=>[['Sangue','Conhecimento'],['Conhecimento','Energia'],['Energia','Morte'],['Morte','Sangue']].some(([x,y])=>(a===x&&b===y)||(a===y&&b===x));
 function calculate(item){
  const allowed=options(item);
  const ids=unique(item.modifiers).filter(id=>allowed.improvements.some(x=>x.id===id));
