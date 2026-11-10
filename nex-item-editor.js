@@ -63,6 +63,29 @@ style.textContent=[
 '#sheetScreen .nex-item-card-buttons button{border:0;background:transparent;font-size:12px;padding:8px}',
 '#sheetScreen .nex-item-remove{color:#f05562!important}',
 '#sheetScreen .nex-item-edit{color:#49b96b!important}',
+'#sheetScreen .nex-item-card-new{background:#1c1c1e!important;border:1px solid #303035!important;border-radius:5px!important;margin:8px 0!important;box-shadow:none!important}',
+'#sheetScreen .nex-item-card-new>summary{padding:11px 12px!important;gap:13px!important;min-height:62px!important}',
+'#sheetScreen .nex-item-card-new[open]>summary{border-bottom:1px solid #9c3440!important}',
+'#sheetScreen .nex-item-chevron{font-size:19px!important;color:#d03a4a!important;transition:transform .18s ease!important}',
+'#sheetScreen .nex-item-card-new[open] .nex-item-chevron{transform:rotate(180deg)!important}',
+'#sheetScreen .nex-item-main strong{font-size:14px!important;font-weight:750!important;line-height:1.4}',
+'#sheetScreen .nex-item-short{font-size:12px!important;gap:14px!important;margin-top:4px!important;color:#e64f5d!important}',
+'#sheetScreen .nex-item-short b{color:#f7f7fa!important}',
+'#sheetScreen .nex-item-card-body{padding:14px 10px 9px!important;border-top:0!important}',
+'#sheetScreen .nex-item-subtitle{font-size:11px!important;color:#f1f1f5!important;font-weight:700!important;margin-bottom:8px!important}',
+'#sheetScreen .nex-item-card-stats{font-size:12px!important;color:#da4351!important;line-height:1.9!important}',
+'#sheetScreen .nex-item-card-stats b{font-weight:700!important;color:#fff!important}',
+'#sheetScreen .nex-item-card-description{font-size:13px!important;margin:16px 0 10px!important;line-height:1.6!important}',
+'#sheetScreen .nex-item-card-buttons{margin-top:6px!important;padding-top:4px!important;align-items:center!important}',
+'#sheetScreen .nex-item-card-buttons button{font-size:12px!important;border:0!important;background:transparent!important;min-height:32px!important}',
+'#sheetScreen .nex-item-equipped-label{display:flex;align-items:center;justify-content:center;flex:0 0 34px;cursor:pointer;margin-left:auto}',
+'#sheetScreen .nex-item-equipped-label input{appearance:none;-webkit-appearance:none;width:31px!important;height:31px!important;min-width:31px!important;margin:0!important;border:1px solid #ddd!important;border-radius:4px!important;background:#19191c!important;cursor:pointer;display:grid;place-items:center}',
+'#sheetScreen .nex-item-equipped-label input:checked{background:#a72c39!important;border-color:#d74d59!important}',
+'#sheetScreen .nex-item-equipped-label input:checked::after{content:"✓";font-size:19px;font-weight:800;color:#fff}',
+'#sheetScreen .nex-item-equipped-label input:focus-visible{outline:2px solid #dc525c!important;outline-offset:3px}',
+'#sheetScreen .nex-item-remove{color:#f25d66!important}',
+'#sheetScreen .nex-item-edit{color:#4fc779!important}',
+
 '#nexItemEditor[hidden]{display:none!important}',
 '#nexItemEditor{position:fixed;inset:0;z-index:100050;display:grid;place-items:center;background:#000c;padding:10px;color:white}',
 '#nexItemEditor *{box-sizing:border-box}',
@@ -157,29 +180,69 @@ function close(){
 function descriptionText(s){
  return safe(s).replace(/\*\*(.+?)\*\*/gs,'<strong style="color:#ec3e4c">$1</strong>').replace(/__(.+?)__/gs,'<u>$1</u>').replace(/(?<!\*)\*([^*\n]+)\*(?!\*)/g,'<em>$1</em>');
 }
-function card(item){
+function card(item,expanded=false){
  const d=detail(item),weapon=d.category==='Arma',id=safe(item.id);
- const quick=weapon?[['Dano',d.damage],['Crítico',d.critical+(d.multiplier?' ×'+d.multiplier:'')]]:[['Categoria',d.tier],['Espaços',d.spaces]];
- const stats=weapon?[['Proficiência',d.proficiency],['Tipo',d.kind],['Empunhadura',d.wield],['Categoria',d.tier],['Tipo de dano',d.damageType],['Alcance',d.range],['Dano secundário',d.secondary],['Espaços',d.spaces]]:
- [['Categoria',d.tier],['Tipo',d.category],['Espaços',d.spaces]];
- const img=/^https:\/\//i.test(d.image)?'<img class="nex-item-card-image" src="'+safe(d.image)+'" alt="Imagem de '+safe(d.name)+'">':'';
- return '<details class="nex-item-card-new" data-item-id="'+id+'"><summary><span class="nex-item-chevron">⌄</span>'+
- '<span class="nex-item-main"><strong>'+safe(d.name)+'</strong><span class="nex-item-short">'+quick.map(x=>'<span>'+safe(x[0])+': <b>'+safe(x[1])+'</b></span>').join('')+'</span></span></summary>'+
- '<div class="nex-item-card-body"><div class="nex-item-subtitle">'+safe([d.proficiency,d.kind,d.wield].filter(Boolean).join(' · ')||d.category)+'</div>'+
- '<div class="nex-item-card-stats">'+stats.map(x=>'<div>'+safe(x[0])+': <b>'+safe(x[1])+'</b></div>').join('')+'<div>Quantidade: <b>'+safe(d.quantity)+'</b></div></div>'+
+ const critical=String(d.critical||'').trim(),multi=String(d.multiplier||'').trim();
+ const critText=critical+(multi?' ×'+multi:'');
+ const quick=weapon?[['Dano',d.damage||'—'],['Crítico',critText||'—']]:[['Categoria',d.tier||'—'],['Espaços',d.spaces]];
+ const subtitle=weapon?[d.proficiency,d.kind,d.wield].filter(Boolean).join(' - '):(d.category==='Item Amaldiçoado'?'Item Amaldiçoado':d.category);
+ const stats=weapon?[
+  ['Categoria',d.tier],['Tipo',d.damageType],['Espaços',d.spaces],
+  ['Alcance',d.range==='—'?'':d.range],['Dano secundário',d.secondary],
+  ...(Number(d.quantity)>1?[['Quantidade',d.quantity]]:[])
+ ]:[
+  ['Categoria',d.tier],['Tipo',d.category],['Espaços',d.spaces],
+  ...(Number(d.quantity)>1?[['Quantidade',d.quantity]]:[])
+ ];
+ const img=/^https:\/\//i.test(d.image)?'<img loading="lazy" class="nex-item-card-image" src="'+safe(d.image)+'" alt="Imagem de '+safe(d.name)+'">':'';
+ return '<details class="nex-item-card-new" data-item-id="'+id+'"'+(expanded?' open':'')+'>'+
+ '<summary><span class="nex-item-chevron" aria-hidden="true">⌄</span>'+
+ '<span class="nex-item-main"><strong>'+safe(d.name||'Item')+'</strong>'+
+ '<span class="nex-item-short">'+quick.filter(x=>x[1]!==undefined&&x[1]!==null&&String(x[1])!=='').map(x=>'<span>'+safe(x[0])+': <b>'+safe(x[1])+'</b></span>').join('')+'</span></span>'+
+ '<label class="nex-item-equipped-label" title="Equipado" aria-label="Equipado: '+safe(d.name)+'"><input type="checkbox" data-nex-item-equipped="'+id+'" aria-label="Marcar '+safe(d.name)+' como equipado" '+(item.equipped?'checked':'')+'></label></summary>'+
+ '<div class="nex-item-card-body"><div class="nex-item-subtitle">'+safe(subtitle)+'</div>'+
+ '<div class="nex-item-card-stats">'+stats.filter(x=>x[1]!==undefined&&x[1]!==null&&String(x[1]).trim()!=='').map(x=>'<div>'+safe(x[0])+': <b>'+safe(x[1])+'</b></div>').join('')+'</div>'+
  (d.upgrades?'<div class="nex-item-card-description"><b>Melhorias:</b> '+descriptionText(d.upgrades)+'</div>':'')+img+
  '<div class="nex-item-card-description">'+descriptionText(d.description||'Sem descrição cadastrada.')+'</div>'+
  '<div class="nex-item-card-buttons"><button type="button" data-nex-item-remove="'+id+'" class="nex-item-remove">Remover</button>'+
  '<button type="button" data-nex-item-edit="'+id+'" class="nex-item-edit">Editar</button></div></div></details>';
 }
 // Usa o renderizador de inventário existente para preservar filtros, busca e contadores.
+let lastExpandedIds=new Set();
 function enhance(){
  const list=by('inventoryList');if(!list)return;
  const ids=[...list.querySelectorAll('.nexv16-entry[data-item-id]')].map(e=>e.dataset.itemId);
- if(ids.length)list.innerHTML=ids.map(find).filter(Boolean).map(card).join('');
+ if(!ids.length)return;
+ const currentItems=ids.map(find).filter(Boolean);
+ list.innerHTML=currentItems.map((item,index)=>card(item,lastExpandedIds.size?lastExpandedIds.has(String(item.id)):index===0)).join('');
 }
 const priorRender=renderInventory;
-renderInventory=function(){const result=priorRender.apply(this,arguments);enhance();return result;};
+renderInventory=function(){
+ const list=by('inventoryList');
+ if(list){
+  const existing=[...list.querySelectorAll('.nex-item-card-new[data-item-id]')];
+  if(existing.length)lastExpandedIds=new Set(existing.filter(el=>el.open).map(el=>String(el.dataset.itemId)));
+ }
+ const result=priorRender.apply(this,arguments);
+ enhance();return result;
+};
+document.addEventListener('toggle',event=>{
+ const details=event.target;
+ if(!details?.matches?.('#inventoryList .nex-item-card-new'))return;
+ const id=String(details.dataset.itemId||'');
+ if(details.open)lastExpandedIds.add(id);else lastExpandedIds.delete(id);
+},true);
+document.addEventListener('click',event=>{
+ if(event.target.closest('.nex-item-equipped-label'))event.stopPropagation();
+},true);
+document.addEventListener('change',event=>{
+ const checkbox=event.target.closest?.('[data-nex-item-equipped]');
+ if(!checkbox)return;
+ const item=find(checkbox.dataset.nexItemEquipped);if(!item)return;
+ item.equipped=checkbox.checked;
+ save();
+ toast(checkbox.checked?'Item marcado como equipado.':'Item desmarcado como equipado.');
+});
 document.addEventListener('click',event=>{
  const button=event.target.closest('[data-nex-item-edit],[data-nex-item-remove]');
  if(!button)return;
