@@ -55,6 +55,7 @@ function detail(item){
   wield:sub[2]||unavailable,
   damage:pairs.dano||getStat('Dano')||unavailable,
   secondary:pairs['dano secundario']||getStat('Dano secundário')||'—',
+  secondaryType:pairs['tipo do dano secundario']||'Normal',
   critical:critNumber?.[1]||'20',
   multiplier:critMulti?.[1]||'2',
   damageType:pairs['tipo de dano']||pairs.tipo||getStat('Tipo de dano','Tipo')||unavailable,
@@ -294,6 +295,7 @@ function editorFields(d){
    field('proficiency','Proficiência',d.proficiency)+field('kind','Tipo',d.kind)+
    field('wield','Empunhadura',d.wield,'text',2)+
    field('damage','Dano*',d.damage)+field('secondary','Dano secundário',d.secondary)+
+   select('secondaryType','Tipo do dano secundário',d.secondaryType||'Normal',['Normal','Sangue','Morte','Energia','Conhecimento','Medo'])+
    field('critical','Crítico*',d.critical)+field('multiplier','Multiplicador*',d.multiplier)+
    field('damageType','Tipo de Dano',d.damageType,'text',2)+field('range','Alcance',d.range,'text',2)+
    field('tier','Categoria',d.tier)+field('spaces','Espaços*',d.spaces,'number')+
@@ -338,7 +340,7 @@ function card(item,expanded=false){
  const subtitle=weapon?[d.proficiency,d.kind,d.wield].filter(Boolean).join(' - '):(d.category==='Item Amaldiçoado'?'Item Amaldiçoado':d.category);
  const stats=weapon?[
   ['Categoria',d.tier],['Tipo',d.damageType],['Espaços',d.spaces],
-  ['Alcance',d.range==='—'?'':d.range],['Dano secundário',d.secondary],
+  ['Alcance',d.range==='—'?'':d.range],['Dano secundário',d.secondary+' ('+(d.secondaryType||'Normal')+')'],
   ...(Number(d.quantity)>1?[['Quantidade',d.quantity]]:[])
  ]:[
   ['Categoria',d.tier],['Tipo',d.category],['Espaços',d.spaces],
@@ -482,7 +484,7 @@ renderAttacks=function(){
    '<div class="nex-combat-weapon-details" '+(collapsed?'hidden':'')+'>'+
      '<div class="nex-combat-weapon-summary">Dano: <b>'+safe(damage||'—')+'</b>　Crítico: <b>'+safe(d.critical||'20')+' ×'+safe(w.multiplier)+'</b></div>'+
     '<div><span class="nex-combat-stat-label">Ataque Bônus:</span> <b>'+safe((bonus>=0?'+':'')+bonus)+'</b> ('+safe(w.skillName)+')</div>'+
-    (String(d.secondary||'').trim()&&!/^(?:—|-)$/i.test(String(d.secondary).trim())?'<div class="nex-secondary-damage-line"><span class="nex-combat-stat-label">Dano secundário:</span> <b>'+safe(d.secondary)+'</b> <button type="button" class="nex-secondary-roll-button" data-nex-secondary-roll="'+id+'" aria-label="Rolar dano secundário de '+safe(d.name||item.name)+'">Rolar dano secundário</button></div>':'')+
+    (String(d.secondary||'').trim()&&!/^(?:—|-)$/i.test(String(d.secondary).trim())?'<div class="nex-secondary-damage-line"><span class="nex-combat-stat-label">Dano secundário:</span> <b>'+safe(d.secondary)+' ('+safe(d.secondaryType||'Normal')+')</b> <button type="button" class="nex-secondary-roll-button" data-nex-secondary-roll="'+id+'" aria-label="Rolar dano secundário de '+safe(d.name||item.name)+'">Rolar dano secundário</button></div>':'')+
     '<div><span class="nex-combat-stat-label">Tipo de Dano:</span> <b>'+safe(d.damageType||'—')+'</b></div>'+
     '<div><span class="nex-combat-stat-label">Alcance:</span> <b>'+safe(d.range||'—')+'</b></div>'+
     '<div><span class="nex-combat-stat-label">Perícia:</span> <b>'+safe(w.skillName)+'</b></div>'+
@@ -537,12 +539,12 @@ document.addEventListener('click',e=>{
   if(!secondaryRoll){toast('Dano secundário inválido. Use 1d6, 2d4+2 etc.');return;}
   weaponRollPanel.innerHTML='<div class="nex-weapon-roll-head"><strong>'+safe(secondaryWeapon.d.name||secondaryItem.name)+'</strong><button type="button" data-close-weapon-popup aria-label="Fechar resultado">×</button></div>'+
     '<div class="nex-weapon-roll-stats"><span class="nex-weapon-roll-hex"></span><div class="nex-weapon-roll-column"><div class="nex-weapon-roll-value">'+safe(secondaryRoll.total)+'</div><div class="nex-weapon-roll-label">DANO SECUNDÁRIO</div></div></div>'+
-    '<div class="nex-weapon-roll-detail">'+safe(secondaryRoll.expression)+': '+safe(secondaryRoll.detail)+'</div>';
+    '<div class="nex-weapon-roll-detail">Tipo: '+safe(secondaryWeapon.d.secondaryType||'Normal')+' · '+safe(secondaryRoll.expression)+': '+safe(secondaryRoll.detail)+'</div>';
   weaponRollPanel.hidden=false;
   const rect=secondaryButton.getBoundingClientRect(),width=310;
   weaponRollPanel.style.left=Math.max(8,Math.min(innerWidth-width-8,rect.left-100))+'px';
   weaponRollPanel.style.top=Math.max(8,Math.min(innerHeight-weaponRollPanel.offsetHeight-8,rect.bottom+9))+'px';
-  if(typeof logResult==='function')logResult(secondaryWeapon.d.name+' — dano secundário',secondaryRoll.expression,secondaryRoll.detail,secondaryRoll.total);
+  if(typeof logResult==='function')logResult(secondaryWeapon.d.name+' — dano secundário ('+(secondaryWeapon.d.secondaryType||'Normal')+')',secondaryRoll.expression,secondaryRoll.detail,secondaryRoll.total);
   return;
  }
  const button=e.target.closest('[data-nex-weapon-roll]');
@@ -576,7 +578,7 @@ document.addEventListener('click',e=>{
  '<div class="nex-weapon-roll-column"><div class="nex-weapon-roll-value">'+safe(totalDamage)+'</div><div class="nex-weapon-roll-label">DANO TOTAL</div></div></div>'+
  '<div class="nex-weapon-roll-detail">'+safe(w.skillName)+': '+safe(detailAttack)+
  '<div>Dano principal ('+safe(w.d.damage)+'): '+safe(damageDetail)+' = '+safe(damage.total+originBonus)+(critical?' · Crítico!':'')+'</div>'+
- (secondary?'<div>Dano secundário ('+safe(secondary.expression)+'): '+safe(secondaryDetail)+' = '+safe(secondary.total)+'</div>':'')+
+ (secondary?'<div>Dano secundário '+safe(w.d.secondaryType||'Normal')+' ('+safe(secondary.expression)+'): '+safe(secondaryDetail)+' = '+safe(secondary.total)+'</div>':'')+
  (secondary?'<div>Total: '+safe(totalDamage)+'</div>':'')+'</div>';
  weaponRollPanel.hidden=false;
  const rect=button.getBoundingClientRect(),width=310;
@@ -586,7 +588,7 @@ document.addEventListener('click',e=>{
  if(typeof logResult==='function'){
   logResult(w.d.name+' — ataque','d20 ('+w.skillName+')', '['+rolls.join(', ')+'] → '+natural,attack);
   logResult(w.d.name+' — dano principal',damage.expression,damageDetail,damage.total+originBonus);
-  if(secondary)logResult(w.d.name+' — dano secundário',secondary.expression,secondaryDetail,secondary.total);
+  if(secondary)logResult(w.d.name+' — dano secundário ('+(w.d.secondaryType||'Normal')+')',secondary.expression,secondaryDetail,secondary.total);
   if(secondary)logResult(w.d.name+' — dano total',damage.expression+' + '+secondary.expression,damageDetail+' + '+secondaryDetail,totalDamage);
  }
 });
@@ -622,7 +624,7 @@ by('nexEditorForm').addEventListener('submit',event=>{
  d.image=detail(item).image;
  item.name=d.name;item.category=d.category;item.quantity=d.quantity;item.spaces=d.spaces;item.nexInfo=d;
  item.description=d.description;
- item.detail=[d.description,d.category==='Arma'?'Dano: '+d.damage:'',d.category==='Arma'&&d.secondary&&d.secondary!=='—'?'Dano secundário: '+d.secondary:'',d.category==='Arma'?'Crítico: '+d.critical+' ×'+d.multiplier:'',d.category==='Arma'?'Tipo: '+d.damageType:'','Categoria: '+d.tier].filter(Boolean).join(' · ').slice(0,2500);
+ item.detail=[d.description,d.category==='Arma'?'Dano: '+d.damage:'',d.category==='Arma'&&d.secondary&&d.secondary!=='—'?'Dano secundário: '+d.secondary:'',d.category==='Arma'&&d.secondary&&d.secondary!=='—'?'Tipo do dano secundário: '+(d.secondaryType||'Normal'):'',d.category==='Arma'?'Crítico: '+d.critical+' ×'+d.multiplier:'',d.category==='Arma'?'Tipo: '+d.damageType:'','Categoria: '+d.tier].filter(Boolean).join(' · ').slice(0,2500);
  close();renderInventory();renderAttacks();save();toast('Item atualizado.');
 });
 document.addEventListener('keydown',event=>{if(!modal.hidden&&event.key==='Escape'){event.preventDefault();close();}});
