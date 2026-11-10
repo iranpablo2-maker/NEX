@@ -9,19 +9,19 @@ const entries=[
  {id:'discreta_arma',name:'Discreta',on:['melee','ranged','firearm'],note:'Item mais fácil de ocultar e ocupa 1 espaço a menos.',spaceReduction:1},
  {id:'tatica',name:'Tática',on:['melee','ranged','firearm'],note:'Permite sacar como ação livre.',manual:true},
  {id:'alongada',name:'Alongada',on:['firearm'],note:'+2 em ataques com esta arma.',attackBonus:2},
- {id:'calibre_grosso',name:'Calibre Grosso',on:['firearm'],note:'Aumenta o dado de dano da arma; conferir munição compatível.',manual:true},
+ {id:'calibre_grosso',name:'Calibre Grosso',on:['firearm'],note:'Acrescenta um dado do mesmo tipo ao dano principal. Exige munição compatível.',extraDamageDice:1},
  {id:'compensador',name:'Compensador',on:['firearm'],requiresAutomatic:true,note:'Benefício em disparo automático.',manual:true},
  {id:'ferrolho_automatico',name:'Ferrolho Automático',on:['firearm'],note:'Torna a arma automática.',manual:true},
  {id:'mira_laser',name:'Mira Laser',on:['firearm'],note:'Margem de crítico aumenta em 2.',criticalRangeBonus:2},
  {id:'mira_telescopica',name:'Mira Telescópica',on:['firearm'],note:'Altera alcance; confira a regra.',manual:true},
  {id:'silenciador',name:'Silenciador',on:['firearm'],note:'Efeito de furtividade conforme o livro.',manual:true},
  {id:'visao_calor',name:'Visão de Calor',on:['firearm'],note:'Efeito sobre camuflagem conforme o livro.',manual:true},
- {id:'dum_dum',name:'Dum Dum',on:['ammo'],onlyNames:/balas?\s+(curtas?|longas?)/i,note:'Aumenta multiplicador de crítico da arma compatível.',manual:true},
- {id:'explosiva',name:'Explosiva',on:['ammo'],onlyNames:/balas?\s+(curtas?|longas?)/i,note:'Dano adicional da munição; aplicado na arma compatível durante o combate.',manual:true},
+ {id:'dum_dum',name:'Dum Dum',on:['ammo'],onlyNames:/balas?\s+(curtas?|longas?)/i,note:'+1 no multiplicador de crítico da arma vinculada.',criticalMultiplierBonus:1},
+ {id:'explosiva',name:'Explosiva',on:['ammo'],onlyNames:/balas?\s+(curtas?|longas?)/i,note:'+2d6 de dano adicional na arma vinculada.',extraDamage:'2d6'},
  {id:'antibombas',name:'Antibombas',on:['armorHeavy'],note:'Benefício em testes contra efeitos de área.',manual:true},
  {id:'blindada',name:'Blindada',on:['armorHeavy'],note:'Aumenta a resistência e o espaço ocupado.',spaceIncrease:1,manual:true},
  {id:'discreta_protecao',name:'Discreta',on:['armorLight'],incompatible:['reforcada'],note:'Proteção menor e mais discreta.',spaceReduction:1,manual:true},
- {id:'reforcada',name:'Reforçada',on:['armorLight','armorHeavy'],incompatible:['discreta_protecao'],note:'Melhora a Defesa e aumenta o espaço.',spaceIncrease:1,manual:true},
+ {id:'reforcada',name:'Reforçada',on:['armorLight','armorHeavy'],incompatible:['discreta_protecao'],note:'+2 Defesa enquanto equipada; ocupa mais um espaço.',spaceIncrease:1,defenseBonus:2},
  {id:'aprimorado',name:'Aprimorado',on:['accessory'],note:'Melhora o bônus de perícia do acessório.',manual:true},
  {id:'discreto_acessorio',name:'Discreto',on:['accessory'],note:'Acessório mais fácil de ocultar e ocupa 1 espaço a menos.',spaceReduction:1,manual:true},
  {id:'funcao_adicional',name:'Função Adicional',on:['accessory'],note:'Escolha uma perícia adicional com o mestre.',manual:true},
@@ -36,10 +36,10 @@ const curseEntries=[
  {id:'erosiva',name:'Erosiva',element:'Morte',on:['melee','ranged','firearm']},
  {id:'abascanta',name:'Abascanta',element:'Conhecimento',on:['armorLight','armorHeavy']},
  {id:'profetica',name:'Profética',element:'Conhecimento',on:['armorLight','armorHeavy']},
- {id:'sombria',name:'Sombria',element:'Conhecimento',on:['armorLight','armorHeavy']},
- {id:'cinetica',name:'Cinética',element:'Energia',on:['armorLight','armorHeavy']},
+ {id:'sombria',name:'Sombria',element:'Conhecimento',on:['armorLight','armorHeavy'],note:'+5 em Furtividade com a proteção equipada.',skillBonus:{Furtividade:5}},
+ {id:'cinetica',name:'Cinética',element:'Energia',on:['armorLight','armorHeavy'],note:'+2 Defesa e resistência a dano enquanto equipada.',defenseBonus:2,damageReductionLight:2,damageReductionHeavy:5},
  {id:'lepida',name:'Lépida',element:'Energia',on:['armorLight','armorHeavy']},
- {id:'carisma',name:'Carisma',element:'Conhecimento',on:['accessory']},
+ {id:'carisma',name:'Carisma',element:'Conhecimento',on:['accessory'],note:'+1 Presença sem alterar PE máximo.',presenceBonus:1},
  {id:'conjuracao',name:'Conjuração',element:'Conhecimento',on:['accessory']},
  {id:'escudo_mental',name:'Escudo Mental',element:'Conhecimento',on:['accessory']}
 ];
@@ -93,8 +93,28 @@ function calculate(item){
  attackBonus:mods.reduce((n,x)=>n+(x.attackBonus||0),0),
  damageBonus:mods.reduce((n,x)=>n+(x.damageBonus||0),0),
  criticalRangeBonus:mods.reduce((n,x)=>n+(x.criticalRangeBonus||0),0),
+ criticalMultiplierBonus:mods.reduce((n,x)=>n+(x.criticalMultiplierBonus||0),0),
+ extraDamageDice:mods.reduce((n,x)=>n+(x.extraDamageDice||0),0),
+ extraDamage:mods.map(x=>x.extraDamage).filter(Boolean).join('+'),
+ defenseBonus:mods.reduce((n,x)=>n+(x.defenseBonus||0),0)+kept.reduce((n,x)=>n+(curseEntries.find(y=>y.id===x.id)?.defenseBonus||0),0),
+ presenceBonus:kept.reduce((n,x)=>n+(curseEntries.find(y=>y.id===x.id)?.presenceBonus||0),0),
+ damageReduction:kept.reduce((n,x)=>{const c=curseEntries.find(y=>y.id===x.id);return n+(typeOf(item)==='armorHeavy'?(c?.damageReductionHeavy||0):(c?.damageReductionLight||0))},0),
+ skillBonuses:kept.reduce((a,x)=>{const c=curseEntries.find(y=>y.id===x.id);for(const [key,val] of Object.entries(c?.skillBonus||{}))a[key]=(a[key]||0)+val;return a},{}),
  effectiveSpaces:Math.max(0,spaces-reduction+growth),
  notes:mods.filter(x=>x.manual).map(x=>x.note)};
 }
-window.NEX_ITEM_MODS=Object.freeze({improvements,curses,elements,order,typeOf,eligible,options,calculate,oppressive});
+function equippedBonuses(items){
+ const output={defense:0,presence:0,damageReduction:0,skills:{}};
+ for(const item of Array.isArray(items)?items:[]){
+  if(!item?.equipped)continue;
+  const d={...item,...(item.nexInfo||{}),category:item.category};
+  const calc=calculate({...d,baseTier:d.baseTier||d.tier||'0'});
+  output.defense+=calc.defenseBonus;
+  output.presence+=calc.presenceBonus;
+  output.damageReduction+=calc.damageReduction;
+  for(const [key,val] of Object.entries(calc.skillBonuses))output.skills[key]=(output.skills[key]||0)+val;
+ }
+ return output;
+}
+window.NEX_ITEM_MODS=Object.freeze({improvements,curses,elements,order,typeOf,eligible,options,calculate,oppressive,equippedBonuses});
 })();
