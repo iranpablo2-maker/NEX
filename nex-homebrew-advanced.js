@@ -160,6 +160,7 @@
    toggleRitualDamageFields();
    $('nex52ItemFields').hidden=type!=='item';
    if(type==='item')$('nex52Category').value=$('nex51Edit').value?$('nex52Category').value:itemTab;
+   $('nex52Category').closest('label').hidden=type==='item';
  }
  const FALLBACK_SKILLS=['Acrobacia','Adestramento','Artes','Atletismo','Atualidades','Ciências','Crime','Diplomacia','Enganação','Fortitude','Furtividade','Iniciativa','Intimidação','Intuição','Investigação','Luta','Medicina','Ocultismo','Percepção','Pilotagem','Pontaria','Profissão','Reflexos','Religião','Sobrevivência','Tática','Tecnologia','Vontade'];
  function loadSkillChoices(){
