@@ -314,14 +314,14 @@ function editorFields(d){
    select('baseTier','Categoria base',d.baseTier||d.tier,['0','I','II','III','IV'])+field('spaces','Espaços*',d.spaces,'number')+'</div>';
  }
  const catalog=window.NEX_ITEM_MODS;
- const compatible=(catalog?.improvements||[]).filter(x=>x.items.includes(d.category));
+ const compatible=catalog?.options(d).improvements||[];
+ const curseOptions=catalog?.options(d).curses||[];
  html+='<h3>Melhorias (regras do livro)</h3>'+
   '<div class="nex-editor-inline"><select id="nexEditorModifierChoice" aria-label="Escolher melhoria">'+compatible.map(x=>'<option value="'+safe(x.id)+'">'+safe(x.name)+'</option>').join('')+'</select><button type="button" data-nex-add-modifier>Adicionar melhoria</button></div>'+
   '<input type="hidden" data-edit="modifiers" value="'+safe(JSON.stringify(d.modifiers||[]))+'"><div id="nexEditorModifiersList" class="nex-editor-upgrade-list"></div>'+ 
   '<div class="nex-editor-inline"><input id="nexEditorCustomImprovementName" maxlength="80" placeholder="Outra melhoria (efeito manual)" aria-label="Nome da melhoria adicional"><button type="button" data-nex-add-custom-improvement>Adicionar</button></div>'+ 
   '<input type="hidden" data-edit="customImprovements" value="'+safe(JSON.stringify(d.customImprovements||[]))+'"><div id="nexEditorCustomImprovementsList" class="nex-editor-upgrade-list"></div>'+
-  '<h3>Maldições</h3><div class="nex-editor-inline"><input id="nexEditorCurseName" maxlength="80" placeholder="Nome da maldição" aria-label="Nome da maldição">'+
-  '<select id="nexEditorCurseElement" aria-label="Elemento da maldição">'+(catalog?.elements||[]).map(x=>'<option>'+safe(x)+'</option>').join('')+'</select>'+
+  '<h3>Maldições</h3><div class="nex-editor-inline"><select id="nexEditorCurseChoice" aria-label="Maldições compatíveis">'+curseOptions.map(x=>'<option value="'+safe(x.id)+'">'+safe(x.name)+' · '+safe(x.element)+'</option>').join('')+'</select>'+ 
   '<button type="button" data-nex-add-curse>Adicionar maldição</button></div>'+
   '<input type="hidden" data-edit="curses" value="'+safe(JSON.stringify(d.curses||[]))+'"><div id="nexEditorCursesList" class="nex-editor-upgrade-list"></div>'+
   '<p id="nexEditorCategoryPreview" class="nex-modifier-category-note"></p>'+
@@ -340,21 +340,45 @@ function writeEditorJson(key,data){
  if(input)input.value=JSON.stringify(data);
  showModifierChoices();
 }
+function currentEditorItem(){
+ const orig=detail(find(current)),area=by('nexEditorFields');
+ const val=k=>area?.querySelector('[data-edit="'+k+'"]')?.value;
+ return {...orig,name:val('name')||orig.name,kind:val('kind')||orig.kind,
+  category:val('category')||orig.category,baseTier:val('baseTier')||orig.baseTier||orig.tier,
+  modifiers:readEditorJson('modifiers'),customImprovements:readEditorJson('customImprovements'),curses:readEditorJson('curses')};
+}
 function showModifierChoices(){
  const rules=window.NEX_ITEM_MODS;if(!rules)return;
- const picked=readEditorJson('modifiers'),custom=readEditorJson('customImprovements'),curses=readEditorJson('curses');
- const chosen=rules.improvements.filter(x=>picked.includes(x.id));
+ const item=currentEditorItem(),eligible=rules.options(item),picked=item.modifiers,custom=item.customImprovements,curses=item.curses;
+ const modMenu=by('nexEditorModifierChoice');
+ if(modMenu){
+  const old=modMenu.value;
+  modMenu.innerHTML=eligible.improvements.filter(x=>!picked.includes(x.id)).map(x=>'<option value="'+safe(x.id)+'">'+safe(x.name)+' — '+safe(x.note)+'</option>').join('');
+  if([...modMenu.options].some(x=>x.value===old))modMenu.value=old;
+  modMenu.disabled=!modMenu.options.length;
+  const add=by('nexEditorFields').querySelector('[data-nex-add-modifier]');if(add)add.disabled=modMenu.disabled;
+ }
+ const curseMenu=by('nexEditorCurseChoice');
+ if(curseMenu){
+  const old=curseMenu.value;
+  const choices=eligible.curses.filter(x=>!curses.some(c=>c.id===x.id||c.name===x.name)&&!curses.some(c=>rules.oppressive(c.element,x.element)));
+  curseMenu.innerHTML=choices.map(x=>'<option value="'+safe(x.id)+'">'+safe(x.name)+' · '+safe(x.element)+'</option>').join('');
+  if([...curseMenu.options].some(x=>x.value===old))curseMenu.value=old;
+  curseMenu.disabled=!curseMenu.options.length;
+  const add=by('nexEditorFields').querySelector('[data-nex-add-curse]');if(add)add.disabled=curseMenu.disabled;
+ }
  const list=by('nexEditorModifiersList');
- if(list)list.innerHTML=chosen.map(x=>'<span class="nex-editor-upgrade">'+safe(x.name)+' — '+safe(x.note)+' <button type="button" data-nex-remove-modifier="'+safe(x.id)+'" aria-label="Retirar melhoria '+safe(x.name)+'">×</button></span>').join('');
+ if(list)list.innerHTML=picked.map(id=>{const x=rules.improvements.find(y=>y.id===id);
+  return '<span class="nex-editor-upgrade">'+safe(x?.name||id)+' · '+safe(x?.note||'Remover opção antiga')+' <button type="button" data-nex-remove-modifier="'+safe(id)+'">×</button></span>';
+ }).join('');
  const customList=by('nexEditorCustomImprovementsList');
- if(customList)customList.innerHTML=custom.map((x,i)=>'<span class="nex-editor-upgrade">'+safe(x)+' (efeito manual) <button type="button" data-nex-remove-custom-improvement="'+i+'" aria-label="Retirar melhoria adicional">×</button></span>').join('');
+ if(customList)customList.innerHTML=custom.map((x,i)=>'<span class="nex-editor-upgrade">'+safe(x)+' (Homebrew) <button type="button" data-nex-remove-custom-improvement="'+i+'">×</button></span>').join('');
  const curseList=by('nexEditorCursesList');
- if(curseList)curseList.innerHTML=curses.map((x,i)=>'<span class="nex-editor-upgrade">'+safe(x.name)+' · '+safe(x.element)+' (efeito especial manual) <button type="button" data-nex-remove-curse="'+i+'" aria-label="Retirar maldição">×</button></span>').join('');
- const baseTier=by('nexEditorFields')?.querySelector('[data-edit="baseTier"]')?.value||'0';
- const category=by('nexEditorFields')?.querySelector('[data-edit="category"]')?.value||detail(find(current)).category;
- const calc=rules.calculate({category,baseTier,modifiers:picked,customImprovements:custom,curses,spaces:0});
- const target=by('nexEditorCategoryPreview');
- if(target)target.textContent='Categoria: '+baseTier+' + '+(chosen.length+custom.length)+' melhoria(s) + '+(curses.length?curses.length+1:0)+' por maldição(ões) = '+(calc.overLimit?'acima de IV':calc.effectiveTier)+'. Efeitos especiais exigem verificação das regras pelo mestre.';
+ if(curseList)curseList.innerHTML=curses.map((x,i)=>'<span class="nex-editor-upgrade">'+safe(x.name)+' · '+safe(x.element)+' <button type="button" data-nex-remove-curse="'+i+'">×</button></span>').join('');
+ const calc=rules.calculate(item),target=by('nexEditorCategoryPreview');
+ const names={melee:'Arma corpo a corpo',ranged:'Arma de disparo',firearm:'Arma de fogo',ammo:'Munição',armorLight:'Proteção leve',armorHeavy:'Proteção pesada',accessory:'Acessório',unsupported:'Sem modificações oficiais nessa categoria'};
+ if(target)target.textContent=(names[eligible.kind]||'Item')+' · Categoria: '+calc.baseTier+' + '+calc.categoryIncrease+' = '+(calc.overLimit?'acima de IV':calc.effectiveTier)+
+ (calc.invalidCurses.length||calc.invalidModifiers.length?' · Remova opções incompatíveis antes de salvar.':'');
 }
 function showUpgrades(){
  const value=by('nexEditorFields').querySelector('[data-edit="upgrades"]')?.value||'';
@@ -669,7 +693,7 @@ modal.addEventListener('click',event=>{
  const addMod=event.target.closest('[data-nex-add-modifier]');
  if(addMod){
   const id=by('nexEditorModifierChoice')?.value,existing=readEditorJson('modifiers');
-  if(id&&!existing.includes(id))writeEditorJson('modifiers',[...existing,id]);
+  if(id&&!existing.includes(id)&&window.NEX_ITEM_MODS?.options(currentEditorItem()).improvements.some(x=>x.id===id))writeEditorJson('modifiers',[...existing,id]);
   return;
  }
  const removeMod=event.target.closest('[data-nex-remove-modifier]');
@@ -691,14 +715,13 @@ modal.addEventListener('click',event=>{
  }
  const addCurse=event.target.closest('[data-nex-add-curse]');
  if(addCurse){
-  const name=by('nexEditorCurseName')?.value.trim(),element=by('nexEditorCurseElement')?.value;
+  const id=by('nexEditorCurseChoice')?.value,rules=window.NEX_ITEM_MODS;
+  const selected=rules?.options(currentEditorItem()).curses.find(x=>x.id===id);
   const existing=readEditorJson('curses');
-  if(!name){toast('Informe o nome da maldição.');return;}
-  if(existing.some(x=>norm(x.name)===norm(name))){toast('Esta maldição já está cadastrada no item.');return;}
-  if(window.NEX_ITEM_MODS?.elements.includes(element)){
-   writeEditorJson('curses',[...existing,{name:name.slice(0,80),element}]);
-   by('nexEditorCurseName').value='';
-  }
+  if(!selected){toast('Não existe maldição compatível com este item.');return;}
+  if(existing.some(x=>x.id===selected.id)){toast('Maldição já aplicada.');return;}
+  if(existing.some(x=>rules.oppressive(x.element,selected.element))){toast('Elementos opressores não podem coexistir no mesmo item.');return;}
+  writeEditorJson('curses',[...existing,{id:selected.id,name:selected.name,element:selected.element}]);
   return;
  }
  const removeCurse=event.target.closest('[data-nex-remove-curse]');
@@ -738,7 +761,7 @@ function refreshLinkedAttacks(){
   if(item&&detail(item).category==='Arma')syncAttackFromWeapon(item,item.name);
  }
 }
-by('nexEditorForm').addEventListener('change',event=>{if(event.target.matches('[data-edit="baseTier"]'))showModifierChoices();});
+by('nexEditorForm').addEventListener('change',event=>{if(event.target.matches('[data-edit="baseTier"],[data-edit="category"],[data-edit="kind"]'))showModifierChoices();});
 by('nexEditorForm').addEventListener('submit',event=>{
  event.preventDefault();const item=find(current);if(!item)return;
  const values=Object.fromEntries([...by('nexEditorFields').querySelectorAll('[data-edit]')].map(el=>[el.dataset.edit,el.value]));
@@ -751,6 +774,7 @@ by('nexEditorForm').addEventListener('submit',event=>{
  if(rules){
   try{d.modifiers=JSON.parse(values.modifiers||'[]');d.customImprovements=JSON.parse(values.customImprovements||'[]');d.curses=JSON.parse(values.curses||'[]');}catch{toast('Falha ao ler melhorias e maldições.');return;}
   const calc=rules.calculate({...d,baseTier:values.baseTier||d.baseTier||'0'});
+  if(calc.invalidCurses.length||calc.invalidModifiers.length||calc.conflicting){toast('Remova melhorias ou maldições incompatíveis com o tipo deste item.');return;}
   if(calc.overLimit){toast('Melhorias e maldições ultrapassam a categoria IV.');return;}
   d.baseTier=calc.baseTier;d.tier=calc.effectiveTier;
   d.modifiers=calc.modifiers;d.customImprovements=calc.customImprovements;d.curses=calc.curses;
