@@ -123,7 +123,15 @@ style.textContent=[
 '#sheetScreen .nex-combat-weapon-details .nex-combat-stat-label{color:#dd4b58}',
 '#sheetScreen .nex-combat-die-button{border:0!important;background:transparent!important;padding:7px!important;cursor:pointer!important;flex:none;color:#f1eded!important;display:grid!important;place-items:center!important;border-radius:5px!important}',
 '#sheetScreen .nex-combat-die-button:hover{color:#e34a58!important;background:#3a2027!important}',
-'#sheetScreen .nex-combat-die-button svg{width:31px;height:31px;display:block;stroke:currentColor;fill:none;stroke-width:1.35}',
+'#sheetScreen .nex-combat-die-button .nex-combat-d20-image{width:43px!important;height:48px!important;object-fit:contain!important;display:block!important;border:0!important;pointer-events:none;background:#000!important;border-radius:5px}',
+'#sheetScreen .nex-combat-die-button{padding:1px 4px!important;min-width:49px!important;min-height:50px!important}',
+'#sheetScreen .nex-combat-weapon-toggle{background:none!important;border:0!important;padding:7px 8px!important;color:#da4754!important;font-size:19px!important;line-height:1!important;cursor:pointer!important;flex:none!important;align-self:center!important}',
+'#sheetScreen .nex-combat-weapon-toggle:hover{color:#ff7883!important}',
+'#sheetScreen .nex-combat-weapon-toggle:focus-visible{outline:2px solid #db4c59!important}',
+'#sheetScreen .nex-combat-weapon-details[hidden]{display:none!important}',
+'#sheetScreen .nex-combat-weapon-remove{border:0!important;background:transparent!important;color:#ef5d65!important;font-size:12px!important;padding:7px 5px!important;margin-top:9px!important;cursor:pointer!important}',
+'#sheetScreen .nex-combat-weapon-remove:hover{text-decoration:underline!important;color:#ff8a90!important}',
+
 '#nexWeaponRollPopup[hidden]{display:none!important}',
 '#nexWeaponRollPopup{position:fixed;z-index:110010;width:min(310px,calc(100vw - 20px));background:#211e22;color:#fff;border:1px solid #ae3444;border-radius:4px;box-shadow:0 14px 50px #000c;padding:13px 12px;box-sizing:border-box}',
 '#nexWeaponRollPopup .nex-weapon-roll-head{display:flex;gap:9px;align-items:center;justify-content:space-between;font-size:17px;font-weight:800;padding-bottom:12px}',
@@ -365,7 +373,8 @@ function weaponData(item){
  const multiplier=Math.max(1,Math.min(10,parseInt(d.multiplier,10)||2));
  return {d,skillName,attribute,bonus,dieCount,value,threshold,multiplier};
 }
-const weaponDieSvg='<svg viewBox="0 0 32 32" aria-hidden="true" focusable="false"><path d="M11 3 23 5 29 16 22 27 10 29 3 18 5 9Z"/><path d="M11 3 15 13 23 5 M5 9l10 4 14 3 M3 18l12-5 7 14 M15 13l7 14-12 2 M29 16l-7 11 M5 9 3 18"/></svg>';
+const weaponDieSvg='<img class="nex-combat-d20-image" src="data:image/webp;base64,UklGRvQDAABXRUJQVlA4IOgDAABQFwCdASpGAFAAPolAmUolI6IhoU5QoBEJaQAW0D4R/kvaP/Yefm7/evmcQ+o/4nOVf2PeCZVfJN+Z/7H8wOYDvL/y7/M8YNQA/lP9S9U3+Q/73lT/KP7//u/cE/lH9G/2X5z/FJ7C/2j9lI9XJW/7d24ESnzoxbK5c7ttxORYXLlZYWDoHnLMbBJdZNKmXgDIwP06K2Av5Fom4w4SQXUb8s548aPnnr6V7Y7gluj3SkQrEQAH3kR4C5TmEakxwJoABQAA/vxdjkrqIfEenhOEaNovqS/Sn7g+GsBPe47ltacotV3mgSyXHPzCZbG3m13NdmXRGALgnpxwNX93y05w8VUa7Bvd2MiLTI0ltu8r5DWO3vwbivYrXB3BptxrgyUsw8Qic+O/8polGnM8Y7vn0vbQI3aceP/X+Tal5luKtMa/x5G/+EY9EP97h6DFd/bYhS6xug2SVvlWAk0LJtu+wfv+4oZCRO2mcoRNrr4W2R5tJoRHhJgcLVskKl/5re5M9PhJ+Wh1SXc45I2vhKT1QCd5ySK7ikLw88gmz8tJTf4X679p4DLRk2a552vHzMrh8tBcWtKsAJhWZxNTYQyWBYXh8cdAYcLWlt+cWnSMAEIkKWizBjitJ5WcdhxZmxD8Y+5vj7q5FW2k50PJhhAILru8grtEMNLN53Uf22eW424VVBy7QQUvR8VnZj/xAncTDYbainNLHgR9DG/yc+6owLLP6KwdNs9tZfseB6g+6rdwGjqm+kdmC3td8x2mLmTctIjOudFWOczgcIob1Uh/FwEpS1VhCQA+dWhLe3gTvl3++zv/iOhiaarQ63pMQaUU6v5/NdlTk40u7KKBDX9Ecvo6bRu1xvm/iGwHXIXvQT8mv03lmWPQ+WCFnTpjD2N/OqLZt/0El2KW1Xc2WNEZtzPmbNpy+jsUixID+4PuRQ/WV1oZrqO2cB6moaNYkbNV5uTV5ivdPC2MdX/226w+PyD5qFLli7Av7c4JBOSkFAY7rEYfTPG3j64hv5K1d8/l/34eykNXtodBBx81LSBzmX/ydRP9XikTVLnga6bL7gZCdS9AsE2eCw2YUGGrs9MokHUA86P41d5pJXj0UZkjXnoLq3XGbVD0b/VhcMWd+Fbf/Ovynxp9sGXcwT5TjCtyWl+LRc/bd+kahqk5P+tjMEgFgIwE1P3tD6se0u2bYNTqZpD4WKVX+djAFNUF2XfB3SuNqCUqva5SupBydEo7BnxlNf+JdC9qj36VAAY56XlYR1oMUeqd6defb5ppkTzG76sMlW4dEf1YmeOO3l5pHM90fL377vkdL0lgXsIcdYS1UiSxCoAA" alt="" aria-hidden="true">';
+const collapsedWeapons=new Set();
 const previousRenderAttacks=renderAttacks;
 renderAttacks=function(){
  const result=previousRenderAttacks.apply(this,arguments);
@@ -375,18 +384,21 @@ renderAttacks=function(){
  if(!items.length)return result;
  const cards=items.map(item=>{
   const w=weaponData(item),d=w.d,id=safe(item.id),bonus=w.bonus,damage=String(d.damage||'').trim();
+  const collapsed=collapsedWeapons.has(String(item.id));
   return '<article class="nex-combat-equipped" data-equipped-weapon="'+id+'">'+
    '<div class="nex-combat-weapon">'+
+    '<button type="button" class="nex-combat-weapon-toggle" data-nex-weapon-toggle="'+id+'" aria-expanded="'+(!collapsed)+'" aria-label="'+(collapsed?'Mostrar':'Esconder')+' detalhes de '+safe(d.name||item.name)+'">'+(collapsed?'⌄':'⌃')+'</button>'+
     '<div class="nex-combat-weapon-main"><strong class="nex-combat-weapon-name">'+safe(d.name||item.name)+'</strong>'+
     '<div class="nex-combat-weapon-summary">Dano: <b>'+safe(damage||'—')+'</b>　Crítico: <b>'+safe(d.critical||'20')+' ×'+safe(w.multiplier)+'</b></div></div>'+
     '<button type="button" class="nex-combat-die-button" data-nex-weapon-roll="'+id+'" aria-label="Rolar ataque e dano de '+safe(d.name||item.name)+'" title="Rolar ataque e dano">'+weaponDieSvg+'</button>'+
    '</div>'+
-   '<div class="nex-combat-weapon-details">'+
+   '<div class="nex-combat-weapon-details" '+(collapsed?'hidden':'')+'>'+
     '<div><span class="nex-combat-stat-label">Ataque Bônus:</span> <b>'+safe((bonus>=0?'+':'')+bonus)+'</b> ('+safe(w.skillName)+')</div>'+
     '<div><span class="nex-combat-stat-label">Tipo de Dano:</span> <b>'+safe(d.damageType||'—')+'</b></div>'+
     '<div><span class="nex-combat-stat-label">Alcance:</span> <b>'+safe(d.range||'—')+'</b></div>'+
     '<div><span class="nex-combat-stat-label">Perícia:</span> <b>'+safe(w.skillName)+'</b></div>'+
     '<div><span class="nex-combat-stat-label">Atributo Dano:</span> <b>'+safe(({agi:'Agilidade',for:'Força',int:'Intelecto',pre:'Presença',vig:'Vigor'})[w.attribute])+'</b></div>'+
+    '<button type="button" class="nex-combat-weapon-remove" data-nex-weapon-remove="'+id+'" aria-label="Remover ataque de '+safe(d.name||item.name)+' do combate">Remover</button>'+
    '</div></article>';
  }).join('');
  const container=document.createElement('section');
@@ -397,6 +409,34 @@ renderAttacks=function(){
 };
 function hideWeaponRoll(){weaponRollPanel.hidden=true;}
 document.addEventListener('click',e=>{
+ const toggle=e.target.closest('[data-nex-weapon-toggle]');
+ if(toggle){
+  e.preventDefault();
+  const id=String(toggle.dataset.nexWeaponToggle||'');
+  const card=toggle.closest('.nex-combat-equipped'),details=card?.querySelector('.nex-combat-weapon-details');
+  if(!details)return;
+  const collapsed=!details.hidden;
+  details.hidden=collapsed;
+  toggle.textContent=collapsed?'⌄':'⌃';
+  toggle.setAttribute('aria-expanded',String(!collapsed));
+  toggle.setAttribute('aria-label',(collapsed?'Mostrar':'Esconder')+' detalhes da arma');
+  if(collapsed)collapsedWeapons.add(id);else collapsedWeapons.delete(id);
+  return;
+ }
+ const remove=e.target.closest('[data-nex-weapon-remove]');
+ if(remove){
+  e.preventDefault();
+  const id=String(remove.dataset.nexWeaponRemove||''),item=find(id);
+  if(!item||!item.equipped)return;
+  item.equipped=false;
+  collapsedWeapons.delete(id);
+  hideWeaponRoll();
+  renderInventory();
+  renderAttacks();
+  save();
+  toast('Ataque removido do Combate. A arma permanece no inventário.');
+  return;
+ }
  const button=e.target.closest('[data-nex-weapon-roll]');
  if(!button){
   if(!weaponRollPanel.hidden&&!e.target.closest('#nexWeaponRollPopup'))hideWeaponRoll();
