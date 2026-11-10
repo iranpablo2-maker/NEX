@@ -34,5 +34,74 @@ service cloud.firestore {
         );
       allow delete: if false;
     }
+    // Campanhas online: apenas participantes podem ler; apenas dono ou mestre editam fichas.
+    function nexInCampaign(cid) {
+      return request.auth != null && (
+        get(/databases/$(database)/documents/campaigns/$(cid)).data.gmUid == request.auth.uid ||
+        exists(/databases/$(database)/documents/campaigns/$(cid)/members/$(request.auth.uid))
+      );
+    }
+    function nexGM(cid) {
+      return request.auth != null &&
+        get(/databases/$(database)/documents/campaigns/$(cid)).data.gmUid == request.auth.uid;
+    }
+    match /campaigns/{cid} {
+      allow get: if nexInCampaign(cid);
+      allow list: if false;
+      allow create: if request.auth != null
+        && request.resource.data.keys().hasOnly(['name','description','gmUid','createdAt'])
+        && request.resource.data.gmUid == request.auth.uid
+        && request.resource.data.name is string
+        && request.resource.data.name.size() > 0
+        && request.resource.data.name.size() <= 100
+        && request.resource.data.description is string;
+      allow update: if nexGM(cid)
+        && request.resource.data.gmUid == resource.data.gmUid
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['name','description']);
+      allow delete: if nexGM(cid);
+      match /members/{uid} {
+        allow get, list: if nexInCampaign(cid);
+        allow create: if nexGM(cid)
+          && request.resource.data.keys().hasOnly(['uid','name','joinedAt'])
+          && request.resource.data.uid == uid
+          && request.resource.data.name is string;
+        allow update: if nexGM(cid)
+          && request.resource.data.uid == resource.data.uid
+          && resource.data.uid == uid
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['name']);
+        allow delete: if nexGM(cid);
+      }
+      match /sheets/{sheetId} {
+        allow get, list: if nexInCampaign(cid);
+        allow create: if nexInCampaign(cid)
+          && request.resource.data.keys().hasOnly(['ownerUid','name','nex','pv','pe','san','notes','updatedAt'])
+          && request.resource.data.ownerUid is string
+          && (
+            request.resource.data.ownerUid == request.auth.uid ||
+            (nexGM(cid) && exists(/databases/$(database)/documents/campaigns/$(cid)/members/$(request.resource.data.ownerUid)))
+          )
+          && request.resource.data.name is string
+          && request.resource.data.nex is int
+          && request.resource.data.pv is int
+          && request.resource.data.pe is int
+          && request.resource.data.san is int
+          && request.resource.data.notes is string;
+        allow update: if nexInCampaign(cid)
+          && (resource.data.ownerUid == request.auth.uid || nexGM(cid))
+          && request.resource.data.ownerUid == resource.data.ownerUid
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['name','nex','pv','pe','san','notes','updatedAt'])
+          && request.resource.data.name is string
+          && request.resource.data.nex is int
+          && request.resource.data.pv is int
+          && request.resource.data.pe is int
+          && request.resource.data.san is int
+          && request.resource.data.notes is string;
+        allow delete: if nexInCampaign(cid) && (resource.data.ownerUid == request.auth.uid || nexGM(cid));
+      }
+      match /masterNotes/{noteId} {
+        allow read, write: if nexGM(cid);
+      }
+    }
+
   }
 }
