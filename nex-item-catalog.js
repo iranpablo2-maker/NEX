@@ -209,5 +209,5 @@ document.addEventListener('keydown',event=>{
 });
 const addButton=by('addItem');
 if(addButton){addButton.onclick=event=>{event.preventDefault();event.stopPropagation();open();};addButton.textContent='+ Adicionar';}
-window.NEX_ITEM_CATALOG={open,close};
+window.NEX_ITEM_CATALOG={open,close,items};
 })();
