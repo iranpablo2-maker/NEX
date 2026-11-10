@@ -319,7 +319,7 @@ function editorFields(d){
  html+='<h3>Melhorias (regras do livro)</h3>'+
   '<div class="nex-editor-inline"><select id="nexEditorModifierChoice" aria-label="Escolher melhoria">'+compatible.map(x=>'<option value="'+safe(x.id)+'">'+safe(x.name)+'</option>').join('')+'</select><button type="button" data-nex-add-modifier>Adicionar melhoria</button></div>'+
   '<input type="hidden" data-edit="modifiers" value="'+safe(JSON.stringify(d.modifiers||[]))+'"><div id="nexEditorModifiersList" class="nex-editor-upgrade-list"></div>'+ 
-  '<div class="nex-editor-inline"><input id="nexEditorCustomImprovementName" maxlength="80" placeholder="Outra melhoria (efeito manual)" aria-label="Nome da melhoria adicional"><button type="button" data-nex-add-custom-improvement>Adicionar</button></div>'+ 
+   
   '<input type="hidden" data-edit="customImprovements" value="'+safe(JSON.stringify(d.customImprovements||[]))+'"><div id="nexEditorCustomImprovementsList" class="nex-editor-upgrade-list"></div>'+
   '<h3>Maldições</h3><div class="nex-editor-inline"><select id="nexEditorCurseChoice" aria-label="Maldições compatíveis">'+curseOptions.map(x=>'<option value="'+safe(x.id)+'">'+safe(x.name)+' · '+safe(x.element)+'</option>').join('')+'</select>'+ 
   '<button type="button" data-nex-add-curse>Adicionar maldição</button></div>'+
