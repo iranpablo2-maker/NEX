@@ -194,6 +194,25 @@ style.textContent=[
 '#nexItemEditor .nex-editor-buttons button{padding:10px 18px;border:0;border-radius:3px}',
 '#nexItemEditor .nex-editor-save{background:#e53b49;color:white;font-weight:700}',
 '#nexItemEditor .nex-editor-cancel{background:transparent;color:white}',
+'#sheetScreen .nex-item-card-weapon{border:1px solid #27242b!important;background:#1e1e1e!important;border-radius:3px!important}',
+'#sheetScreen .nex-item-card-weapon>summary{border-bottom:1px solid #a34dff!important;padding:10px 52px 12px 8px!important;gap:13px!important;align-items:flex-start!important}',
+'#sheetScreen .nex-item-card-weapon .nex-item-chevron{color:#a34dff!important;font-size:24px!important;line-height:24px!important}',
+'#sheetScreen .nex-item-card-weapon .nex-item-main strong{font-size:14px!important;color:#fff!important;line-height:1.3!important}',
+'#sheetScreen .nex-item-card-weapon .nex-item-short{color:#a34dff!important;font-size:12px!important;gap:17px!important;margin-top:4px!important}',
+'#sheetScreen .nex-item-card-weapon .nex-item-short b{color:#fff!important}',
+'#sheetScreen .nex-item-card-weapon .nex-item-card-body{padding:13px 8px 11px!important;border-top:0!important}',
+'#sheetScreen .nex-item-card-weapon .nex-item-subtitle{font-size:11px!important;color:#fff!important;font-weight:700!important;font-style:italic!important;margin-bottom:5px!important}',
+'#sheetScreen .nex-item-card-weapon .nex-item-card-stats{font-size:13px!important;line-height:1.75!important;color:#a34dff!important;margin-top:0!important}',
+'#sheetScreen .nex-item-card-weapon .nex-item-card-stats span{color:#a34dff!important;font-weight:700!important}',
+'#sheetScreen .nex-item-card-weapon .nex-item-card-stats b{color:#fff!important;font-weight:500!important}',
+'#sheetScreen .nex-item-card-weapon .nex-item-card-description{color:#fff!important;margin:15px 0 11px!important;font-size:12px!important;line-height:1.6!important}',
+'#sheetScreen .nex-item-card-weapon .nex-item-card-buttons{margin-top:9px!important;justify-content:space-between!important}',
+'#sheetScreen .nex-item-card-weapon .nex-item-card-buttons button{font-size:12px!important;padding:3px 0!important;min-height:20px!important}',
+'#sheetScreen .nex-item-card-weapon .nex-item-remove{color:#ec404e!important}',
+'#sheetScreen .nex-item-card-weapon .nex-item-edit{color:#38bd55!important}',
+'#sheetScreen .nex-item-card-weapon .nex-item-equipped-label{right:9px!important;top:7px!important}',
+'#sheetScreen .nex-item-card-weapon .nex-item-equipped-label input:checked{background:#202022!important;border-color:#eee!important}',
+'#sheetScreen .nex-item-card-weapon .nex-item-equipped-label input:checked::after{color:#a34dff!important}',
 'body.nex-editor-open{overflow:hidden}',
 '@media(max-width:620px){#nexItemEditor{padding:3px}#nexItemEditor .nex-editor-dialog{height:calc(100dvh - 6px)}#nexItemEditor .nex-editor-grid{grid-template-columns:repeat(2,minmax(0,1fr))}#nexItemEditor .span-4{grid-column:1/-1}}'
 ].join('\n');
@@ -274,6 +293,22 @@ function card(item,expanded=false){
   ['Categoria',d.tier],['Tipo',d.category],['Espaços',d.spaces],
   ...(Number(d.quantity)>1?[['Quantidade',d.quantity]]:[])
  ];
+ if(weapon){
+  const headerCrit=multi?'x'+safe(multi):(critical?safe(critical):'—');
+  const weaponDetails=[['Categoria',d.tier],['Tipo',d.damageType],['Espaços',d.spaces],['Alcance',d.range==='—'?'':d.range],['Dano secundário',d.secondary],...(Number(d.quantity)>1?[['Quantidade',d.quantity]]:[])];
+  const extraImage=/^https:\/\//i.test(d.image)?'<img loading="lazy" class="nex-item-card-image" src="'+safe(d.image)+'" alt="Imagem de '+safe(d.name)+'">':'';
+  return '<details class="nex-item-card-new nex-item-card-weapon" data-item-id="'+id+'"'+(expanded?' open':'')+'>'+
+   '<summary><span class="nex-item-chevron" aria-hidden="true">⌄</span>'+
+   '<span class="nex-item-main"><strong>'+safe(d.name||'Arma')+'</strong>'+
+   '<span class="nex-item-short"><span>Dano: <b>'+safe(d.damage||'—')+'</b></span><span>Crítico: <b>'+headerCrit+'</b></span></span></span></summary>'+
+   '<label class="nex-item-equipped-label" title="Equipar arma" aria-label="Equipar arma: '+safe(d.name)+'"><input type="checkbox" data-nex-item-equipped="'+id+'" aria-label="Equipar '+safe(d.name)+'" '+(item.equipped?'checked':'')+'></label>'+
+   '<div class="nex-item-card-body"><div class="nex-item-subtitle">'+safe([d.proficiency,d.kind,d.wield].filter(Boolean).join(' · '))+'</div>'+
+   '<div class="nex-item-card-stats">'+weaponDetails.filter(x=>x[1]!==undefined&&x[1]!==null&&String(x[1]).trim()!=='').map(x=>'<div><span>'+safe(x[0])+':</span> <b>'+safe(x[1])+'</b></div>').join('')+'</div>'+
+   (d.upgrades?'<div class="nex-item-card-description"><b>Melhorias:</b> '+descriptionText(d.upgrades)+'</div>':'')+extraImage+
+   '<div class="nex-item-card-description">'+descriptionText(d.description||'Sem descrição cadastrada.')+'</div>'+
+   '<div class="nex-item-card-buttons"><button type="button" data-nex-item-remove="'+id+'" class="nex-item-remove">Remover</button>'+
+   '<button type="button" data-nex-item-edit="'+id+'" class="nex-item-edit">Editar</button></div></div></details>';
+ }
  const img=/^https:\/\//i.test(d.image)?'<img loading="lazy" class="nex-item-card-image" src="'+safe(d.image)+'" alt="Imagem de '+safe(d.name)+'">':'';
  return '<details class="nex-item-card-new" data-item-id="'+id+'"'+(expanded?' open':'')+'>'+
  '<summary><span class="nex-item-chevron" aria-hidden="true">⌄</span>'+
