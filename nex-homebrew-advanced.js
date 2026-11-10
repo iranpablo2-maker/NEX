@@ -320,7 +320,8 @@
      '<p class="nex52-detail-meta">'+esc(info.join(' · '))+'</p>'+
      (item.description?'<h4>Descrição</h4><p>'+esc(item.description)+'</p>':'<p>Sem descrição.</p>')+
      (item.requirements?'<h4>Pré-requisitos</h4><p>'+esc(item.requirements)+'</p>':'')+
-     (item.type==='origem'?'<h4>Perícias treinadas</h4><p>'+esc((item.skills||[]).join(' e ')||'Não configuradas')+'</p>':'')+ritualDetails(item)+trailDetails(item);
+     (item.type==='origem'?'<h4>Perícias treinadas</h4><p>'+esc((item.skills||[]).join(' e ')||'Não configuradas')+'</p>':'')+
+     (item.type==='item'&&item.customImprovements?.length?'<h4>Melhorias homebrew</h4><p>'+item.customImprovements.map(esc).join(' · ')+'</p>':'')+ritualDetails(item)+trailDetails(item);
    targetOptions();const d=$('nex52Detail');if(typeof d.showModal==='function')d.showModal();else d.setAttribute('open','');
  }
  $('nex51Type').addEventListener('change',editorFields);
