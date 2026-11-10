@@ -29,17 +29,19 @@ const entries=[
 ];
 const curseEntries=[
  {id:'antielemento',name:'Antielemento',element:'Conhecimento',on:['melee','ranged','firearm']},
- {id:'energetica',name:'Energética',element:'Energia',on:['melee','ranged','firearm']},
- {id:'sanguinaria',name:'Sanguinária',element:'Sangue',on:['melee','ranged','firearm']},
- {id:'vibrante',name:'Vibrante',element:'Energia',on:['melee','ranged','firearm']},
- {id:'consumidora',name:'Consumidora',element:'Morte',on:['melee','ranged','firearm']},
- {id:'erosiva',name:'Erosiva',element:'Morte',on:['melee','ranged','firearm']},
- {id:'abascanta',name:'Abascanta',element:'Conhecimento',on:['armorLight','armorHeavy']},
+ {id:'energetica',name:'Energética',element:'Energia',on:['melee','ranged','firearm'],note:'Quando ativada por 2 PE, +5 no ataque, dano de Energia e ignora RD.'},
+ {id:'sanguinaria',name:'Sanguinária',element:'Sangue',on:['melee','ranged','firearm'],note:'Aplica sangramento cumulativo; em crítico fornece 2d10 PV temporários (controle manual).'},
+ {id:'lancinante',name:'Lancinante',element:'Sangue',on:['melee','ranged','firearm'],note:'+1d8 Sangue, multiplica no crítico.',criticalExtraDamage:'1d8',damageElement:'Sangue'},
+ {id:'repulsora',name:'Repulsora',element:'Morte',on:['melee','ranged','firearm'],note:'+2 Defesa enquanto empunhada; +5 ao bloquear por 2 PE.',defenseBonus:2},
+ {id:'vibrante',name:'Vibrante',element:'Energia',on:['melee','ranged','firearm'],note:'Concede Ataque Extra ou reduz seu custo conforme habilidades do personagem (controle manual).'},
+ {id:'consumidora',name:'Consumidora',element:'Morte',on:['melee','ranged','firearm'],note:'Alvo fica lento ao ser atingido; pode gastar 2 PE para imobilizar (controle manual).'},
+ {id:'erosiva',name:'Erosiva',element:'Morte',on:['melee','ranged','firearm'],note:'+1d8 de dano de Morte em cada ataque; efeito especial exige 2 PE.',extraDamage:'1d8',damageElement:'Morte'},
+ {id:'abascanta',name:'Abascanta',element:'Conhecimento',on:['armorLight','armorHeavy'],note:'+5 em resistência contra rituais; refletir ritual requer ação e PE (controle manual).'},
  {id:'profetica',name:'Profética',element:'Conhecimento',on:['armorLight','armorHeavy']},
  {id:'sombria',name:'Sombria',element:'Conhecimento',on:['armorLight','armorHeavy'],note:'+5 em Furtividade com a proteção equipada.',skillBonus:{Furtividade:5}},
  {id:'cinetica',name:'Cinética',element:'Energia',on:['armorLight','armorHeavy'],note:'+2 Defesa e resistência a dano enquanto equipada.',defenseBonus:2,damageReductionLight:2,damageReductionHeavy:5},
  {id:'lepida',name:'Lépida',element:'Energia',on:['armorLight','armorHeavy']},
- {id:'carisma',name:'Carisma',element:'Conhecimento',on:['accessory'],note:'+1 Presença sem alterar PE máximo.',presenceBonus:1},
+ {id:'carisma',name:'Carisma',element:'Conhecimento',on:['accessory'],note:'+1 em testes baseados em Presença.',presenceTestBonus:1},
  {id:'conjuracao',name:'Conjuração',element:'Conhecimento',on:['accessory']},
  {id:'escudo_mental',name:'Escudo Mental',element:'Conhecimento',on:['accessory']}
 ];
@@ -80,6 +82,7 @@ function calculate(item){
   kept.push({id:found.id,name:found.name,element:found.element});
  }
  const mods=ids.map(id=>entries.find(x=>x.id===id));
+ const selectedCurses=kept.map(x=>curseEntries.find(y=>y.id===x.id)).filter(Boolean);
  const conflicting=mods.some(x=>x.incompatible?.some(id=>ids.includes(id)));
  const tier=clean(item.baseTier||item.tier||'0').toUpperCase();
  const ix=index[tier]??0;
@@ -95,22 +98,26 @@ function calculate(item){
  criticalRangeBonus:mods.reduce((n,x)=>n+(x.criticalRangeBonus||0),0),
  criticalMultiplierBonus:mods.reduce((n,x)=>n+(x.criticalMultiplierBonus||0),0),
  extraDamageDice:mods.reduce((n,x)=>n+(x.extraDamageDice||0),0),
- extraDamage:mods.map(x=>x.extraDamage).filter(Boolean).join('+'),
+ extraDamage:[...mods,...selectedCurses].map(x=>x.extraDamage).filter(Boolean).join('+'),
+ criticalExtraDamage:selectedCurses.map(x=>x.criticalExtraDamage).filter(Boolean).join('+'),
+ specialNotes:selectedCurses.map(x=>x.note).filter(Boolean),
  defenseBonus:mods.reduce((n,x)=>n+(x.defenseBonus||0),0)+kept.reduce((n,x)=>n+(curseEntries.find(y=>y.id===x.id)?.defenseBonus||0),0),
  presenceBonus:kept.reduce((n,x)=>n+(curseEntries.find(y=>y.id===x.id)?.presenceBonus||0),0),
+ presenceTestBonus:selectedCurses.reduce((n,x)=>n+(x.presenceTestBonus||0),0),
  damageReduction:kept.reduce((n,x)=>{const c=curseEntries.find(y=>y.id===x.id);return n+(typeOf(item)==='armorHeavy'?(c?.damageReductionHeavy||0):(c?.damageReductionLight||0))},0),
  skillBonuses:kept.reduce((a,x)=>{const c=curseEntries.find(y=>y.id===x.id);for(const [key,val] of Object.entries(c?.skillBonus||{}))a[key]=(a[key]||0)+val;return a},{}),
  effectiveSpaces:Math.max(0,spaces-reduction+growth),
  notes:mods.filter(x=>x.manual).map(x=>x.note)};
 }
 function equippedBonuses(items){
- const output={defense:0,presence:0,damageReduction:0,skills:{}};
+ const output={defense:0,presence:0,presenceTestBonus:0,damageReduction:0,skills:{}};
  for(const item of Array.isArray(items)?items:[]){
   if(!item?.equipped)continue;
   const d={...item,...(item.nexInfo||{}),category:item.category};
   const calc=calculate({...d,baseTier:d.baseTier||d.tier||'0'});
   output.defense+=calc.defenseBonus;
   output.presence+=calc.presenceBonus;
+  output.presenceTestBonus+=calc.presenceTestBonus;
   output.damageReduction+=calc.damageReduction;
   for(const [key,val] of Object.entries(calc.skillBonuses))output.skills[key]=(output.skills[key]||0)+val;
  }
