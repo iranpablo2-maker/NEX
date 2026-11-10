@@ -108,15 +108,10 @@
  '</div>'+
  '<div class="nex52-specific nex52-full" id="nex52ItemFields" hidden>'+
  '<label hidden>Tipo de item<select id="nex52Category">'+ITEM_CATEGORIES.map(c=>'<option value="'+esc(c)+'">'+esc(c)+'</option>').join('')+'</select></label>'+
- '<div class="nex-hb-item-stats">'+
- '<label id="nexHbElementField" hidden>Elemento<select id="nexHbElement"><option>Conhecimento</option><option>Energia</option><option>Medo</option><option>Morte</option><option>Sangue</option></select></label>'+
- '<label>Categoria*<select id="nexHbTier" required><option value="0">0</option><option>I</option><option>II</option><option>III</option><option>IV</option></select></label>'+
- '<label>Espaços*<input type="number" id="nexHbSpaces" min="0" max="100" step="1" value="1" required></label>'+
- '<label id="nexHbTagField" hidden>Tag<select id="nexHbTag"><option>Acessórios</option><option>Explosivos</option><option>Itens Operacionais</option></select></label></div>'+
- '<div id="nexHbGeneralImprovement" class="nex52-full nex-hb-item-improvements" hidden><label for="nex52ImprovementName">Melhorias</label>'+
- '<div class="nex-hb-improvement-add"><input type="text" id="nex52ImprovementName" maxlength="80" placeholder="Nome da melhoria homebrew" aria-label="Nome da melhoria homebrew">'+
- '<button type="button" id="nex52ImprovementAdd">Adicionar</button></div>'+
- '<div id="nex52ImprovementList" class="nex-hb-improvement-list" aria-live="polite"></div></div>'+
+ '<div class="nex-hb-hidden-item-values" hidden><select id="nexHbElement"><option>Conhecimento</option><option>Energia</option><option>Medo</option><option>Morte</option><option>Sangue</option></select><select id="nexHbTier"><option value="0">0</option><option>I</option><option>II</option><option>III</option><option>IV</option></select><input type="number" id="nexHbSpaces" value="1"><select id="nexHbTag"><option>Acessórios</option><option>Explosivos</option><option>Itens Operacionais</option></select></div>'+
+ '<section class="nex-hb-special-form" id="nexHbCursedForm" hidden><div class="nex-hb-cursed-fields"><label>Elemento<select data-hb-sync="nexHbElement"><option>Conhecimento</option><option>Energia</option><option>Medo</option><option>Morte</option><option>Sangue</option></select></label><label>Categoria*<select data-hb-sync="nexHbTier"><option value="0">0</option><option>I</option><option>II</option><option>III</option><option>IV</option></select></label><label>Espaços*<input type="number" min="0" max="100" data-hb-sync="nexHbSpaces" value="1"></label></div></section>'+
+ '<section class="nex-hb-special-form" id="nexHbGeneralForm" hidden><div class="nex-hb-general-fields"><label>Categoria*<select data-hb-sync="nexHbTier"><option value="0">0</option><option>I</option><option>II</option><option>III</option><option>IV</option></select></label><label>Espaços*<input type="number" min="0" max="100" data-hb-sync="nexHbSpaces" value="1"></label><label>Tag<select data-hb-sync="nexHbTag"><option>Acessórios</option><option>Explosivos</option><option>Itens Operacionais</option></select></label></div><div class="nex52-full nex-hb-item-improvements"><label for="nex52ImprovementName">Melhorias</label><div class="nex-hb-improvement-add"><input type="text" id="nex52ImprovementName" maxlength="80" placeholder="Nome da melhoria"><button type="button" id="nex52ImprovementAdd">Adicionar</button></div><div id="nex52ImprovementList" class="nex-hb-improvement-list" aria-live="polite"></div></div></section>'+
+ '<section class="nex-hb-special-form" id="nexHbOtherForm" hidden><div class="nex-hb-general-fields"><label>Categoria*<select data-hb-sync="nexHbTier"><option value="0">0</option><option>I</option><option>II</option><option>III</option><option>IV</option></select></label><label>Espaços*<input type="number" min="0" max="100" data-hb-sync="nexHbSpaces" value="1"></label></div></section>'+
  '<div class="nex-hb-image-area nex52-full"><label>Imagem<input id="nexHbImageUrl" type="url" maxlength="2000" placeholder="https://... (opcional)"></label>'+
  '<label>Ou escolher imagem<input id="nexHbImageFile" type="file" accept="image/png,image/jpeg,image/webp"></label>'+
  '<img id="nexHbImagePreview" alt="Prévia da imagem do item" hidden></div>'+
@@ -177,10 +172,11 @@
    $('nex52Category').closest('label').hidden=true;
    const cursed=type==='item'&&itemTab==='Itens Amaldiçoados';
    const general=type==='item'&&itemTab==='Geral';
-   $('nexHbElementField').hidden=!cursed;
-   $('nexHbTagField').hidden=!general;
-   $('nexHbGeneralImprovement').hidden=!general;
-   $('nexHbTier').required=type==='item';$('nexHbSpaces').required=type==='item';
+   $('nexHbCursedForm').hidden=!cursed;
+   $('nexHbGeneralForm').hidden=!general;
+   $('nexHbOtherForm').hidden=type!=='item'||cursed||general;
+   $('nex52Editor').dataset.itemKind=type==='item'?(cursed?'cursed':general?'general':'other'):'';
+   syncItemCategoryFields();
  }
  const FALLBACK_SKILLS=['Acrobacia','Adestramento','Artes','Atletismo','Atualidades','Ciências','Crime','Diplomacia','Enganação','Fortitude','Furtividade','Iniciativa','Intimidação','Intuição','Investigação','Luta','Medicina','Ocultismo','Percepção','Pilotagem','Pontaria','Profissão','Reflexos','Religião','Sobrevivência','Tática','Tecnologia','Vontade'];
  function loadSkillChoices(){
@@ -189,6 +185,11 @@
    $('nex55Skill1').innerHTML='<option value="">Escolha a primeira perícia</option>'+options;
    $('nex55Skill2').innerHTML='<option value="">Escolha a segunda perícia</option>'+options;
  }
+ function syncItemCategoryFields(){
+   $('nex52ItemFields').querySelectorAll('[data-hb-sync]').forEach(control=>{const hidden=$(control.dataset.hbSync);if(hidden)control.value=hidden.value;});
+ }
+ $('nex52ItemFields').addEventListener('input',event=>{const el=event.target.closest('[data-hb-sync]');if(el&&$(el.dataset.hbSync))$(el.dataset.hbSync).value=el.value;});
+ $('nex52ItemFields').addEventListener('change',event=>{const el=event.target.closest('[data-hb-sync]');if(el&&$(el.dataset.hbSync))$(el.dataset.hbSync).value=el.value;});
  function renderItemImprovements(){
    const list=$('nex52ImprovementList');if(!list)return;
    list.innerHTML=customItemImprovements.length?customItemImprovements.map((name,i)=>'<span class="nex-hb-improvement-chip">'+esc(name)+' <button type="button" data-nex52-improvement-remove="'+i+'" aria-label="Remover '+esc(name)+'">×</button></span>').join(''):'<small>Nenhuma melhoria homebrew adicionada.</small>';
@@ -238,6 +239,7 @@
      $('nexHbTier').value=item.itemTier||'0';$('nexHbSpaces').value=String(item.itemSpaces??1);
      $('nexHbElement').value=['Conhecimento','Energia','Medo','Morte','Sangue'].includes(item.element)?item.element:'Conhecimento';
      $('nexHbTag').value=item.itemTag||'Acessórios';
+     syncItemCategoryFields();
      $('nexHbImageUrl').value=item.image?.startsWith('https://')?item.image:'';
      $('nexHbImagePreview').hidden=!item.image;if(item.image)$('nexHbImagePreview').src=item.image;
      if(item.type==='origem'){$('nex55Skill1').value=item.skills?.[0]||'';$('nex55Skill2').value=item.skills?.[1]||'';}
