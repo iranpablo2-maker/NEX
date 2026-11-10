@@ -28,9 +28,29 @@ button:disabled{opacity:.5;cursor:not-allowed}.hide{display:none!important}
 fieldset{border:0;padding:0;margin:0}
 .info{padding:12px;background:#23191b;border-left:3px solid #ba3541;color:#ddd0d2}
 @media(max-width:540px){main{padding:15px 10px}header{padding:12px}.row>button{flex:1}}
+/* Quando aberto dentro de Campanhas do NEX, usar a mesma seção em vez de uma página visual separada. */
+html.nex-embedded body{background:transparent}
+html.nex-embedded header{display:none}
+html.nex-embedded main{max-width:100%;padding:13px 14px 34px}
+html.nex-embedded main>h1{display:none}
+html.nex-embedded main>p:first-of-type{display:none}
+html.nex-embedded .panel{margin:9px 0}
+@media(max-width:650px){html.nex-embedded main{padding:8px 7px 25px}}
 </style>
 </head>
 <body>
+<script>
+if(new URLSearchParams(location.search).get('integrado')==='1'){
+ document.documentElement.classList.add('nex-embedded');
+ const reportHeight=()=>{
+  try{window.parent.postMessage({type:'nex-campaign-height',height:Math.max(680,document.documentElement.scrollHeight)},location.origin)}catch(e){}
+ };
+ window.addEventListener('load',reportHeight);
+ window.addEventListener('resize',reportHeight);
+ const observer=new MutationObserver(reportHeight);
+ observer.observe(document.body,{subtree:true,childList:true,attributes:true,characterData:true});
+}
+</script>
 <header><strong>NEX</strong><span>Campanhas online</span><a href="./index.html">Voltar às fichas</a></header>
 <main>
 <h1>Campanha compartilhada</h1>
