@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>NEX • Campanhas Online</title>
+<style>
+:root{color-scheme:dark;font-family:system-ui,'Segoe UI',sans-serif;background:#08090b;color:#f1eff1;--red:#b72e3a}
+*{box-sizing:border-box}body{margin:0;background:#09090b;color:#eee}button,input,textarea,select{font:inherit}button{cursor:pointer}
+header{padding:16px clamp(14px,4vw,50px);border-bottom:1px solid #5b2026;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+header strong{font:700 22px Georgia,serif;letter-spacing:.22em;color:#fff}header span{color:#d1a3a8}
+a{color:#f3979f}header a{margin-left:auto}
+main{max-width:1050px;margin:auto;padding:22px 16px 55px}
+h1{font-size:23px;margin:0 0 6px}h2{font-size:17px;margin:0 0 14px}h3{font-size:14px;margin:0 0 8px}
+p{line-height:1.55;color:#bcb6bb}small{color:#aaa}
+.panel{padding:18px;border:1px solid #4f2c31;background:#141215;border-radius:9px;margin:14px 0}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+label{display:block;font-size:12px;color:#dfb6ba;margin:10px 0 5px}
+input,textarea,select{width:100%;background:#09090c;color:#fff;border:1px solid #614047;border-radius:5px;padding:10px;min-height:42px;min-width:0}
+textarea{resize:vertical}button{padding:10px 14px;border:1px solid #a5434e;border-radius:5px;background:var(--red);color:#fff;font-weight:650}
+button.alt{background:#21191c;border-color:#644147}button:hover{filter:brightness(1.13)}
+button:disabled{opacity:.5;cursor:not-allowed}.hide{display:none!important}
+.badge{display:inline-block;padding:4px 9px;background:#4a2027;color:#ffc1c6;border-radius:20px;font-size:11px;font-weight:700}
+.card{border:1px solid #4d3438;background:#1b171a;border-radius:7px;padding:14px}
+.card p{white-space:pre-wrap;overflow-wrap:anywhere}
+.code{font-family:ui-monospace,monospace;overflow-wrap:anywhere;background:#26191d;color:#ffc3c7;padding:5px;border-radius:3px}
+#notice{padding:10px 12px;border:1px solid #6e3e45;border-radius:5px;margin:12px 0;color:#e9c8cb}
+#notice:empty{display:none}#sheetFormPanel{border-color:#a74250}
+fieldset{border:0;padding:0;margin:0}
+.info{padding:12px;background:#23191b;border-left:3px solid #ba3541;color:#ddd0d2}
+@media(max-width:540px){main{padding:15px 10px}header{padding:12px}.row>button{flex:1}}
+</style>
+</head>
+<body>
+<header><strong>NEX</strong><span>Campanhas online</span><a href="./index.html">Voltar às fichas</a></header>
+<main>
+<h1>Campanha compartilhada</h1>
+<p>Todos os participantes podem visualizar as fichas. Somente o dono do personagem e o mestre podem editar. As permissões são verificadas no banco de dados.</p>
+<div id="notice" role="status" aria-live="polite"></div>
+<section id="setup" class="panel hide"><h2>Multiplayer ainda não ativado</h2><p>É preciso conectar um projeto Firebase e publicar as regras de acesso antes de usar campanhas entre celulares. As fichas locais permanecem intactas.</p><p>Consulte <a href="./MULTIPLAYER.md">as instruções de ativação</a>.</p></section>
+<section id="authPanel" class="panel hide">
+ <h2>Entrar no NEX online</h2>
+ <form id="authForm"><label>E-mail<input type="email" id="email" autocomplete="email" required></label>
+ <label>Senha<input type="password" id="password" autocomplete="current-password" minlength="6" required></label>
+ <div class="row"><button type="submit" data-kind="login">Entrar</button><button type="button" id="register" class="alt">Criar conta</button></div></form>
+ <p><small>Use uma senha própria. Nunca compartilhe a senha com o mestre ou os jogadores.</small></p>
+</section>
+<section id="dashboard" class="hide">
+ <div class="panel"><div class="row"><strong id="who"></strong><button id="copyUid" class="alt">Copiar meu ID</button><button id="logout" class="alt">Sair</button></div><p><small>Para entrar numa campanha, envie seu ID ao mestre. Ele precisa autorizar sua entrada. Nenhum jogador recebe acesso às fichas sem autorização.</small></p></div>
+ <div class="grid">
+ <section class="panel"><h2>Criar campanha (mestre)</h2><form id="createCampaign"><label>Nome<input id="campaignNameOnline" maxlength="100" required placeholder="Vale das Pedras"></label><label>Descrição<input id="campaignDescriptionOnline" maxlength="300"></label><button>Criar campanha online</button></form></section>
+ <section class="panel"><h2>Abrir campanha</h2><form id="openCampaign"><label>Código da campanha<input id="campaignCode" placeholder="Cole o código enviado pelo mestre" required></label><button>Abrir sala</button></form></section>
+ </div>
+ <section id="room" class="panel hide">
+  <div class="row"><h2 id="roomTitle">Campanha</h2><span id="role" class="badge"></span><button class="alt" id="leaveRoom">Fechar sala</button></div>
+  <p id="roomDescription"></p>
+  <div class="row"><span>Convite: <code id="roomCode" class="code"></code></span><button class="alt" id="copyCode">Copiar código</button></div>
+  <div id="gmOnly" class="hide">
+   <h3 style="margin-top:20px">Autorizar jogador</h3>
+   <form id="inviteForm" class="row"><input id="newMemberUid" placeholder="ID do jogador" aria-label="ID do jogador" required style="flex:2"><input id="newMemberName" placeholder="Nome do jogador" aria-label="Nome do jogador" maxlength="50" style="flex:1"><button>Autorizar</button></form>
+  </div>
+  <h3 style="margin-top:20px">Participantes</h3><div id="members" class="grid"></div>
+  <div class="row" style="justify-content:space-between;margin:24px 0 12px"><h2 style="margin:0">Fichas da campanha</h2><button id="newSheet">Criar ficha</button></div>
+  <section id="sheetFormPanel" class="panel hide">
+   <h3 id="sheetFormTitle">Editar ficha</h3>
+   <form id="sheetForm"><label>Nome do personagem<input id="sheetName" maxlength="100" required></label>
+    <div class="grid"><label>NEX (%)<input type="number" id="sheetNex" min="0" max="99" value="5" required></label>
+     <label>PV<input type="number" id="sheetPV" min="0" max="9999" required></label>
+     <label>PE<input type="number" id="sheetPE" min="0" max="9999" required></label>
+     <label>SAN<input type="number" id="sheetSAN" min="0" max="9999" required></label></div>
+    <label>Anotações visíveis para todos<textarea id="sheetNotes" rows="3" maxlength="3000"></textarea></label>
+    <label id="sheetOwnerWrap" class="hide">Proprietário da ficha<select id="sheetOwner"></select></label>
+    <div class="row"><button type="submit">Salvar ficha</button><button type="button" id="cancelSheet" class="alt">Cancelar</button></div>
+   </form>
+  </section>
+  <div class="info">Fichas de outros jogadores são somente leitura. Alterações são sincronizadas para os participantes em tempo real.</div>
+  <div id="sheets" class="grid" style="margin-top:14px"></div>
+ </section>
+</section>
+</main>
+<script src="./nex-firebase-config.js"></script>
+<script type="module">
+import {initializeApp} from 'https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js';
+import {getAuth,onAuthStateChanged,createUserWithEmailAndPassword,signInWithEmailAndPassword,signOut} from 'https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js';
+import {getFirestore,collection,doc,getDoc,setDoc,addDoc,updateDoc,onSnapshot,serverTimestamp} from 'https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js';
+const $=id=>document.getElementById(id);
+const show=(id,on)=>$(id).classList.toggle('hide',!on);
+const notice=msg=>$('notice').textContent=msg||'';
+const escape=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const cfg=window.NEX_FIREBASE_CONFIG;
+if(!cfg||!cfg.projectId||!cfg.apiKey){show('setup',true);}else{
+ let auth,db;
+ try{
+  const app=initializeApp(cfg);auth=getAuth(app);db=getFirestore(app);
+ }catch(err){show('setup',true);notice('Configuração Firebase inválida.');throw err;}
+ let uid=null,roomId='',gm=false,roomData=null,roomMembers=[],roomSheets=[],unsubs=[],editing=null;
+ const run=async fn=>{try{notice('');await fn();}catch(err){notice('Falha: '+(err?.message||'Ação não autorizada'));console.error(err);}};
+ const clearRoom=()=>{
+  for(const u of unsubs){try{u()}catch(e){}}unsubs=[];
+  roomId='';gm=false;roomMembers=[];roomSheets=[];roomData=null;editing=null;
+  show('room',false);show('sheetFormPanel',false);
+ };
+ onAuthStateChanged(auth,user=>{
+  clearRoom();uid=user?.uid||null;
+  show('authPanel',!uid);show('dashboard',!!uid);
+  if(uid)$('who').textContent='ID da conta: '+uid;
+ });
+ $('authForm').addEventListener('submit',e=>{e.preventDefault();run(async()=>{await signInWithEmailAndPassword(auth,$('email').value.trim(),$('password').value);});});
+ $('register').addEventListener('click',()=>run(async()=>{await createUserWithEmailAndPassword(auth,$('email').value.trim(),$('password').value);}));
+ $('logout').addEventListener('click',()=>run(async()=>{await signOut(auth)}));
+ const copy=s=>navigator.clipboard?.writeText(s).then(()=>notice('Copiado.')).catch(()=>notice('Selecione e copie o código mostrado.'));
+ $('copyUid').addEventListener('click',()=>copy(uid||''));
+ $('copyCode').addEventListener('click',()=>copy(roomId));
+ $('leaveRoom').addEventListener('click',clearRoom);
+ $('createCampaign').addEventListener('submit',e=>{e.preventDefault();run(async()=>{
+  const name=$('campaignNameOnline').value.trim(),description=$('campaignDescriptionOnline').value.trim();
+  const ref=await addDoc(collection(db,'campaigns'),{name,description,gmUid:uid,createdAt:serverTimestamp()});
+  await enterRoom(ref.id);
+ });});
+ $('openCampaign').addEventListener('submit',e=>{e.preventDefault();run(()=>enterRoom($('campaignCode').value.trim()))});
+ async function enterRoom(id){
+  clearRoom();if(!/^[A-Za-z0-9]{15,40}$/.test(id)){notice('Código de campanha inválido.');return;}
+  const ref=doc(db,'campaigns',id);
+  const snap=await getDoc(ref);
+  if(!snap.exists()){notice('Campanha não encontrada.');return;}
+  roomId=id;roomData=snap.data();gm=roomData.gmUid===uid;
+  $('roomTitle').textContent=roomData.name;
+  $('roomDescription').textContent=roomData.description||'';
+  $('roomCode').textContent=id;$('role').textContent=gm?'Mestre':'Jogador';show('gmOnly',gm);show('room',true);
+  unsubs.push(onSnapshot(collection(db,'campaigns',id,'members'),snapshot=>{
+    roomMembers=snapshot.docs.map(d=>({id:d.id,...d.data()}));drawMembers();
+  },e=>notice('Não foi possível carregar participantes: '+e.message)));
+  unsubs.push(onSnapshot(collection(db,'campaigns',id,'sheets'),snapshot=>{
+    roomSheets=snapshot.docs.map(d=>({id:d.id,...d.data()}));drawSheets();
+  },e=>notice('Não foi possível carregar fichas: '+e.message)));
+ }
+ function drawMembers(){
+  $('members').innerHTML='<div class="card"><b>Mestre</b><p class="code">'+escape(roomData?.gmUid)+'</p></div>'+
+    roomMembers.map(m=>'<div class="card"><b>'+escape(m.name||'Jogador')+'</b><p class="code">'+escape(m.uid)+'</p></div>').join('');
+  $('sheetOwner').innerHTML='<option value="'+escape(uid)+'">Minha conta</option>'+
+    (gm?roomMembers.filter(m=>m.uid!==uid).map(m=>'<option value="'+escape(m.uid)+'">'+escape(m.name||m.uid)+'</option>').join(''):'');
+ }
+ $('inviteForm').addEventListener('submit',e=>{e.preventDefault();run(async()=>{
+  if(!gm||!roomId)throw Error('Somente o mestre autoriza participantes.');
+  const memberUid=$('newMemberUid').value.trim();
+  if(!/^[A-Za-z0-9]{15,140}$/.test(memberUid))throw Error('ID do jogador inválido.');
+  await setDoc(doc(db,'campaigns',roomId,'members',memberUid),
+    {uid:memberUid,name:$('newMemberName').value.trim().slice(0,50)||'Jogador',joinedAt:serverTimestamp()});
+  $('newMemberUid').value='';$('newMemberName').value='';
+  notice('Jogador autorizado. Agora ele pode abrir a campanha com o código.');
+ });});
+ function drawSheets(){
+  $('sheets').innerHTML=roomSheets.length?roomSheets.map(s=>{
+    const canEdit=gm||s.ownerUid===uid;
+    return '<div class="card"><div class="row"><h3>'+escape(s.name)+'</h3><span class="badge">'+(canEdit?'Pode editar':'Somente leitura')+'</span></div>'+
+     '<p>NEX '+escape(s.nex)+'% · PV '+escape(s.pv)+' · PE '+escape(s.pe)+' · SAN '+escape(s.san)+'</p>'+
+     '<p>'+escape(s.notes||'Sem anotações')+'</p>'+
+     '<p><small>Dono: '+escape(s.ownerUid)+'</small></p>'+
+     (canEdit?'<button type="button" data-edit-sheet="'+escape(s.id)+'">Editar</button>':'')+'</div>';
+  }).join(''):'<p>Nenhuma ficha compartilhada ainda.</p>';
+ }
+ $('sheets').addEventListener('click',e=>{
+  const b=e.target.closest('[data-edit-sheet]');if(!b)return;
+  const sheet=roomSheets.find(s=>s.id===b.dataset.editSheet);
+  if(!sheet||!(gm||sheet.ownerUid===uid))return;
+  editing=sheet.id;
+  $('sheetFormTitle').textContent='Editar '+sheet.name;
+  $('sheetName').value=sheet.name;$('sheetNex').value=sheet.nex;$('sheetPV').value=sheet.pv;
+  $('sheetPE').value=sheet.pe;$('sheetSAN').value=sheet.san;$('sheetNotes').value=sheet.notes||'';
+  $('sheetOwnerWrap').classList.add('hide');
+  show('sheetFormPanel',true);
+  $('sheetFormPanel').scrollIntoView({behavior:'smooth',block:'start'});
+ });
+ $('newSheet').addEventListener('click',()=>{
+  if(!roomId)return;
+  editing=null;$('sheetForm').reset();$('sheetFormTitle').textContent='Nova ficha da campanha';
+  show('sheetOwnerWrap',gm);
+  if(gm)drawMembers();
+  show('sheetFormPanel',true);
+ });
+ $('cancelSheet').addEventListener('click',()=>show('sheetFormPanel',false));
+ $('sheetForm').addEventListener('submit',e=>{e.preventDefault();run(async()=>{
+  if(!roomId||!uid)throw Error('Entre na campanha primeiro.');
+  const raw={
+    name:$('sheetName').value.trim().slice(0,100),
+    nex:Number($('sheetNex').value),pv:Number($('sheetPV').value),
+    pe:Number($('sheetPE').value),san:Number($('sheetSAN').value),
+    notes:$('sheetNotes').value.slice(0,3000),updatedAt:serverTimestamp()
+  };
+  if(!raw.name||[raw.nex,raw.pv,raw.pe,raw.san].some(v=>!Number.isInteger(v)||v<0))
+    throw Error('Preencha os campos com valores válidos.');
+  if(editing){
+   const original=roomSheets.find(s=>s.id===editing);
+   if(!original||!(gm||original.ownerUid===uid))throw Error('Você não pode editar esta ficha.');
+   await updateDoc(doc(db,'campaigns',roomId,'sheets',editing),raw);
+  }else{
+   const ownerUid=gm?$('sheetOwner').value:uid;
+   if(ownerUid!==uid && !gm)throw Error('Não é permitido criar fichas de terceiros.');
+   await addDoc(collection(db,'campaigns',roomId,'sheets'),{...raw,ownerUid});
+  }
+  show('sheetFormPanel',false);notice('Ficha salva na campanha.');
+ });});
+}
+</script>
+</body></html>
