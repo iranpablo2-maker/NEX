@@ -1604,104 +1604,20 @@ html,body{background:#000!important;background-image:none!important}
  #sheetScreen .nexv16-skill-head,#sheetScreen .nexv16-skill-row{min-width:390px!important;}
 }
 </style>
-<style id="nex-wallpaper-red-theme-fix">
-/* Fundo personalizável é renderizado por trás de todo o conteúdo da ficha. */
-#sheetScreen{position:relative!important;isolation:isolate!important;--nex-custom-bg:none;--nex-custom-dim:.35}
-#sheetScreen.nex-has-wallpaper::before{
- content:""!important;display:block!important;position:fixed!important;inset:0!important;
- background-image:linear-gradient(rgba(0,0,0,var(--nex-custom-dim)),rgba(0,0,0,var(--nex-custom-dim))),var(--nex-custom-bg)!important;
- background-size:cover!important;background-position:center!important;background-repeat:no-repeat!important;
- z-index:-1!important;pointer-events:none!important;
-}
-#sheetScreen.nex-has-wallpaper{background-color:transparent!important}
-#sheetScreen.nex-has-wallpaper .shell{background:transparent!important}
-#sheetScreen.nex-has-wallpaper .panel{background-color:rgba(12,10,11,.88)!important}
-#sheetScreen.nex-has-wallpaper .left .panel{background:transparent!important}
-/* Tema vermelho substituindo os detalhes roxos mais visíveis. */
-:root{--accent:#c93440!important;--violet:#a92230!important}
-#sheetScreen .btn.primary,#sheetScreen .nexv16-filter button.selected{background:#a62530!important;border-color:#d84b56!important}
-#sheetScreen .nex-attr-skill-picker{color:#ff8189!important}
-#sheetScreen .nex-attr-skill-picker:hover,#sheetScreen .nex-attr-skill-picker:focus-visible{background:#301115!important;outline-color:#df4a55!important}
-#nexSheetSettingsButton:hover,#nexSheetSettingsButton[aria-expanded="true"]{background:#381317!important;color:#ff8d95!important}
-#nexSheetSettingsPanel{border-color:#aa3944!important;background:#181213!important}
-#nexSheetSettingsPanel h3{color:#ffb8bd!important}
-#nexSheetSettingsPanel input[type="url"],#nexSheetSettingsPanel select{border-color:#874048!important}
-#nexSheetSettingsPanel input[type="range"]{accent-color:#c82d3b!important}
-#nexSheetSettingsPanel .nex-wallpaper-preview{border-color:#873b44!important}
-#nexSheetSettingsPanel .nex-wallpaper-buttons button{background:#7d2029!important;border-color:#b84651!important}
-#nexSheetSettingsPanel .nex-wallpaper-buttons button:hover{background:#a52b37!important}
-#nexAttributeRollPopup,#nex25RollPopup{border-color:#bf3947!important}
-#nexAttributeRollPopup .nex-attr-popup-symbol{background:#b72838!important}
-#sheetScreen .nex-attributes-pencil:hover{color:#ff737e!important}
-.nex-ref-nav button:hover,.nex-ref-nav button:focus-visible{border-bottom-color:#c53240!important;background:#301116!important}
-</style>
-<style id="nex-red-controls-and-65-opacity">
-/* Cor principal da interface: vermelho, inclusive em botões criados dinamicamente. */
-:root{--accent:#c52c38!important;--violet:#a91f2e!important;--red:#c52c38!important}
-button:focus-visible,select:focus-visible,input:focus-visible{outline-color:#d84954!important}
-.btn:hover,button.btn:hover{background:#4b1920!important;border-color:#d54a56!important;color:#fff!important}
-.btn.primary,.btn.sm.primary,button.primary,
-#sheetScreen .btn.primary,#sheetScreen .nexv16-filter button.selected,
-.nexv16-filter button.selected,.nexv16-filter .selected,
-.nex-ref-nav button.active,.nex-ref-nav button[aria-current="page"],
-#sheetScreen .tab.active,#sheetScreen .tabs .active,
-#sheetScreen button[aria-pressed="true"]:not(.nex-attributes-pencil),
-#sheetScreen .nexv16-tab.active,#sheetScreen .nexv16-filter .active{
- background:#a82533!important;border-color:#d14c57!important;color:#fff!important;
-}
-.btn.primary:hover,.btn.sm.primary:hover,button.primary:hover,
-#sheetScreen .nexv16-filter button.selected:hover{
- background:#c53140!important;border-color:#ef6871!important;
-}
-#sheetScreen .tab.active{box-shadow:inset 0 -2px #eb5360!important}
-#sheetScreen .tab:hover{color:#ff9aa2!important}
-#sheetScreen .nex-ritual-pill{background:#9b2834!important}
-#sheetScreen .nex-ritual-arrow{color:#e04c57!important}
-#sheetScreen .nex-ritual-card{border-bottom-color:#71323b!important}
-#sheetScreen .nex-skill-dice-button:hover{background:#421b21!important}
-#sheetScreen .nex-attributes-pencil:hover{color:#f36c75!important}
-#nex25RollPopup,#nexAttributeRollPopup,#nexSheetSettingsPanel{border-color:#c33b48!important}
-#nex25RollPopup:before{border-color:#c33b48!important}
-.nex25-roll-symbol{color:#d72b3d!important}
-#nexAttributeRollPopup .nex-attr-popup-symbol{background:#b82839!important}
-#sheetScreen .nex-attr-skill-picker{color:#ff8990!important}
-#sheetScreen .nex-attr-skill-picker:focus-visible{outline-color:#ed5662!important}
-#nexSheetSettingsButton:hover,#nexSheetSettingsButton[aria-expanded="true"]{color:#ff9299!important;background:#44191f!important}
-#nexSheetSettingsPanel input[type="range"]{accent-color:#c92d3d!important}
-#nexSheetSettingsPanel .nex-wallpaper-buttons button{background:#932330!important;border-color:#cf4b58!important;color:#fff!important}
-#nexSheetSettingsPanel .nex-wallpaper-buttons button:hover{background:#bb3441!important}
 
-/* Sobre a imagem escolhida: fundo dos painéis preto com exatos 65% de opacidade.
-   Não aplicar opacity nos contêineres, pois isso apagaria também textos e botões. */
-#sheetScreen.nex-has-wallpaper{
- background:transparent!important;
+<style id="nex-red-theme-no-custom-background">
+:root{--accent:#c72b3a!important;--violet:#b22231!important;--red:#c72b3a!important}
+#sheetScreen{background:#000!important}
+#sheetScreen .btn.primary,#sheetScreen button.primary,
+#sheetScreen .nexv16-filter button.selected,
+#sheetScreen .tabs .tab.active,
+#nexTkPanel .tk-tabs button[aria-pressed="true"],
+#nexItemModal button[aria-selected="true"],
+#nexItemEditor .nex-editor-save{
+background-color:#ad2734!important;border-color:#d44551!important;color:#fff!important
 }
-#sheetScreen.nex-has-wallpaper .shell,
-#sheetScreen.nex-has-wallpaper .layout,
-#sheetScreen.nex-has-wallpaper .left,
-#sheetScreen.nex-has-wallpaper .right,
-#sheetScreen.nex-has-wallpaper .col,
-#sheetScreen.nex-has-wallpaper .view,
-#sheetScreen.nex-has-wallpaper .view.active{
- background-color:transparent!important;
-}
-#sheetScreen.nex-has-wallpaper .panel,
-#sheetScreen.nex-has-wallpaper .nex216-identity,
-#sheetScreen.nex-has-wallpaper .n193-combat,
-#sheetScreen.nex-has-wallpaper .nexv16-skills,
-#sheetScreen.nex-has-wallpaper .nexv16-entry,
-#sheetScreen.nex-has-wallpaper .nexv16-catalog,
-#sheetScreen.nex-has-wallpaper .ability,
-#sheetScreen.nex-has-wallpaper .nex-ritual-card,
-#sheetScreen.nex-has-wallpaper .nexv16-detail{
- background:rgba(0,0,0,.80)!important;
-}
-#sheetScreen.nex-has-wallpaper .left .panel{background:rgba(0,0,0,.80)!important}
-#sheetScreen.nex-has-wallpaper .mini-nav{
- background:rgba(0,0,0,.80)!important;border-radius:4px;padding:10px!important;
-}
-#sheetScreen.nex-has-wallpaper .nexv16-skill-row,
-#sheetScreen.nex-has-wallpaper .nexv16-skill-head{background:rgba(0,0,0,.80)!important}
+#sheetScreen .nex-attr-skill-picker{color:#ed8b91!important}
+#sheetScreen :is(button,input,select):focus-visible{outline-color:#d44551!important}
 </style></head><body>
 <script src="nex-sobrevivendo-ao-horror.js?v=2072"></script>
 <header class="topbar"><div class="topinner"><button type="button" id="n17MenuToggle" class="n17-menu-button" aria-expanded="false" aria-controls="n17Drawer" aria-label="Abrir menu">☰</button><button type="button" class="brand" id="nexBrandHome" aria-label="Voltar ao menu principal" title="Voltar ao menu principal"><span class="brand-mark" aria-hidden="true">◈</span><span><h1>NEX</h1><span class="subtitle">SISTEMA DE FICHAS · ORDEM PARANORMAL</span></span></button><div class="actions"><button class="btn sm" id="menuHeaderButton" type="button" style="display:none!important" hidden tabindex="-1" aria-hidden="true">⌂ Menu principal</button><button class="btn sm" id="newChar" type="button" style="display:none!important" hidden tabindex="-1" aria-hidden="true">＋ Nova ficha</button><button class="btn sm" id="importBtn" style="display:none!important" aria-hidden="true" tabindex="-1">Importar</button><button class="btn sm" id="exportBtn" style="display:none!important" aria-hidden="true" tabindex="-1">↓ Exportar</button><input type="file" id="fileInput" accept="application/json,.json" hidden><span id="n17SaveIndicator" hidden aria-hidden="true"></span></div></div></header>
@@ -1852,7 +1768,7 @@ button:focus-visible,select:focus-visible,input:focus-visible{outline-color:#d84
   </details>
  </div>
 </section>
-<div id="sheetScreen" class="hide"><div class="shell"><div class="mini-nav"><strong>◈ FICHA DO PERSONAGEM <span style="color:#b07179">/ FICHA OPERACIONAL</span></strong><span id="nex29SheetSaveIndicator" hidden aria-hidden="true"></span><button type="button" id="nexSheetSettingsButton" title="Personalizar fundo da ficha" aria-label="Personalizar fundo da ficha" aria-expanded="false" aria-controls="nexSheetSettingsPanel"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.88l.07.07-2 2-.08-.08a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1.05 1.56V21h-2.83v-.12a1.7 1.7 0 0 0-1.06-1.56 1.7 1.7 0 0 0-1.87.34l-.08.08-2-2 .08-.07A1.7 1.7 0 0 0 7.4 15a1.7 1.7 0 0 0-1.57-1.05H5.7v-2.83h.12A1.7 1.7 0 0 0 7.4 10.1a1.7 1.7 0 0 0-.34-1.88l-.08-.07 2-2 .08.08a1.7 1.7 0 0 0 1.87.34A1.7 1.7 0 0 0 11.98 5V4.9h2.83V5a1.7 1.7 0 0 0 1.05 1.57 1.7 1.7 0 0 0 1.87-.34l.08-.08 2 2-.07.07a1.7 1.7 0 0 0-.34 1.88 1.7 1.7 0 0 0 1.57 1.05h.11v2.83h-.11A1.7 1.7 0 0 0 19.4 15Z" transform="translate(-.9 -.5)"/></svg></button></div>
+<div id="sheetScreen" class="hide"><div class="shell"><div class="mini-nav"><strong>◈ FICHA DO PERSONAGEM <span style="color:#b07179">/ FICHA OPERACIONAL</span></strong><span id="nex29SheetSaveIndicator" hidden aria-hidden="true"></span></div>
 <section class="nex216-identity" aria-label="Identificação do personagem">
   <div class="nex216-portrait-block">
     <div class="portrait" id="portraitPreview" aria-label="Retrato do personagem">♙</div>
@@ -2168,7 +2084,7 @@ function renderSkills(){ $('skillsList').innerHTML=SKILL_DATA.map(([name,attr])=
 function renderAttacks(){ $('attacksList').innerHTML=state.attacks.length?state.attacks.map(a=>`<div class="item" data-attack-id="${escapeHtml(a.id)}"><div class="item-head"><strong>${escapeHtml(a.name||'Ataque')}</strong><button class="btn sm" data-delete-attack="${escapeHtml(a.id)}">Excluir</button></div><div class="item-grid"><div class="field"><label>Nome</label><input data-attack-field="name" value="${escapeHtml(a.name||'')}"></div><div class="field"><label>Teste (ex.: 1d20+5)</label><input data-attack-field="test" value="${escapeHtml(a.test||'')}"></div><div class="field"><label>Dano (ex.: 1d8)</label><input data-attack-field="damage" value="${escapeHtml(a.damage||'')}"></div></div><div class="field"><label>Detalhes</label><input data-attack-field="detail" value="${escapeHtml(a.detail||'')}"></div><div class="inline"><button class="btn sm" data-roll-attack="${escapeHtml(a.id)}">Rolar ataque</button><button class="btn sm primary" data-roll-damage="${escapeHtml(a.id)}">Rolar dano ${state.origin==='Ex-Militar'?'(+2)':''}</button></div></div>`).join(''):'<p class="hint">Nenhum ataque cadastrado.</p>';}
 function renderInventory(){ $('inventoryList').innerHTML=state.items.length?state.items.map(i=>`<div class="item" data-item-id="${escapeHtml(i.id)}"><div class="item-head"><strong>${escapeHtml(i.name||'Item')}</strong><button class="btn sm" data-delete-item="${escapeHtml(i.id)}">Excluir</button></div><div class="item-grid"><div class="field"><label>Nome</label><input data-item-field="name" value="${escapeHtml(i.name||'')}"></div><div class="field"><label>Quantidade</label><input type="number" min="0" data-item-field="quantity" value="${clamp(int(i.quantity),0,9999)}"></div><div class="field"><label>Detalhes</label><input data-item-field="detail" value="${escapeHtml(i.detail||'')}"></div></div></div>`).join(''):'<p class="hint">Inventário vazio.</p>';}
 function renderPortrait(){const box=$('portraitPreview'); if(!box) return; if(state.photo){box.innerHTML='<img src="'+escapeHtml(state.photo)+'" alt="Foto do personagem">';}else{box.textContent='♙';}}
-function renderFields(){document.querySelectorAll('[data-field]').forEach(el=>{let k=el.dataset.field;el.value=k==='autoRules'?String(state.autoRules!==false):(state[k]??'');});const classSelect=$('class');if(classSelect){const mundane=classSelect.querySelector('option[value="Mundano"],option:last-child');if(mundane)mundane.hidden=int(state.nex)!==0;classSelect.disabled=int(state.nex)===0;}renderPortrait();renderStats();renderAttributes();renderSkills();renderAttacks();renderInventory();window.NEXApplySheetBackground?.();}
+function renderFields(){document.querySelectorAll('[data-field]').forEach(el=>{let k=el.dataset.field;el.value=k==='autoRules'?String(state.autoRules!==false):(state[k]??'');});const classSelect=$('class');if(classSelect){const mundane=classSelect.querySelector('option[value="Mundano"],option:last-child');if(mundane)mundane.hidden=int(state.nex)!==0;classSelect.disabled=int(state.nex)===0;}renderPortrait();renderStats();renderAttributes();renderSkills();renderAttacks();renderInventory();}
 function logResult(label,expression,rolls,total){log.unshift({label,expression,rolls,total});log=log.slice(0,40);}
 function dice(expr,label,extra=0){const clean=String(expr).replace(/\s/g,'').toLowerCase();if(!/^[+-]?(?:\d*d\d+|\d+)(?:[+-](?:\d*d\d+|\d+))*$/.test(clean)||clean.length>90){toast('Expressão inválida. Use, por exemplo, 2d6+3.');return;}const tokens=clean.match(/[+-]?(?:\d*d\d+|\d+)/g)||[];let total=extra;let parts=[];let rolled=0;for(let token of tokens){const sign=token.startsWith('-')?-1:1;const core=token.replace(/^[+-]/,'');if(core.includes('d')){let [count,faces]=core.split('d').map(Number);if(!count)count=1;if(count>50||faces>1000||faces<2||count<1||rolled+count>70){toast('Limite: 50 dados por termo, até d1000.');return;}let results=[];for(let j=0;j<count;j++){const rand=new Uint32Array(1);crypto.getRandomValues(rand);const value=rand[0]%faces+1;results.push(value);total+=sign*value;}rolled+=count;parts.push(`${sign<0?'-':''}[${results.join(', ')}]`);}else{total+=sign*Number(core);parts.push(token);}}if(extra)parts.push(`bônus ${extra>=0?'+':''}${extra}`);logResult(label,clean+(extra?(extra>=0?'+':'')+extra:''),parts.join(' '),total);}
 function attributeRoll(key,label,bonus=0){const value=int(state.attributes[key],1);const num=value===0?2:Math.max(1,Math.min(20,value));let rolls=[];for(let i=0;i<num;i++){const buf=new Uint32Array(1);crypto.getRandomValues(buf);rolls.push(buf[0]%20+1);}const die=value===0?Math.min(...rolls):Math.max(...rolls);logResult(label,(value===0?'2d20 (pior)':num+'d20 (melhor)')+(bonus?' + '+bonus:''),'['+rolls.join(', ')+'] → '+die,die+bonus);toast(label+' puro: '+rolls.join(', ')+' → '+(die+bonus));}
@@ -4265,266 +4181,10 @@ const PARANORMAL=[
 })();
 </script>
 
-<style id="nex-sheet-wallpaper-style">
-#sheetScreen{background-color:#000;background-repeat:no-repeat;background-size:cover;background-position:center center;min-height:100vh}
-#sheetScreen>.shell{position:relative}
-#sheetScreen .mini-nav{display:flex!important;align-items:center;gap:10px}
-#nexSheetSettingsButton{margin-left:auto;flex:none;width:34px;height:34px;display:grid;place-items:center;color:#ececf2;background:transparent;border:0;border-radius:6px;cursor:pointer}
-#nexSheetSettingsButton:hover,#nexSheetSettingsButton[aria-expanded="true"]{background:#422527;color:#ffb5bb}
-#nexSheetSettingsPanel[hidden]{display:none!important}
-#nexSheetSettingsPanel{position:fixed;right:14px;top:80px;z-index:110100;width:min(360px,calc(100vw - 28px));max-height:calc(100dvh - 92px);overflow-y:auto;padding:17px;background:#1b1617;border:1px solid #8f5257;border-radius:8px;box-shadow:0 15px 45px #000d;color:#eee}
-#nexSheetSettingsPanel .nex-wallpaper-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}
-#nexSheetSettingsPanel h3{font-size:15px;color:#ffe5e7;text-transform:none;letter-spacing:0}
-#nexSheetSettingsPanel .nex-wallpaper-close{border:0;background:transparent;color:#eee;font-size:24px;line-height:1}
-#nexSheetSettingsPanel label{display:block;margin:12px 0 5px;font-size:12px;font-weight:600;color:#dcd4e3}
-#nexSheetSettingsPanel input[type="url"],#nexSheetSettingsPanel select{display:block;width:100%;min-width:0;height:35px;background:#0e0a0b;color:#f7f5fa;border:1px solid #6e4a4d;border-radius:4px;padding:7px}
-#nexSheetSettingsPanel input[type="range"]{width:100%;accent-color:#d45560}
-#nexSheetSettingsPanel .nex-wallpaper-buttons{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
-#nexSheetSettingsPanel .nex-wallpaper-buttons button{flex:1;min-width:110px;padding:9px;border:1px solid #7f4f53;border-radius:5px;background:#3a1d1f;color:#fff}
-#nexSheetSettingsPanel .nex-wallpaper-buttons button:hover{background:#5d292d}
-#nexSheetSettingsPanel .nex-wallpaper-preview{height:100px;background:#050505;background-position:center;background-size:cover;border:1px solid #67494b;border-radius:5px;margin:8px 0}
-#nexSheetSettingsPanel .nex-wallpaper-tip{color:#aaa1ae;font-size:11px;line-height:1.5;margin-top:9px}
-@media(max-width:750px){#nexSheetSettingsPanel{top:60px;right:8px;width:min(360px,calc(100vw - 16px));max-height:calc(100dvh - 68px)}}
-</style>
-<aside id="nexSheetSettingsPanel" aria-label="Personalização do fundo da ficha" hidden>
- <div class="nex-wallpaper-head"><h3>Personalização da ficha</h3><button type="button" class="nex-wallpaper-close" id="nexWallpaperClose" aria-label="Fechar">×</button></div>
- <label>Imagem de fundo</label>
- <div class="nex-wallpaper-preview" id="nexWallpaperPreview"></div>
- <div class="nex-wallpaper-buttons"><button type="button" id="nexWallpaperUpload">Escolher imagem</button><input type="file" id="nexWallpaperFile" accept="image/png,image/jpeg,image/webp,image/gif" hidden></div>
 
- <div class="nex-wallpaper-buttons"><button type="button" id="nexWallpaperReset">Restaurar fundo original</button></div>
- <p class="nex-wallpaper-tip">Imagem salva nesta ficha, neste navegador. Os painéis pretos usam 80% de opacidade.</p>
-</aside>
-<script id="nex-sheet-wallpaper-script">
-(function(){
- const $=id=>document.getElementById(id);
- const panel=$('nexSheetSettingsPanel'),button=$('nexSheetSettingsButton');
- if(!panel||!button)return;
- 
- const wallpaperKey=()=>{let id='default';try{id=localStorage.getItem('nex_menu_current_v13')||'default'}catch(e){}return 'nex_fundo_ficha_'+id.replace(/[^a-zA-Z0-9_-]/g,'')};
- function backupSettings(){try{const data=JSON.parse(localStorage.getItem(wallpaperKey())||'null');return data&&typeof data==='object'?data:null}catch(e){return null}}
- function settings(){
-  const own=state.sheetWallpaper&&typeof state.sheetWallpaper==='object'?state.sheetWallpaper:{};
-  const backup=backupSettings();
-  return backup&&backup.image&&!own.image?{...own,...backup}:own;
- }
- function saveWallpaperBackup(config){
-  try{localStorage.setItem(wallpaperKey(),JSON.stringify(config));return true}
-  catch(e){console.warn('Fundo não pôde ser salvo no armazenamento separado',e);return false}
- }
- function safeUrl(url){if(typeof url!=='string')return '';if(url.startsWith('data:image/jpeg;base64,')||url.startsWith('data:image/png;base64,')||url.startsWith('data:image/webp;base64,'))return url;try{const u=new URL(url);return ['http:','https:'].includes(u.protocol)?u.href:''}catch(e){return ''}}
- function imageCSS(url){return 'url("'+url.replace(/["\\\n\r]/g,'')+'")'}
- function apply(){
-  const box=$('sheetScreen');if(!box)return;
-  const cfg=settings(),url=safeUrl(cfg.image);
-  box.style.setProperty('background-image',url?imageCSS(url):'none','important');
-  box.style.setProperty('background-color','#000','important');
-  box.style.setProperty('background-size','cover','important');
-  box.style.setProperty('background-position','center center','important');
-  box.style.setProperty('background-attachment','fixed','important');
-  box.style.setProperty('--nex-custom-bg',url?imageCSS(url):'none');
-  box.style.setProperty('--nex-custom-dim','0');
-  box.classList.toggle('nex-has-wallpaper',!!url);
-  const preview=$('nexWallpaperPreview');if(preview)preview.style.backgroundImage=url?imageCSS(url):'none';
 
- }
- window.NEXApplySheetBackground=apply;
- apply();
- function patch(changes){
-  const next={...settings(),...changes};
-  state.sheetWallpaper=next;
-  const backedUp=saveWallpaperBackup(next);
-  apply();
-  save();
-  if(!backedUp)toast('O fundo foi aplicado, mas não pôde ser salvo. Libere espaço no navegador.');
- }
- function open(on){panel.hidden=!on;button.setAttribute('aria-expanded',String(on));if(on)apply()}
- button.addEventListener('click',()=>open(panel.hidden));
- $('nexWallpaperClose').addEventListener('click',()=>open(false));
- document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!panel.hidden)open(false)});
- document.addEventListener('pointerdown',e=>{if(!panel.hidden&&!panel.contains(e.target)&&!button.contains(e.target))open(false)});
- $('nexWallpaperUpload').addEventListener('click',()=>$('nexWallpaperFile').click());
- $('nexWallpaperFile').addEventListener('change',async e=>{
-  const file=e.target.files?.[0];if(!file)return;
-  if(!['image/png','image/jpeg','image/webp','image/gif'].includes(file.type)){toast('Escolha uma imagem PNG, JPG, WEBP ou GIF.');return;}
-  if(file.size>15*1024*1024){toast('Imagem muito grande. Limite: 15 MB.');return;}
-  try{
-   const img=new Image();const blobUrl=URL.createObjectURL(file);
-   try{
-    await new Promise((resolve,reject)=>{img.onload=resolve;img.onerror=reject;img.src=blobUrl});
-    const ratio=Math.min(1,1100/Math.max(img.naturalWidth,img.naturalHeight));
-    const canvas=document.createElement('canvas');
-    canvas.width=Math.max(1,Math.round(img.naturalWidth*ratio));
-    canvas.height=Math.max(1,Math.round(img.naturalHeight*ratio));
-    canvas.getContext('2d').drawImage(img,0,0,canvas.width,canvas.height);
-    let data=canvas.toDataURL('image/jpeg',.65);
-    if(data.length>700000)data=canvas.toDataURL('image/jpeg',.43);
-    if(data.length>1000000){toast('Imagem muito grande após a redução. Escolha outra imagem.');return;}
-    patch({image:data});
-    toast('Fundo personalizado aplicado à ficha.');
-   }finally{URL.revokeObjectURL(blobUrl);}
-  }catch(err){toast('Não foi possível abrir a imagem.');}
-  e.target.value='';
- });
 
- $('nexWallpaperReset').addEventListener('click',()=>{state.sheetWallpaper={};try{localStorage.removeItem(wallpaperKey())}catch(e){}apply();save();toast('Fundo original restaurado.');});
-})();
-</script>
 
-<style id="nex-red-complete-wallpaper-layers">
-/* Fixa a imagem no fundo verdadeiro da ficha, acima do preto da página. */
-#sheetScreen.nex-has-wallpaper{
- position:relative!important;isolation:isolate!important;background:transparent!important;
-}
-#sheetScreen.nex-has-wallpaper::before{
- position:fixed!important;content:""!important;inset:0!important;
- display:block!important;
- background-image:linear-gradient(rgba(0,0,0,var(--nex-custom-dim,0)),rgba(0,0,0,var(--nex-custom-dim,0))),var(--nex-custom-bg)!important;
- background-size:cover!important;background-position:center center!important;
- z-index:0!important;pointer-events:none!important;opacity:1!important;
-}
-#sheetScreen.nex-has-wallpaper>.shell{
- position:relative!important;z-index:1!important;background:transparent!important;
-}
-#sheetScreen.nex-has-wallpaper .layout,
-#sheetScreen.nex-has-wallpaper .left,
-#sheetScreen.nex-has-wallpaper .right,
-#sheetScreen.nex-has-wallpaper .col,
-#sheetScreen.nex-has-wallpaper .view,
-#sheetScreen.nex-has-wallpaper .view.active{
- background:transparent!important;
-}
-/* O preto fica com 65% de opacidade nos blocos principais.
-   Componentes internos não adicionam outra camada preta. */
-#sheetScreen.nex-has-wallpaper .nex216-identity,
-#sheetScreen.nex-has-wallpaper .panel,
-#sheetScreen.nex-has-wallpaper .n193-combat,
-#sheetScreen.nex-has-wallpaper .mini-nav,
-#sheetScreen.nex-has-wallpaper .nexv16-catalog,
-#sheetScreen.nex-has-wallpaper .nexv16-entry,
-#sheetScreen.nex-has-wallpaper .ability{
- background-color:rgba(0,0,0,.80)!important;
- background-image:none!important;
-}
-#sheetScreen.nex-has-wallpaper .nexv16-skills,
-#sheetScreen.nex-has-wallpaper .nexv16-skill-row,
-#sheetScreen.nex-has-wallpaper .nexv16-skill-head,
-#sheetScreen.nex-has-wallpaper .nexv16-detail,
-#sheetScreen.nex-has-wallpaper .nex-ritual-card,
-#sheetScreen.nex-has-wallpaper .nex216-fields,
-#sheetScreen.nex-has-wallpaper .n193-resource-bar{
- background-color:transparent!important;
-}
-#sheetScreen.nex-has-wallpaper .nexv16-entry>.nexv16-detail{
- background:transparent!important;
-}
-#sheetScreen.nex-has-wallpaper .nexv16-skill-row input[data-n16-other]{
- background:rgba(0,0,0,.30)!important;
-}
-/* Interações vermelhas: barras, linhas, menus, select, editor e rolagem. */
-:root{--accent:#d13440!important;--violet:#b32936!important}
-#sheetScreen :is(button,select,input,textarea):focus-visible{outline-color:#e64b58!important;border-color:#c73744!important}
-#sheetScreen :is(.tab,.nexv16-filter button)[aria-selected=true],
-#sheetScreen .tabs .tab.active,#sheetScreen .tab.active{
- color:#fff!important;border-color:#d23a48!important;box-shadow:inset 0 -2px #d23a48!important;
-}
-#sheetScreen :is(.btn.primary,button.primary,.nexv16-filter button.selected,.nex57-training-select option:checked){
- background-color:#a82331!important;border-color:#cb3c49!important;color:#fff!important;
-}
-#sheetScreen .nexv16-attr,
-#sheetScreen .nexv16-total,
-#sheetScreen .nex57-training-select,
-#sheetScreen .nex-attr-skill-picker,
-#sheetScreen .nex216-field label{
- color:#e0a3a7!important;
-}
-#sheetScreen .nex-ritual-arrow,
-#sheetScreen .nex25-roll-symbol{color:#d34350!important}
-#nex25RollPopup,#nexAttributeRollPopup{border-color:#c93a48!important}
-#sheetScreen .nex-attributes-pencil:hover{color:#ed5661!important}
-</style>
 
-<style id="nex-tema-vermelho-final">
-/* Corrige a sobreposição do fundo: o papel de parede fica no próprio #sheetScreen. */
-#sheetScreen.nex-has-wallpaper::before{display:none!important;content:none!important}
-#sheetScreen.nex-has-wallpaper{background-color:#000!important;min-height:100vh!important}
-#sheetScreen.nex-has-wallpaper>.shell{background:transparent!important}
-#sheetScreen.nex-has-wallpaper .layout,
-#sheetScreen.nex-has-wallpaper .left,
-#sheetScreen.nex-has-wallpaper .right,
-#sheetScreen.nex-has-wallpaper .col,
-#sheetScreen.nex-has-wallpaper .view{background:transparent!important}
-/* Camada preta de 65% sem diminuir a opacidade das letras. */
-#sheetScreen.nex-has-wallpaper .nex216-identity,
-#sheetScreen.nex-has-wallpaper .panel,
-#sheetScreen.nex-has-wallpaper .mini-nav,
-#sheetScreen.nex-has-wallpaper .n193-combat,
-#sheetScreen.nex-has-wallpaper .nexv16-entry,
-#sheetScreen.nex-has-wallpaper .nexv16-catalog,
-#sheetScreen.nex-has-wallpaper .ability,
-#sheetScreen.nex-has-wallpaper .nex-item-card-new{
-  background:rgba(0,0,0,.80)!important;
-}
-#sheetScreen.nex-has-wallpaper .nexv16-skills,
-#sheetScreen.nex-has-wallpaper .nexv16-skill-row,
-#sheetScreen.nex-has-wallpaper .nexv16-skill-head,
-#sheetScreen.nex-has-wallpaper .nexv16-detail,
-#sheetScreen.nex-has-wallpaper .nex-ritual-card{
-  background:transparent!important;
-}
-/* Tema vermelho nas áreas que permaneciam violetas no cabeçalho e na ficha */
-:root{--accent:#c32838!important;--violet:#a62230!important}
-.brand-mark,.nex-ref-nav .active,#sheetScreen .nex216-identity select,
-#sheetScreen .nex216-identity input:focus,#sheetScreen .tab.active,
-#sheetScreen .nex57-training-select:focus-visible{
- border-color:#c73543!important;
-}
-.brand-mark{color:#e74d58!important;box-shadow:0 0 0 3px #8c202421!important}
-#sheetScreen .mini-nav strong,
-#sheetScreen .right-head strong,#sheetScreen .panel-head h2,
-#sheetScreen .nexv16-total,#sheetScreen .nexv16-attr{
- color:#efd9db!important;
-}
-#sheetScreen .tab.active,.nex-ref-nav button:hover,
-.nex-ref-nav button:focus-visible{
- color:#fff!important;border-color:#d94350!important;box-shadow:inset 0 -2px #d94350!important;
-}
-#sheetScreen .btn.primary,#sheetScreen button.btn.primary,
-#sheetScreen .nexv16-filter button.selected,
-#sheetScreen .nex57-training-select option:checked{
- background:#ac2936!important;border-color:#d3404d!important;color:#fff!important;
-}
-#sheetScreen .nex-attr-skill-picker,#sheetScreen .nex57-training-select{
- color:#f5c3c6!important;
-}
-#nexTkPanel .tk-tabs button[aria-pressed="true"],
-#nexItemModal [aria-selected="true"],
-#nexItemEditor .nex-editor-save{
- background:#ac2936!important;border-color:#d3404d!important;color:#fff!important;
-}
-#nexSheetSettingsPanel .nex-wallpaper-buttons button{
- background:#ac2936!important;border:1px solid #d3404d!important;color:#fff!important;
-}
-</style><style id="nex-painel-80-e-vermelho-padrao">
-/* Padrão visual: fundo escuro transparente 80%, identidade vermelha. */
-:root{--accent:#c72b3a!important;--violet:#b22231!important;--red:#c72b3a!important}
-#sheetScreen.nex-has-wallpaper{background-attachment:fixed!important;background-size:cover!important;background-position:center center!important}
-#sheetScreen.nex-has-wallpaper::before{display:none!important;content:none!important}
-#sheetScreen.nex-has-wallpaper :is(.panel,.nex216-identity,.n193-combat,.mini-nav,.nexv16-entry,.nexv16-catalog,.ability,.nex-item-card-new){
- background-color:rgba(0,0,0,.80)!important;background-image:none!important;
-}
-#sheetScreen.nex-has-wallpaper :is(.nexv16-skills,.nexv16-skill-row,.nexv16-skill-head,.nexv16-detail,.nex-ritual-card,.layout,.col,.left,.right,.view){
- background-color:transparent!important;
-}
-#sheetScreen .tabs .tab.active,#sheetScreen .nexv16-filter button.selected,
-#sheetScreen .btn.primary,#sheetScreen button.primary,
-#nexTkPanel .tk-tabs button[aria-pressed="true"],
-#nexItemModal button[aria-selected="true"],
-#nexItemEditor .nex-editor-save{
- background-color:#ad2734!important;border-color:#d44551!important;color:#fff!important;
-}
-#nexSheetSettingsPanel {background:#160f11!important;border-color:#ba3441!important}
-#nexSheetSettingsPanel :is(.nex-wallpaper-buttons button){background:#ad2734!important;border-color:#d44551!important;color:white!important}
-#sheetScreen :is(input,select,button):focus-visible{outline-color:#d44551!important}
-#sheetScreen .nex-attr-skill-picker{color:#ed8b91!important}
-</style></body></html>
+
+</body></html>
