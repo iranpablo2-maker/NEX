@@ -45,7 +45,10 @@
    curseTarget:cut(x.curseTarget||'Armas',50),
    improvementTarget:IMPROVEMENT_TARGETS.includes(x.improvementTarget)?x.improvementTarget:'Armas',
    bonusType:BONUS_TYPES.some(([id])=>id===x.bonusType)?x.bonusType:'ataque',
-   bonusValue:Number.isFinite(Number(x.bonusValue))?Math.max(-100,Math.min(100,Number(x.bonusValue))):0,
+   bonusValue:Number.isFinite(Number(x.bonusValue))?Math.max(0,Math.min(10,Number(x.bonusValue))):0,
+   bonusSkill:cut(x.bonusSkill||'',60),
+   accessoryBonus:num(x.accessoryBonus,0,10,0),
+   accessorySkill:cut(x.accessorySkill||'',60),
    itemTier:['0','I','II','III','IV'].includes(String(x.itemTier||''))?String(x.itemTier):'0',
    itemSpaces:num(x.itemSpaces,0,100,1),
    protectionDefense:num(x.protectionDefense,0,100,1),
@@ -163,7 +166,7 @@
  '<section id="nexHbSharedImprovements" class="nex52-full nex-hb-item-improvements" hidden><div class="nex-hb-improvement-heading"><strong>Melhorias</strong><button type="button" id="nex52ImprovementAdd">Adicionar</button></div><input type="text" id="nex52ImprovementName" maxlength="80" placeholder="Nome da melhoria" aria-label="Nome da melhoria"><div id="nex52ImprovementList" class="nex-hb-improvement-list" aria-live="polite"></div></section>'+
  '<section class="nex-hb-special-form" id="nexHbParanormalExtras" hidden><strong id="nexHbParanormalKindLabel">Itens Paranormais</strong>'+
  '<div id="nexHbAmmoExtras" class="nex-hb-paranormal-extra-fields" hidden><label>Tipo de munição<input id="nexHbCursedAmmoType" maxlength="80" placeholder="Ex.: Balas curtas"></label><label>Dano ou efeito adicional<input id="nexHbCursedAmmoBonus" maxlength="60" placeholder="Ex.: 1d6 de Energia"></label></div>'+
- '<div id="nexHbAccessoryExtras" class="nex-hb-paranormal-extra-fields" hidden><label>Tipo de acessório<input id="nexHbCursedAccessoryType" maxlength="80" placeholder="Ex.: Anel"></label><label>Benefício passivo<input id="nexHbCursedAccessoryBenefit" maxlength="100" placeholder="Ex.: +2 em Percepção"></label></div>'+
+ '<div id="nexHbAccessoryExtras" class="nex-hb-paranormal-extra-fields" hidden><label>Tipo de acessório<input id="nexHbCursedAccessoryType" maxlength="80" placeholder="Ex.: Anel"></label><label>Benefício passivo<input id="nexHbCursedAccessoryBenefit" maxlength="100" placeholder="Descreva o benefício"></label><label>Bônus de perícia<select id="nexHbAccessoryBonus"><option value="0">Sem bônus</option><option value="1">+1</option><option value="2">+2</option><option value="3">+3</option><option value="4">+4</option><option value="5">+5</option><option value="6">+6</option><option value="7">+7</option><option value="8">+8</option><option value="9">+9</option><option value="10">+10</option></select></label><label>Perícia beneficiada<select id="nexHbAccessorySkill"><option value="">Selecione a perícia</option></select></label></div>'+
  '<div id="nexHbArtifactExtras" class="nex-hb-paranormal-extra-fields" hidden><label>Condição de uso<input id="nexHbCursedArtifactRequirement" maxlength="120" placeholder="Ex.: Apenas em uma cena"></label></div>'+
  '<div class="nex-hb-paranormal-extra-fields"><label>Uso ou ativação<input id="nexHbParanormalActivation" maxlength="120" placeholder="Ex.: Ação padrão"></label><label>Efeito paranormal<input id="nexHbParanormalEffect" maxlength="220" placeholder="Efeito paranormal do item"></label></div></section>'+ 
  '<div class="nex-hb-image-area nex52-full"><input id="nexHbImageUrl" type="hidden">'+
@@ -173,7 +176,7 @@
  '<div class="nex52-specific nex52-full" id="nexHbImprovementFields" hidden>'+
  '<label>Aplicável a<select id="nexHbImprovementTarget">'+IMPROVEMENT_TARGETS.map(value=>'<option value="'+esc(value)+'">'+esc(value)+'</option>').join('')+'</select></label>'+
  '<div class="nex-hb-bonus-grid"><label>Tipo de bônus<select id="nexHbBonusType">'+BONUS_TYPES.map(([id,name])=>'<option value="'+esc(id)+'">'+esc(name)+'</option>').join('')+'</select></label>'+
- '<label>Valor do bônus<input id="nexHbBonusValue" type="number" step="1" min="-100" max="100" value="2" inputmode="numeric"></label></div></div>'+ 
+ '<label>Valor do bônus<select id="nexHbBonusValue"><option value="1">+1</option><option value="2">+2</option><option value="3">+3</option><option value="4">+4</option><option value="5">+5</option><option value="6">+6</option><option value="7">+7</option><option value="8">+8</option><option value="9">+9</option><option value="10">+10</option></select></label><label id="nexHbBonusSkillField" hidden>Perícia beneficiada<select id="nexHbBonusSkill"><option value="">Selecione a perícia</option></select></label></div></div>'+ 
  '<div id="nexHbCurseFields" class="nex52-specific nex52-full" hidden><label>Elemento<select id="nexHbCurseElement"><option>Sangue</option><option>Morte</option><option>Energia</option><option>Conhecimento</option><option>Medo</option></select></label><label>Aplicável a<select id="nexHbCurseTarget"><option>Armas</option><option>Proteções</option><option>Munições</option><option>Acessórios</option><option>Itens Gerais</option></select></label></div>'+ 
  '<div id="nex53TrailFields" class="nex53-trail-fields nex52-full" hidden><p>Configure o nome e o efeito de cada marco de NEX.</p>'+
  TRAIL_NEX.map((n,i)=>'<fieldset class="nex53-trail-step"><legend>NEX '+n+'% · Habilidade '+(i+1)+'</legend>'+
@@ -228,6 +231,7 @@
    toggleRitualDamageFields();
    $('nex52ItemFields').hidden=type!=='item';
    $('nexHbImprovementFields').hidden=type!=='melhoria';
+   $('nexHbBonusSkillField').hidden=type!=='melhoria'||$('nexHbBonusType').value!=='pericia';
    $('nexHbCurseFields').hidden=type!=='maldicao';
    if(type==='item')$('nex52Category').value=tab==='paranormal'?'Itens Amaldiçoados':$('nex51Edit').value?$('nex52Category').value:itemTab;
    $('nex52Category').hidden=true;
@@ -251,16 +255,26 @@
    $('nex52Editor').dataset.itemKind=type==='item'?(cursed?'cursed':general?'general':'other'):'';
    syncItemCategoryFields();
    syncCursedWeaponElement();
+   syncParanormalWeaponTier();
  }
  const FALLBACK_SKILLS=['Acrobacia','Adestramento','Artes','Atletismo','Atualidades','Ciências','Crime','Diplomacia','Enganação','Fortitude','Furtividade','Iniciativa','Intimidação','Intuição','Investigação','Luta','Medicina','Ocultismo','Percepção','Pilotagem','Pontaria','Profissão','Reflexos','Religião','Sobrevivência','Tática','Tecnologia','Vontade'];
  function loadSkillChoices(){
    const skills=api()?.skillNames?.()||FALLBACK_SKILLS;
    const options=skills.filter(name=>typeof name==='string').map(name=>'<option value="'+esc(name)+'">'+esc(name)+'</option>').join('');
+   ['nexHbBonusSkill','nexHbAccessorySkill'].forEach(id=>{$(id).innerHTML='<option value="">Selecione a perícia</option>'+options;});
    $('nex55Skill1').innerHTML='<option value="">Escolha a primeira perícia</option>'+options;
    $('nex55Skill2').innerHTML='<option value="">Escolha a segunda perícia</option>'+options;
  }
  function syncItemCategoryFields(){
    $('nex52ItemFields').querySelectorAll('[data-hb-sync]').forEach(control=>{const hidden=$(control.dataset.hbSync);if(hidden)control.value=hidden.value;});
+ }
+ function syncParanormalWeaponTier(){
+   const cursedWeapon=tab==='paranormal'&&paranormalSection==='itens'&&cursedKind==='Armas Amaldiçoadas'&&$('nex51Type').value==='item';
+   $('nex52ItemFields').querySelectorAll('[data-hb-sync="nexHbTier"],#nexHbTier').forEach(select=>{
+     const zero=select.querySelector('option[value="0"]');
+     if(zero){zero.hidden=cursedWeapon;zero.disabled=cursedWeapon;}
+   });
+   if(cursedWeapon&&$('nexHbTier').value==='0'){$('nexHbTier').value='I';syncItemCategoryFields();}
  }
  function syncCursedWeaponElement(){
    const isCursedWeapon=tab==='paranormal'&&paranormalSection==='itens'&&cursedKind==='Armas Amaldiçoadas'&&$('nex51Type').value==='item';
@@ -292,6 +306,7 @@
    $('nexHbParanormalActivation').value='';$('nexHbParanormalEffect').value='';
    $('nexHbCursedAmmoType').value='Balas curtas';$('nexHbCursedAmmoBonus').value='';
    $('nexHbCursedAccessoryType').value='Anel';$('nexHbCursedAccessoryBenefit').value='';
+   $('nexHbAccessoryBonus').value='0';$('nexHbAccessorySkill').value='';$('nexHbBonusSkill').value='';
    $('nexHbCursedArtifactRequirement').value='';
    $('nexHbImprovementTarget').value='Armas';
    $('nexHbBonusType').value='ataque';$('nexHbBonusValue').value='2';
@@ -333,9 +348,10 @@
      $('nexHbParanormalActivation').value=item.paranormalActivation||'';$('nexHbParanormalEffect').value=item.paranormalEffect||'';
      $('nexHbCursedAmmoType').value=item.cursedAmmoType||'Balas curtas';$('nexHbCursedAmmoBonus').value=item.cursedAmmoBonus||'';
      $('nexHbCursedAccessoryType').value=item.cursedAccessoryType||'Anel';$('nexHbCursedAccessoryBenefit').value=item.cursedAccessoryBenefit||'';
+     $('nexHbAccessoryBonus').value=String(item.accessoryBonus??0);$('nexHbAccessorySkill').value=item.accessorySkill||'';
      $('nexHbCursedArtifactRequirement').value=item.cursedArtifactRequirement||'';
      $('nexHbImprovementTarget').value=item.improvementTarget||'Armas';
-     $('nexHbBonusType').value=item.bonusType||'ataque';$('nexHbBonusValue').value=String(item.bonusValue??2);
+     $('nexHbBonusType').value=item.bonusType||'ataque';$('nexHbBonusValue').value=String(Math.max(1,Math.min(10,item.bonusValue||2)));$('nexHbBonusSkill').value=item.bonusSkill||'';
      customItemImprovements=Array.isArray(item.customImprovements)?[...item.customImprovements]:[];renderItemImprovements();
      $('nexHbProtectionDefense').value=String(item.protectionDefense??1);
      $('nexHbWeaponProficiency').value=item.weaponProficiency||'Armas Simples';
@@ -354,6 +370,7 @@
      $('nexHbTag').value=item.itemTag||'Acessórios';
      syncItemCategoryFields();
      syncCursedWeaponElement();
+     syncParanormalWeaponTier();
      $('nexHbImageUrl').value=item.image?.startsWith('https://')?item.image:'';
      $('nexHbImagePreview').hidden=!item.image;if(item.image)$('nexHbImagePreview').src=item.image;
      if(item.type==='origem'){$('nex55Skill1').value=item.skills?.[0]||'';$('nex55Skill2').value=item.skills?.[1]||'';}
@@ -495,6 +512,7 @@
    targetOptions();$('nex52Apply').hidden=(item.type==='melhoria'||item.type==='maldicao');$('nex51Target').closest('label').hidden=item.type==='melhoria'||item.type==='maldicao';const d=$('nex52Detail');if(typeof d.showModal==='function')d.showModal();else d.setAttribute('open','');
  }
  $('nex51Type').addEventListener('change',editorFields);
+ $('nexHbBonusType').addEventListener('change',()=>{$('nexHbBonusSkillField').hidden=$('nexHbBonusType').value!=='pericia';});
  $('nex53RitualType').addEventListener('change',toggleRitualDamageFields);
  $('nex51Circle').addEventListener('change',()=>{
    const circle=Number($('nex51Circle').value);
@@ -582,12 +600,15 @@
    const count=all.filter(x=>currentTypes().includes(x.type)&&(tab!=='paranormal'||paranormalSection==='maldicoes'||x.category==='Itens Amaldiçoados')).length;
    if(!editing&&count>=50){message('Limite de 50 homebrews para esta categoria.');return;}
    if(type==='trilha'&&TRAIL_NEX.some(n=>!cut($('nex53TrailName'+n).value,90))){message('Informe o nome das quatro habilidades da trilha: 10%, 40%, 65% e 99%.');return;}
-   if(type==='melhoria'&&(!BONUS_TYPES.some(([id])=>id===$('nexHbBonusType').value)||$('nexHbBonusValue').value.trim()===''||!Number.isInteger(Number($('nexHbBonusValue').value))||Math.abs(Number($('nexHbBonusValue').value))>100)){message('Informe um bônus inteiro entre -100 e +100.');return;}
+   if(type==='melhoria'&&(!BONUS_TYPES.some(([id])=>id===$('nexHbBonusType').value)||!Number.isInteger(Number($('nexHbBonusValue').value))||Number($('nexHbBonusValue').value)<1||Number($('nexHbBonusValue').value)>10)){message('Selecione um bônus de +1 até +10.');return;}
+   if(type==='melhoria'&&$('nexHbBonusType').value==='pericia'&&!FALLBACK_SKILLS.includes($('nexHbBonusSkill').value)){message('Selecione a perícia beneficiada.');return;}
+   if(type==='item'&&tab==='paranormal'&&cursedKind==='Acessórios Amaldiçoados'&&Number($('nexHbAccessoryBonus').value)>0&&!FALLBACK_SKILLS.includes($('nexHbAccessorySkill').value)){message('Selecione a perícia beneficiada.');return;}
    if(type==='maldicao'&&!cut($('nex51Description').value,2000)){message('Preencha a descrição da maldição.');return;}
    if(type==='melhoria'&&!cut($('nex51Description').value,2000)){message('Preencha a descrição da melhoria.');return;}
    if(type==='item'&&(tab==='paranormal'?cursedKind==='Armas Amaldiçoadas':itemTab==='Armas')&&(!$('nexHbWeaponDamage').value.trim()||!/^([1-9]|1\d|20)(?:[-–]20)?$/.test($('nexHbWeaponCritical').value.trim())||!/^\d+$/.test($('nexHbWeaponMultiplier').value.trim())||Number($('nexHbWeaponMultiplier').value)<1)){message('Confira dano, crítico e multiplicador da arma.');return;}
    if(type==='item'&&(tab==='paranormal'?cursedKind==='Proteções Amaldiçoadas':itemTab==='Proteções')&&(!/^\d+$/.test($('nexHbProtectionDefense').value)||Number($('nexHbProtectionDefense').value)>100)){message('Informe defesa válida entre 0 e 100.');return;}
    if(type==='item'&&!cut($('nex51Description').value,2000)){message('Preencha a descrição do item.');return;}
+   if(type==='item'&&tab==='paranormal'&&cursedKind==='Armas Amaldiçoadas'&&$('nexHbTier').value==='0'){message('Escolha uma categoria entre I e IV.');return;}
    if(type==='item'&&(!['0','I','II','III','IV'].includes($('nexHbTier').value)||!/^\d+$/.test($('nexHbSpaces').value)||Number($('nexHbSpaces').value)>100)){message('Categoria ou espaços inválidos.');return;}
    if(type==='poder_paranormal' && !cut($('nex51Description').value,2000)){message('Preencha a descrição do poder paranormal.');return;}
    if(type==='ritual'&&$('nex53RitualType').value==='Dano'&&(Number($('nex53DiscenteCircle').value)<Number($('nex51Circle').value)||Number($('nex53VerdadeiroCircle').value)<Number($('nex53DiscenteCircle').value))){message('O círculo Discente deve ser igual ou superior ao básico; o Verdadeiro não pode ser menor que o Discente.');return;}
@@ -626,11 +647,14 @@
      cursedAmmoBonus:type==='item'&&tab==='paranormal'?$('nexHbCursedAmmoBonus').value:(old?.cursedAmmoBonus||''),
      cursedAccessoryType:type==='item'&&tab==='paranormal'?$('nexHbCursedAccessoryType').value:(old?.cursedAccessoryType||'Anel'),
      cursedAccessoryBenefit:type==='item'&&tab==='paranormal'?$('nexHbCursedAccessoryBenefit').value:(old?.cursedAccessoryBenefit||''),
+     accessoryBonus:type==='item'&&tab==='paranormal'?Number($('nexHbAccessoryBonus').value):(old?.accessoryBonus??0),
+     accessorySkill:type==='item'&&tab==='paranormal'?$('nexHbAccessorySkill').value:(old?.accessorySkill||''),
      cursedArtifactRequirement:type==='item'&&tab==='paranormal'?$('nexHbCursedArtifactRequirement').value:(old?.cursedArtifactRequirement||''),
      curseTarget:type==='maldicao'?$('nexHbCurseTarget').value:(old?.curseTarget||'Armas'),
      improvementTarget:type==='melhoria'?$('nexHbImprovementTarget').value:(old?.improvementTarget||'Armas'),
      bonusType:type==='melhoria'?$('nexHbBonusType').value:(old?.bonusType||'ataque'),
      bonusValue:type==='melhoria'?Number($('nexHbBonusValue').value):(old?.bonusValue??0),
+     bonusSkill:type==='melhoria'&&$('nexHbBonusType').value==='pericia'?$('nexHbBonusSkill').value:(old?.bonusSkill||''),
      protectionDefense:type==='item'&&(tab==='paranormal'&&cursedKind==='Proteções Amaldiçoadas'||itemTab==='Proteções'&&tab!=='paranormal')?Number($('nexHbProtectionDefense').value):(old?.protectionDefense??1),
      weaponProficiency:type==='item'&&(tab==='paranormal'&&cursedKind==='Armas Amaldiçoadas'||itemTab==='Armas'&&tab!=='paranormal')?$('nexHbWeaponProficiency').value:(old?.weaponProficiency||'Armas Simples'),
      weaponKind:type==='item'&&(tab==='paranormal'&&cursedKind==='Armas Amaldiçoadas'||itemTab==='Armas'&&tab!=='paranormal')?$('nexHbWeaponKind').value:(old?.weaponKind||'Corpo a Corpo'),
