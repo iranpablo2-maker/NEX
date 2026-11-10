@@ -168,7 +168,7 @@
  '<div id="nexHbAmmoExtras" class="nex-hb-paranormal-extra-fields" hidden><label>Tipo de munição<input id="nexHbCursedAmmoType" maxlength="80" placeholder="Ex.: Balas curtas"></label><label>Dano ou efeito adicional<input id="nexHbCursedAmmoBonus" maxlength="60" placeholder="Ex.: 1d6 de Energia"></label></div>'+
  '<div id="nexHbAccessoryExtras" class="nex-hb-paranormal-extra-fields" hidden><label>Tipo de acessório<input id="nexHbCursedAccessoryType" maxlength="80" placeholder="Ex.: Anel"></label><label>Benefício passivo<input id="nexHbCursedAccessoryBenefit" maxlength="100" placeholder="Descreva o benefício"></label><label>Bônus de perícia (opcional)<input id="nexHbAccessoryBonus" type="text" maxlength="3" inputmode="numeric" placeholder="+1 até +10"></label><label>Perícia beneficiada<select id="nexHbAccessorySkill"><option value="">Selecione a perícia</option></select></label></div>'+
  '<div id="nexHbArtifactExtras" class="nex-hb-paranormal-extra-fields" hidden><label>Condição de uso<input id="nexHbCursedArtifactRequirement" maxlength="120" placeholder="Ex.: Apenas em uma cena"></label></div>'+
- '<div class="nex-hb-paranormal-extra-fields"><label>Uso ou ativação<input id="nexHbParanormalActivation" maxlength="120" placeholder="Ex.: Ação padrão"></label><label>Efeito paranormal<input id="nexHbParanormalEffect" maxlength="220" placeholder="Efeito paranormal do item"></label></div></section>'+ 
+ '</section>'+ 
  '<div class="nex-hb-image-area nex52-full"><input id="nexHbImageUrl" type="hidden">'+
  '<label>Imagem<input id="nexHbImageFile" type="file" accept="image/png,image/jpeg,image/webp"></label>'+
  '<img id="nexHbImagePreview" alt="Prévia da imagem do item" hidden></div>'+
@@ -303,7 +303,6 @@
    $('nex53RitualImage').value='';$('nex53RitualFile').value='';$('nex53RitualPreview').hidden=true;
    $('nex52Category').value=tab==='paranormal'?'Itens Amaldiçoados':itemTab;
    $('nexHbCurseElement').value='Sangue';$('nexHbCurseTarget').value='Armas';
-   $('nexHbParanormalActivation').value='';$('nexHbParanormalEffect').value='';
    $('nexHbCursedAmmoType').value='Balas curtas';$('nexHbCursedAmmoBonus').value='';
    $('nexHbCursedAccessoryType').value='Anel';$('nexHbCursedAccessoryBenefit').value='';
    $('nexHbAccessoryBonus').value='';$('nexHbAccessorySkill').value='';$('nexHbBonusSkill').value='';
@@ -345,7 +344,6 @@
      $('nex52CreatureType').value=item.creatureType;
      $('nex52Category').value=canonicalCategory(item.category);
      $('nexHbCurseElement').value=item.element||'Sangue';$('nexHbCurseTarget').value=item.curseTarget||'Armas';
-     $('nexHbParanormalActivation').value=item.paranormalActivation||'';$('nexHbParanormalEffect').value=item.paranormalEffect||'';
      $('nexHbCursedAmmoType').value=item.cursedAmmoType||'Balas curtas';$('nexHbCursedAmmoBonus').value=item.cursedAmmoBonus||'';
      $('nexHbCursedAccessoryType').value=item.cursedAccessoryType||'Anel';$('nexHbCursedAccessoryBenefit').value=item.cursedAccessoryBenefit||'';
      $('nexHbAccessoryBonus').value=item.accessoryBonus?'+'+item.accessoryBonus:'';$('nexHbAccessorySkill').value=item.accessorySkill||'';
@@ -505,7 +503,7 @@
      (item.type==='item'&&item.image?'<img class="nex-hb-preview-detail" src="'+esc(item.image)+'" alt="Imagem de '+esc(item.name)+'">':'')+
      (item.type==='item'&&item.category==='Proteções'?'<h4>Defesa</h4><p>'+esc(item.protectionDefense)+'</p>':'')+
      (item.type==='item'&&item.category==='Armas'?'<h4>Características da arma</h4><p>'+esc([item.weaponProficiency,item.weaponKind,item.weaponWield,'Dano '+item.weaponDamage,'Dano secundário '+(item.weaponSecondary||'—'),'Crítico '+item.weaponCritical+' ×'+item.weaponMultiplier,'Tipo de dano '+item.weaponDamageType,'Alcance '+item.weaponRange,'Quantidade '+item.weaponQuantity].join(' · '))+'</p>':'')+
-     (item.type==='item'&&item.category==='Itens Amaldiçoados'?'<h4>Tipo paranormal</h4><p>'+esc(item.cursedKind)+'</p>'+ (item.paranormalEffect?'<p>'+esc(item.paranormalEffect)+'</p>':''):'')+
+     (item.type==='item'&&item.category==='Itens Amaldiçoados'?'<h4>Tipo paranormal</h4><p>'+esc(item.cursedKind)+'</p>':'')+
      (item.type==='item'&&item.category==='Itens Amaldiçoados'&&item.cursedKind==='Munições Amaldiçoadas'?'<p>'+esc(item.cursedAmmoType)+' · '+esc(item.cursedAmmoBonus)+'</p>':'')+
      (item.type==='item'&&item.category==='Itens Amaldiçoados'&&item.cursedKind==='Acessórios Amaldiçoados'?'<p>'+esc(item.cursedAccessoryType)+' · '+esc(item.cursedAccessoryBenefit)+'</p>':'')+
      (item.type==='item'&&item.customImprovements?.length?'<h4>Melhorias</h4><p>'+item.customImprovements.map(esc).join(' · ')+'</p>':'')+ritualDetails(item)+trailDetails(item);
@@ -643,8 +641,8 @@
      image:type==='item'?($('nexHbImageUrl').value.trim()||(!$('nexHbImagePreview').hidden?$('nexHbImagePreview').src:'')||old?.image||''):type==='ritual'?($('nex53RitualFile').files.length?(! $('nex53RitualPreview').hidden ?$('nex53RitualPreview').src:''):($('nex53RitualImage').value||(! $('nex53RitualPreview').hidden?$('nex53RitualPreview').src:''))):(old?.image||''),
      size:$('nex52Size').value,creatureType:$('nex52CreatureType').value,category:$('nex52Category').value,
      cursedKind:type==='item'&&tab==='paranormal'?cursedKind:(old?.cursedKind||'Itens Paranormais'),
-     paranormalActivation:type==='item'&&tab==='paranormal'?$('nexHbParanormalActivation').value:(old?.paranormalActivation||''),
-     paranormalEffect:type==='item'&&tab==='paranormal'?$('nexHbParanormalEffect').value:(old?.paranormalEffect||''),
+     paranormalActivation:old?.paranormalActivation||'',
+     paranormalEffect:old?.paranormalEffect||'',
      cursedAmmoType:type==='item'&&tab==='paranormal'?$('nexHbCursedAmmoType').value:(old?.cursedAmmoType||'Balas curtas'),
      cursedAmmoBonus:type==='item'&&tab==='paranormal'?$('nexHbCursedAmmoBonus').value:(old?.cursedAmmoBonus||''),
      cursedAccessoryType:type==='item'&&tab==='paranormal'?$('nexHbCursedAccessoryType').value:(old?.cursedAccessoryType||'Anel'),
