@@ -199,15 +199,15 @@ style.textContent=[
 '#nexItemEditor .nex-editor-save{background:#e53b49;color:white;font-weight:700}',
 '#nexItemEditor .nex-editor-cancel{background:transparent;color:white}',
 '#sheetScreen .nex-item-card-weapon{border:1px solid #27242b!important;background:#1e1e1e!important;border-radius:3px!important}',
-'#sheetScreen .nex-item-card-weapon>summary{border-bottom:1px solid #a34dff!important;padding:10px 52px 12px 8px!important;gap:13px!important;align-items:flex-start!important}',
-'#sheetScreen .nex-item-card-weapon .nex-item-chevron{color:#a34dff!important;font-size:24px!important;line-height:24px!important}',
+'#sheetScreen .nex-item-card-weapon>summary{border-bottom:1px solid #e44855!important;padding:10px 52px 12px 8px!important;gap:13px!important;align-items:flex-start!important}',
+'#sheetScreen .nex-item-card-weapon .nex-item-chevron{color:#e44855!important;font-size:24px!important;line-height:24px!important}',
 '#sheetScreen .nex-item-card-weapon .nex-item-main strong{font-size:14px!important;color:#fff!important;line-height:1.3!important}',
-'#sheetScreen .nex-item-card-weapon .nex-item-short{color:#a34dff!important;font-size:12px!important;gap:17px!important;margin-top:4px!important}',
+'#sheetScreen .nex-item-card-weapon .nex-item-short{color:#e44855!important;font-size:12px!important;gap:17px!important;margin-top:4px!important}',
 '#sheetScreen .nex-item-card-weapon .nex-item-short b{color:#fff!important}',
 '#sheetScreen .nex-item-card-weapon .nex-item-card-body{padding:13px 8px 11px!important;border-top:0!important}',
 '#sheetScreen .nex-item-card-weapon .nex-item-subtitle{font-size:11px!important;color:#fff!important;font-weight:700!important;font-style:italic!important;margin-bottom:5px!important}',
-'#sheetScreen .nex-item-card-weapon .nex-item-card-stats{font-size:13px!important;line-height:1.75!important;color:#a34dff!important;margin-top:0!important}',
-'#sheetScreen .nex-item-card-weapon .nex-item-card-stats span{color:#a34dff!important;font-weight:700!important}',
+'#sheetScreen .nex-item-card-weapon .nex-item-card-stats{font-size:13px!important;line-height:1.75!important;color:#e44855!important;margin-top:0!important}',
+'#sheetScreen .nex-item-card-weapon .nex-item-card-stats span{color:#e44855!important;font-weight:700!important}',
 '#sheetScreen .nex-item-card-weapon .nex-item-card-stats b{color:#fff!important;font-weight:500!important}',
 '#sheetScreen .nex-item-card-weapon .nex-item-card-description{color:#fff!important;margin:15px 0 11px!important;font-size:12px!important;line-height:1.6!important}',
 '#sheetScreen .nex-item-card-weapon .nex-item-card-buttons{margin-top:9px!important;justify-content:space-between!important}',
@@ -216,10 +216,10 @@ style.textContent=[
 '#sheetScreen .nex-item-card-weapon .nex-item-edit{color:#38bd55!important}',
 '#sheetScreen .nex-item-card-weapon .nex-item-equipped-label{right:9px!important;top:7px!important}',
 '#sheetScreen .nex-item-card-weapon .nex-item-equipped-label input:checked{background:#202022!important;border-color:#eee!important}',
-'#sheetScreen .nex-item-card-weapon .nex-item-equipped-label input:checked::after{color:#a34dff!important}',
+'#sheetScreen .nex-item-card-weapon .nex-item-equipped-label input:checked::after{color:#e44855!important}',
 '#sheetScreen #inventoryList .nex-item-card-weapon{margin:7px 0!important;padding:0!important;background:#1e1e1e!important;border:1px solid #262329!important;border-radius:3px!important;box-shadow:none!important;color:white!important;overflow:hidden!important}',
-'#sheetScreen #inventoryList .nex-item-card-weapon>summary{min-height:55px!important;box-sizing:border-box!important;display:flex!important;align-items:flex-start!important;gap:20px!important;padding:6px 53px 11px 13px!important;background:#1e1e1e!important;border:0!important;border-bottom:1px solid #a846ff!important}',
-'#sheetScreen #inventoryList .nex-item-card-weapon .nex-item-chevron{font-size:23px!important;line-height:24px!important;color:#ac4aff!important;flex:none!important;width:21px!important;display:block!important;transform:rotate(0deg)!important}',
+'#sheetScreen #inventoryList .nex-item-card-weapon>summary{min-height:55px!important;box-sizing:border-box!important;display:flex!important;align-items:flex-start!important;gap:20px!important;padding:6px 53px 11px 13px!important;background:#1e1e1e!important;border:0!important;border-bottom:1px solid #e44855!important}',
+'#sheetScreen #inventoryList .nex-item-card-weapon .nex-item-chevron{font-size:23px!important;line-height:24px!important;color:#e44855!important;flex:none!important;width:21px!important;display:block!important;transform:rotate(0deg)!important}',
 '#sheetScreen #inventoryList .nex-item-card-weapon[open] .nex-item-chevron{transform:rotate(180deg)!important}',
 '#sheetScreen #inventoryList .nex-item-card-weapon .nex-item-main{min-width:0!important;flex:1!important;display:block!important}',
 '#sheetScreen #inventoryList .nex-item-card-weapon .nex-item-main strong{color:white!important;font-weight:800!important;font-size:13px!important;line-height:1.3!important}',
@@ -232,8 +232,8 @@ style.textContent=[
 '#sheetScreen #inventoryList .nex-item-card-weapon .nex-item-card-body{padding:18px 8px 10px!important;border:0!important;background:#1e1e1e!important}',
 '#sheetScreen #inventoryList .nex-item-card-weapon .nex-item-subtitle{color:white!important;font-size:10px!important;line-height:1.4!important;margin:0 0 3px!important;font-style:normal!important;font-weight:800!important}',
 '#sheetScreen #inventoryList .nex-item-card-weapon .nex-item-subtitle em{font-style:italic!important;font-weight:500!important}',
-'#sheetScreen #inventoryList .nex-item-card-weapon .nex-item-card-stats{margin:0!important;color:#b14bff!important;font-size:13px!important;line-height:1.7!important}',
-'#sheetScreen #inventoryList .nex-item-card-weapon .nex-item-card-stats span{color:#ad48ff!important;font-weight:600!important}',
+'#sheetScreen #inventoryList .nex-item-card-weapon .nex-item-card-stats{margin:0!important;color:#e44855!important;font-size:13px!important;line-height:1.7!important}',
+'#sheetScreen #inventoryList .nex-item-card-weapon .nex-item-card-stats span{color:#e44855!important;font-weight:600!important}',
 '#sheetScreen #inventoryList .nex-item-card-weapon .nex-item-card-stats b{color:white!important;font-weight:500!important}',
 '#sheetScreen #inventoryList .nex-item-card-weapon .nex-item-card-description{font-size:12px!important;color:#fff!important;line-height:1.55!important;margin:18px 0 12px!important;white-space:pre-wrap!important}',
 '#sheetScreen #inventoryList .nex-item-card-weapon .nex-item-card-buttons{margin:0!important;padding:0!important;display:flex!important;align-items:center!important;justify-content:space-between!important}',
@@ -241,24 +241,24 @@ style.textContent=[
 '#sheetScreen #inventoryList .nex-item-card-weapon .nex-item-remove{color:#f14953!important}',
 '#sheetScreen #inventoryList .nex-item-card-weapon .nex-item-edit{color:#32b957!important}',
 "#sheetScreen #inventoryList details.nex-ref-weapon{display:block!important;position:relative!important;box-sizing:border-box!important;width:100%!important;margin:7px 0!important;padding:0!important;border:1px solid #252329!important;border-radius:3px!important;background:#1e1e1e!important;color:#fff!important;box-shadow:none!important;overflow:hidden!important;font-family:Arial,Helvetica,sans-serif!important}",
-"#sheetScreen #inventoryList details.nex-ref-weapon>.nex-ref-heading{display:flex!important;align-items:flex-start!important;justify-content:flex-start!important;gap:21px!important;position:relative!important;min-height:55px!important;box-sizing:border-box!important;padding:6px 54px 11px 13px!important;margin:0!important;border:0!important;border-bottom:1px solid #a348ef!important;border-radius:0!important;background:#1e1e1e!important;cursor:pointer!important;list-style:none!important}",
+"#sheetScreen #inventoryList details.nex-ref-weapon>.nex-ref-heading{display:flex!important;align-items:flex-start!important;justify-content:flex-start!important;gap:21px!important;position:relative!important;min-height:55px!important;box-sizing:border-box!important;padding:6px 54px 11px 13px!important;margin:0!important;border:0!important;border-bottom:1px solid #e44855!important;border-radius:0!important;background:#1e1e1e!important;cursor:pointer!important;list-style:none!important}",
 "#sheetScreen #inventoryList details.nex-ref-weapon>.nex-ref-heading::-webkit-details-marker{display:none!important}",
-"#sheetScreen #inventoryList details.nex-ref-weapon .nex-item-chevron{font-size:24px!important;line-height:24px!important;font-weight:600!important;color:#a446f5!important;display:block!important;width:21px!important;margin:0!important;padding:0!important;flex:none!important;transform:none!important;transition:none!important}",
+"#sheetScreen #inventoryList details.nex-ref-weapon .nex-item-chevron{font-size:24px!important;line-height:24px!important;font-weight:600!important;color:#e44855!important;display:block!important;width:21px!important;margin:0!important;padding:0!important;flex:none!important;transform:none!important;transition:none!important}",
 "#sheetScreen #inventoryList details.nex-ref-weapon[open] .nex-item-chevron{transform:rotate(180deg)!important}",
 "#sheetScreen #inventoryList details.nex-ref-weapon .nex-ref-titleblock{display:block!important;flex:1!important;min-width:0!important;padding:0!important;margin:0!important}",
 "#sheetScreen #inventoryList details.nex-ref-weapon .nex-ref-name{display:block!important;color:#fff!important;font-size:13px!important;line-height:17px!important;font-weight:700!important;padding:0!important;margin:0!important}",
-"#sheetScreen #inventoryList details.nex-ref-weapon .nex-ref-damage{display:flex!important;gap:16px!important;flex-wrap:wrap!important;margin-top:4px!important;padding:0!important;color:#a94cff!important;font-size:12px!important;line-height:15px!important;font-weight:400!important}",
+"#sheetScreen #inventoryList details.nex-ref-weapon .nex-ref-damage{display:flex!important;gap:16px!important;flex-wrap:wrap!important;margin-top:4px!important;padding:0!important;color:#e44855!important;font-size:12px!important;line-height:15px!important;font-weight:400!important}",
 "#sheetScreen #inventoryList details.nex-ref-weapon .nex-ref-damage b{color:#fff!important;font-size:12px!important;font-weight:700!important}",
 "#sheetScreen #inventoryList details.nex-ref-weapon .nex-ref-equip{top:8px!important;right:16px!important;width:33px!important;height:33px!important;margin:0!important}",
 "#sheetScreen #inventoryList details.nex-ref-weapon .nex-ref-equip input{box-sizing:border-box!important;width:32px!important;height:32px!important;min-width:32px!important;border-radius:4px!important;border:1px solid #e0e0e0!important;background:#1e1e1e!important;margin:0!important}",
 "#sheetScreen #inventoryList details.nex-ref-weapon .nex-ref-equip input:checked{background:#1e1e1e!important;border-color:#e0e0e0!important}",
-"#sheetScreen #inventoryList details.nex-ref-weapon .nex-ref-equip input:checked::after{color:#a44df3!important;font-size:21px!important}",
+"#sheetScreen #inventoryList details.nex-ref-weapon .nex-ref-equip input:checked::after{color:#e44855!important;font-size:21px!important}",
 "#sheetScreen #inventoryList details.nex-ref-weapon .nex-ref-body{display:block!important;padding:18px 8px 10px!important;margin:0!important;border:0!important;background:#1e1e1e!important;box-sizing:border-box!important}",
 "#sheetScreen #inventoryList details.nex-ref-weapon .nex-ref-subtitle{font-size:10px!important;line-height:14px!important;font-weight:700!important;color:#fff!important;margin:0 0 2px!important;padding:0!important;font-style:normal!important}",
 "#sheetScreen #inventoryList details.nex-ref-weapon .nex-ref-subtitle em{font-weight:500!important;font-style:italic!important}",
-"#sheetScreen #inventoryList details.nex-ref-weapon .nex-ref-fields{display:block!important;font-size:13px!important;line-height:23px!important;margin:0!important;padding:0!important;color:#a849fa!important}",
+"#sheetScreen #inventoryList details.nex-ref-weapon .nex-ref-fields{display:block!important;font-size:13px!important;line-height:23px!important;margin:0!important;padding:0!important;color:#e44855!important}",
 "#sheetScreen #inventoryList details.nex-ref-weapon .nex-ref-fields div{display:block!important;min-height:23px!important;padding:0!important;margin:0!important}",
-"#sheetScreen #inventoryList details.nex-ref-weapon .nex-ref-fields span{font-weight:500!important;color:#a849fa!important}",
+"#sheetScreen #inventoryList details.nex-ref-weapon .nex-ref-fields span{font-weight:500!important;color:#e44855!important}",
 "#sheetScreen #inventoryList details.nex-ref-weapon .nex-ref-fields b{color:#fff!important;font-weight:500!important}",
 "#sheetScreen #inventoryList details.nex-ref-weapon .nex-ref-description{color:#fff!important;font-size:12px!important;line-height:18px!important;margin:17px 0 13px!important;padding:0!important;white-space:pre-wrap!important;overflow-wrap:anywhere!important}",
 "#sheetScreen #inventoryList details.nex-ref-weapon .nex-ref-actions{display:flex!important;justify-content:space-between!important;align-items:center!important;margin:0!important;padding:0!important;gap:12px!important}",
@@ -307,7 +307,7 @@ function editorFields(d){
  }
  html+='<h3>Melhorias</h3><div class="nex-editor-inline"><input id="nexEditorNewUpgrade" placeholder="Nome da melhoria"><button type="button" data-nex-add-upgrade>Adicionar</button></div>'+
  '<input type="hidden" data-edit="upgrades" value="'+safe(d.upgrades)+'"><div id="nexEditorUpgradeList" class="nex-editor-upgrade-list" aria-live="polite"></div>'+
- '<h3>Descrição</h3><div class="nex-editor-rich"><button type="button" data-nex-rich="**"><b>B</b></button><button type="button" data-nex-rich="*"><i>I</i></button><button type="button" data-nex-rich="__"><u>U</u></button></div>'+field('description','Descrição do item (negrito roxo)',d.description,'textarea',4);
+ '<h3>Descrição</h3>'+field('description','Descrição',d.description,'textarea',4);
  return html;
 }
 function showUpgrades(){
@@ -330,7 +330,7 @@ function close(){
  lastFocus?.focus?.();
 }
 function descriptionText(s){
- return safe(s).replace(/\*\*(.+?)\*\*/gs,'<strong style="color:#ec3e4c">$1</strong>').replace(/__(.+?)__/gs,'<u>$1</u>').replace(/(?<!\*)\*([^*\n]+)\*(?!\*)/g,'<em>$1</em>');
+ return safe(s).replace(/\*\*(.+?)\*\*/gs,'<strong style="color:#e44855">$1</strong>').replace(/__(.+?)__/gs,'<u>$1</u>').replace(/(?<!\*)\*([^*\n]+)\*(?!\*)/g,'<em>$1</em>');
 }
 function card(item,expanded=false){
  const d=detail(item),weapon=d.category==='Arma',id=safe(item.id);
