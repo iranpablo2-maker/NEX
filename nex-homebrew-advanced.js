@@ -51,7 +51,7 @@
  }
  const mount=$('nex51AdvancedMount'),sheet=$('nex51SheetMount');
  if(!mount||!sheet)return;
- let tab='ameacas',skillTab='origens',ritualFilter='Todas',opened=null;
+ let tab='ameacas',skillTab='origens',ritualFilter='Todas',itemTab='Armas',opened=null;
  const titleFor=t=>t==='ameacas'?'Ameaças':t==='habilidades'?'Habilidades':t==='rituais'?'Rituais':'Itens';
  const currentTypes=()=>tab==='habilidades'?SKILL_TABS[skillTab]:TABS[tab];
  const defaultType=()=>({ameacas:'ameaca',habilidades:({origens:'origem',paranormais:'poder_paranormal',gerais:'poder_geral',trilhas:'trilha'})[skillTab],rituais:'ritual',itens:'item'})[tab];
@@ -69,6 +69,7 @@
  '<button type="button" data-nex53-skill="gerais" role="tab" aria-selected="false">Poderes Gerais</button>'+
  '<button type="button" data-nex53-skill="trilhas" role="tab" aria-selected="false">Trilhas</button></div>'+
  '<div class="nex53-ritual-filter" id="nex53RitualFilter" hidden aria-label="Tipos de ritual"></div>'+ 
+ '<div class="nex-hb-item-tabs" id="nexHbItemTabs" role="tablist" aria-label="Tipos de itens homebrew" hidden>'+ITEM_CATEGORIES.map(c=>'<button type="button" role="tab" data-nex-hb-item-tab="'+esc(c)+'" aria-selected="false">'+esc(c)+'</button>').join('')+'</div>'+ 
  '<div class="nex52-toolbar"><strong id="nex52Count">Homebrew 0/50</strong><button type="button" id="nex52Add">Adicionar</button></div>'+
  '<label class="nex52-search" for="nex51Search"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><circle cx="10.7" cy="10.7" r="7.2"/><path d="m16 16 5 5"/></svg><input type="search" id="nex51Search" placeholder="Buscar" autocomplete="off" aria-label="Buscar homebrew"></label>'+
  '<section id="nex52Editor" class="nex52-editor" hidden><div class="nex52-editor-head"><strong id="nex52EditorTitle">Adicionar homebrew</strong><button type="button" id="nex52CloseEditor" aria-label="Fechar editor">×</button></div>'+
@@ -158,6 +159,7 @@
    $('nex52RitualFields').hidden=type!=='ritual';
    toggleRitualDamageFields();
    $('nex52ItemFields').hidden=type!=='item';
+   if(type==='item')$('nex52Category').value=$('nex51Edit').value?$('nex52Category').value:itemTab;
  }
  const FALLBACK_SKILLS=['Acrobacia','Adestramento','Artes','Atletismo','Atualidades','Ciências','Crime','Diplomacia','Enganação','Fortitude','Furtividade','Iniciativa','Intimidação','Intuição','Investigação','Luta','Medicina','Ocultismo','Percepção','Pilotagem','Pontaria','Profissão','Reflexos','Religião','Sobrevivência','Tática','Tecnologia','Vontade'];
  function loadSkillChoices(){
@@ -170,6 +172,7 @@
    const list=$('nex52ImprovementList');if(!list)return;
    list.innerHTML=customItemImprovements.length?customItemImprovements.map((name,i)=>'<span class="nex-hb-improvement-chip">'+esc(name)+' <button type="button" data-nex52-improvement-remove="'+i+'" aria-label="Remover '+esc(name)+'">×</button></span>').join(''):'<small>Nenhuma melhoria homebrew adicionada.</small>';
  }
+ function canonicalCategory(value){return ITEM_CATEGORIES.includes(value)?value:({'Arma':'Armas','Munição':'Munições','Proteção':'Proteções','Item Amaldiçoado':'Itens Amaldiçoados'}[value]||'Geral');}
  function resetForm(){
    $('nex51Form').reset();$('nex51Edit').value='';
    customItemImprovements=[];renderItemImprovements();
@@ -180,6 +183,7 @@
    $('nex53RitualType').value='Suporte';
    $('nex53DiscenteCircle').value='2';$('nex53VerdadeiroCircle').value='3';
    $('nex53RitualImage').value='';$('nex53RitualFile').value='';$('nex53RitualPreview').hidden=true;
+   $('nex52Category').value=itemTab;
    editorFields();
  }
  function closeEditor(){$('nex52Editor').hidden=true;resetForm();}
@@ -206,7 +210,7 @@
      $('nex53ParanormalElement').value=['Sangue','Morte','Energia','Conhecimento','Medo'].includes(item.element)?item.element:'Sangue';$('nex51Cost').value=item.cost;
      $('nex52VD').value=item.vd;$('nex52Size').value=item.size;
      $('nex52CreatureType').value=item.creatureType;
-     $('nex52Category').value=ITEM_CATEGORIES.includes(item.category)?item.category:({'Arma':'Armas','Munição':'Munições','Proteção':'Proteções','Item Amaldiçoado':'Itens Amaldiçoados'}[item.category]||'Geral');
+     $('nex52Category').value=canonicalCategory(item.category);
      customItemImprovements=Array.isArray(item.customImprovements)?[...item.customImprovements]:[];renderItemImprovements();
      if(item.type==='origem'){$('nex55Skill1').value=item.skills?.[0]||'';$('nex55Skill2').value=item.skills?.[1]||'';}
      if(item.type==='trilha')TRAIL_NEX.forEach((n,i)=>{const step=(item.trailAbilities||[])[i]||{};$('nex53TrailName'+n).value=step.name||'';$('nex53TrailDescription'+n).value=step.description||'';});
@@ -259,7 +263,9 @@
    const records=read(),types=currentTypes();
    $('nex53SkillTabs').hidden=tab!=='habilidades';
    mount.querySelectorAll('[data-nex53-skill]').forEach(button=>{const selected=tab==='habilidades'&&button.dataset.nex53Skill===skillTab;button.setAttribute('aria-selected',String(selected));button.classList.toggle('active',selected);});
-   const visible=records.filter(x=>types.includes(x.type));
+   const visible=records.filter(x=>types.includes(x.type)&&(tab!=='itens'||canonicalCategory(x.category)===itemTab));
+   $('nexHbItemTabs').hidden=tab!=='itens';
+   mount.querySelectorAll('[data-nex-hb-item-tab]').forEach(button=>{const active=tab==='itens'&&button.dataset.nexHbItemTab===itemTab;button.classList.toggle('active',active);button.setAttribute('aria-selected',String(active));});
    $('nex53RitualFilter').hidden=tab!=='rituais';
    if(tab==='rituais')$('nex53RitualFilter').innerHTML=['Todas','Dano','Suporte','Cura'].map(t=>'<button type="button" data-ritual-filter="'+t+'" aria-pressed="'+String(t===ritualFilter)+'">'+t+'</button>').join('');
    const query=$('nex51Search').value.trim().toLocaleLowerCase('pt-BR');
@@ -352,6 +358,11 @@
  $('nex52Detail').addEventListener('close',()=>{opened=null;});
  $('nex51Search').addEventListener('input',renderLibrary);
  $('nex53RitualFilter').addEventListener('click',e=>{const t=e.target.closest('[data-ritual-filter]');if(!t)return;ritualFilter=t.dataset.ritualFilter;renderLibrary();});
+ $('nexHbItemTabs').addEventListener('click',e=>{
+   const button=e.target.closest('[data-nex-hb-item-tab]');if(!button)return;
+   itemTab=button.dataset.nexHbItemTab;
+   $('nex51Search').value='';closeEditor();renderLibrary();
+ });
  mount.querySelector('.nex52-tabs').addEventListener('click',e=>{
    const btn=e.target.closest('[data-nex52-tab]');if(!btn)return;
    tab=btn.dataset.nex52Tab;ritualFilter='Todas';$('nex51Search').value='';closeEditor();renderLibrary();
@@ -391,6 +402,7 @@
      }
    }
    if(!editing&&all.length>=300){message('Limite total da biblioteca atingido.');return;}
+   if(type==='item')$('nex52Category').value=itemTab;
    const record=normalize({
      id:editing||'hb51_'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,9),
      type,name,description:$('nex51Description').value,requirements:$('nex51Requirements').value,
@@ -436,7 +448,7 @@
      if(menu){menu.hidden=!show;btn.setAttribute('aria-expanded',String(show));}
      return;
    }
-   if(btn.dataset.nex52Edit){openEditor(item);return;}
+   if(btn.dataset.nex52Edit){if(item.type==='item')itemTab=canonicalCategory(item.category);openEditor(item);return;}
    if(btn.dataset.nex52Delete){
      if(!confirm('Excluir "'+item.name+'" da biblioteca? As fichas que já receberam este conteúdo não serão alteradas.'))return;
      try{write(read().filter(x=>x.id!==id));renderLibrary();message('Homebrew excluído da biblioteca.');}
