@@ -36,6 +36,11 @@
    category:cut(x.category||'Geral',70),
    paranormalActivation:cut(x.paranormalActivation||'',120),
    paranormalEffect:cut(x.paranormalEffect||'',220),
+   cursedAmmoType:cut(x.cursedAmmoType||'Balas curtas',80),
+   cursedAmmoBonus:cut(x.cursedAmmoBonus||'',60),
+   cursedAccessoryType:cut(x.cursedAccessoryType||'Anel',80),
+   cursedAccessoryBenefit:cut(x.cursedAccessoryBenefit||'',100),
+   cursedArtifactRequirement:cut(x.cursedArtifactRequirement||'',120),
    cursedKind:CURSED_KINDS.includes(x.cursedKind)?x.cursedKind:'Itens Paranormais',
    curseTarget:cut(x.curseTarget||'Armas',50),
    improvementTarget:IMPROVEMENT_TARGETS.includes(x.improvementTarget)?x.improvementTarget:'Armas',
@@ -156,7 +161,11 @@
  '<label>Espaços*<input type="number" min="0" max="100" data-hb-sync="nexHbSpaces" value="1"></label></div></section>'+
  '<section class="nex-hb-special-form" id="nexHbOtherForm" hidden><div class="nex-hb-general-fields"><label>Categoria*<select data-hb-sync="nexHbTier"><option value="0">0</option><option>I</option><option>II</option><option>III</option><option>IV</option></select></label><label>Espaços*<input type="number" min="0" max="100" data-hb-sync="nexHbSpaces" value="1"></label></div></section>'+
  '<section id="nexHbSharedImprovements" class="nex52-full nex-hb-item-improvements" hidden><div class="nex-hb-improvement-heading"><strong>Melhorias</strong><button type="button" id="nex52ImprovementAdd">Adicionar</button></div><input type="text" id="nex52ImprovementName" maxlength="80" placeholder="Nome da melhoria" aria-label="Nome da melhoria"><div id="nex52ImprovementList" class="nex-hb-improvement-list" aria-live="polite"></div></section>'+
- '<section class="nex-hb-special-form" id="nexHbParanormalExtras" hidden><strong id="nexHbParanormalKindLabel">Itens Paranormais</strong><div class="nex-hb-paranormal-extra-fields"><label>Uso ou ativação<input id="nexHbParanormalActivation" maxlength="120" placeholder="Ex.: Ação padrão"></label><label>Efeito adicional<input id="nexHbParanormalEffect" maxlength="220" placeholder="Efeito paranormal do item"></label></div></section>'+ 
+ '<section class="nex-hb-special-form" id="nexHbParanormalExtras" hidden><strong id="nexHbParanormalKindLabel">Itens Paranormais</strong>'+
+ '<div id="nexHbAmmoExtras" class="nex-hb-paranormal-extra-fields" hidden><label>Tipo de munição<input id="nexHbCursedAmmoType" maxlength="80" placeholder="Ex.: Balas curtas"></label><label>Dano ou efeito adicional<input id="nexHbCursedAmmoBonus" maxlength="60" placeholder="Ex.: 1d6 de Energia"></label></div>'+
+ '<div id="nexHbAccessoryExtras" class="nex-hb-paranormal-extra-fields" hidden><label>Tipo de acessório<input id="nexHbCursedAccessoryType" maxlength="80" placeholder="Ex.: Anel"></label><label>Benefício passivo<input id="nexHbCursedAccessoryBenefit" maxlength="100" placeholder="Ex.: +2 em Percepção"></label></div>'+
+ '<div id="nexHbArtifactExtras" class="nex-hb-paranormal-extra-fields" hidden><label>Condição de uso<input id="nexHbCursedArtifactRequirement" maxlength="120" placeholder="Ex.: Apenas em uma cena"></label></div>'+
+ '<div class="nex-hb-paranormal-extra-fields"><label>Uso ou ativação<input id="nexHbParanormalActivation" maxlength="120" placeholder="Ex.: Ação padrão"></label><label>Efeito paranormal<input id="nexHbParanormalEffect" maxlength="220" placeholder="Efeito paranormal do item"></label></div></section>'+ 
  '<div class="nex-hb-image-area nex52-full"><input id="nexHbImageUrl" type="hidden">'+
  '<label>Imagem<input id="nexHbImageFile" type="file" accept="image/png,image/jpeg,image/webp"></label>'+
  '<img id="nexHbImagePreview" alt="Prévia da imagem do item" hidden></div>'+
@@ -234,6 +243,9 @@
    $('nexHbProtectionForm').hidden=!protection;
    $('nexHbOtherForm').hidden=type!=='item'||general||weapon||protection||cursed;
    $('nexHbParanormalExtras').hidden=type!=='item'||tab!=='paranormal'||weapon||protection;
+   $('nexHbAmmoExtras').hidden=cursedKind!=='Munições Amaldiçoadas';
+   $('nexHbAccessoryExtras').hidden=cursedKind!=='Acessórios Amaldiçoados';
+   $('nexHbArtifactExtras').hidden=cursedKind!=='Itens Paranormais';
    $('nexHbSharedImprovements').hidden=type!=='item'||!(general||protection||weapon);
    ['nexHbProtectionDefense','nexHbWeaponDamage','nexHbWeaponCritical','nexHbWeaponMultiplier'].forEach(id=>{ $(id).required=protection&&id==='nexHbProtectionDefense'||weapon&&id!=='nexHbProtectionDefense'; });
    $('nex52Editor').dataset.itemKind=type==='item'?(cursed?'cursed':general?'general':'other'):'';
@@ -269,6 +281,9 @@
    $('nex52Category').value=tab==='paranormal'?'Itens Amaldiçoados':itemTab;
    $('nexHbCurseElement').value='Sangue';$('nexHbCurseTarget').value='Armas';
    $('nexHbParanormalActivation').value='';$('nexHbParanormalEffect').value='';
+   $('nexHbCursedAmmoType').value='Balas curtas';$('nexHbCursedAmmoBonus').value='';
+   $('nexHbCursedAccessoryType').value='Anel';$('nexHbCursedAccessoryBenefit').value='';
+   $('nexHbCursedArtifactRequirement').value='';
    $('nexHbImprovementTarget').value='Armas';
    $('nexHbBonusType').value='ataque';$('nexHbBonusValue').value='2';
    $('nexHbProtectionDefense').value='1';
@@ -307,6 +322,9 @@
      $('nex52Category').value=canonicalCategory(item.category);
      $('nexHbCurseElement').value=item.element||'Sangue';$('nexHbCurseTarget').value=item.curseTarget||'Armas';
      $('nexHbParanormalActivation').value=item.paranormalActivation||'';$('nexHbParanormalEffect').value=item.paranormalEffect||'';
+     $('nexHbCursedAmmoType').value=item.cursedAmmoType||'Balas curtas';$('nexHbCursedAmmoBonus').value=item.cursedAmmoBonus||'';
+     $('nexHbCursedAccessoryType').value=item.cursedAccessoryType||'Anel';$('nexHbCursedAccessoryBenefit').value=item.cursedAccessoryBenefit||'';
+     $('nexHbCursedArtifactRequirement').value=item.cursedArtifactRequirement||'';
      $('nexHbImprovementTarget').value=item.improvementTarget||'Armas';
      $('nexHbBonusType').value=item.bonusType||'ataque';$('nexHbBonusValue').value=String(item.bonusValue??2);
      customItemImprovements=Array.isArray(item.customImprovements)?[...item.customImprovements]:[];renderItemImprovements();
@@ -461,6 +479,8 @@
      (item.type==='item'&&item.category==='Proteções'?'<h4>Defesa</h4><p>'+esc(item.protectionDefense)+'</p>':'')+
      (item.type==='item'&&item.category==='Armas'?'<h4>Características da arma</h4><p>'+esc([item.weaponProficiency,item.weaponKind,item.weaponWield,'Dano '+item.weaponDamage,'Dano secundário '+(item.weaponSecondary||'—'),'Crítico '+item.weaponCritical+' ×'+item.weaponMultiplier,'Tipo de dano '+item.weaponDamageType,'Alcance '+item.weaponRange,'Quantidade '+item.weaponQuantity].join(' · '))+'</p>':'')+
      (item.type==='item'&&item.category==='Itens Amaldiçoados'?'<h4>Tipo paranormal</h4><p>'+esc(item.cursedKind)+'</p>'+ (item.paranormalEffect?'<p>'+esc(item.paranormalEffect)+'</p>':''):'')+
+     (item.type==='item'&&item.category==='Itens Amaldiçoados'&&item.cursedKind==='Munições Amaldiçoadas'?'<p>'+esc(item.cursedAmmoType)+' · '+esc(item.cursedAmmoBonus)+'</p>':'')+
+     (item.type==='item'&&item.category==='Itens Amaldiçoados'&&item.cursedKind==='Acessórios Amaldiçoados'?'<p>'+esc(item.cursedAccessoryType)+' · '+esc(item.cursedAccessoryBenefit)+'</p>':'')+
      (item.type==='item'&&item.customImprovements?.length?'<h4>Melhorias</h4><p>'+item.customImprovements.map(esc).join(' · ')+'</p>':'')+ritualDetails(item)+trailDetails(item);
    targetOptions();$('nex52Apply').hidden=(item.type==='melhoria'||item.type==='maldicao');$('nex51Target').closest('label').hidden=item.type==='melhoria'||item.type==='maldicao';const d=$('nex52Detail');if(typeof d.showModal==='function')d.showModal();else d.setAttribute('open','');
  }
@@ -592,6 +612,11 @@
      cursedKind:type==='item'&&tab==='paranormal'?cursedKind:(old?.cursedKind||'Itens Paranormais'),
      paranormalActivation:type==='item'&&tab==='paranormal'?$('nexHbParanormalActivation').value:(old?.paranormalActivation||''),
      paranormalEffect:type==='item'&&tab==='paranormal'?$('nexHbParanormalEffect').value:(old?.paranormalEffect||''),
+     cursedAmmoType:type==='item'&&tab==='paranormal'?$('nexHbCursedAmmoType').value:(old?.cursedAmmoType||'Balas curtas'),
+     cursedAmmoBonus:type==='item'&&tab==='paranormal'?$('nexHbCursedAmmoBonus').value:(old?.cursedAmmoBonus||''),
+     cursedAccessoryType:type==='item'&&tab==='paranormal'?$('nexHbCursedAccessoryType').value:(old?.cursedAccessoryType||'Anel'),
+     cursedAccessoryBenefit:type==='item'&&tab==='paranormal'?$('nexHbCursedAccessoryBenefit').value:(old?.cursedAccessoryBenefit||''),
+     cursedArtifactRequirement:type==='item'&&tab==='paranormal'?$('nexHbCursedArtifactRequirement').value:(old?.cursedArtifactRequirement||''),
      curseTarget:type==='maldicao'?$('nexHbCurseTarget').value:(old?.curseTarget||'Armas'),
      improvementTarget:type==='melhoria'?$('nexHbImprovementTarget').value:(old?.improvementTarget||'Armas'),
      bonusType:type==='melhoria'?$('nexHbBonusType').value:(old?.bonusType||'ataque'),
