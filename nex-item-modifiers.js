@@ -96,5 +96,5 @@ function calculate(item){
  effectiveSpaces:Math.max(0,spaces-reduction+growth),
  notes:mods.filter(x=>x.manual).map(x=>x.note)};
 }
-window.NEX_ITEM_MODS=Object.freeze({improvements,curses,elements,order,typeOf,eligible,options,calculate});
+window.NEX_ITEM_MODS=Object.freeze({improvements,curses,elements,order,typeOf,eligible,options,calculate,oppressive});
 })();
