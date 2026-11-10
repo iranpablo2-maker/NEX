@@ -10,7 +10,7 @@ const mapCategory={'Armas':'Arma','Munições':'Munição','Proteções':'Prote�
 const items=[];
 function put(name,section,description,stats,spaces){
  if(items.some(x=>norm(x.name)===norm(name)&&x.section===section))return;
- items.push({name,section,description:String(description||''),stats:stats||[],spaces:spaces||1});
+ items.push({name,section,description:String(description||''),subtitle:/^Arma\s+(?:simples|t[aá]tica|pesada)\s*·/i.test(String(description||''))?String(description):'',stats:stats||[],spaces:spaces||1});
 }
 put('Acha','Armas','Arma tática · Corpo a corpo · Duas mãos',[['Categoria','I'],['Dano','1d12'],['Crítico','×3'],['Tipo','Corte'],['Espaços','2']],2);
 put('Arco','Armas','Arma simples · Disparo · Duas mãos',[['Categoria','0'],['Dano','1d6'],['Crítico','×3'],['Alcance','Médio'],['Tipo','Perfuração'],['Espaços','2'],['Munição','Flechas']],2);
@@ -35,7 +35,8 @@ for(const model of (typeof NEX12_CATALOG!=='undefined'?NEX12_CATALOG:[])){
  put(name,section,kind+'. '+desc,[['Espaços',String(spaces)]],spaces);
 }
 for(const record of [...(window.NEX_ITEM_BOOKS||[]),...(window.NEX_BASE_WEAPONS||[]),...(window.NEX_ITEM_COMPLEMENTS?.items||[]),...(window.NEX_ITEM_VARIANTS||[]),...(window.NEX_MISSING_EQUIPMENT||[]),...(window.NEX_BASE_CURSED||[])]){
- const item={name:record.name,section:record.section,description:record.description||'',stats:record.stats||[],spaces:record.spaces??1,source:record.source||'Livro de regras'};
+ const existingSubtitle=items.find(x=>norm(x.name)===norm(record.name)&&x.section===record.section)?.subtitle||'';
+ const item={name:record.name,section:record.section,description:record.description||'',subtitle:record.subtitle||existingSubtitle,stats:record.stats||[],spaces:record.spaces??1,source:record.source||'Livro de regras'};
  const existing=items.find(x=>norm(x.name)===norm(item.name)&&x.section===item.section);
  if(existing)Object.assign(existing,item);
  else items.push(item);
@@ -167,11 +168,12 @@ function add(index){
  if(state.items.length>=100){toast('Limite de 100 itens no inventário.');return;}
  
  const getStat=(name)=>String((item.stats||[]).find(x=>norm(x[0])===norm(name))?.[1]||'');
- const s=String(item.subtitle||'').split('·').map(x=>x.trim());
+ const bestWeapon=(window.NEX_BASE_WEAPONS||[]).find(x=>norm(x.name)===norm(item.name));
+ const s=String(bestWeapon?.subtitle||item.subtitle||'').split('·').map(x=>x.trim());
  const crit=getStat('Crítico').replace(/\s/g,'');
  const nexInfo={
    name:item.name,category:mapCategory[item.section],quantity:1,spaces:item.spaces,
-   proficiency:({'simples':'Armas Simples','tatica':'Armas Táticas','pesada':'Armas Pesadas'}[norm(s[0])]||s[0]||''),
+   proficiency:(()=>{const p=norm(s[0]);return /(?:^|\s)tatica(?:$|\s)/.test(p)?'Armas Táticas':/(?:^|\s)simples(?:$|\s)/.test(p)?'Armas Simples':/(?:^|\s)pesada(?:$|\s)/.test(p)?'Armas Pesadas':''})(),
    kind:s[1]||'',wield:s[2]||'',damage:getStat('Dano'),secondary:'',
    critical:crit.match(/^\d{2}/)?.[0]||'20',
    multiplier:crit.match(/[x×](\d+)/i)?.[1]||'2',damageType:getStat('Tipo'),
