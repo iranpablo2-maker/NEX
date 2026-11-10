@@ -468,5 +468,6 @@ by('nexEditorForm').addEventListener('submit',event=>{
 });
 document.addEventListener('keydown',event=>{if(!modal.hidden&&event.key==='Escape'){event.preventDefault();close();}});
 renderInventory();
+renderAttacks();
 window.NEX_ITEM_EDITOR={open,enhance};
 })();
