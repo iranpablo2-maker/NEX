@@ -303,6 +303,9 @@ function editorFields(d){
    field('proficiency','Proficiência',d.proficiency)+field('kind','Tipo',d.kind)+
    field('wield','Empunhadura',d.wield,'text',2)+
    field('damage','Dano*',d.damage)+field('secondary','Dano secundário',d.secondary)+
+   '<label class="nex-editor-field"><span>Munição vinculada (bônus no Combate)</span><select data-edit="ammoItemId"><option value="">Nenhuma</option>'+
+   (state.items||[]).filter(x=>x.category==='Munição').map(x=>'<option value="'+safe(x.id)+'"'+(String(d.ammoItemId||'')===String(x.id)?' selected':'')+'>'+safe(x.name)+'</option>').join('')+
+   '</select></label>'+
    select('secondaryType','Tipo do dano secundário',d.secondaryType||'Normal',['Normal','Sangue','Morte','Energia','Conhecimento','Medo'])+
    field('critical','Crítico*',d.critical)+field('multiplier','Multiplicador*',d.multiplier)+
    field('damageType','Tipo de Dano',d.damageType,'text',2)+field('range','Alcance',d.range,'text',2)+
@@ -442,7 +445,7 @@ function card(item,expanded=false){
  '<summary><span class="nex-item-chevron" aria-hidden="true">⌄</span>'+
  '<span class="nex-item-main"><strong>'+safe(d.name||'Item')+'</strong>'+
  '<span class="nex-item-short">'+quick.filter(x=>x[1]!==undefined&&x[1]!==null&&String(x[1])!=='').map(x=>'<span>'+safe(x[0])+': <b>'+safe(x[1])+'</b></span>').join('')+'</span></span>'+
- '</summary>'+(weapon?'<label class="nex-item-equipped-label" title="Equipar arma" aria-label="Equipar arma: '+safe(d.name)+'"><input type="checkbox" data-nex-item-equipped="'+id+'" aria-label="Equipar '+safe(d.name)+'" '+(item.equipped?'checked':'')+'></label>':'')+
+ '</summary>'+(weapon||d.category==='Proteção'||window.NEX_ITEM_MODS?.typeOf(d)==='accessory'?'<label class="nex-item-equipped-label" title="Equipar ou vestir item" aria-label="Equipar item: '+safe(d.name)+'"><input type="checkbox" data-nex-item-equipped="'+id+'" aria-label="Equipar '+safe(d.name)+'" '+(item.equipped?'checked':'')+'></label>':'')+
  '<div class="nex-item-card-body"><div class="nex-item-subtitle">'+safe(subtitle)+'</div>'+
  '<div class="nex-item-card-stats">'+stats.filter(x=>x[1]!==undefined&&x[1]!==null&&String(x[1]).trim()!=='').map(x=>'<div>'+safe(x[0])+': <b>'+safe(x[1])+'</b></div>').join('')+'</div>'+
  (d.upgrades?'<div class="nex-item-card-description"><b>Anotações:</b> '+descriptionText(d.upgrades)+'</div>':'')+img+
@@ -482,11 +485,13 @@ document.addEventListener('change',event=>{
  const checkbox=event.target.closest?.('[data-nex-item-equipped]');
  if(!checkbox)return;
  const item=find(checkbox.dataset.nexItemEquipped);if(!item)return;
- if(detail(item).category!=='Arma'){checkbox.checked=false;return;}
+ const category=detail(item).category;
+ if(category!=='Arma'&&category!=='Proteção'&&window.NEX_ITEM_MODS?.typeOf(detail(item))!=='accessory'){checkbox.checked=false;return;}
  item.equipped=checkbox.checked;
  renderAttacks();
+ if(typeof renderStats==='function')renderStats();
  save();
- toast(checkbox.checked?'Arma equipada e adicionada ao Combate.':'Arma retirada do Combate.');
+ toast(checkbox.checked?'Item equipado. Seus bônus ativos foram atualizados.':'Item desequipado.');
 });
 document.addEventListener('click',event=>{
  const button=event.target.closest('[data-nex-item-edit],[data-nex-item-remove]');
@@ -498,7 +503,7 @@ document.addEventListener('click',event=>{
   if(item){
    state.items=state.items.filter(x=>String(x.id)!==String(item.id));
    for(const attack of (state.attacks||[]))if(String(attack.linkedItemId||'')===String(item.id))delete attack.linkedItemId;
-   save();renderInventory();renderAttacks();toast('Item removido.');
+   save();renderInventory();renderAttacks();if(typeof renderStats==='function')renderStats();toast('Item removido.');
   }
  }
 });
@@ -547,9 +552,17 @@ function weaponData(item){
  const value=Math.max(0,Math.min(20,Math.trunc(Number(state.attributes?.[attribute])||0)));
  const bonus=(Number(skill.training)||0)+(Number(skill.other)||0)+(Number(d.attackBonus)||0);
  const dieCount=value===0?2:Math.max(1,value);
- const {threshold:baseThreshold,multiplier}=weaponCriticalSettings(d);
+ const {threshold:baseThreshold,multiplier:baseMultiplier}=weaponCriticalSettings(d);
  const threshold=Math.max(1,baseThreshold-(Number(d.criticalRangeBonus)||0));
- return {d,skillName,attribute,bonus,dieCount,value,threshold,multiplier};
+ const ammo=(state.items||[]).find(x=>x.category==='Munição'&&String(x.id)===String(d.ammoItemId||''));
+ const ammoInfo=ammo?detail(ammo):null;
+ const multiplier=baseMultiplier+(Number(ammoInfo?.criticalMultiplierBonus)||0);
+ const extraDamage=[d.extraDamage,ammoInfo?.extraDamage].filter(Boolean).join('+');
+ let damageExpression=String(d.damage||'');
+ const extraDice=Number(d.extraDamageDice)||0;
+ // Bônus de dado: ajusta somente a fórmula de jogo, sem alterar o valor-base salvo.
+ if(extraDice>0)damageExpression=damageExpression.replace(/^(\d*)d(\d+)/i,(full,count,faces)=>(Number(count||1)+extraDice)+'d'+faces);
+ return {d,skillName,attribute,bonus,dieCount,value,threshold,multiplier,ammoInfo,extraDamage,damageExpression};
 }
 const weaponDieSvg='<img class="nex-combat-d20-image" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAG4AAAB+AQAAAADt9hnNAAAEL0lEQVR42m2VTYhbVRTHf++8R5KWMIky2CBj5hVtcVEkxS4GrX2vC7G49AOqC5udulC78mOVWypOEbFdVpBOFqIUEbooSMHSNx1pu1AmCEoXLX2xgw22i8QUTcabd1y895IpeDeXP/97z7n/83EPAOCadJd02xaydS01HoDxQnYJAKd6YbKFLJRXzRa4sL8fb7E8H5YOb2FXbVKemXJ3PSvJpSk5V7fajaZ3t78OlXNTthlbtbUcOWuRVS3khwsvXofexfwh5af3Wo0bUQYb77tWR6dzUd17FdtK6rmo5RtBXNHKciZn8VKCk1S6Bjx4+Ei0d2lp56lKKuqoVWd4wFW7BILz8mRcx7lp3N8A3IoavbNii7oGwrbG5CQx7gXqEcKecOMopQZL/o5zQDcpqq7cUT2W1BDn67+WUv/vHXwXCouuqgZDVXXXjDzy2kKu++Z3Te+VbTFoWADqX0ZEFVW1rbGqalTGqKpatarraj0pAkwQwwjXyJZETXO0iRMxmcI+QGwwUuYyeNAkBF8ggBgYOwYEBUrQuDYHSIGGoQM1GmgoJIeSNFNRatn717ShvBtAPBgpQA0SRIkwIRQAjACDxIDLKiBImEafyAPOtKw7VtWk9aMz3hDAS9nHb6USSpuAE9k2iJMLYu74JkIkVQ+gqR4IOH5vYMZhgxoIBkOn3evQaYIQE3aifjyqwf3UiekWsZD79Ht2zZSfCnoIIaol4x3gIXoIfQghkyRAYsD4bgp9cPqZJkQ/JO0oMVQRYAQfZ3kSp5rFOovkD9xnswQ0aSMWYFQFoIf8bejRbwINLKKlNJeA7kZ4gw6rmJgaLiJg+ISpIw+fsWcvU8YYoaWhwnOGQjJCSk2mwicRXyRWE9y4otZ2v/JcrOso4wZMQFyOARQjxFQReqNp3W03QjevQ+eyhxCdz8nDIJyYFakiWn0rRw0n9Bx/4GSwODKszL4PVzeESUWzdRGE/Us5e83AyuB2ztYXN4Rf5nI3O/sIPxUzmITn4cyibaVnR9rdkKQpwBhw2AGnVAPVOFAdqn1ChipNiGMY+m4sXqLnIAL+6GGkROE6FPuwttkOvX18NA8l4NStIz/LO0LaKerXdI/cOxZ9kL2i+MyT8mf7oGcYVbEH/bd9nOWoHmi0qIO54lXg9lgDjQId1t9cQHi1QBMf7v++ax4oB6N1vRLouvYjhH/iE6dxYjoMI8C54g716qIu6ucg6LefFVDU109B4JvryqN+EiaH0v4JbKvfGukg/VXdk0mgOtCraXlP9jmA8HwWwr26ononyb/chda66vooznrhbrsGnbvtvAqWh6rBlbxT9EYBDV+aDoJfXZLJbIqU97dG42iW9nowuD2bOMlZ5OyWaTX3wmOtDYC0amrfT+b9Gbt5sXZtZgr3ePF/B19ef0cfgAvRAzP0bgb/AwCO4zlQNWGBAAAAAElFTkSuQmCC" alt="Dado d20" draggable="false">';
 const collapsedWeapons=new Set();
@@ -572,7 +585,8 @@ renderAttacks=function(){
     '<button type="button" class="nex-combat-die-button" data-nex-weapon-roll="'+id+'" aria-label="Rolar ataque e dano de '+safe(d.name||item.name)+'" title="Rolar ataque e dano">'+weaponDieSvg+'</button>'+
    '</div>'+
    '<div class="nex-combat-weapon-details" '+(collapsed?'hidden':'')+'>'+
-     '<div class="nex-combat-weapon-summary">Dano: <b>'+safe(damage||'—')+'</b>　Crítico: <b>'+safe(w.threshold)+'–20 ×'+safe(w.multiplier)+'</b></div>'+
+     '<div class="nex-combat-weapon-summary">Dano: <b>'+safe(w.damageExpression||damage||'—')+'</b>　Crítico: <b>'+safe(w.threshold)+'–20 ×'+safe(w.multiplier)+'</b></div>'+
+    (w.ammoInfo?'<div><span class="nex-combat-stat-label">Munição:</span> <b>'+safe(w.ammoInfo.name)+(w.extraDamage?' · +'+safe(w.extraDamage):'')+'</b></div>':'')+
     '<div><span class="nex-combat-stat-label">Ataque Bônus:</span> <b>'+safe((bonus>=0?'+':'')+bonus)+'</b> ('+safe(w.skillName)+')</div>'+
     (String(d.secondary||'').trim()&&!/^(?:—|-)$/i.test(String(d.secondary).trim())?'<div class="nex-secondary-damage-line"><span class="nex-combat-stat-label">Dano secundário:</span> <b>'+safe(d.secondary)+' ('+safe(d.secondaryType||'Normal')+')</b> <button type="button" class="nex-secondary-roll-button" data-nex-secondary-roll="'+id+'" aria-label="Rolar dano secundário de '+safe(d.name||item.name)+'">Rolar dano secundário</button></div>':'')+
     '<div><span class="nex-combat-stat-label">Tipo de Dano:</span> <b>'+safe(d.damageType||'—')+'</b></div>'+
@@ -653,13 +667,15 @@ document.addEventListener('click',e=>{
  const secondaryExpression=String(w.d.secondary||'').trim().replace(/\s+/g,'');
  const hasSecondary=secondaryExpression!==''&&!/^(?:—|-)$/i.test(secondaryExpression);
  // Crítico multiplica apenas os dados do dano principal, mantendo o secundário independente.
- const damage=weaponDice(w.d.damage,critical?w.multiplier:1);
+ const damage=weaponDice(w.damageExpression,critical?w.multiplier:1);
  if(!damage){toast('Configure um dano principal válido para esta arma no inventário.');return;}
  const secondary=hasSecondary?weaponDice(secondaryExpression,1):null;
+ const extra=String(w.extraDamage||'').trim()?weaponDice(w.extraDamage,1):null;
+ if(w.extraDamage&&!extra){toast('Dano extra do item inválido. Confira a melhoria da munição.');return;}
  if(hasSecondary&&!secondary){toast('Dano secundário inválido. Use, por exemplo, 1d6 ou 2d4+2.');return;}
  const originBonus=typeof nex12Orig==='function'?Number(nex12Orig()?.damage)||0:0;
  const itemBonus=Number(w.d.damageBonus)||0;
- const totalDamage=damage.total+(secondary?secondary.total:0)+originBonus+itemBonus;
+ const totalDamage=damage.total+(secondary?secondary.total:0)+(extra?extra.total:0)+originBonus+itemBonus;
  const detailAttack=rolls.join(', ')+' → '+natural+' '+(w.bonus>=0?'+ ':'− ')+Math.abs(w.bonus);
  const damageDetail=damage.detail+(originBonus?' + bônus '+originBonus:'')+(itemBonus?' + melhoria '+itemBonus:'');
  const secondaryDetail=secondary?secondary.detail:'';
@@ -669,9 +685,10 @@ document.addEventListener('click',e=>{
  '<div class="nex-weapon-roll-column"><div class="nex-weapon-roll-value">'+safe(totalDamage)+'</div><div class="nex-weapon-roll-label">DANO TOTAL</div></div></div>'+
  '<div class="nex-weapon-roll-detail">'+safe(w.skillName)+': '+safe(detailAttack)+
  '<div>Crítico configurado: '+safe(w.threshold)+'–20 ×'+safe(w.multiplier)+' · '+(critical?'Crítico ativado!':'Sem crítico nesta rolagem')+'</div>'+ 
- '<div>Dano principal ('+safe(w.d.damage)+'): '+safe(damageDetail)+' = '+safe(damage.total+originBonus+itemBonus)+(critical?' · '+safe(w.multiplier)+'× dados':'')+'</div>'+
+ '<div>Dano principal ('+safe(w.damageExpression)+'): '+safe(damageDetail)+' = '+safe(damage.total+originBonus+itemBonus)+(critical?' · '+safe(w.multiplier)+'× dados':'')+'</div>'+
+ (extra?'<div>Dano adicional ('+safe(extra.expression)+'): '+safe(extra.detail)+' = '+safe(extra.total)+'</div>':'')+
  (secondary?'<div>Dano secundário '+safe(w.d.secondaryType||'Normal')+' ('+safe(secondary.expression)+'): '+safe(secondaryDetail)+' = '+safe(secondary.total)+'</div>':'')+
- (secondary?'<div>Total: '+safe(totalDamage)+'</div>':'')+'</div>';
+ (secondary||extra?'<div>Total: '+safe(totalDamage)+'</div>':'')+'</div>';
  weaponRollPanel.hidden=false;
  const rect=button.getBoundingClientRect(),width=310;
  const left=Math.max(8,Math.min(innerWidth-width-8,rect.left-100));
@@ -681,7 +698,8 @@ document.addEventListener('click',e=>{
   logResult(w.d.name+' — ataque','d20 ('+w.skillName+')', '['+rolls.join(', ')+'] → '+natural,attack);
   logResult(w.d.name+' — dano principal',damage.expression,damageDetail,damage.total+originBonus+itemBonus);
   if(secondary)logResult(w.d.name+' — dano secundário ('+(w.d.secondaryType||'Normal')+')',secondary.expression,secondaryDetail,secondary.total);
-  if(secondary)logResult(w.d.name+' — dano total',damage.expression+' + '+secondary.expression,damageDetail+' + '+secondaryDetail,totalDamage);
+  if(secondary||extra)logResult(w.d.name+' — dano total',[damage.expression,secondary?.expression,extra?.expression].filter(Boolean).join(' + '),[damageDetail,secondaryDetail,extra?.detail].filter(Boolean).join(' + '),totalDamage);
+  if(extra)logResult(w.d.name+' — dano adicional',extra.expression,extra.detail,extra.total);
  }
 });
 weaponRollPanel.addEventListener('click',e=>{
@@ -799,7 +817,7 @@ by('nexEditorForm').addEventListener('submit',event=>{
  item.detail=[d.description,d.category==='Arma'?'Dano: '+d.damage:'',d.category==='Arma'&&d.secondary&&d.secondary!=='—'?'Dano secundário: '+d.secondary:'',d.category==='Arma'&&d.secondary&&d.secondary!=='—'?'Tipo do dano secundário: '+(d.secondaryType||'Normal'):'',d.category==='Arma'?'Crítico: '+d.critical+' ×'+d.multiplier:'',d.category==='Arma'?'Tipo: '+d.damageType:'','Categoria: '+d.tier].filter(Boolean).join(' · ').slice(0,2500);
  if(d.category==='Arma')syncAttackFromWeapon(item,previousName);
  save();
- close();renderInventory();refreshLinkedAttacks();renderAttacks();
+ close();renderInventory();refreshLinkedAttacks();renderAttacks();if(typeof renderStats==='function')renderStats();
  toast('Item atualizado no inventário e no combate.');
 });
 document.addEventListener('keydown',event=>{if(!modal.hidden&&event.key==='Escape'){event.preventDefault();close();}});
