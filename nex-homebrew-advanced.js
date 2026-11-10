@@ -373,7 +373,7 @@
      (item.type==='origem'?'<h4>Perícias treinadas</h4><p>'+esc((item.skills||[]).join(' e ')||'Não configuradas')+'</p>':'')+
      (item.type==='item'&&item.image?'<img class="nex-hb-preview-detail" src="'+esc(item.image)+'" alt="Imagem de '+esc(item.name)+'">':'')+
      (item.type==='item'&&item.customImprovements?.length?'<h4>Melhorias</h4><p>'+item.customImprovements.map(esc).join(' · ')+'</p>':'')+ritualDetails(item)+trailDetails(item);
-   targetOptions();const d=$('nex52Detail');if(typeof d.showModal==='function')d.showModal();else d.setAttribute('open','');
+   targetOptions();$('nex52Apply').hidden=item.type==='melhoria';$('nex51Target').closest('label').hidden=item.type==='melhoria';const d=$('nex52Detail');if(typeof d.showModal==='function')d.showModal();else d.setAttribute('open','');
  }
  $('nex51Type').addEventListener('change',editorFields);
  $('nex53RitualType').addEventListener('change',toggleRitualDamageFields);
