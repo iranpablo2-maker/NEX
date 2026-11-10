@@ -112,6 +112,30 @@ style.textContent=[
 '#sheetScreen .nex-item-remove{color:#f05562!important}',
 '#sheetScreen .nex-item-edit{color:#49b96b!important}',
 '#sheetScreen .nex-item-card-new{background:#1c1c1e!important;border:1px solid #303035!important;border-radius:5px!important;margin:8px 0!important;box-shadow:none!important}',
+'#sheetScreen .nex-item-card-new{position:relative!important}',
+'#sheetScreen .nex-item-card-new>summary{padding-right:56px!important}',
+'#sheetScreen .nex-combat-weapon{position:relative;border-bottom:1px solid #8c2d3b;padding:13px 8px;background:#1b191d;color:#fff;display:flex;align-items:center;gap:12px;min-width:0}',
+'#sheetScreen .nex-combat-weapon-main{flex:1;min-width:0}',
+'#sheetScreen .nex-combat-weapon-name{font-size:14px;font-weight:800;line-height:1.5;display:block}',
+'#sheetScreen .nex-combat-weapon-summary{font-size:12px;color:#da4b5b;margin-top:2px;line-height:1.5}',
+'#sheetScreen .nex-combat-weapon-details{padding:11px 9px 12px;background:#171519;font-size:12px;line-height:1.85;color:#e6dfe3}',
+'#sheetScreen .nex-combat-weapon-details b{color:#fff}',
+'#sheetScreen .nex-combat-weapon-details .nex-combat-stat-label{color:#dd4b58}',
+'#sheetScreen .nex-combat-die-button{border:0!important;background:transparent!important;padding:7px!important;cursor:pointer!important;flex:none;color:#f1eded!important;display:grid!important;place-items:center!important;border-radius:5px!important}',
+'#sheetScreen .nex-combat-die-button:hover{color:#e34a58!important;background:#3a2027!important}',
+'#sheetScreen .nex-combat-die-button svg{width:31px;height:31px;display:block;stroke:currentColor;fill:none;stroke-width:1.35}',
+'#nexWeaponRollPopup[hidden]{display:none!important}',
+'#nexWeaponRollPopup{position:fixed;z-index:110010;width:min(310px,calc(100vw - 20px));background:#211e22;color:#fff;border:1px solid #ae3444;border-radius:4px;box-shadow:0 14px 50px #000c;padding:13px 12px;box-sizing:border-box}',
+'#nexWeaponRollPopup .nex-weapon-roll-head{display:flex;gap:9px;align-items:center;justify-content:space-between;font-size:17px;font-weight:800;padding-bottom:12px}',
+'#nexWeaponRollPopup .nex-weapon-roll-head button{background:transparent;border:0;color:#fff;font-size:22px;cursor:pointer;line-height:1}',
+'#nexWeaponRollPopup .nex-weapon-roll-stats{display:grid;grid-template-columns:46px 1fr 1fr;align-items:center;gap:8px}',
+'#nexWeaponRollPopup .nex-weapon-roll-hex{width:42px;height:42px;background:#ae253c;clip-path:polygon(50% 0,93% 25%,93% 75%,50% 100%,7% 75%,7% 25%)}',
+'#nexWeaponRollPopup .nex-weapon-roll-column{text-align:center;min-width:0;border-right:1px solid #777}',
+'#nexWeaponRollPopup .nex-weapon-roll-column:last-child{border-right:0}',
+'#nexWeaponRollPopup .nex-weapon-roll-value{font-size:31px;font-weight:900;line-height:1.25;color:#fff}',
+'#nexWeaponRollPopup .nex-weapon-roll-label{font-size:11px;color:#bbb2b7;font-weight:800;text-transform:uppercase}',
+'#nexWeaponRollPopup .nex-weapon-roll-detail{margin-top:11px;font-size:11px;color:#d3b8be;line-height:1.5;overflow-wrap:anywhere}',
+
 '#sheetScreen .nex-item-card-new>summary{padding:11px 12px!important;gap:13px!important;min-height:62px!important}',
 '#sheetScreen .nex-item-card-new[open]>summary{border-bottom:1px solid #9c3440!important}',
 '#sheetScreen .nex-item-chevron{font-size:19px!important;color:#d03a4a!important;transition:transform .18s ease!important}',
@@ -126,7 +150,7 @@ style.textContent=[
 '#sheetScreen .nex-item-card-description{font-size:13px!important;margin:16px 0 10px!important;line-height:1.6!important}',
 '#sheetScreen .nex-item-card-buttons{margin-top:6px!important;padding-top:4px!important;align-items:center!important}',
 '#sheetScreen .nex-item-card-buttons button{font-size:12px!important;border:0!important;background:transparent!important;min-height:32px!important}',
-'#sheetScreen .nex-item-equipped-label{display:flex;align-items:center;justify-content:center;flex:0 0 34px;cursor:pointer;margin-left:auto}',
+'#sheetScreen .nex-item-equipped-label{position:absolute;right:11px;top:15px;display:flex;align-items:center;justify-content:center;width:34px;height:34px;cursor:pointer;z-index:3}',
 '#sheetScreen .nex-item-equipped-label input{appearance:none;-webkit-appearance:none;width:31px!important;height:31px!important;min-width:31px!important;margin:0!important;border:1px solid #ddd!important;border-radius:4px!important;background:#19191c!important;cursor:pointer;display:grid;place-items:center}',
 '#sheetScreen .nex-item-equipped-label input:checked{background:#a72c39!important;border-color:#d74d59!important}',
 '#sheetScreen .nex-item-equipped-label input:checked::after{content:"✓";font-size:19px;font-weight:800;color:#fff}',
@@ -247,7 +271,7 @@ function card(item,expanded=false){
  '<summary><span class="nex-item-chevron" aria-hidden="true">⌄</span>'+
  '<span class="nex-item-main"><strong>'+safe(d.name||'Item')+'</strong>'+
  '<span class="nex-item-short">'+quick.filter(x=>x[1]!==undefined&&x[1]!==null&&String(x[1])!=='').map(x=>'<span>'+safe(x[0])+': <b>'+safe(x[1])+'</b></span>').join('')+'</span></span>'+
- '<label class="nex-item-equipped-label" title="Equipado" aria-label="Equipado: '+safe(d.name)+'"><input type="checkbox" data-nex-item-equipped="'+id+'" aria-label="Marcar '+safe(d.name)+' como equipado" '+(item.equipped?'checked':'')+'></label></summary>'+
+ '</summary>'+(weapon?'<label class="nex-item-equipped-label" title="Equipar arma" aria-label="Equipar arma: '+safe(d.name)+'"><input type="checkbox" data-nex-item-equipped="'+id+'" aria-label="Equipar '+safe(d.name)+'" '+(item.equipped?'checked':'')+'></label>':'')+
  '<div class="nex-item-card-body"><div class="nex-item-subtitle">'+safe(subtitle)+'</div>'+
  '<div class="nex-item-card-stats">'+stats.filter(x=>x[1]!==undefined&&x[1]!==null&&String(x[1]).trim()!=='').map(x=>'<div>'+safe(x[0])+': <b>'+safe(x[1])+'</b></div>').join('')+'</div>'+
  (d.upgrades?'<div class="nex-item-card-description"><b>Melhorias:</b> '+descriptionText(d.upgrades)+'</div>':'')+img+
@@ -280,16 +304,16 @@ document.addEventListener('toggle',event=>{
  const id=String(details.dataset.itemId||'');
  if(details.open)lastExpandedIds.add(id);else lastExpandedIds.delete(id);
 },true);
-document.addEventListener('click',event=>{
- if(event.target.closest('.nex-item-equipped-label'))event.stopPropagation();
-},true);
+
 document.addEventListener('change',event=>{
  const checkbox=event.target.closest?.('[data-nex-item-equipped]');
  if(!checkbox)return;
  const item=find(checkbox.dataset.nexItemEquipped);if(!item)return;
+ if(detail(item).category!=='Arma'){checkbox.checked=false;return;}
  item.equipped=checkbox.checked;
+ renderAttacks();
  save();
- toast(checkbox.checked?'Item marcado como equipado.':'Item desmarcado como equipado.');
+ toast(checkbox.checked?'Arma equipada e adicionada ao Combate.':'Arma retirada do Combate.');
 });
 document.addEventListener('click',event=>{
  const button=event.target.closest('[data-nex-item-edit],[data-nex-item-remove]');
@@ -299,10 +323,119 @@ document.addEventListener('click',event=>{
   const item=find(button.dataset.nexItemRemove);
   if(item&&confirm('Remover '+item.name+' do inventário?')){
    state.items=state.items.filter(x=>String(x.id)!==String(item.id));
-   renderInventory();save();toast('Item removido.');
+   renderInventory();renderAttacks();save();toast('Item removido.');
   }
  }
 });
+
+// Armas equipadas aparecem automaticamente na aba Combate, sem duplicar
+// registros manuais e sem alterar o inventário.
+const weaponRollPanel=document.createElement('div');
+weaponRollPanel.id='nexWeaponRollPopup';
+weaponRollPanel.hidden=true;
+weaponRollPanel.setAttribute('role','dialog');
+weaponRollPanel.setAttribute('aria-label','Resultado da rolagem de arma');
+document.body.appendChild(weaponRollPanel);
+const weaponD20=()=>{const n=new Uint32Array(1);crypto.getRandomValues(n);return n[0]%20+1};
+function weaponDice(expression,criticalMultiplier=1){
+ const expr=String(expression||'').replace(/\s+/g,'').toLowerCase().split('/')[0];
+ if(!/^[+-]?(?:\d*d\d+|\d+)(?:[+-](?:\d*d\d+|\d+))*$/.test(expr)||expr.length>75)return null;
+ let total=0;const parts=[];let countAll=0;
+ for(const token of expr.match(/[+-]?(?:\d*d\d+|\d+)/g)||[]){
+  const sign=token[0]==='-'?-1:1,core=token.replace(/^[+-]/,'');
+  if(!core.includes('d')){const constant=Number(core);if(!Number.isSafeInteger(constant))return null;total+=sign*constant;parts.push(token);continue;}
+  let [count,faces]=core.split('d').map(Number);if(!count)count=1;
+  count*=criticalMultiplier;countAll+=count;
+  if(count<1||count>100||countAll>140||faces<2||faces>1000||!Number.isInteger(count)||!Number.isInteger(faces))return null;
+  const diceValues=[];for(let i=0;i<count;i++){const v=new Uint32Array(1);crypto.getRandomValues(v);const rolled=v[0]%faces+1;diceValues.push(rolled);total+=sign*rolled;}
+  parts.push((sign<0?'-':'')+'['+diceValues.join(', ')+']');
+ }
+ return {total,detail:parts.join(' + '),expression:expr};
+}
+function weaponData(item){
+ const d=detail(item);
+ const distance=/disparo|fogo|dist[aâ]ncia|arremesso/i.test(String(d.kind||''));
+ const skillName=distance?'Pontaria':'Luta';
+ const skill=state.skills?.[skillName]||{};
+ const attribute=['agi','for','int','pre','vig'].includes(skill.attr)?skill.attr:(distance?'agi':'for');
+ const value=Math.max(0,Math.min(20,Math.trunc(Number(state.attributes?.[attribute])||0)));
+ const bonus=(Number(skill.training)||0)+(Number(skill.other)||0)+(Number(d.attackBonus)||0);
+ const dieCount=value===0?2:Math.max(1,value);
+ const threshold=parseInt(String(d.critical||'20').match(/\d{2}/)?.[0]||'20',10);
+ const multiplier=Math.max(1,Math.min(10,parseInt(d.multiplier,10)||2));
+ return {d,skillName,attribute,bonus,dieCount,value,threshold,multiplier};
+}
+const weaponDieSvg='<svg viewBox="0 0 32 32" aria-hidden="true" focusable="false"><path d="M11 3 23 5 29 16 22 27 10 29 3 18 5 9Z"/><path d="M11 3 15 13 23 5 M5 9l10 4 14 3 M3 18l12-5 7 14 M15 13l7 14-12 2 M29 16l-7 11 M5 9 3 18"/></svg>';
+const previousRenderAttacks=renderAttacks;
+renderAttacks=function(){
+ const result=previousRenderAttacks.apply(this,arguments);
+ const list=by('attacksList');
+ if(!list)return result;
+ const items=(state.items||[]).filter(item=>item.equipped===true && detail(item).category==='Arma');
+ if(!items.length)return result;
+ const cards=items.map(item=>{
+  const w=weaponData(item),d=w.d,id=safe(item.id),bonus=w.bonus,damage=String(d.damage||'').trim();
+  return '<article class="nex-combat-equipped" data-equipped-weapon="'+id+'">'+
+   '<div class="nex-combat-weapon">'+
+    '<div class="nex-combat-weapon-main"><strong class="nex-combat-weapon-name">'+safe(d.name||item.name)+'</strong>'+
+    '<div class="nex-combat-weapon-summary">Dano: <b>'+safe(damage||'—')+'</b>　Crítico: <b>'+safe(d.critical||'20')+' ×'+safe(w.multiplier)+'</b></div></div>'+
+    '<button type="button" class="nex-combat-die-button" data-nex-weapon-roll="'+id+'" aria-label="Rolar ataque e dano de '+safe(d.name||item.name)+'" title="Rolar ataque e dano">'+weaponDieSvg+'</button>'+
+   '</div>'+
+   '<div class="nex-combat-weapon-details">'+
+    '<div><span class="nex-combat-stat-label">Ataque Bônus:</span> <b>'+safe((bonus>=0?'+':'')+bonus)+'</b> ('+safe(w.skillName)+')</div>'+
+    '<div><span class="nex-combat-stat-label">Tipo de Dano:</span> <b>'+safe(d.damageType||'—')+'</b></div>'+
+    '<div><span class="nex-combat-stat-label">Alcance:</span> <b>'+safe(d.range||'—')+'</b></div>'+
+    '<div><span class="nex-combat-stat-label">Perícia:</span> <b>'+safe(w.skillName)+'</b></div>'+
+    '<div><span class="nex-combat-stat-label">Atributo Dano:</span> <b>'+safe(({agi:'Agilidade',for:'Força',int:'Intelecto',pre:'Presença',vig:'Vigor'})[w.attribute])+'</b></div>'+
+   '</div></article>';
+ }).join('');
+ const container=document.createElement('section');
+ container.className='nex-equipped-weapons-list';
+ container.setAttribute('aria-label','Armas equipadas');
+ container.innerHTML=cards;
+ list.prepend(container);
+};
+function hideWeaponRoll(){weaponRollPanel.hidden=true;}
+document.addEventListener('click',e=>{
+ const button=e.target.closest('[data-nex-weapon-roll]');
+ if(!button){
+  if(!weaponRollPanel.hidden&&!e.target.closest('#nexWeaponRollPopup'))hideWeaponRoll();
+  return;
+ }
+ e.preventDefault();
+ const item=find(button.dataset.nexWeaponRoll);
+ if(!item||!item.equipped||detail(item).category!=='Arma')return;
+ const w=weaponData(item);
+ const rolls=Array.from({length:w.dieCount},weaponD20);
+ const natural=w.value===0?Math.min(...rolls):Math.max(...rolls);
+ const attack=natural+w.bonus;
+ const critical=natural>=w.threshold;
+ const damage=weaponDice(w.d.damage,critical?w.multiplier:1);
+ if(!damage){toast('Configure um dano válido para esta arma no inventário.');return;}
+ const originBonus=typeof nex12Orig==='function'?Number(nex12Orig()?.damage)||0:0;
+ damage.total+=originBonus;
+ const detailAttack=rolls.join(', ')+' → '+natural+' '+(w.bonus>=0?'+ ':'− ')+Math.abs(w.bonus);
+ const damageDetail=damage.detail+(originBonus?' + bônus '+originBonus:'');
+ weaponRollPanel.innerHTML='<div class="nex-weapon-roll-head"><strong>'+safe(w.d.name||item.name)+'</strong><button type="button" data-close-weapon-popup aria-label="Fechar resultado">×</button></div>'+
+ '<div class="nex-weapon-roll-stats"><span class="nex-weapon-roll-hex"></span>'+
+ '<div class="nex-weapon-roll-column"><div class="nex-weapon-roll-value">'+safe(attack)+'</div><div class="nex-weapon-roll-label">ATAQUE</div></div>'+
+ '<div class="nex-weapon-roll-column"><div class="nex-weapon-roll-value">'+safe(damage.total)+'</div><div class="nex-weapon-roll-label">DANO</div></div></div>'+
+ '<div class="nex-weapon-roll-detail">'+safe(w.skillName)+': '+safe(detailAttack)+'<div>Dano: '+safe(damageDetail)+(critical?' · Crítico!':'')+'</div></div>';
+ weaponRollPanel.hidden=false;
+ const rect=button.getBoundingClientRect(),width=310;
+ const left=Math.max(8,Math.min(innerWidth-width-8,rect.left-100));
+ weaponRollPanel.style.left=left+'px';
+ weaponRollPanel.style.top=Math.max(8,Math.min(innerHeight-weaponRollPanel.offsetHeight-8,rect.bottom+9))+'px';
+ if(typeof logResult==='function'){
+  logResult(w.d.name+' — ataque','d20 ('+w.skillName+')', '['+rolls.join(', ')+'] → '+natural,attack);
+  logResult(w.d.name+' — dano',damage.expression,damageDetail,damage.total);
+ }
+});
+weaponRollPanel.addEventListener('click',e=>{
+ if(e.target.closest('[data-close-weapon-popup]'))hideWeaponRoll();
+});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')hideWeaponRoll()});
+
 modal.addEventListener('click',event=>{
  if(event.target===modal||event.target.closest('.nex-editor-close,.nex-editor-cancel')){close();return;}
  const add=event.target.closest('[data-nex-add-upgrade]');
@@ -331,7 +464,7 @@ by('nexEditorForm').addEventListener('submit',event=>{
  item.name=d.name;item.category=d.category;item.quantity=d.quantity;item.spaces=d.spaces;item.nexInfo=d;
  item.description=d.description;
  item.detail=[d.description,d.category==='Arma'?'Dano: '+d.damage:'',d.category==='Arma'?'Crítico: '+d.critical+' ×'+d.multiplier:'',d.category==='Arma'?'Tipo: '+d.damageType:'','Categoria: '+d.tier].filter(Boolean).join(' · ').slice(0,2500);
- close();renderInventory();save();toast('Item atualizado.');
+ close();renderInventory();renderAttacks();save();toast('Item atualizado.');
 });
 document.addEventListener('keydown',event=>{if(!modal.hidden&&event.key==='Escape'){event.preventDefault();close();}});
 renderInventory();
