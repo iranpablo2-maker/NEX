@@ -613,7 +613,7 @@ modal.addEventListener('click',event=>{
 // Vinculação por ID evita misturar duas armas diferentes com nomes iguais.
 function syncAttackFromWeapon(item,previousName){
  const d=detail(item),allWeapons=(state.items||[]).filter(x=>detail(x).category==='Arma');
- const uniqueName=allWeapons.filter(x=>norm(x.name)===norm(previousName||item.name)).length===1;
+ const uniqueName=allWeapons.filter(x=>String(x.id)===String(item.id)||norm(x.name)===norm(previousName||item.name)).length===1;
  for(const attack of (state.attacks||[])){
   const linked=String(attack.linkedItemId||'')===String(item.id);
   const sameName=uniqueName&&!attack.linkedItemId&&norm(attack.name)===norm(previousName||item.name);
