@@ -451,6 +451,17 @@ function weaponDice(expression,criticalMultiplier=1){
  }
  return {total,detail:parts.join(' + '),expression:expr};
 }
+// Interpreta "18", "18-20", "18/×3" e multiplicadores "3", "x3" ou "×3".
+function weaponCriticalSettings(d){
+ const raw=String(d.critical??'20').trim();
+ const thresholdMatch=raw.match(/(?:^|[^\d])([1-9]|1\d|20)(?=\D|$)/);
+ const threshold=thresholdMatch?Number(thresholdMatch[1]):20;
+ const multiplierRaw=String(d.multiplier??'').trim();
+ const multiMatch=multiplierRaw.match(/^[x×]?\s*(\d+)$/i);
+ const inlineMatch=raw.match(/[x×]\s*(\d+)/i);
+ const multiplier=multiMatch?Number(multiMatch[1]):inlineMatch?Number(inlineMatch[1]):2;
+ return {threshold,multiplier};
+}
 function weaponData(item){
  const d=detail(item);
  const distance=/disparo|fogo|dist[aâ]ncia|arremesso/i.test(String(d.kind||''));
@@ -460,8 +471,7 @@ function weaponData(item){
  const value=Math.max(0,Math.min(20,Math.trunc(Number(state.attributes?.[attribute])||0)));
  const bonus=(Number(skill.training)||0)+(Number(skill.other)||0)+(Number(d.attackBonus)||0);
  const dieCount=value===0?2:Math.max(1,value);
- const threshold=parseInt(String(d.critical||'20').match(/\d{2}/)?.[0]||'20',10);
- const multiplier=Math.max(1,Math.min(10,parseInt(d.multiplier,10)||2));
+ const {threshold,multiplier}=weaponCriticalSettings(d);
  return {d,skillName,attribute,bonus,dieCount,value,threshold,multiplier};
 }
 const weaponDieSvg='<img class="nex-combat-d20-image" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAG4AAAB+AQAAAADt9hnNAAAEL0lEQVR42m2VTYhbVRTHf++8R5KWMIky2CBj5hVtcVEkxS4GrX2vC7G49AOqC5udulC78mOVWypOEbFdVpBOFqIUEbooSMHSNx1pu1AmCEoXLX2xgw22i8QUTcabd1y895IpeDeXP/97z7n/83EPAOCadJd02xaydS01HoDxQnYJAKd6YbKFLJRXzRa4sL8fb7E8H5YOb2FXbVKemXJ3PSvJpSk5V7fajaZ3t78OlXNTthlbtbUcOWuRVS3khwsvXofexfwh5af3Wo0bUQYb77tWR6dzUd17FdtK6rmo5RtBXNHKciZn8VKCk1S6Bjx4+Ei0d2lp56lKKuqoVWd4wFW7BILz8mRcx7lp3N8A3IoavbNii7oGwrbG5CQx7gXqEcKecOMopQZL/o5zQDcpqq7cUT2W1BDn67+WUv/vHXwXCouuqgZDVXXXjDzy2kKu++Z3Te+VbTFoWADqX0ZEFVW1rbGqalTGqKpatarraj0pAkwQwwjXyJZETXO0iRMxmcI+QGwwUuYyeNAkBF8ggBgYOwYEBUrQuDYHSIGGoQM1GmgoJIeSNFNRatn717ShvBtAPBgpQA0SRIkwIRQAjACDxIDLKiBImEafyAPOtKw7VtWk9aMz3hDAS9nHb6USSpuAE9k2iJMLYu74JkIkVQ+gqR4IOH5vYMZhgxoIBkOn3evQaYIQE3aifjyqwf3UiekWsZD79Ht2zZSfCnoIIaol4x3gIXoIfQghkyRAYsD4bgp9cPqZJkQ/JO0oMVQRYAQfZ3kSp5rFOovkD9xnswQ0aSMWYFQFoIf8bejRbwINLKKlNJeA7kZ4gw6rmJgaLiJg+ISpIw+fsWcvU8YYoaWhwnOGQjJCSk2mwicRXyRWE9y4otZ2v/JcrOso4wZMQFyOARQjxFQReqNp3W03QjevQ+eyhxCdz8nDIJyYFakiWn0rRw0n9Bx/4GSwODKszL4PVzeESUWzdRGE/Us5e83AyuB2ztYXN4Rf5nI3O/sIPxUzmITn4cyibaVnR9rdkKQpwBhw2AGnVAPVOFAdqn1ChipNiGMY+m4sXqLnIAL+6GGkROE6FPuwttkOvX18NA8l4NStIz/LO0LaKerXdI/cOxZ9kL2i+MyT8mf7oGcYVbEH/bd9nOWoHmi0qIO54lXg9lgDjQId1t9cQHi1QBMf7v++ax4oB6N1vRLouvYjhH/iE6dxYjoMI8C54g716qIu6ucg6LefFVDU109B4JvryqN+EiaH0v4JbKvfGukg/VXdk0mgOtCraXlP9jmA8HwWwr26ononyb/chda66vooznrhbrsGnbvtvAqWh6rBlbxT9EYBDV+aDoJfXZLJbIqU97dG42iW9nowuD2bOMlZ5OyWaTX3wmOtDYC0amrfT+b9Gbt5sXZtZgr3ePF/B19ef0cfgAvRAzP0bgb/AwCO4zlQNWGBAAAAAElFTkSuQmCC" alt="Dado d20" draggable="false">';
@@ -485,7 +495,7 @@ renderAttacks=function(){
     '<button type="button" class="nex-combat-die-button" data-nex-weapon-roll="'+id+'" aria-label="Rolar ataque e dano de '+safe(d.name||item.name)+'" title="Rolar ataque e dano">'+weaponDieSvg+'</button>'+
    '</div>'+
    '<div class="nex-combat-weapon-details" '+(collapsed?'hidden':'')+'>'+
-     '<div class="nex-combat-weapon-summary">Dano: <b>'+safe(damage||'—')+'</b>　Crítico: <b>'+safe(d.critical||'20')+' ×'+safe(w.multiplier)+'</b></div>'+
+     '<div class="nex-combat-weapon-summary">Dano: <b>'+safe(damage||'—')+'</b>　Crítico: <b>'+safe(w.threshold)+'–20 ×'+safe(w.multiplier)+'</b></div>'+
     '<div><span class="nex-combat-stat-label">Ataque Bônus:</span> <b>'+safe((bonus>=0?'+':'')+bonus)+'</b> ('+safe(w.skillName)+')</div>'+
     (String(d.secondary||'').trim()&&!/^(?:—|-)$/i.test(String(d.secondary).trim())?'<div class="nex-secondary-damage-line"><span class="nex-combat-stat-label">Dano secundário:</span> <b>'+safe(d.secondary)+' ('+safe(d.secondaryType||'Normal')+')</b> <button type="button" class="nex-secondary-roll-button" data-nex-secondary-roll="'+id+'" aria-label="Rolar dano secundário de '+safe(d.name||item.name)+'">Rolar dano secundário</button></div>':'')+
     '<div><span class="nex-combat-stat-label">Tipo de Dano:</span> <b>'+safe(d.damageType||'—')+'</b></div>'+
@@ -580,7 +590,8 @@ document.addEventListener('click',e=>{
  '<div class="nex-weapon-roll-column"><div class="nex-weapon-roll-value">'+safe(attack)+'</div><div class="nex-weapon-roll-label">ATAQUE</div></div>'+
  '<div class="nex-weapon-roll-column"><div class="nex-weapon-roll-value">'+safe(totalDamage)+'</div><div class="nex-weapon-roll-label">DANO TOTAL</div></div></div>'+
  '<div class="nex-weapon-roll-detail">'+safe(w.skillName)+': '+safe(detailAttack)+
- '<div>Dano principal ('+safe(w.d.damage)+'): '+safe(damageDetail)+' = '+safe(damage.total+originBonus)+(critical?' · Crítico!':'')+'</div>'+
+ '<div>Crítico configurado: '+safe(w.threshold)+'–20 ×'+safe(w.multiplier)+' · '+(critical?'Crítico ativado!':'Sem crítico nesta rolagem')+'</div>'+ 
+ '<div>Dano principal ('+safe(w.d.damage)+'): '+safe(damageDetail)+' = '+safe(damage.total+originBonus)+(critical?' · '+safe(w.multiplier)+'× dados':'')+'</div>'+
  (secondary?'<div>Dano secundário '+safe(w.d.secondaryType||'Normal')+' ('+safe(secondary.expression)+'): '+safe(secondaryDetail)+' = '+safe(secondary.total)+'</div>':'')+
  (secondary?'<div>Total: '+safe(totalDamage)+'</div>':'')+'</div>';
  weaponRollPanel.hidden=false;
@@ -646,6 +657,13 @@ by('nexEditorForm').addEventListener('submit',event=>{
  const previousName=item.name;
  const d={...detail(item),...values};
  if(d.category==='Arma' && (!String(d.damage||'').trim() || !String(d.critical||'').trim() || !String(d.multiplier||'').trim())){toast('Preencha dano, crítico e multiplicador.');return;}
+ if(d.category==='Arma'){
+  const crit=weaponCriticalSettings(d);
+  if(!/^(?:[1-9]|1\d|20)(?:\s*[-–]\s*20)?$/.test(String(d.critical).trim())||crit.threshold<1||crit.threshold>20){toast('Crítico inválido. Use 18, 19 ou 20 (ou 18-20).');return;}
+  if(!/^[x×]?\s*\d+$/i.test(String(d.multiplier).trim())||crit.multiplier<1||crit.multiplier>10){toast('Multiplicador inválido. Use 2, 3, x3 etc. (até x10).');return;}
+  d.critical=String(crit.threshold);
+  d.multiplier=String(crit.multiplier);
+ }
  d.name=String(d.name).trim().slice(0,100);
  d.quantity=Math.max(0,Math.min(9999,Math.trunc(number(d.quantity,1))));
  d.spaces=Math.max(0,Math.min(100,Math.round(number(d.spaces,1)*2)/2));
