@@ -265,6 +265,7 @@
  function syncCursedWeaponElement(){
    const isCursedWeapon=tab==='paranormal'&&paranormalSection==='itens'&&cursedKind==='Armas Amaldiçoadas'&&$('nex51Type').value==='item';
    const secondary=$('nexHbWeaponSecondaryType');
+   secondary.disabled=isCursedWeapon;
    const normal=[...secondary.options].find(option=>option.value==='Normal');
    if(normal){normal.hidden=isCursedWeapon;normal.disabled=isCursedWeapon;}
    if(isCursedWeapon)secondary.value=$('nexHbElement').value;
