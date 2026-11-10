@@ -1740,6 +1740,18 @@ body{background:#08090b;color:#f4f0f2}
 #homebrewScreen #nex52ImprovementName{width:100%;background:#101010;border:1px solid #373035;border-radius:4px;color:white;padding:10px}
 @media(max-width:620px){#homebrewScreen .nex-hb-weapon-fields{grid-template-columns:repeat(2,minmax(0,1fr))}#homebrewScreen .nex-hb-protection-fields{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(max-width:410px){#homebrewScreen .nex-hb-weapon-fields{grid-template-columns:1fr}}
+</style><style id="nex-homebrew-paranormal-nav">
+#homebrewScreen .nex-hb-paranormal-nav[hidden],#homebrewScreen .nex-hb-paranormal-kinds[hidden],#homebrewScreen .nex-hb-paranormal-extra-fields[hidden]{display:none!important}
+#homebrewScreen .nex-hb-paranormal-nav{display:flex;flex-direction:column;gap:12px;margin:-20px 0 26px}
+#homebrewScreen .nex-hb-paranormal-sections,#homebrewScreen .nex-hb-paranormal-kinds{display:flex;flex-wrap:wrap;gap:8px}
+#homebrewScreen .nex-hb-paranormal-sections button,#homebrewScreen .nex-hb-paranormal-kinds button{padding:9px 12px;background:#101010;border:1px solid #453036;color:#ded7da;border-radius:4px;cursor:pointer}
+#homebrewScreen .nex-hb-paranormal-sections button.active,#homebrewScreen .nex-hb-paranormal-kinds button.active{border-color:#e44855;background:#36191e;color:#fff}
+#homebrewScreen .nex-hb-paranormal-extra-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:12px 0}
+#homebrewScreen .nex-hb-paranormal-extra-fields label,#homebrewScreen #nexHbCurseFields label{display:flex;flex-direction:column;gap:6px;font-weight:600}
+#homebrewScreen .nex-hb-paranormal-extra-fields input,#homebrewScreen #nexHbCurseFields select{background:#101010;border:1px solid #46353b;border-radius:4px;color:#fff;padding:10px}
+#homebrewScreen #nexHbParanormalExtras>strong{font-size:14px;color:#f5dfe5}
+#homebrewScreen #nexHbCurseFields[hidden]{display:none!important}
+@media(max-width:600px){#homebrewScreen .nex-hb-paranormal-extra-fields{grid-template-columns:1fr}}
 </style></head><body>
 <script src="nex-sobrevivendo-ao-horror.js?v=2072"></script>
 <header class="topbar"><div class="topinner"><button type="button" id="n17MenuToggle" class="n17-menu-button" aria-expanded="false" aria-controls="n17Drawer" aria-label="Abrir menu">☰</button><button type="button" class="brand" id="nexBrandHome" aria-label="Voltar ao menu principal" title="Voltar ao menu principal"><span class="brand-mark" aria-hidden="true">◈</span><span><h1>NEX</h1><span class="subtitle">SISTEMA DE FICHAS · ORDEM PARANORMAL</span></span></button><div class="actions"><button class="btn sm" id="menuHeaderButton" type="button" style="display:none!important" hidden tabindex="-1" aria-hidden="true">⌂ Menu principal</button><button class="btn sm" id="newChar" type="button" style="display:none!important" hidden tabindex="-1" aria-hidden="true">＋ Nova ficha</button><button class="btn sm" id="importBtn" style="display:none!important" aria-hidden="true" tabindex="-1">Importar</button><button class="btn sm" id="exportBtn" style="display:none!important" aria-hidden="true" tabindex="-1">↓ Exportar</button><input type="file" id="fileInput" accept="application/json,.json" hidden><span id="n17SaveIndicator" hidden aria-hidden="true"></span></div></div></header>
@@ -4252,7 +4264,7 @@ const PARANORMAL=[
 })();
 </script>
 <script src="nex-duplicate-review.js?v=2055"></script>
-<script src="nex-homebrew-advanced.js?v=20261110weaponsprotections3"></script>
+<script src="nex-homebrew-advanced.js?v=20261110paranormal7"></script>
 <script src="nex-rituais-metadados.js?v=1"></script>
 <script src="nex-ritual-guides.js?v=1"></script>
 <script src="nex-rituais-ficha.js?v=2119"></script>
