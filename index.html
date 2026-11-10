@@ -1680,7 +1680,7 @@ body{background:#08090b;color:#f4f0f2}
   <button type="button" data-nexnav="agents">Personagens</button>
   <button type="button" data-nexnav="campaigns">Campanhas</button>
   <button type="button" data-nexnav="homebrew">Homebrew</button>
-  <a class="nex-online-link" href="./multiplayer.html" title="Abrir campanhas online">Campanhas online <span class="nex-online-dot" aria-hidden="true"></span></a>
+  
     
  </div>
 </nav>
@@ -1699,7 +1699,7 @@ body{background:#08090b;color:#f4f0f2}
 <section id="mainMenu" aria-label="Menu principal NEX">
  <div class="home-hero"><div class="home-eyebrow">PLATAFORMA DE PERSONAGENS</div><h2>NEX</h2><p>O paranormal não espera. Organize seus personagens, consulte suas fichas e prepare sua próxima investigação em um único lugar. Seus registros ficam neste navegador.</p><div class="actions"><button class="home-action" type="button" id="menuNew">＋ Criar personagem</button><button class="home-action secondary" type="button" id="menuContinue" style="display:none!important" hidden tabindex="-1" aria-hidden="true">Abrir ficha atual →</button></div></div>
  <div class="home-section-heading"><h2>Central de operações</h2><span class="home-tag">◈ ACESSO LOCAL</span></div>
- <div class="home-grid"><button class="home-tile" data-home="agents"><span class="symbol">♙</span><strong>Meus personagens</strong><small>Visualize, abra e gerencie fichas de personagens.</small></button><button class="home-tile" data-home="new"><span class="symbol">＋</span><strong>Criar personagem</strong><small>Inicie uma nova ficha com as regras do NEX.</small></button><button class="home-tile" data-home="campaigns"><span class="symbol">◎</span><strong>Campanhas</strong><small>Organize suas mesas e registre informações importantes.</small></button><button class="home-tile" data-home="homebrew"><span class="symbol">✧</span><strong>Homebrew</strong><small>Crie e edite origens personalizadas na biblioteca independente.</small></button><a class="home-tile nex-multiplayer-tile" href="./multiplayer.html"><span class="symbol" aria-hidden="true">♜</span><strong>Campanhas online</strong><small>Compartilhe a mesa. Todos visualizam as fichas; apenas o dono e o mestre podem editar.</small><span class="nex-tile-footer">ACESSAR CAMPANHAS ONLINE →</span></a></div>
+ <div class="home-grid"><button class="home-tile" data-home="agents"><span class="symbol">♙</span><strong>Meus personagens</strong><small>Visualize, abra e gerencie fichas de personagens.</small></button><button class="home-tile" data-home="new"><span class="symbol">＋</span><strong>Criar personagem</strong><small>Inicie uma nova ficha com as regras do NEX.</small></button><button class="home-tile" data-home="campaigns"><span class="symbol">◎</span><strong>Campanhas</strong><small>Crie mesas, convide amigos e acompanhe as fichas na mesma campanha.</small></button><button class="home-tile" data-home="homebrew"><span class="symbol">✧</span><strong>Homebrew</strong><small>Crie e edite origens personalizadas na biblioteca independente.</small></button></div>
  <div class="home-section-heading" id="agentsHeading"><h2>Personagens registrados</h2><div class="home-toolbar"><button class="btn sm" id="menuBackup" style="display:none!important" aria-hidden="true" tabindex="-1">↓ Exportar ficha atual</button><button class="btn sm" id="menuImport" style="display:none!important" aria-hidden="true" tabindex="-1">↑ Importar ficha</button></div></div>
  <div id="menuAgents" class="home-card-list"></div><p class="hint" style="margin-top:15px">Cada ficha é salva neste dispositivo. Exporte cópias de segurança em JSON para não perder seus personagens.</p>
 </section>
@@ -1737,7 +1737,22 @@ body{background:#08090b;color:#f4f0f2}
   <section id="nexDuplicateReview" hidden style="margin:18px 0;padding:16px;border:1px solid #4b383b;border-radius:12px;background:#15171b" aria-label="Revisão de fichas repetidas"></section>
 </details>
 </section>
-<section id="campaignPanel" class="hide" aria-label="Campanhas"><div class="home-toolbar"><button class="btn" id="campaignBack">← Menu principal</button></div><div class="home-section-heading"><h2>Campanhas</h2><span class="home-tag">REGISTROS LOCAIS</span></div><p class="muted" style="margin-bottom:18px">Organize os personagens da campanha e registre cada sessão. Todas as informações ficam neste dispositivo.</p><div class="panel" style="margin:0 0 18px;border-color:#96323b;padding:14px"><strong style="color:#f7d7d9">Campanhas Online</strong><p class="muted" style="margin:6px 0 12px">Convide jogadores e compartilhe fichas em tempo real. Todos visualizam; só o proprietário e o mestre podem editar. Requer ativação do Firebase pelo administrador.</p><a class="btn primary" style="display:inline-block;text-decoration:none" href="./multiplayer.html">Abrir Campanhas Online</a></div><div class="campaign-form"><div class="field"><label for="campaignName">Nome da campanha</label><input id="campaignName" maxlength="75" placeholder="Ex.: Vale das Pedras"></div><div class="field"><label for="campaignNote">Descrição / notas</label><input id="campaignNote" maxlength="240" placeholder="Local, ano, objetivo da mesa..."></div><button class="home-action" id="campaignAdd">Salvar campanha</button></div><div id="campaignList" style="margin-top:20px"></div></section>
+<section id="campaignPanel" class="hide" aria-label="Campanhas">
+ <div class="home-toolbar"><button class="btn" id="campaignBack">← Menu principal</button></div>
+ <div class="home-section-heading"><h2>Campanhas</h2><span class="home-tag">MESAS E PERSONAGENS</span></div>
+ <p class="muted" style="margin:4px 0 16px">Crie sua campanha, autorize jogadores e acompanhe as fichas na mesma sala. Todos os participantes podem visualizar; somente o dono e o mestre podem editar.</p>
+ <div class="nex-campaign-integrated" aria-label="Área de campanhas online">
+  <iframe id="nexCampaignRoomFrame" title="Campanhas online do NEX" data-src="./multiplayer.html?integrado=1" loading="lazy" referrerpolicy="strict-origin-when-cross-origin"></iframe>
+ </div>
+ <details class="nex-campaign-legacy">
+  <summary>Campanhas salvas neste dispositivo <span class="muted">(modo local anterior)</span></summary>
+  <div class="nex-campaign-legacy-inside">
+   <p class="muted" style="margin:0 0 12px">Estas campanhas continuam salvas apenas neste navegador. Não são compartilhadas automaticamente com os jogadores online.</p>
+   <div class="campaign-form"><div class="field"><label for="campaignName">Nome da campanha</label><input id="campaignName" maxlength="75" placeholder="Ex.: Vale das Pedras"></div><div class="field"><label for="campaignNote">Descrição / notas</label><input id="campaignNote" maxlength="240" placeholder="Local, ano, objetivo da mesa..."></div><button class="home-action" id="campaignAdd">Salvar campanha local</button></div>
+   <div id="campaignList" style="margin-top:20px"></div>
+  </div>
+ </details>
+</section>
 
 <section id="wizardScreen" class="hide wizard" aria-label="Criação de personagem">
   <div class="wizard-progress" aria-label="Etapas">
@@ -4242,4 +4257,34 @@ const PARANORMAL=[
 
 
 
-</body></html>
+<style id="nex-campaigns-inline-multiplayer">
+/* Campanhas online dentro da área Campanhas, sem menu ou página externa. */
+#campaignPanel .nex-campaign-integrated{margin:10px 0 18px;background:#0c0b0d;border:1px solid #65232d;border-radius:12px;overflow:hidden;box-shadow:0 12px 36px #0005}
+#campaignPanel #nexCampaignRoomFrame{display:block;width:100%;height:max(850px,calc(100vh - 230px));min-height:740px;border:0;background:#0d0c0f}
+#campaignPanel .nex-campaign-legacy{margin:16px 0 28px;border:1px solid #423036;border-radius:10px;background:#141116}
+#campaignPanel .nex-campaign-legacy>summary{cursor:pointer;padding:17px 18px;font-weight:750;color:#f5d9dd}
+#campaignPanel .nex-campaign-legacy>summary:hover{color:#ff9ca6}
+#campaignPanel .nex-campaign-legacy-inside{padding:8px 16px 20px}
+@media(max-width:760px){
+ #campaignPanel{padding:0 10px 24px}
+ #campaignPanel #nexCampaignRoomFrame{height:max(880px,calc(100dvh - 140px));min-height:800px}
+ #campaignPanel .nex-campaign-integrated{border-radius:8px;margin-left:-6px;margin-right:-6px}
+ #campaignPanel .nex-campaign-legacy-inside{padding:8px 10px 16px}
+}
+</style>
+<script id="nex-campaign-inline-loader">
+(function(){
+  const frame=document.getElementById('nexCampaignRoomFrame');
+  const area=document.getElementById('campaignPanel');
+  if(!frame||!area)return;
+  let loaded=false;
+  function loadWhenVisible(){
+    if(loaded||area.classList.contains('hide'))return;
+    loaded=true;
+    frame.src=frame.dataset.src;
+  }
+  const observer=new MutationObserver(loadWhenVisible);
+  observer.observe(area,{attributes:true,attributeFilter:['class']});
+  loadWhenVisible();
+})();
+</script></body></html>
