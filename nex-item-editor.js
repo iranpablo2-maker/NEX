@@ -124,6 +124,7 @@ style.textContent=[
 '#sheetScreen .nex-item-card-new{background:#1c1c1e!important;border:1px solid #303035!important;border-radius:5px!important;margin:8px 0!important;box-shadow:none!important}',
 '#sheetScreen .nex-item-card-new{position:relative!important}',
 '#sheetScreen .nex-item-card-new>summary{padding-right:56px!important}',
+'#sheetScreen .nex-combat-equipped{background:#000!important;border:1px solid #38252b!important}',
 '#sheetScreen .nex-combat-weapon{position:relative;border-bottom:1px solid #8c2d3b;padding:10px 8px;background:#000!important;color:#fff;display:flex;align-items:center;gap:10px;min-width:0}',
 '#sheetScreen .nex-combat-weapon-main{flex:1;min-width:0}',
 '#sheetScreen .nex-combat-weapon-name{font-size:14px;font-weight:800;line-height:1.5;display:block}',
