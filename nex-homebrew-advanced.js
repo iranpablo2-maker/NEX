@@ -224,12 +224,12 @@
    $('nex52Category').hidden=true;
    const cursed=type==='item'&&(tab==='paranormal'||itemTab==='Itens Amaldiçoados');
    const general=type==='item'&&tab!=='paranormal'&&itemTab==='Geral';
+   const weapon=type==='item'&&(tab==='paranormal'?cursedKind==='Armas Amaldiçoadas':itemTab==='Armas');
+   const protection=type==='item'&&(tab==='paranormal'?cursedKind==='Proteções Amaldiçoadas':itemTab==='Proteções');
    $('nexHbCursedForm').hidden=!cursed;
    $('nexHbCursedForm').querySelectorAll('[data-hb-sync="nexHbTier"],[data-hb-sync="nexHbSpaces"]').forEach(el=>el.closest('label').hidden=weapon||protection);
    if(type==='item'&&tab==='paranormal')$('nexHbParanormalKindLabel').textContent=cursedKind;
    $('nexHbGeneralForm').hidden=!general;
-   const weapon=type==='item'&&(tab==='paranormal'?cursedKind==='Armas Amaldiçoadas':itemTab==='Armas');
-   const protection=type==='item'&&(tab==='paranormal'?cursedKind==='Proteções Amaldiçoadas':itemTab==='Proteções');
    $('nexHbWeaponForm').hidden=!weapon;
    $('nexHbProtectionForm').hidden=!protection;
    $('nexHbOtherForm').hidden=type!=='item'||general||weapon||protection||cursed;
