@@ -162,7 +162,7 @@
    $('nex55DescriptionLabel').textContent=type==='item'?'Descrição* (use B, I ou U para formatar)':'Descrição';
    $('nexHbDescriptionToolbar').hidden=type!=='item';
    $('nex55RequirementsField').hidden=isTrail||isOrigin||isGeneral||type==='poder_paranormal'||type==='ritual';
-   $('nex55DescriptionLabel').textContent=isOrigin||isGeneral||isParanormal?'Descrição':'Descrição e efeitos';
+   $('nex55DescriptionLabel').textContent=type==='item'?'Descrição* (utilize negrito para aplicar a cor vermelha)':isOrigin||isGeneral||isParanormal?'Descrição':'Descrição e efeitos';
    $('nex51Name').placeholder=type==='ritual'?'Novo Ritual':isParanormal||isGeneral?'Nome do homebrew':'Nome';
    $('nex51Name').parentElement.classList.toggle('nex53-ritual-name',type==='ritual');
    $('nex51Description').placeholder=isParanormal?'Descreva o poder paranormal...':isGeneral?'Descreva o poder geral...':'Descreva seu homebrew';
@@ -348,11 +348,17 @@
    }
    return '<div class="nex53-ritual-details">'+fields.filter(([label,value])=>value).map(([label,value])=>'<div><strong>'+esc(label)+'</strong><p>'+esc(value)+'</p></div>').join('')+'</div>';
  }
+ function formattedDescription(value){
+   return esc(value).replace(/\*\*([^*\n]+)\*\*/g,'<strong class="nex-hb-highlight">$1</strong>')
+     .replace(/__([^_\n]+)__/g,'<u>$1</u>')
+     .replace(/\*([^*\n]+)\*/g,'<em>$1</em>')
+     .replace(/\n/g,'<br>');
+ }
  function view(item){
    opened=item.id;const info=meta(item);
    $('nex52DetailBody').innerHTML='<div class="nex52-detail-top"><span>'+esc(LABEL[item.type])+'</span><h3>'+esc(item.name)+'</h3></div>'+
      '<p class="nex52-detail-meta">'+esc(info.join(' · '))+'</p>'+
-     (item.description?'<h4>Descrição</h4><p>'+esc(item.description)+'</p>':'<p>Sem descrição.</p>')+
+     (item.description?'<h4>Descrição</h4><p>'+(item.type==='item'?formattedDescription(item.description):esc(item.description))+'</p>':'<p>Sem descrição.</p>')+
      (item.requirements?'<h4>Pré-requisitos</h4><p>'+esc(item.requirements)+'</p>':'')+
      (item.type==='origem'?'<h4>Perícias treinadas</h4><p>'+esc((item.skills||[]).join(' e ')||'Não configuradas')+'</p>':'')+
      (item.type==='item'&&item.image?'<img class="nex-hb-preview-detail" src="'+esc(item.image)+'" alt="Imagem de '+esc(item.name)+'">':'')+
