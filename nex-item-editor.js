@@ -325,8 +325,7 @@ function editorFields(d){
   '<button type="button" data-nex-add-curse>Adicionar maldição</button></div>'+
   '<input type="hidden" data-edit="curses" value="'+safe(JSON.stringify(d.curses||[]))+'"><div id="nexEditorCursesList" class="nex-editor-upgrade-list"></div>'+
   '<p id="nexEditorCategoryPreview" class="nex-modifier-category-note"></p>'+
-  '<h3>Anotações adicionais</h3><div class="nex-editor-inline"><input id="nexEditorNewUpgrade" placeholder="Observação da melhoria"><button type="button" data-nex-add-upgrade>Adicionar nota</button></div>'+
- '<input type="hidden" data-edit="upgrades" value="'+safe(d.upgrades)+'"><div id="nexEditorUpgradeList" class="nex-editor-upgrade-list" aria-live="polite"></div>'+
+  '<input type="hidden" data-edit="upgrades" value="'+safe(d.upgrades)+'">'+
  '<h3>Descrição</h3>'+field('description','Descrição',d.description,'textarea',4);
  return html;
 }
@@ -344,7 +343,7 @@ function currentEditorItem(){
  const orig=detail(find(current)),area=by('nexEditorFields');
  const val=k=>area?.querySelector('[data-edit="'+k+'"]')?.value;
  return {...orig,name:val('name')||orig.name,kind:val('kind')||orig.kind,
-  category:val('category')||orig.category,baseTier:val('baseTier')||orig.baseTier||orig.tier,
+  category:val('category')||orig.category,baseTier:val('baseTier')||orig.baseTier||orig.tier,spaces:Number(val('spaces')??orig.spaces)||0,
   modifiers:readEditorJson('modifiers'),customImprovements:readEditorJson('customImprovements'),curses:readEditorJson('curses')};
 }
 function showModifierChoices(){
@@ -377,21 +376,23 @@ function showModifierChoices(){
  if(curseList)curseList.innerHTML=curses.map((x,i)=>'<span class="nex-editor-upgrade">'+safe(x.name)+' · '+safe(x.element)+' <button type="button" data-nex-remove-curse="'+i+'">×</button></span>').join('');
  const calc=rules.calculate(item),target=by('nexEditorCategoryPreview');
  const names={melee:'Arma corpo a corpo',ranged:'Arma de disparo',firearm:'Arma de fogo',ammo:'Munição',armorLight:'Proteção leve',armorHeavy:'Proteção pesada',accessory:'Acessório',unsupported:'Sem modificações oficiais nessa categoria'};
- if(target)target.textContent=(names[eligible.kind]||'Item')+' · Categoria: '+calc.baseTier+' + '+calc.categoryIncrease+' = '+(calc.overLimit?'acima de IV':calc.effectiveTier)+
- (calc.invalidCurses.length||calc.invalidModifiers.length?' · Remova opções incompatíveis antes de salvar.':'');
-}
-function showUpgrades(){
- const value=by('nexEditorFields').querySelector('[data-edit="upgrades"]')?.value||'';
- const target=by('nexEditorUpgradeList');
- if(!target)return;
- target.innerHTML=value.split(/\n/).map(x=>x.trim()).filter(Boolean).map((x,i)=>'<span class="nex-editor-upgrade">'+safe(x)+' <button type="button" data-nex-remove-upgrade="'+i+'" aria-label="Remover '+safe(x)+'">×</button></span>').join('');
+ if(target){
+  const details=[
+   'Categoria automática: '+calc.baseTier+' + '+calc.categoryIncrease+' = '+(calc.overLimit?'acima de IV':calc.effectiveTier),
+   ...(calc.attackBonus?['Ataque: +'+calc.attackBonus]:[]),
+   ...(calc.damageBonus?['Dano: +'+calc.damageBonus]:[]),
+   ...(calc.criticalRangeBonus?['Margem de crítico: +'+calc.criticalRangeBonus]:[]),
+   ...(calc.effectiveSpaces!==Number(item.spaces||0)?['Espaços: '+calc.effectiveSpaces]:[])
+  ];
+  target.textContent=(names[eligible.kind]||'Item')+' · '+details.join(' · ')+
+   (calc.invalidCurses.length||calc.invalidModifiers.length||calc.conflicting?' · Remova opções incompatíveis antes de salvar.':'');
+ }
 }
 function open(id){
  const item=find(id);if(!item)return;
  current=String(id);lastFocus=document.activeElement;
  by('nexEditorTitle').textContent='Editar';
  by('nexEditorFields').innerHTML=editorFields(detail(item));
- showUpgrades();
  showModifierChoices();
  modal.hidden=false;document.body.classList.add('nex-editor-open');
  by('nexEditorFields').querySelector('[data-edit="name"]')?.focus();
@@ -726,12 +727,7 @@ modal.addEventListener('click',event=>{
  }
  const removeCurse=event.target.closest('[data-nex-remove-curse]');
  if(removeCurse){writeEditorJson('curses',readEditorJson('curses').filter((_,i)=>i!==Number(removeCurse.dataset.nexRemoveCurse)));return;}
- const add=event.target.closest('[data-nex-add-upgrade]');
- if(add){const input=by('nexEditorNewUpgrade'),area=by('nexEditorFields').querySelector('[data-edit="upgrades"]');if(input&&area&&input.value.trim()){area.value+=(area.value.trim()?'\n':'')+input.value.trim().slice(0,120);input.value='';showUpgrades();}return;}
- const remove=event.target.closest('[data-nex-remove-upgrade]');
- if(remove){const area=by('nexEditorFields').querySelector('[data-edit="upgrades"]');if(!area)return;const all=area.value.split(/\n/).filter(Boolean);all.splice(Number(remove.dataset.nexRemoveUpgrade),1);area.value=all.join('\n');showUpgrades();return;}
- const rich=event.target.closest('[data-nex-rich]');
- if(rich){const area=by('nexEditorFields').querySelector('[data-edit="description"]');if(!area)return;const mark=rich.dataset.nexRich,start=area.selectionStart,end=area.selectionEnd;area.value=area.value.slice(0,start)+mark+area.value.slice(start,end)+mark+area.value.slice(end);area.focus();area.setSelectionRange(start+mark.length,end+mark.length);}
+
 });
 // Ataques antigos criados manualmente com o mesmo nome acompanham a arma equipada.
 // Vinculação por ID evita misturar duas armas diferentes com nomes iguais.
@@ -761,7 +757,7 @@ function refreshLinkedAttacks(){
   if(item&&detail(item).category==='Arma')syncAttackFromWeapon(item,item.name);
  }
 }
-by('nexEditorForm').addEventListener('change',event=>{if(event.target.matches('[data-edit="baseTier"],[data-edit="category"],[data-edit="kind"]'))showModifierChoices();});
+by('nexEditorForm').addEventListener('change',event=>{if(event.target.matches('[data-edit="baseTier"],[data-edit="category"],[data-edit="kind"],[data-edit="spaces"]'))showModifierChoices();});
 by('nexEditorForm').addEventListener('submit',event=>{
  event.preventDefault();const item=find(current);if(!item)return;
  const values=Object.fromEntries([...by('nexEditorFields').querySelectorAll('[data-edit]')].map(el=>[el.dataset.edit,el.value]));
