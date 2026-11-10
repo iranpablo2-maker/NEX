@@ -588,6 +588,10 @@ renderAttacks=function(){
      '<div class="nex-combat-weapon-summary">Dano: <b>'+safe(w.damageExpression||damage||'—')+'</b>　Crítico: <b>'+safe(w.threshold)+'–20 ×'+safe(w.multiplier)+'</b></div>'+
     (w.ammoInfo?'<div><span class="nex-combat-stat-label">Munição:</span> <b>'+safe(w.ammoInfo.name)+(w.extraDamage?' · +'+safe(w.extraDamage):'')+'</b></div>':'')+
     '<div><span class="nex-combat-stat-label">Ataque Bônus:</span> <b>'+safe((bonus>=0?'+':'')+bonus)+'</b> ('+safe(w.skillName)+')</div>'+
+    (d.modifiers?.length?'<div><span class="nex-combat-stat-label">Melhorias:</span> '+safe(d.modifiers.map(id=>window.NEX_ITEM_MODS?.improvements.find(x=>x.id===id)?.name||id).join(', '))+'</div>':'')+
+    (d.curses?.length?'<div><span class="nex-combat-stat-label">Maldições:</span> '+safe(d.curses.map(c=>c.name+' ('+c.element+')').join(', '))+'</div>':'')+
+    (d.damageBonus?'<div><span class="nex-combat-stat-label">Bônus de dano:</span> +'+safe(d.damageBonus)+'</div>':'')+
+    (d.specialNotes?.length?'<div><span class="nex-combat-stat-label">Efeitos:</span> '+safe(d.specialNotes.join(' · '))+'</div>':'')+
     (String(d.secondary||'').trim()&&!/^(?:—|-)$/i.test(String(d.secondary).trim())?'<div class="nex-secondary-damage-line"><span class="nex-combat-stat-label">Dano secundário:</span> <b>'+safe(d.secondary)+' ('+safe(d.secondaryType||'Normal')+')</b> <button type="button" class="nex-secondary-roll-button" data-nex-secondary-roll="'+id+'" aria-label="Rolar dano secundário de '+safe(d.name||item.name)+'">Rolar dano secundário</button></div>':'')+
     '<div><span class="nex-combat-stat-label">Tipo de Dano:</span> <b>'+safe(d.damageType||'—')+'</b></div>'+
     '<div><span class="nex-combat-stat-label">Alcance:</span> <b>'+safe(d.range||'—')+'</b></div>'+
@@ -671,11 +675,13 @@ document.addEventListener('click',e=>{
  if(!damage){toast('Configure um dano principal válido para esta arma no inventário.');return;}
  const secondary=hasSecondary?weaponDice(secondaryExpression,1):null;
  const extra=String(w.extraDamage||'').trim()?weaponDice(w.extraDamage,1):null;
+ const curseExtra=String(w.d.criticalExtraDamage||'').trim()?weaponDice(w.d.criticalExtraDamage,critical?w.multiplier:1):null;
  if(w.extraDamage&&!extra){toast('Dano extra do item inválido. Confira a melhoria da munição.');return;}
+ if(w.d.criticalExtraDamage&&!curseExtra){toast('Dano de maldição inválido. Confira a configuração do item.');return;}
  if(hasSecondary&&!secondary){toast('Dano secundário inválido. Use, por exemplo, 1d6 ou 2d4+2.');return;}
  const originBonus=typeof nex12Orig==='function'?Number(nex12Orig()?.damage)||0:0;
  const itemBonus=Number(w.d.damageBonus)||0;
- const totalDamage=damage.total+(secondary?secondary.total:0)+(extra?extra.total:0)+originBonus+itemBonus;
+ const totalDamage=damage.total+(secondary?secondary.total:0)+(extra?extra.total:0)+(curseExtra?curseExtra.total:0)+originBonus+itemBonus;
  const detailAttack=rolls.join(', ')+' → '+natural+' '+(w.bonus>=0?'+ ':'− ')+Math.abs(w.bonus);
  const damageDetail=damage.detail+(originBonus?' + bônus '+originBonus:'')+(itemBonus?' + melhoria '+itemBonus:'');
  const secondaryDetail=secondary?secondary.detail:'';
@@ -684,11 +690,11 @@ document.addEventListener('click',e=>{
  '<div class="nex-weapon-roll-column"><div class="nex-weapon-roll-value">'+safe(attack)+'</div><div class="nex-weapon-roll-label">ATAQUE</div></div>'+
  '<div class="nex-weapon-roll-column"><div class="nex-weapon-roll-value">'+safe(totalDamage)+'</div><div class="nex-weapon-roll-label">DANO TOTAL</div></div></div>'+
  '<div class="nex-weapon-roll-detail">'+safe(w.skillName)+': '+safe(detailAttack)+
- '<div>Crítico configurado: '+safe(w.threshold)+'–20 ×'+safe(w.multiplier)+' · '+(critical?'Crítico ativado!':'Sem crítico nesta rolagem')+'</div>'+ 
  '<div>Dano principal ('+safe(w.damageExpression)+'): '+safe(damageDetail)+' = '+safe(damage.total+originBonus+itemBonus)+(critical?' · '+safe(w.multiplier)+'× dados':'')+'</div>'+
  (extra?'<div>Dano adicional ('+safe(extra.expression)+'): '+safe(extra.detail)+' = '+safe(extra.total)+'</div>':'')+
+ (curseExtra?'<div>Dano de maldição ('+safe(curseExtra.expression)+'): '+safe(curseExtra.detail)+' = '+safe(curseExtra.total)+(critical?' · crítico':'')+'</div>':'')+
  (secondary?'<div>Dano secundário '+safe(w.d.secondaryType||'Normal')+' ('+safe(secondary.expression)+'): '+safe(secondaryDetail)+' = '+safe(secondary.total)+'</div>':'')+
- (secondary||extra?'<div>Total: '+safe(totalDamage)+'</div>':'')+'</div>';
+ (secondary||extra||curseExtra?'<div>Total: '+safe(totalDamage)+'</div>':'')+'</div>';
  weaponRollPanel.hidden=false;
  const rect=button.getBoundingClientRect(),width=310;
  const left=Math.max(8,Math.min(innerWidth-width-8,rect.left-100));
@@ -698,8 +704,9 @@ document.addEventListener('click',e=>{
   logResult(w.d.name+' — ataque','d20 ('+w.skillName+')', '['+rolls.join(', ')+'] → '+natural,attack);
   logResult(w.d.name+' — dano principal',damage.expression,damageDetail,damage.total+originBonus+itemBonus);
   if(secondary)logResult(w.d.name+' — dano secundário ('+(w.d.secondaryType||'Normal')+')',secondary.expression,secondaryDetail,secondary.total);
-  if(secondary||extra)logResult(w.d.name+' — dano total',[damage.expression,secondary?.expression,extra?.expression].filter(Boolean).join(' + '),[damageDetail,secondaryDetail,extra?.detail].filter(Boolean).join(' + '),totalDamage);
+  if(secondary||extra||curseExtra)logResult(w.d.name+' — dano total',[damage.expression,secondary?.expression,extra?.expression,curseExtra?.expression].filter(Boolean).join(' + '),[damageDetail,secondaryDetail,extra?.detail,curseExtra?.detail].filter(Boolean).join(' + '),totalDamage);
   if(extra)logResult(w.d.name+' — dano adicional',extra.expression,extra.detail,extra.total);
+  if(curseExtra)logResult(w.d.name+' — dano de maldição',curseExtra.expression,curseExtra.detail,curseExtra.total);
  }
 });
 weaponRollPanel.addEventListener('click',e=>{
