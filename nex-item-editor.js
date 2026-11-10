@@ -101,6 +101,7 @@ function detail(item){
 }
 const style=document.createElement('style');style.id='nex-item-details-style';
 style.textContent=[
+'#sheetScreen .nex-curse-description{display:block;margin-top:5px;line-height:1.5;font-size:12px;color:#e1dde3;white-space:normal}',
 '#sheetScreen .nex-item-card-new{background:#1e1d20;border:1px solid #3e3031;border-radius:5px;margin:7px 0;overflow:hidden;color:#fff}',
 '#sheetScreen .nex-item-card-new>summary{cursor:pointer;list-style:none;padding:12px 10px;display:flex;align-items:center;gap:13px}',
 '#sheetScreen .nex-item-card-new>summary::-webkit-details-marker{display:none}',
@@ -326,7 +327,7 @@ function editorFields(d){
   '<input type="hidden" data-edit="customImprovements" value="'+safe(JSON.stringify(d.customImprovements||[]))+'"><div id="nexEditorCustomImprovementsList" class="nex-editor-upgrade-list"></div>'+
   '<h3>Maldições</h3><div class="nex-editor-inline"><select id="nexEditorCurseChoice" aria-label="Maldições compatíveis">'+curseOptions.map(x=>'<option value="'+safe(x.id)+'">'+safe(x.name)+' · '+safe(x.element)+'</option>').join('')+'</select>'+ 
   '<button type="button" data-nex-add-curse>Adicionar maldição</button></div>'+
-  '<input type="hidden" data-edit="curses" value="'+safe(JSON.stringify(d.curses||[]))+'"><div id="nexEditorCursesList" class="nex-editor-upgrade-list"></div>'+
+  '<input type="hidden" data-edit="curses" value="'+safe(JSON.stringify(d.curses||[]))+'"><div id="nexEditorCursesList" class="nex-editor-upgrade-list"></div><p id="nexEditorCurseDescription" class="nex-modifier-category-note" aria-live="polite"></p>'+
   '<p id="nexEditorCategoryPreview" class="nex-modifier-category-note"></p>'+
   '<input type="hidden" data-edit="upgrades" value="'+safe(d.upgrades)+'">'+
  '<h3>Descrição</h3>'+field('description','Descrição',d.description,'textarea',4);
@@ -376,7 +377,9 @@ function showModifierChoices(){
  const customList=by('nexEditorCustomImprovementsList');
  if(customList)customList.innerHTML=custom.map((x,i)=>'<span class="nex-editor-upgrade">'+safe(x)+' (Homebrew) <button type="button" data-nex-remove-custom-improvement="'+i+'">×</button></span>').join('');
  const curseList=by('nexEditorCursesList');
- if(curseList)curseList.innerHTML=curses.map((x,i)=>'<span class="nex-editor-upgrade">'+safe(x.name)+' · '+safe(x.element)+' <button type="button" data-nex-remove-curse="'+i+'">×</button></span>').join('');
+ if(curseList)curseList.innerHTML=curses.map((x,i)=>{const entry=rules.curses.find(y=>y.id===x.id||y.name===x.name);return '<div class="nex-editor-upgrade"><b>'+safe(x.name)+' · '+safe(x.element)+'</b> <button type="button" data-nex-remove-curse="'+i+'" aria-label="Remover '+safe(x.name)+'">×</button><div class="nex-curse-description">'+safe(entry?.description||'Descrição indisponível para esta maldição.')+'</div></div>'}).join('');
+ const info=by('nexEditorCurseDescription');
+ if(info){const choice=rules.curses.find(x=>x.id===curseMenu?.value);info.textContent=choice?choice.description:'Selecione uma maldição compatível para consultar sua descrição.';}
  const calc=rules.calculate(item),target=by('nexEditorCategoryPreview');
  const names={melee:'Arma corpo a corpo',ranged:'Arma de disparo',firearm:'Arma de fogo',ammo:'Munição',armorLight:'Proteção leve',armorHeavy:'Proteção pesada',accessory:'Acessório',unsupported:'Sem modificações oficiais nessa categoria'};
  if(target){
@@ -435,7 +438,7 @@ function card(item,expanded=false){
      '<div class="nex-ref-fields">'+weaponInfo.filter(x=>x[1]!==undefined&&x[1]!==null&&String(x[1]).trim()!=='').map(x=>'<div><span>'+safe(x[0])+':</span> <b>'+safe(x[1])+'</b></div>').join('')+'</div>'+
      '<p class="nex-ref-description">'+descriptionText(d.description||'Sem descrição cadastrada.')+'</p>'+ 
      (d.modifiers?.length||d.customImprovements?.length?'<div class="nex-ref-description">Melhorias: '+safe([...(d.modifiers||[]).map(id=>window.NEX_ITEM_MODS?.improvements.find(x=>x.id===id)?.name||id),...(d.customImprovements||[])].join(', '))+'</div>':'')+
-     (d.curses?.length?'<div class="nex-ref-description">Maldições: '+safe(d.curses.map(c=>c.name+' ('+c.element+')').join(', '))+'</div>':'')+
+     (d.curses?.length?'<div class="nex-ref-description"><b>Maldições</b>'+d.curses.map(c=>{const entry=window.NEX_ITEM_MODS?.curses.find(x=>x.id===c.id||x.name===c.name);return '<div><b>'+safe(c.name)+' ('+safe(c.element)+'):</b> '+safe(entry?.description||'Descrição não disponível.')+'</div>'}).join('')+'</div>':'')+
      '<div class="nex-ref-actions"><button type="button" data-nex-item-remove="'+id+'" class="nex-item-remove">Remover</button>'+
      '<button type="button" data-nex-item-edit="'+id+'" class="nex-item-edit">Editar</button></div>'+
     '</div></details>';
@@ -450,7 +453,7 @@ function card(item,expanded=false){
  '<div class="nex-item-card-stats">'+stats.filter(x=>x[1]!==undefined&&x[1]!==null&&String(x[1]).trim()!=='').map(x=>'<div>'+safe(x[0])+': <b>'+safe(x[1])+'</b></div>').join('')+'</div>'+
  (d.upgrades?'<div class="nex-item-card-description"><b>Anotações:</b> '+descriptionText(d.upgrades)+'</div>':'')+img+
  (d.modifiers?.length||d.customImprovements?.length?'<div class="nex-item-card-description">Melhorias: '+safe([...(d.modifiers||[]),...(d.customImprovements||[])].join(', '))+'</div>':'')+
- (d.curses?.length?'<div class="nex-item-card-description">Maldições: '+safe(d.curses.map(c=>c.name+' ('+c.element+')').join(', '))+'</div>':'')+
+ (d.curses?.length?'<div class="nex-item-card-description"><b>Maldições</b>'+d.curses.map(c=>{const entry=window.NEX_ITEM_MODS?.curses.find(x=>x.id===c.id||x.name===c.name);return '<div><b>'+safe(c.name)+' ('+safe(c.element)+'):</b> '+safe(entry?.description||'Descrição não disponível.')+'</div>'}).join('')+'</div>':'')+
  '<div class="nex-item-card-description">'+descriptionText(d.description||'Sem descrição cadastrada.')+'</div>'+
  '<div class="nex-item-card-buttons"><button type="button" data-nex-item-remove="'+id+'" class="nex-item-remove">Remover</button>'+
  '<button type="button" data-nex-item-edit="'+id+'" class="nex-item-edit">Editar</button></div></div></details>';
@@ -794,7 +797,7 @@ function refreshLinkedAttacks(){
   if(item&&detail(item).category==='Arma')syncAttackFromWeapon(item,item.name);
  }
 }
-by('nexEditorForm').addEventListener('change',event=>{if(event.target.matches('[data-edit="baseTier"],[data-edit="category"],[data-edit="kind"],[data-edit="spaces"]'))showModifierChoices();});
+by('nexEditorForm').addEventListener('change',event=>{if(event.target.matches('[data-edit="baseTier"],[data-edit="category"],[data-edit="kind"],[data-edit="spaces"],#nexEditorCurseChoice'))showModifierChoices();});
 by('nexEditorForm').addEventListener('submit',event=>{
  event.preventDefault();const item=find(current);if(!item)return;
  const values=Object.fromEntries([...by('nexEditorFields').querySelectorAll('[data-edit]')].map(el=>[el.dataset.edit,el.value]));
