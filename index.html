@@ -1618,6 +1618,60 @@ background-color:#ad2734!important;border-color:#d44551!important;color:#fff!imp
 }
 #sheetScreen .nex-attr-skill-picker{color:#ed8b91!important}
 #sheetScreen :is(button,input,select):focus-visible{outline-color:#d44551!important}
+</style><style id="nex-cloudflare-ui-refine">
+/* Interface V3: mais legível, responsiva e consistente, preservando a ficha atual. */
+:root{--accent:#d33b49!important;--violet:#ad2837!important;--red:#c82f3e!important}
+html{scroll-behavior:smooth}
+body{background:#08090b;color:#f4f0f2}
+.topbar{background:#0c0b0f;border-bottom:1px solid #3c252a}
+.topinner{min-height:66px;gap:12px}
+.brand{min-width:0;gap:11px}
+.brand h1{letter-spacing:.24em}
+.brand-mark{border-radius:10px;border-color:#9f3540;color:#f3a0a7;box-shadow:0 0 0 3px #9e29301d}
+.nex-ref-nav{border-bottom:1px solid #632a32;background:#121014}
+.nex-ref-nav-inner{display:flex;align-items:center;gap:4px;flex-wrap:wrap}
+.nex-ref-nav button,.nex-ref-nav .nex-online-link{font-size:12px!important;min-height:40px;padding:10px 13px!important;line-height:20px;text-decoration:none;font-weight:700}
+.nex-ref-nav .nex-online-link{color:#ffcbd0!important;display:inline-flex;align-items:center;gap:9px;border-bottom:2px solid transparent}
+.nex-ref-nav .nex-online-link:hover,.nex-ref-nav .nex-online-link:focus-visible{background:#36181f;color:white!important;border-bottom-color:#da4654}
+.nex-online-dot{display:block;width:7px;height:7px;border-radius:50%;background:#ce3b49;box-shadow:0 0 0 3px #b536421e}
+#mainMenu .home-hero{border:1px solid #45272d;border-radius:14px;background:linear-gradient(122deg,#1c1116 0%,#100f12 60%,#221015 100%);padding:clamp(22px,4vw,44px);box-shadow:0 16px 55px #0004}
+#mainMenu .home-hero h2{letter-spacing:.18em}
+#mainMenu .home-hero p{max-width:680px;line-height:1.65}
+#mainMenu .home-grid{gap:14px}
+#mainMenu .home-tile{border:1px solid #452d33;border-radius:12px;background:linear-gradient(155deg,#19171b,#111014);padding:19px;min-width:0;min-height:164px;display:flex;flex-direction:column;gap:7px;text-align:left;text-decoration:none;transition:background .15s,border-color .15s,transform .15s}
+#mainMenu .home-tile:hover,#mainMenu .home-tile:focus-visible{border-color:#c43b4a;background:linear-gradient(155deg,#28171d,#151015);transform:translateY(-2px)}
+#mainMenu .home-tile .symbol{color:#e45c69;font-size:27px;line-height:1.2}
+#mainMenu .home-tile strong{color:#f6f0f2;font-size:14px;letter-spacing:.01em}
+#mainMenu .home-tile small{color:#bdb1b7;font-size:12px;line-height:1.5}
+#mainMenu .nex-multiplayer-tile{border-color:#8c303d;background:linear-gradient(140deg,#28151d,#151015)}
+#mainMenu .nex-tile-footer{display:block;margin-top:auto;padding-top:10px;font-size:10px;color:#ff9aa3;font-weight:800;letter-spacing:.075em}
+#agentsPanel .agents-panel-header,#campaignPanel .home-section-heading{gap:12px}
+#sheetScreen .mini-nav{border-bottom-color:#76353c;min-height:42px}
+#sheetScreen .nexv16-table-scroll{scrollbar-color:#9b3540 #111}
+#sheetScreen button:focus-visible,#sheetScreen select:focus-visible,#sheetScreen input:focus-visible{outline-color:#ec6470!important;outline-offset:2px}
+#sheetScreen .btn.primary,#mainMenu .home-action:not(.secondary),#agentsPanel .btn.primary{background:#a92837!important;border-color:#d04c58!important;color:#fff!important}
+#sheetScreen .btn.primary:hover,#mainMenu .home-action:not(.secondary):hover{background:#c13949!important}
+@media(max-width:760px){
+ .topinner{padding:10px 12px;min-height:58px}
+ .brand h1{font-size:18px}
+ .subtitle{font-size:8px}
+ .nex-ref-nav-inner{padding:0 6px;gap:0;justify-content:flex-start;overflow-x:auto;scrollbar-width:thin}
+ .nex-ref-nav button,.nex-ref-nav .nex-online-link{white-space:nowrap;min-height:44px;padding:10px 11px!important;font-size:11px!important;flex:none}
+ #mainMenu{padding-left:12px!important;padding-right:12px!important}
+ #mainMenu .home-hero{padding:22px 17px;border-radius:10px}
+ #mainMenu .home-hero p{font-size:12px}
+ #mainMenu .home-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:10px}
+ #mainMenu .home-tile{min-height:152px;padding:14px 12px;border-radius:10px}
+ #mainMenu .home-tile strong{font-size:12px}
+ #mainMenu .home-tile small{font-size:11px}
+ #mainMenu .home-section-heading{gap:12px;flex-wrap:wrap}
+ #agentsPanel{padding-left:12px!important;padding-right:12px!important}
+ #sheetScreen .shell{padding-left:9px!important;padding-right:9px!important}
+ #sheetScreen .mini-nav strong{font-size:10px;letter-spacing:.03em}
+ #sheetScreen .nex216-identity{max-width:100%;overflow-x:auto}
+}
+@media(max-width:370px){#mainMenu .home-grid{grid-template-columns:minmax(0,1fr)!important}}
+@media(prefers-reduced-motion:reduce){#mainMenu .home-tile{transition:none}html{scroll-behavior:auto}}
 </style></head><body>
 <script src="nex-sobrevivendo-ao-horror.js?v=2072"></script>
 <header class="topbar"><div class="topinner"><button type="button" id="n17MenuToggle" class="n17-menu-button" aria-expanded="false" aria-controls="n17Drawer" aria-label="Abrir menu">☰</button><button type="button" class="brand" id="nexBrandHome" aria-label="Voltar ao menu principal" title="Voltar ao menu principal"><span class="brand-mark" aria-hidden="true">◈</span><span><h1>NEX</h1><span class="subtitle">SISTEMA DE FICHAS · ORDEM PARANORMAL</span></span></button><div class="actions"><button class="btn sm" id="menuHeaderButton" type="button" style="display:none!important" hidden tabindex="-1" aria-hidden="true">⌂ Menu principal</button><button class="btn sm" id="newChar" type="button" style="display:none!important" hidden tabindex="-1" aria-hidden="true">＋ Nova ficha</button><button class="btn sm" id="importBtn" style="display:none!important" aria-hidden="true" tabindex="-1">Importar</button><button class="btn sm" id="exportBtn" style="display:none!important" aria-hidden="true" tabindex="-1">↓ Exportar</button><input type="file" id="fileInput" accept="application/json,.json" hidden><span id="n17SaveIndicator" hidden aria-hidden="true"></span></div></div></header>
@@ -1626,6 +1680,7 @@ background-color:#ad2734!important;border-color:#d44551!important;color:#fff!imp
   <button type="button" data-nexnav="agents">Personagens</button>
   <button type="button" data-nexnav="campaigns">Campanhas</button>
   <button type="button" data-nexnav="homebrew">Homebrew</button>
+  <a class="nex-online-link" href="./multiplayer.html" title="Abrir campanhas online">Campanhas online <span class="nex-online-dot" aria-hidden="true"></span></a>
     
  </div>
 </nav>
@@ -1644,7 +1699,7 @@ background-color:#ad2734!important;border-color:#d44551!important;color:#fff!imp
 <section id="mainMenu" aria-label="Menu principal NEX">
  <div class="home-hero"><div class="home-eyebrow">PLATAFORMA DE PERSONAGENS</div><h2>NEX</h2><p>O paranormal não espera. Organize seus personagens, consulte suas fichas e prepare sua próxima investigação em um único lugar. Seus registros ficam neste navegador.</p><div class="actions"><button class="home-action" type="button" id="menuNew">＋ Criar personagem</button><button class="home-action secondary" type="button" id="menuContinue" style="display:none!important" hidden tabindex="-1" aria-hidden="true">Abrir ficha atual →</button></div></div>
  <div class="home-section-heading"><h2>Central de operações</h2><span class="home-tag">◈ ACESSO LOCAL</span></div>
- <div class="home-grid"><button class="home-tile" data-home="agents"><span class="symbol">♙</span><strong>Meus personagens</strong><small>Visualize, abra e gerencie fichas de personagens.</small></button><button class="home-tile" data-home="new"><span class="symbol">＋</span><strong>Criar personagem</strong><small>Inicie uma nova ficha com as regras do NEX.</small></button><button class="home-tile" data-home="campaigns"><span class="symbol">◎</span><strong>Campanhas</strong><small>Organize suas mesas e registre informações importantes.</small></button><button class="home-tile" data-home="homebrew"><span class="symbol">✧</span><strong>Homebrew</strong><small>Crie e edite origens personalizadas na biblioteca independente.</small></button></div>
+ <div class="home-grid"><button class="home-tile" data-home="agents"><span class="symbol">♙</span><strong>Meus personagens</strong><small>Visualize, abra e gerencie fichas de personagens.</small></button><button class="home-tile" data-home="new"><span class="symbol">＋</span><strong>Criar personagem</strong><small>Inicie uma nova ficha com as regras do NEX.</small></button><button class="home-tile" data-home="campaigns"><span class="symbol">◎</span><strong>Campanhas</strong><small>Organize suas mesas e registre informações importantes.</small></button><button class="home-tile" data-home="homebrew"><span class="symbol">✧</span><strong>Homebrew</strong><small>Crie e edite origens personalizadas na biblioteca independente.</small></button><a class="home-tile nex-multiplayer-tile" href="./multiplayer.html"><span class="symbol" aria-hidden="true">♜</span><strong>Campanhas online</strong><small>Compartilhe a mesa. Todos visualizam as fichas; apenas o dono e o mestre podem editar.</small><span class="nex-tile-footer">ACESSAR CAMPANHAS ONLINE →</span></a></div>
  <div class="home-section-heading" id="agentsHeading"><h2>Personagens registrados</h2><div class="home-toolbar"><button class="btn sm" id="menuBackup" style="display:none!important" aria-hidden="true" tabindex="-1">↓ Exportar ficha atual</button><button class="btn sm" id="menuImport" style="display:none!important" aria-hidden="true" tabindex="-1">↑ Importar ficha</button></div></div>
  <div id="menuAgents" class="home-card-list"></div><p class="hint" style="margin-top:15px">Cada ficha é salva neste dispositivo. Exporte cópias de segurança em JSON para não perder seus personagens.</p>
 </section>
