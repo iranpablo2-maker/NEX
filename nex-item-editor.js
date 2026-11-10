@@ -124,17 +124,17 @@ style.textContent=[
 '#sheetScreen .nex-item-card-new{background:#1c1c1e!important;border:1px solid #303035!important;border-radius:5px!important;margin:8px 0!important;box-shadow:none!important}',
 '#sheetScreen .nex-item-card-new{position:relative!important}',
 '#sheetScreen .nex-item-card-new>summary{padding-right:56px!important}',
-'#sheetScreen .nex-combat-weapon{position:relative;border-bottom:1px solid #8c2d3b;padding:13px 8px;background:#1b191d;color:#fff;display:flex;align-items:center;gap:12px;min-width:0}',
+'#sheetScreen .nex-combat-weapon{position:relative;border-bottom:1px solid #8c2d3b;padding:10px 8px;background:#000!important;color:#fff;display:flex;align-items:center;gap:10px;min-width:0}',
 '#sheetScreen .nex-combat-weapon-main{flex:1;min-width:0}',
 '#sheetScreen .nex-combat-weapon-name{font-size:14px;font-weight:800;line-height:1.5;display:block}',
 '#sheetScreen .nex-combat-weapon-summary{font-size:12px;color:#da4b5b;margin-top:2px;line-height:1.5}',
-'#sheetScreen .nex-combat-weapon-details{padding:11px 9px 12px;background:#171519;font-size:12px;line-height:1.85;color:#e6dfe3}',
+'#sheetScreen .nex-combat-weapon-details{padding:11px 9px 12px;background:#000!important;font-size:12px;line-height:1.85;color:#e6dfe3}',
 '#sheetScreen .nex-combat-weapon-details b{color:#fff}',
 '#sheetScreen .nex-combat-weapon-details .nex-combat-stat-label{color:#dd4b58}',
 '#sheetScreen .nex-combat-die-button{border:0!important;background:transparent!important;padding:7px!important;cursor:pointer!important;flex:none;color:#f1eded!important;display:grid!important;place-items:center!important;border-radius:5px!important}',
 '#sheetScreen .nex-combat-die-button:hover{color:#e34a58!important;background:#3a2027!important}',
-'#sheetScreen .nex-combat-die-button .nex-combat-d20-image{width:43px!important;height:48px!important;object-fit:contain!important;display:block!important;border:0!important;pointer-events:none;background:#000!important;border-radius:5px}',
-'#sheetScreen .nex-combat-die-button{padding:1px 4px!important;min-width:49px!important;min-height:50px!important}',
+'#sheetScreen .nex-combat-die-button .nex-combat-d20-image{width:29px!important;height:33px!important;object-fit:contain!important;display:block!important;border:0!important;pointer-events:none;background:#000!important;border-radius:4px}',
+'#sheetScreen .nex-combat-die-button{padding:1px 3px!important;min-width:34px!important;min-height:35px!important}',
 '#sheetScreen .nex-combat-weapon-toggle{background:none!important;border:0!important;padding:7px 8px!important;color:#da4754!important;font-size:19px!important;line-height:1!important;cursor:pointer!important;flex:none!important;align-self:center!important}',
 '#sheetScreen .nex-combat-weapon-toggle:hover{color:#ff7883!important}',
 '#sheetScreen .nex-combat-weapon-toggle:focus-visible{outline:2px solid #db4c59!important}',
@@ -576,6 +576,16 @@ renderAttacks=function(){
  const list=by('attacksList');
  if(!list)return result;
  const items=(state.items||[]).filter(item=>item.equipped===true && detail(item).category==='Arma');
+ const available=(state.items||[]).filter(item=>detail(item).category==='Arma'&&item.equipped!==true);
+ const options=available.map(item=>'<option value="'+safe(item.id)+'">'+safe(detail(item).name||item.name)+'</option>').join('');
+ const picker=document.createElement('div');
+ picker.className='nex-combat-weapon-picker';
+ picker.style.cssText='display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:9px;background:#000;border:1px solid #29242a;margin-bottom:8px';
+ picker.innerHTML='<label for="nexCombatWeaponPicker" style="color:#f2ebee;font-weight:700">Armas do inventário</label>'+
+ '<select id="nexCombatWeaponPicker" aria-label="Escolher arma para combate" style="flex:1;min-width:140px;background:#080808;color:#fff;border:1px solid #42353a;padding:7px">'+
+ (options?'<option value="">Selecione uma arma</option>'+options:'<option value="">Todas as armas já estão no combate</option>')+'</select>'+
+ '<button type="button" class="btn sm" data-nex-combat-add-weapon '+(!available.length?'disabled':'')+'>Adicionar ao combate</button>';
+ list.prepend(picker);
  if(!items.length)return result;
  const cards=items.map(item=>{
   const w=weaponData(item),d=w.d,id=safe(item.id),bonus=w.bonus,damage=String(d.damage||'').trim();
@@ -612,6 +622,17 @@ renderAttacks=function(){
 };
 function hideWeaponRoll(){weaponRollPanel.hidden=true;}
 document.addEventListener('click',e=>{
+ const add=e.target.closest('[data-nex-combat-add-weapon]');
+ if(add){
+  e.preventDefault();
+  const chosen=by('nexCombatWeaponPicker')?.value;
+  const item=chosen&&find(chosen);
+  if(!item||detail(item).category!=='Arma')return;
+  item.equipped=true;
+  renderInventory();renderAttacks();save();
+  toast('Arma adicionada ao combate.');
+  return;
+ }
  const toggle=e.target.closest('[data-nex-weapon-toggle]');
  if(toggle){
   e.preventDefault();
