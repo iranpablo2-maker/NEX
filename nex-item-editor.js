@@ -417,10 +417,12 @@ document.addEventListener('click',event=>{
  if(!button)return;
  if(button.dataset.nexItemEdit!==undefined){open(button.dataset.nexItemEdit);return}
  if(button.dataset.nexItemRemove!==undefined){
+  event.preventDefault();
   const item=find(button.dataset.nexItemRemove);
-  if(item&&confirm('Remover '+item.name+' do inventário?')){
+  if(item){
    state.items=state.items.filter(x=>String(x.id)!==String(item.id));
-   renderInventory();renderAttacks();save();toast('Item removido.');
+   for(const attack of (state.attacks||[]))if(String(attack.linkedItemId||'')===String(item.id))delete attack.linkedItemId;
+   save();renderInventory();renderAttacks();toast('Item removido.');
   }
  }
 });
@@ -466,6 +468,7 @@ const weaponDieSvg='<img class="nex-combat-d20-image" src="data:image/png;base64
 const collapsedWeapons=new Set();
 const previousRenderAttacks=renderAttacks;
 renderAttacks=function(){
+ refreshLinkedAttacks();
  const result=previousRenderAttacks.apply(this,arguments);
  const list=by('attacksList');
  if(!list)return result;
@@ -606,12 +609,41 @@ modal.addEventListener('click',event=>{
  const rich=event.target.closest('[data-nex-rich]');
  if(rich){const area=by('nexEditorFields').querySelector('[data-edit="description"]');if(!area)return;const mark=rich.dataset.nexRich,start=area.selectionStart,end=area.selectionEnd;area.value=area.value.slice(0,start)+mark+area.value.slice(start,end)+mark+area.value.slice(end);area.focus();area.setSelectionRange(start+mark.length,end+mark.length);}
 });
+// Ataques antigos criados manualmente com o mesmo nome acompanham a arma equipada.
+// Vinculação por ID evita misturar duas armas diferentes com nomes iguais.
+function syncAttackFromWeapon(item,previousName){
+ const d=detail(item),allWeapons=(state.items||[]).filter(x=>detail(x).category==='Arma');
+ const uniqueName=allWeapons.filter(x=>norm(x.name)===norm(previousName||item.name)).length===1;
+ for(const attack of (state.attacks||[])){
+  const linked=String(attack.linkedItemId||'')===String(item.id);
+  const sameName=uniqueName&&!attack.linkedItemId&&norm(attack.name)===norm(previousName||item.name);
+  if(!linked&&!sameName)continue;
+  attack.linkedItemId=String(item.id);
+  attack.name=d.name;
+  attack.damage=String(d.damage||'');
+  attack.secondary=String(d.secondary||'').trim()==='—'?'':String(d.secondary||'');
+  attack.secondaryType=d.secondaryType||'Normal';
+  attack.critical=String(d.critical||'20');
+  attack.multiplier=String(d.multiplier||'2');
+  attack.damageType=String(d.damageType||'');
+  attack.range=String(d.range||'');
+ }
+}
+// Ao renderizar o Combate, valores ligados ao inventário sempre prevalecem.
+function refreshLinkedAttacks(){
+ for(const attack of (state.attacks||[])){
+  if(!attack.linkedItemId)continue;
+  const item=find(attack.linkedItemId);
+  if(item&&detail(item).category==='Arma')syncAttackFromWeapon(item,item.name);
+ }
+}
 by('nexEditorForm').addEventListener('submit',event=>{
  event.preventDefault();const item=find(current);if(!item)return;
  const values=Object.fromEntries([...by('nexEditorFields').querySelectorAll('[data-edit]')].map(el=>[el.dataset.edit,el.value]));
  if(!values.name?.trim()){toast('Informe o nome do item.');return}
  if(!cats.includes(values.category)){toast('Categoria inválida.');return}
  if(values.image&&!/^https:\/\//i.test(values.image)){toast('A imagem precisa de um endereço HTTPS.');return}
+ const previousName=item.name;
  const d={...detail(item),...values};
  if(d.category==='Arma' && (!String(d.damage||'').trim() || !String(d.critical||'').trim() || !String(d.multiplier||'').trim())){toast('Preencha dano, crítico e multiplicador.');return;}
  d.name=String(d.name).trim().slice(0,100);
@@ -625,7 +657,10 @@ by('nexEditorForm').addEventListener('submit',event=>{
  item.name=d.name;item.category=d.category;item.quantity=d.quantity;item.spaces=d.spaces;item.nexInfo=d;
  item.description=d.description;
  item.detail=[d.description,d.category==='Arma'?'Dano: '+d.damage:'',d.category==='Arma'&&d.secondary&&d.secondary!=='—'?'Dano secundário: '+d.secondary:'',d.category==='Arma'&&d.secondary&&d.secondary!=='—'?'Tipo do dano secundário: '+(d.secondaryType||'Normal'):'',d.category==='Arma'?'Crítico: '+d.critical+' ×'+d.multiplier:'',d.category==='Arma'?'Tipo: '+d.damageType:'','Categoria: '+d.tier].filter(Boolean).join(' · ').slice(0,2500);
- close();renderInventory();renderAttacks();save();toast('Item atualizado.');
+ if(d.category==='Arma')syncAttackFromWeapon(item,previousName);
+ save();
+ close();renderInventory();refreshLinkedAttacks();renderAttacks();
+ toast('Item atualizado no inventário e no combate.');
 });
 document.addEventListener('keydown',event=>{if(!modal.hidden&&event.key==='Escape'){event.preventDefault();close();}});
 renderInventory();
