@@ -45,6 +45,25 @@ const curseEntries=[
  {id:'conjuracao',name:'Conjuração',element:'Conhecimento',on:['accessory']},
  {id:'escudo_mental',name:'Escudo Mental',element:'Conhecimento',on:['accessory']}
 ];
+const curseDescriptions={
+  "antielemento": "Escolha o elemento contra o qual a arma será especialmente eficaz. O benefício depende do elemento escolhido; registre essa escolha na sessão.",
+  "energetica": "Ao ativar por 2 PE, a arma recebe +5 no ataque, passa a causar dano de Energia e ignora resistência a dano durante a ativação.",
+  "sanguinaria": "Atingir inimigos pode provocar sangramento cumulativo. Em acertos críticos, também pode conceder pontos de vida temporários ao portador.",
+  "lancinante": "Acrescenta dano de Sangue aos ataques. Esse dado adicional também é multiplicado quando ocorre um crítico.",
+  "repulsora": "A arma oferece bônus de Defesa enquanto empunhada. O portador ainda pode gastar PE para melhorar um bloqueio.",
+  "vibrante": "Facilita realizar ataques adicionais, interagindo com a habilidade Ataque Extra. Consulte os custos e requisitos aplicáveis ao personagem.",
+  "consumidora": "Os golpes enfraquecem a movimentação do alvo. Um gasto adicional de PE pode imobilizá-lo, conforme as condições da regra.",
+  "erosiva": "Acrescenta dano de Morte ao ataque. Possui um efeito especial adicional que exige gasto de PE e resolução conforme a regra.",
+  "abascanta": "A proteção oferece resistência aprimorada contra efeitos de rituais e permite uma reação especial contra conjurações, conforme os requisitos.",
+  "profetica": "A proteção concede um efeito ligado à percepção antecipada de perigos. Sua utilização depende das condições e ações descritas no livro.",
+  "sombria": "A proteção favorece ações furtivas, concedendo bônus em testes de Furtividade enquanto estiver equipada.",
+  "cinetica": "A proteção amplia a Defesa e reduz parte do dano recebido enquanto está equipada; o valor depende do tipo de proteção.",
+  "lepida": "A proteção melhora a mobilidade e pode auxiliar deslocamentos e testes físicos específicos, conforme as regras.",
+  "carisma": "O acessório reforça a presença social e concede benefício em testes baseados em Presença, sem alterar os recursos máximos.",
+  "conjuracao": "Permite associar um ritual ao acessório e utilizá-lo conforme as exigências do efeito, inclusive custos e limitações.",
+  "escudo_mental": "Ajuda a proteger a mente do usuário contra efeitos que afetam sua estabilidade mental, de acordo com as condições da maldição."
+};
+for(const curse of curseEntries){curse.description=curseDescriptions[curse.id]||curse.note||'Consulte as regras para os efeitos desta maldição.';}
 const elements=['Sangue','Morte','Energia','Conhecimento','Medo'];
 const order=['0','I','II','III','IV'];
 const index=Object.fromEntries(order.map((x,i)=>[x,i]));
