@@ -89,7 +89,13 @@ function detail(item){
  for(const key of ['proficiency','kind','wield','damage','secondary','critical','multiplier','damageType','range','tier','description']){
   if(merged[key]===null || merged[key]===undefined || String(merged[key]).trim()==='')merged[key]=fallback[key];
  }
- return merged;
+ const rules=window.NEX_ITEM_MODS;
+ if(!rules)return merged;
+ const baseTier=String(saved.baseTier||merged.tier||'0');
+ const calculated=rules.calculate({...merged,baseTier});
+ return {...merged,...calculated,baseTier,tier:calculated.effectiveTier,
+  attackBonus:(Number(merged.attackBonus)||0)+calculated.attackBonus,
+  damageBonus:(Number(merged.damageBonus)||0)+calculated.damageBonus};
 }
 const style=document.createElement('style');style.id='nex-item-details-style';
 style.textContent=[
@@ -298,17 +304,51 @@ function editorFields(d){
    select('secondaryType','Tipo do dano secundário',d.secondaryType||'Normal',['Normal','Sangue','Morte','Energia','Conhecimento','Medo'])+
    field('critical','Crítico*',d.critical)+field('multiplier','Multiplicador*',d.multiplier)+
    field('damageType','Tipo de Dano',d.damageType,'text',2)+field('range','Alcance',d.range,'text',2)+
-   field('tier','Categoria',d.tier)+field('spaces','Espaços*',d.spaces,'number')+
+   select('baseTier','Categoria base',d.baseTier||d.tier,['0','I','II','III','IV'])+field('spaces','Espaços*',d.spaces,'number')+
    field('quantity','Quantidade',d.quantity,'number')+'</div>';
  }else{
   html='<div class="nex-editor-grid">'+field('name','Nome*',d.name,'text',2)+
    select('category','Tipo de item',d.category,cats)+field('quantity','Quantidade',d.quantity,'number')+
-   field('tier','Categoria',d.tier)+field('spaces','Espaços*',d.spaces,'number')+'</div>';
+   select('baseTier','Categoria base',d.baseTier||d.tier,['0','I','II','III','IV'])+field('spaces','Espaços*',d.spaces,'number')+'</div>';
  }
- html+='<h3>Melhorias</h3><div class="nex-editor-inline"><input id="nexEditorNewUpgrade" placeholder="Nome da melhoria"><button type="button" data-nex-add-upgrade>Adicionar</button></div>'+
+ const catalog=window.NEX_ITEM_MODS;
+ const compatible=(catalog?.improvements||[]).filter(x=>x.items.includes(d.category));
+ html+='<h3>Melhorias (regras do livro)</h3>'+
+  '<div class="nex-editor-inline"><select id="nexEditorModifierChoice" aria-label="Escolher melhoria">'+compatible.map(x=>'<option value="'+safe(x.id)+'">'+safe(x.name)+'</option>').join('')+'</select><button type="button" data-nex-add-modifier>Adicionar melhoria</button></div>'+
+  '<input type="hidden" data-edit="modifiers" value="'+safe(JSON.stringify(d.modifiers||[]))+'"><div id="nexEditorModifiersList" class="nex-editor-upgrade-list"></div>'+
+  '<h3>Maldições</h3><div class="nex-editor-inline"><input id="nexEditorCurseName" maxlength="80" placeholder="Nome da maldição" aria-label="Nome da maldição">'+
+  '<select id="nexEditorCurseElement" aria-label="Elemento da maldição">'+(catalog?.elements||[]).map(x=>'<option>'+safe(x)+'</option>').join('')+'</select>'+
+  '<button type="button" data-nex-add-curse>Adicionar maldição</button></div>'+
+  '<input type="hidden" data-edit="curses" value="'+safe(JSON.stringify(d.curses||[]))+'"><div id="nexEditorCursesList" class="nex-editor-upgrade-list"></div>'+
+  '<p id="nexEditorCategoryPreview" class="nex-modifier-category-note"></p>'+
+  '<h3>Anotações adicionais</h3><div class="nex-editor-inline"><input id="nexEditorNewUpgrade" placeholder="Observação da melhoria"><button type="button" data-nex-add-upgrade>Adicionar nota</button></div>'+
  '<input type="hidden" data-edit="upgrades" value="'+safe(d.upgrades)+'"><div id="nexEditorUpgradeList" class="nex-editor-upgrade-list" aria-live="polite"></div>'+
  '<h3>Descrição</h3>'+field('description','Descrição',d.description,'textarea',4);
  return html;
+}
+function readEditorJson(key){
+ const input=by('nexEditorFields')?.querySelector('[data-edit="'+key+'"]');
+ if(!input)return [];
+ try{const v=JSON.parse(input.value);return Array.isArray(v)?v:[]}catch{return []}
+}
+function writeEditorJson(key,data){
+ const input=by('nexEditorFields')?.querySelector('[data-edit="'+key+'"]');
+ if(input)input.value=JSON.stringify(data);
+ showModifierChoices();
+}
+function showModifierChoices(){
+ const rules=window.NEX_ITEM_MODS;if(!rules)return;
+ const picked=readEditorJson('modifiers'),curses=readEditorJson('curses');
+ const chosen=rules.improvements.filter(x=>picked.includes(x.id));
+ const list=by('nexEditorModifiersList');
+ if(list)list.innerHTML=chosen.map(x=>'<span class="nex-editor-upgrade">'+safe(x.name)+' — '+safe(x.note)+' <button type="button" data-nex-remove-modifier="'+safe(x.id)+'" aria-label="Retirar melhoria '+safe(x.name)+'">×</button></span>').join('');
+ const curseList=by('nexEditorCursesList');
+ if(curseList)curseList.innerHTML=curses.map((x,i)=>'<span class="nex-editor-upgrade">'+safe(x.name)+' · '+safe(x.element)+' (efeito especial manual) <button type="button" data-nex-remove-curse="'+i+'" aria-label="Retirar maldição">×</button></span>').join('');
+ const baseTier=by('nexEditorFields')?.querySelector('[data-edit="baseTier"]')?.value||'0';
+ const category=by('nexEditorFields')?.querySelector('[data-edit="category"]')?.value||detail(find(current)).category;
+ const calc=rules.calculate({category,baseTier,modifiers:picked,curses,spaces:0});
+ const target=by('nexEditorCategoryPreview');
+ if(target)target.textContent='Categoria: '+baseTier+' + '+chosen.length+' melhoria(s) + '+(curses.length?curses.length+1:0)+' por maldição(ões) = '+(calc.overLimit?'acima de IV':calc.effectiveTier)+'. Efeitos especiais exigem verificação das regras pelo mestre.';
 }
 function showUpgrades(){
  const value=by('nexEditorFields').querySelector('[data-edit="upgrades"]')?.value||'';
@@ -322,6 +362,7 @@ function open(id){
  by('nexEditorTitle').textContent='Editar';
  by('nexEditorFields').innerHTML=editorFields(detail(item));
  showUpgrades();
+ showModifierChoices();
  modal.hidden=false;document.body.classList.add('nex-editor-open');
  by('nexEditorFields').querySelector('[data-edit="name"]')?.focus();
 }
@@ -613,6 +654,28 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')hideWeaponRoll()});
 
 modal.addEventListener('click',event=>{
  if(event.target===modal||event.target.closest('.nex-editor-close,.nex-editor-cancel')){close();return;}
+ const addMod=event.target.closest('[data-nex-add-modifier]');
+ if(addMod){
+  const id=by('nexEditorModifierChoice')?.value,existing=readEditorJson('modifiers');
+  if(id&&!existing.includes(id))writeEditorJson('modifiers',[...existing,id]);
+  return;
+ }
+ const removeMod=event.target.closest('[data-nex-remove-modifier]');
+ if(removeMod){writeEditorJson('modifiers',readEditorJson('modifiers').filter(x=>x!==removeMod.dataset.nexRemoveModifier));return;}
+ const addCurse=event.target.closest('[data-nex-add-curse]');
+ if(addCurse){
+  const name=by('nexEditorCurseName')?.value.trim(),element=by('nexEditorCurseElement')?.value;
+  const existing=readEditorJson('curses');
+  if(!name){toast('Informe o nome da maldição.');return;}
+  if(existing.some(x=>norm(x.name)===norm(name))){toast('Esta maldição já está cadastrada no item.');return;}
+  if(window.NEX_ITEM_MODS?.elements.includes(element)){
+   writeEditorJson('curses',[...existing,{name:name.slice(0,80),element}]);
+   by('nexEditorCurseName').value='';
+  }
+  return;
+ }
+ const removeCurse=event.target.closest('[data-nex-remove-curse]');
+ if(removeCurse){writeEditorJson('curses',readEditorJson('curses').filter((_,i)=>i!==Number(removeCurse.dataset.nexRemoveCurse)));return;}
  const add=event.target.closest('[data-nex-add-upgrade]');
  if(add){const input=by('nexEditorNewUpgrade'),area=by('nexEditorFields').querySelector('[data-edit="upgrades"]');if(input&&area&&input.value.trim()){area.value+=(area.value.trim()?'\n':'')+input.value.trim().slice(0,120);input.value='';showUpgrades();}return;}
  const remove=event.target.closest('[data-nex-remove-upgrade]');
@@ -648,6 +711,7 @@ function refreshLinkedAttacks(){
   if(item&&detail(item).category==='Arma')syncAttackFromWeapon(item,item.name);
  }
 }
+by('nexEditorForm').addEventListener('change',event=>{if(event.target.matches('[data-edit="baseTier"]'))showModifierChoices();});
 by('nexEditorForm').addEventListener('submit',event=>{
  event.preventDefault();const item=find(current);if(!item)return;
  const values=Object.fromEntries([...by('nexEditorFields').querySelectorAll('[data-edit]')].map(el=>[el.dataset.edit,el.value]));
@@ -656,6 +720,15 @@ by('nexEditorForm').addEventListener('submit',event=>{
  if(values.image&&!/^https:\/\//i.test(values.image)){toast('A imagem precisa de um endereço HTTPS.');return}
  const previousName=item.name;
  const d={...detail(item),...values};
+ const rules=window.NEX_ITEM_MODS;
+ if(rules){
+  try{d.modifiers=JSON.parse(values.modifiers||'[]');d.curses=JSON.parse(values.curses||'[]');}catch{toast('Falha ao ler melhorias e maldições.');return;}
+  const calc=rules.calculate({...d,baseTier:values.baseTier||d.baseTier||'0'});
+  if(calc.overLimit){toast('Melhorias e maldições ultrapassam a categoria IV.');return;}
+  d.baseTier=calc.baseTier;d.tier=calc.effectiveTier;
+  d.modifiers=calc.modifiers;d.curses=calc.curses;
+  d.effectiveSpaces=calc.effectiveSpaces;
+ }
  if(d.category==='Arma' && (!String(d.damage||'').trim() || !String(d.critical||'').trim() || !String(d.multiplier||'').trim())){toast('Preencha dano, crítico e multiplicador.');return;}
  if(d.category==='Arma'){
   const crit=weaponCriticalSettings(d);
@@ -672,7 +745,7 @@ by('nexEditorForm').addEventListener('submit',event=>{
  d.upgrades=String(d.upgrades||'').slice(0,2500);
  // O campo de imagem foi retirado do editor, preservando imagens eventualmente já salvas.
  d.image=detail(item).image;
- item.name=d.name;item.category=d.category;item.quantity=d.quantity;item.spaces=d.spaces;item.nexInfo=d;
+ item.name=d.name;item.category=d.category;item.quantity=d.quantity;item.spaces=d.effectiveSpaces??d.spaces;item.nexInfo=d;
  item.description=d.description;
  item.detail=[d.description,d.category==='Arma'?'Dano: '+d.damage:'',d.category==='Arma'&&d.secondary&&d.secondary!=='—'?'Dano secundário: '+d.secondary:'',d.category==='Arma'&&d.secondary&&d.secondary!=='—'?'Tipo do dano secundário: '+(d.secondaryType||'Normal'):'',d.category==='Arma'?'Crítico: '+d.critical+' ×'+d.multiplier:'',d.category==='Arma'?'Tipo: '+d.damageType:'','Categoria: '+d.tier].filter(Boolean).join(' · ').slice(0,2500);
  if(d.category==='Arma')syncAttackFromWeapon(item,previousName);
