@@ -23,8 +23,19 @@ function detail(item){
  const fromCrit=rawCrit.match(/^(\d{2})(?:[/x×](?:[x×])?(\d+))?$/i);
  const critNumber=rawCrit.match(/^(\d{2})/);
  const critMulti=rawCrit.match(/[x×](\d+)/i);
- const sub=String(model.subtitle||(/^(?:Arma (?:simples|tática|tatica|pesada))\s*·/i.test(model.description||'')?model.description:''))
-  .split('·').map(x=>x.trim());
+ const weaponSources=[
+  ...(window.NEX_BASE_WEAPONS||[]),
+  ...(window.NEX_ITEM_CATALOG?.items||[]),
+  ...(window.NEX_ITEM_BOOKS||[]),
+  ...(window.NEX_ITEM_COMPLEMENTS?.items||[]),
+  model
+ ].filter(x=>x&&norm(x.name)===norm(item.name) && (x.section==='Armas'||item.category==='Arma'));
+ const metadata=weaponSources.map(x=>String(x.subtitle||'').trim())
+  .find(x=>/^\s*(?:Arma\s+)?(?:simples|t[aá]tica|pesada)\s*·\s*[^·]+\s*·\s*[^·]+/i.test(x))
+  ||weaponSources.map(x=>String(x.description||'').trim())
+  .find(x=>/^\s*Arma\s+(?:simples|t[aá]tica|pesada)\s*·\s*[^·]+\s*·\s*[^·]+/i.test(x))
+  ||model.subtitle||'';
+ const sub=String(metadata).split('·').map(x=>x.trim());
  const proficiency=(function(){
   const value=norm(sub[0]||'');
   if(/(?:^|\s)(?:tatica|taticas)(?:$|\s)/.test(value))return 'Armas Táticas';
@@ -67,6 +78,9 @@ function detail(item){
  for(const [key,value] of Object.entries(saved)){
   // Campos vazios salvos em fichas antigas não podem apagar os dados do catálogo.
   if(value===null || value===undefined || (typeof value==='string' && !value.trim()))continue;
+  if(['proficiency','kind','wield'].includes(key)
+    && /^(?:n[aã]o informado|n[aã]o cadastrad[oa]|—|-)$/i.test(String(value).trim())
+    && fallback[key] && !/^(?:n[aã]o informado|—|-)$/i.test(String(fallback[key]).trim()))continue;
   merged[key]=value;
  }
  // Caso a ficha seja antiga, preenche com os metadados disponíveis sem
