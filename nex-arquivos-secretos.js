@@ -552,6 +552,86 @@ window.NEX_ARQUIVOS={
       "page": 73,
       "description": "Acessório amaldiçoado associado à Morte.",
       "source": "Arquivos Secretos · Junho/2026 · p. 73"
+    },
+    {
+      "name": "Bandagem",
+      "section": "Geral",
+      "month": "Fevereiro",
+      "page": 20,
+      "description": "Recurso de atendimento para uso em aventura.",
+      "source": "Arquivos Secretos · Fevereiro/2026 · p. 20"
+    },
+    {
+      "name": "Bússola",
+      "section": "Geral",
+      "month": "Fevereiro",
+      "page": 20,
+      "description": "Utensílio de navegação.",
+      "source": "Arquivos Secretos · Fevereiro/2026 · p. 20"
+    },
+    {
+      "name": "Caixa de Ferramentas",
+      "section": "Geral",
+      "month": "Fevereiro",
+      "page": 20,
+      "description": "Conjunto de ferramentas para tarefas técnicas.",
+      "source": "Arquivos Secretos · Fevereiro/2026 · p. 20"
+    },
+    {
+      "name": "Dose de Álcool",
+      "section": "Geral",
+      "month": "Fevereiro",
+      "page": 20,
+      "description": "Recurso de limpeza e higienização.",
+      "source": "Arquivos Secretos · Fevereiro/2026 · p. 20"
+    },
+    {
+      "name": "Incenso",
+      "section": "Geral",
+      "month": "Fevereiro",
+      "page": 20,
+      "description": "Recurso de interlúdio.",
+      "source": "Arquivos Secretos · Fevereiro/2026 · p. 20"
+    },
+    {
+      "name": "Kit de Escalada",
+      "section": "Geral",
+      "month": "Fevereiro",
+      "page": 20,
+      "description": "Utensílios de escalada.",
+      "source": "Arquivos Secretos · Fevereiro/2026 · p. 20"
+    },
+    {
+      "name": "Pedra de Amolar",
+      "section": "Geral",
+      "month": "Fevereiro",
+      "page": 20,
+      "description": "Acessório de manutenção de lâminas.",
+      "source": "Arquivos Secretos · Fevereiro/2026 · p. 20"
+    },
+    {
+      "name": "Catalisador Sofisticado e Horrorizado",
+      "section": "Itens Amaldiçoados",
+      "month": "Fevereiro",
+      "page": 74,
+      "description": "Catalisador paranormal vestível.",
+      "source": "Arquivos Secretos · Fevereiro/2026 · p. 74"
+    },
+    {
+      "name": "Aplicador de Adrenalina",
+      "section": "Geral",
+      "month": "Junho",
+      "page": 73,
+      "description": "Medicamento de utilização em combate.",
+      "source": "Arquivos Secretos · Junho/2026 · p. 73"
+    },
+    {
+      "name": "Lança-nitrogênio",
+      "section": "Armas",
+      "month": "Junho",
+      "page": 73,
+      "description": "Arma experimental com efeito de frio.",
+      "source": "Arquivos Secretos · Junho/2026 · p. 73"
     }
   ],
   "rules": [
@@ -684,6 +764,60 @@ window.NEX_ARQUIVOS={
           "Aprimora os efeitos dos selos criados pelo ocultista."
         ]
       ]
+    },
+    {
+      "name": "Granadeiro Blaster",
+      "className": "Especialista",
+      "month": "Abril",
+      "page": 69,
+      "stages": [
+        [
+          "Meus Bebês",
+          "Produz e recebe explosivos autorais."
+        ],
+        [
+          "Fogo Amigo",
+          "Aprimora o controle da área de explosivos."
+        ],
+        [
+          "O Calor do Momento",
+          "Permite improvisar um explosivo em combate, com risco."
+        ],
+        [
+          "Memória Muscular",
+          "Aprimora o uso e o dano de explosivos autorais."
+        ]
+      ]
+    }
+  ],
+  "rituals": [
+    {
+      "name": "Backup",
+      "circle": 2,
+      "element": "Energia",
+      "month": "Abril",
+      "page": 68,
+      "description": "Cria uma cópia de Energia e permite trocar de posição sob condições.",
+      "ritualType": "Suporte"
+    },
+    {
+      "name": "Hesitação Forçada",
+      "circle": 1,
+      "element": "Conhecimento",
+      "month": "Junho",
+      "page": 72,
+      "description": "Afeta a confiança e o desempenho do alvo durante a sustentação.",
+      "ritualType": "Suporte"
+    },
+    {
+      "name": "Passagem de Conhecimento",
+      "circle": 2,
+      "element": "Conhecimento",
+      "otherElement": "Sangue",
+      "month": "Janeiro",
+      "page": 49,
+      "description": "Ritual de múltiplos elementos com efeito relacionado à transferência de consciência.",
+      "ritualType": "Suporte"
     }
   ]
 };
