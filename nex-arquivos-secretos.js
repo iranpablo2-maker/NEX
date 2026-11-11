@@ -635,5 +635,55 @@ window.NEX_ARQUIVOS={
     "Abril",
     "Maio",
     "Junho"
+  ],
+  "trails": [
+    {
+      "name": "Maledictólogo",
+      "className": "Ocultista",
+      "month": "Janeiro",
+      "page": 45,
+      "stages": [
+        [
+          "Identificação Macabra",
+          "Melhora a identificação de itens amaldiçoados e rituais."
+        ],
+        [
+          "Compreensão de Maldições",
+          "Permite estudar e transferir efeitos de itens amaldiçoados."
+        ],
+        [
+          "Reproduzir Maldição",
+          "Permite aplicar temporariamente uma maldição já estudada."
+        ],
+        [
+          "Maldição Suprema",
+          "Aprimora os limites da reprodução de maldições."
+        ]
+      ]
+    },
+    {
+      "name": "Criptologista do Oculto",
+      "className": "Ocultista",
+      "month": "Maio",
+      "page": 58,
+      "stages": [
+        [
+          "Método Intuitivo",
+          "Desenvolve o trabalho com selos paranormais."
+        ],
+        [
+          "Caligrafia Eficiente",
+          "Melhora a utilização e a identificação de selos."
+        ],
+        [
+          "Decifrar à Distância",
+          "Permite usar selos sem empunhá-los dentro de limites."
+        ],
+        [
+          "Selo Supremo",
+          "Aprimora os efeitos dos selos criados pelo ocultista."
+        ]
+      ]
+    }
   ]
 };
