@@ -1761,6 +1761,22 @@ body{background:#08090b;color:#f4f0f2}
 #sheetScreen .nex-origin-popup[hidden]{display:none!important}
 #sheetScreen .nex-origin-options{overflow-y:auto;overscroll-behavior:contain}
 @media(max-width:600px){#sheetScreen .nex-origin-popup:not([hidden]){max-height:min(70dvh,520px);overflow-y:auto}#sheetScreen .nex-origin-categories{display:flex;flex-wrap:wrap}}
+</style><style id="nex-origin-portal-fix-20261111">
+/* The popup lives under body: no clipping by the character card or scrolling containers. */
+body > #nexOriginPopup{box-sizing:border-box!important;position:fixed!important;right:auto!important;bottom:auto!important;margin:0!important;z-index:2147483000!important;min-width:0!important;max-width:calc(100vw - 24px)!important;overflow-y:auto!important;overscroll-behavior:contain!important;padding:8px!important;background:#1a1314!important;color:#f3edf5!important;border:1px solid #a05359!important;border-radius:7px!important;box-shadow:0 15px 45px #000e!important}
+body > #nexOriginPopup[hidden]{display:none!important}
+body > #nexOriginPopup .nex-origin-categories{display:flex;flex-wrap:wrap;gap:5px;margin:0 0 9px;padding:3px 0 7px;border-bottom:1px solid #4c3335}
+body > #nexOriginPopup .nex-origin-group-caption{display:flex;justify-content:space-between;align-items:center;font-size:11px;color:#fbc7cb;font-weight:700;letter-spacing:.06em;padding:6px 3px 10px}
+body > #nexOriginPopup .nex-origin-build{font-size:10px;color:#c9979b;font-weight:500}
+body > #nexOriginPopup .nex-origin-category{border:1px solid #644447;border-radius:3px;padding:6px 8px;font-size:11px;background:#2d191c;color:#edd5d7;cursor:pointer;line-height:1.3}
+body > #nexOriginPopup .nex-origin-category[aria-pressed="true"]{border-color:#e65a66;background:#94323a;color:#fff;font-weight:700}
+body > #nexOriginPopup .nex-origin-search{display:block;width:100%;min-height:36px;padding:7px 8px;margin:0 0 7px;background:#0d0d12;color:#fff;border:1px solid #594548;border-radius:3px;font-size:13px}
+body > #nexOriginPopup .nex-origin-options{overflow-y:auto;max-height:45vh;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:#785255 #1b1314}
+body > #nexOriginPopup .nex-origin-group{padding:3px 0 7px;border-bottom:1px solid #433033}
+body > #nexOriginPopup .nex-origin-group-title{position:sticky;top:0;z-index:1;background:#2d191c;padding:8px;color:#ffc2c7;border-left:3px solid #e65a66;font-size:11px;text-transform:uppercase}
+body > #nexOriginPopup .nex-origin-choice{display:block;width:100%;padding:10px 8px;text-align:left;border:0;border-radius:3px;background:transparent;color:#f3edf5;font-size:13px;cursor:pointer}
+body > #nexOriginPopup .nex-origin-choice[aria-selected="true"],body > #nexOriginPopup .nex-origin-choice:focus-visible{background:#622e32;color:#fff}
+body > #nexOriginPopup .nex-origin-empty{padding:10px;color:#ada2af}
 </style></head><body>
 <script src="nex-sobrevivendo-ao-horror.js?v=2072"></script>
 <script src="nex-arquivos-secretos.js?v=20261110a4"></script>
@@ -3854,7 +3870,7 @@ update();
   if(!select) return;
   const existing=document.getElementById('nexOriginControl');
   if(existing && existing.isConnected && existing._nexOriginSelect===select)return;
-  if(existing)existing.remove();
+  if(existing){document.getElementById('nexOriginPopup')?.remove();existing.remove();}
   const field=select.closest('.field')||select.closest('.nex216-field');
   if(!field) return;
   field.classList.add('nex-origin-field');
@@ -3867,12 +3883,34 @@ update();
   select.setAttribute('aria-hidden','true');
   const trigger=wrapper.querySelector('.nex-origin-trigger');
   const popup=wrapper.querySelector('.nex-origin-popup');
+  // Portaled to body: never clipped by the character panel or horizontal scroll.
+  document.body.appendChild(popup);
   const search=wrapper.querySelector('.nex-origin-search');
   const options=wrapper.querySelector('.nex-origin-options');
   const categoryBox=wrapper.querySelector('.nex-origin-categories');
   let categoryFilter='all';
   const current=wrapper.querySelector('.nex-origin-current');
   const close=()=>{popup.hidden=true;trigger.setAttribute('aria-expanded','false');};
+  const placePopup=()=>{
+    if(popup.hidden)return;
+    const rect=trigger.getBoundingClientRect();
+    const viewport=window.visualViewport;
+    const vw=viewport?.width||document.documentElement.clientWidth;
+    const vh=viewport?.height||window.innerHeight;
+    const offsetTop=viewport?.offsetTop||0;
+    const gap=7,pad=12;
+    const width=Math.min(Math.max(rect.width,310),vw-2*pad);
+    let left=Math.max(pad,Math.min(rect.left,vw-width-pad));
+    const below=vh-(rect.bottom-offsetTop)-gap-pad;
+    const above=rect.top-offsetTop-gap-pad;
+    const wantsBelow=below>=260||below>=above;
+    const available=Math.max(160,wantsBelow?below:above);
+    popup.style.width=width+'px';
+    popup.style.left=left+'px';
+    popup.style.maxHeight=Math.min(520,available)+'px';
+    popup.style.top=(wantsBelow?rect.bottom+gap:Math.max(offsetTop+pad,rect.top-gap-Math.min(520,available)))+'px';
+    popup.dataset.placement=wantsBelow?'bottom':'top';
+  };
   const sync=()=>{current.textContent=select.selectedOptions[0]?.textContent?.trim()||'Escolher origem';trigger.disabled=select.disabled;};
   function render(){
     sync();
@@ -3926,16 +3964,21 @@ update();
     if(trigger.disabled)return;
     if(!popup.hidden){close();return;}
     search.value='';categoryFilter='all';render();popup.hidden=false;trigger.setAttribute('aria-expanded','true');
+    placePopup();
     search.focus({preventScroll:true});
   });
   search.addEventListener('input',render);
-  wrapper.addEventListener('keydown',event=>{
+  document.addEventListener('keydown',event=>{
+    if(popup.hidden||(!popup.contains(event.target)&&!wrapper.contains(event.target)))return;
     if(event.key==='Escape'){close();trigger.focus();}
     if(event.key==='Enter'&&event.target===search){const first=options.querySelector('button');if(first){event.preventDefault();first.click();}}
   });
-  document.addEventListener('pointerdown',event=>{if(!wrapper.contains(event.target))close();});
+  document.addEventListener('pointerdown',event=>{if(!wrapper.contains(event.target)&&!popup.contains(event.target))close();});
+  window.addEventListener('resize',placePopup);
+  window.visualViewport?.addEventListener('resize',placePopup);
+  window.visualViewport?.addEventListener('scroll',placePopup);
   select.addEventListener('change',()=>{sync();close();});
-  const observer=new MutationObserver(()=>{sync();if(!popup.hidden)render();});
+  const observer=new MutationObserver(()=>{sync();if(!popup.hidden){render();placePopup();}});
   observer.observe(select,{childList:true,subtree:true,attributes:true,attributeFilter:['disabled','selected','hidden']});
   sync();
  }
