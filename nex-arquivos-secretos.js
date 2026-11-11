@@ -647,7 +647,9 @@ window.NEX_ARQUIVOS={
       "month": "Março",
       "page": 113,
       "description": "Artefato paranormal com efeito de controle.",
-      "source": "Arquivos Secretos · Março/2026 · p. 113"
+      "source": "Arquivos Secretos · Março/2026 · p. 113",
+      "tier": "III",
+      "spaces": 1
     },
     {
       "name": "Camiseta Psikolera",
@@ -655,7 +657,9 @@ window.NEX_ARQUIVOS={
       "month": "Março",
       "page": 114,
       "description": "Vestimenta especial relacionada ao Sangue.",
-      "source": "Arquivos Secretos · Março/2026 · p. 114"
+      "source": "Arquivos Secretos · Março/2026 · p. 114",
+      "tier": "II",
+      "spaces": 1
     },
     {
       "name": "Dupla Obsessiva",
@@ -663,7 +667,9 @@ window.NEX_ARQUIVOS={
       "month": "Março",
       "page": 114,
       "description": "Conjunto de armas amaldiçoadas.",
-      "source": "Arquivos Secretos · Março/2026 · p. 114"
+      "source": "Arquivos Secretos · Março/2026 · p. 114",
+      "tier": "III",
+      "spaces": 2
     },
     {
       "name": "Armadura de Guevara",
@@ -679,7 +685,9 @@ window.NEX_ARQUIVOS={
       "month": "Março",
       "page": 112,
       "description": "Item de alimentação de uso narrativo.",
-      "source": "Arquivos Secretos · Março/2026 · p. 112"
+      "source": "Arquivos Secretos · Março/2026 · p. 112",
+      "tier": "0",
+      "spaces": 0.5
     },
     {
       "name": "Câmera Filmadora",
@@ -687,7 +695,9 @@ window.NEX_ARQUIVOS={
       "month": "Maio",
       "page": 60,
       "description": "Utensílio de investigação com funções de iluminação.",
-      "source": "Arquivos Secretos · Maio/2026 · p. 60"
+      "source": "Arquivos Secretos · Maio/2026 · p. 60",
+      "tier": "0",
+      "spaces": 1
     },
     {
       "name": "Faixas da Vidência",
@@ -695,7 +705,9 @@ window.NEX_ARQUIVOS={
       "month": "Maio",
       "page": 60,
       "description": "Vestimenta vinculada ao elemento Morte.",
-      "source": "Arquivos Secretos · Maio/2026 · p. 60"
+      "source": "Arquivos Secretos · Maio/2026 · p. 60",
+      "tier": "III",
+      "spaces": 1
     },
     {
       "name": "Larva da Fúria",
@@ -703,7 +715,9 @@ window.NEX_ARQUIVOS={
       "month": "Maio",
       "page": 61,
       "description": "Item consumível com efeitos de combate.",
-      "source": "Arquivos Secretos · Maio/2026 · p. 61"
+      "source": "Arquivos Secretos · Maio/2026 · p. 61",
+      "tier": "II",
+      "spaces": 1
     },
     {
       "name": "Skate Caótico",
@@ -711,7 +725,9 @@ window.NEX_ARQUIVOS={
       "month": "Maio",
       "page": 61,
       "description": "Equipamento amaldiçoado de Energia.",
-      "source": "Arquivos Secretos · Maio/2026 · p. 61"
+      "source": "Arquivos Secretos · Maio/2026 · p. 61",
+      "tier": "II",
+      "spaces": 2
     },
     {
       "name": "Anel Invertido",
@@ -719,7 +735,9 @@ window.NEX_ARQUIVOS={
       "month": "Junho",
       "page": 73,
       "description": "Acessório amaldiçoado associado à Morte.",
-      "source": "Arquivos Secretos · Junho/2026 · p. 73"
+      "source": "Arquivos Secretos · Junho/2026 · p. 73",
+      "tier": "II",
+      "spaces": 0.5
     },
     {
       "name": "Bandagem",
@@ -727,7 +745,9 @@ window.NEX_ARQUIVOS={
       "month": "Fevereiro",
       "page": 20,
       "description": "Recurso de atendimento para uso em aventura.",
-      "source": "Arquivos Secretos · Fevereiro/2026 · p. 20"
+      "source": "Arquivos Secretos · Fevereiro/2026 · p. 20",
+      "tier": "I",
+      "spaces": 0.5
     },
     {
       "name": "Bússola",
@@ -735,7 +755,9 @@ window.NEX_ARQUIVOS={
       "month": "Fevereiro",
       "page": 20,
       "description": "Utensílio de navegação.",
-      "source": "Arquivos Secretos · Fevereiro/2026 · p. 20"
+      "source": "Arquivos Secretos · Fevereiro/2026 · p. 20",
+      "tier": "I",
+      "spaces": 1
     },
     {
       "name": "Caixa de Ferramentas",
@@ -743,7 +765,9 @@ window.NEX_ARQUIVOS={
       "month": "Fevereiro",
       "page": 20,
       "description": "Conjunto de ferramentas para tarefas técnicas.",
-      "source": "Arquivos Secretos · Fevereiro/2026 · p. 20"
+      "source": "Arquivos Secretos · Fevereiro/2026 · p. 20",
+      "tier": "I",
+      "spaces": 2
     },
     {
       "name": "Dose de Álcool",
@@ -751,7 +775,9 @@ window.NEX_ARQUIVOS={
       "month": "Fevereiro",
       "page": 20,
       "description": "Recurso de limpeza e higienização.",
-      "source": "Arquivos Secretos · Fevereiro/2026 · p. 20"
+      "source": "Arquivos Secretos · Fevereiro/2026 · p. 20",
+      "tier": "I",
+      "spaces": 0.5
     },
     {
       "name": "Incenso",
@@ -759,7 +785,9 @@ window.NEX_ARQUIVOS={
       "month": "Fevereiro",
       "page": 20,
       "description": "Recurso de interlúdio.",
-      "source": "Arquivos Secretos · Fevereiro/2026 · p. 20"
+      "source": "Arquivos Secretos · Fevereiro/2026 · p. 20",
+      "tier": "I",
+      "spaces": 0.5
     },
     {
       "name": "Kit de Escalada",
@@ -767,7 +795,9 @@ window.NEX_ARQUIVOS={
       "month": "Fevereiro",
       "page": 20,
       "description": "Utensílios de escalada.",
-      "source": "Arquivos Secretos · Fevereiro/2026 · p. 20"
+      "source": "Arquivos Secretos · Fevereiro/2026 · p. 20",
+      "tier": "I",
+      "spaces": 2
     },
     {
       "name": "Pedra de Amolar",
@@ -775,7 +805,9 @@ window.NEX_ARQUIVOS={
       "month": "Fevereiro",
       "page": 20,
       "description": "Acessório de manutenção de lâminas.",
-      "source": "Arquivos Secretos · Fevereiro/2026 · p. 20"
+      "source": "Arquivos Secretos · Fevereiro/2026 · p. 20",
+      "tier": "I",
+      "spaces": 0.5
     },
     {
       "name": "Catalisador Sofisticado e Horrorizado",
@@ -783,7 +815,9 @@ window.NEX_ARQUIVOS={
       "month": "Fevereiro",
       "page": 74,
       "description": "Catalisador paranormal vestível.",
-      "source": "Arquivos Secretos · Fevereiro/2026 · p. 74"
+      "source": "Arquivos Secretos · Fevereiro/2026 · p. 74",
+      "tier": "III",
+      "spaces": 1
     },
     {
       "name": "Aplicador de Adrenalina",
@@ -791,7 +825,9 @@ window.NEX_ARQUIVOS={
       "month": "Junho",
       "page": 73,
       "description": "Medicamento de utilização em combate.",
-      "source": "Arquivos Secretos · Junho/2026 · p. 73"
+      "source": "Arquivos Secretos · Junho/2026 · p. 73",
+      "tier": "I",
+      "spaces": 1
     },
     {
       "name": "Lança-nitrogênio",
@@ -799,7 +835,9 @@ window.NEX_ARQUIVOS={
       "month": "Junho",
       "page": 73,
       "description": "Arma experimental com efeito de frio.",
-      "source": "Arquivos Secretos · Junho/2026 · p. 73"
+      "source": "Arquivos Secretos · Junho/2026 · p. 73",
+      "tier": "III",
+      "spaces": 2
     }
   ],
   "rules": [
