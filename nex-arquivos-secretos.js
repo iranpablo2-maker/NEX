@@ -446,6 +446,174 @@ window.NEX_ARQUIVOS={
       "page": 71,
       "description": "Defesa paranormal associada ao elemento Morte.",
       "source": "Arquivos Secretos · Junho/2026 · p. 71"
+    },
+    {
+      "name": "Reter Ritual de Combate",
+      "category": "Ocultista",
+      "month": "Janeiro",
+      "page": 44,
+      "description": "Permite manter alguns efeitos de rituais em situações de interrupção.",
+      "source": "Arquivos Secretos · Janeiro/2026 · p. 44"
+    },
+    {
+      "name": "Cicatrizes Expostas",
+      "category": "Geral",
+      "month": "Janeiro",
+      "page": 46,
+      "description": "Troca vulnerabilidade emocional por maior impacto de golpes.",
+      "source": "Arquivos Secretos · Janeiro/2026 · p. 46"
+    },
+    {
+      "name": "Sangue Corrosivo",
+      "category": "Paranormal",
+      "month": "Janeiro",
+      "page": 47,
+      "description": "Permite responder a agressões próximas com dano associado a Sangue.",
+      "source": "Arquivos Secretos · Janeiro/2026 · p. 47"
+    },
+    {
+      "name": "Sangue Prazeroso",
+      "category": "Paranormal",
+      "month": "Janeiro",
+      "page": 47,
+      "description": "Efeito paranormal de Sangue com contrapartidas.",
+      "source": "Arquivos Secretos · Janeiro/2026 · p. 47"
+    },
+    {
+      "name": "Instrumento Elétrico de Combate",
+      "category": "Paranormal",
+      "month": "Março",
+      "page": 109,
+      "description": "Transforma um instrumento musical em arma especial de Energia.",
+      "source": "Arquivos Secretos · Março/2026 · p. 109"
+    },
+    {
+      "name": "Sobrepor Imprevisível",
+      "category": "Paranormal",
+      "month": "Abril",
+      "page": 67,
+      "description": "Modifica a iniciativa por meio de uma rolagem caótica.",
+      "source": "Arquivos Secretos · Abril/2026 · p. 67"
+    },
+    {
+      "name": "Traço de Inconsistência",
+      "category": "Paranormal",
+      "month": "Abril",
+      "page": 67,
+      "description": "Distorce registros digitais do personagem.",
+      "source": "Arquivos Secretos · Abril/2026 · p. 67"
+    },
+    {
+      "name": "Adepto do Escuro",
+      "category": "Geral",
+      "month": "Maio",
+      "page": 55,
+      "description": "Melhora a atuação no escuro e em ambientes de pouca luz.",
+      "source": "Arquivos Secretos · Maio/2026 · p. 55"
+    },
+    {
+      "name": "Saudosista Hi-Tech",
+      "category": "Geral",
+      "month": "Maio",
+      "page": 55,
+      "description": "Beneficia testes com equipamentos eletrônicos antigos.",
+      "source": "Arquivos Secretos · Maio/2026 · p. 55"
+    },
+    {
+      "name": "Treinado nas Telas",
+      "category": "Geral",
+      "month": "Maio",
+      "page": 55,
+      "description": "Permite usar Intelecto em certas reações de combate.",
+      "source": "Arquivos Secretos · Maio/2026 · p. 55"
+    },
+    {
+      "name": "Meditação Ocultista",
+      "category": "Geral",
+      "month": "Maio",
+      "page": 56,
+      "description": "Adiciona opção de recuperar esforço em interlúdios.",
+      "source": "Arquivos Secretos · Maio/2026 · p. 56"
+    },
+    {
+      "name": "Ruído de Comunicação",
+      "category": "Geral",
+      "month": "Maio",
+      "page": 56,
+      "description": "Relaciona o personagem aos sinais e efeitos da Transmissão.",
+      "source": "Arquivos Secretos · Maio/2026 · p. 56"
+    },
+    {
+      "name": "Dead Man Switch",
+      "category": "Paranormal",
+      "month": "Maio",
+      "page": 57,
+      "description": "Transmite treinamento em uma perícia sob uma condição de risco.",
+      "source": "Arquivos Secretos · Maio/2026 · p. 57"
+    },
+    {
+      "name": "Resgatar da Morte",
+      "category": "Especialista",
+      "month": "Junho",
+      "page": 68,
+      "description": "Melhora a resposta de primeiros socorros em emergências.",
+      "source": "Arquivos Secretos · Junho/2026 · p. 68"
+    },
+    {
+      "name": "Veterano da Equipe de Trauma",
+      "category": "Especialista",
+      "month": "Junho",
+      "page": 68,
+      "description": "Aprimora a remoção de condições durante tratamento.",
+      "source": "Arquivos Secretos · Junho/2026 · p. 68"
+    },
+    {
+      "name": "Doutor em Emergências",
+      "category": "Geral",
+      "month": "Junho",
+      "page": 68,
+      "description": "Aumenta a eficiência de medicamentos e cuidados médicos.",
+      "source": "Arquivos Secretos · Junho/2026 · p. 68"
+    },
+    {
+      "name": "Grão-Mestre em Elemento",
+      "category": "Ocultista",
+      "month": "Junho",
+      "page": 69,
+      "description": "Concede efeitos adicionais ao conjurar rituais elementais.",
+      "source": "Arquivos Secretos · Junho/2026 · p. 69"
+    },
+    {
+      "name": "Especialista em Armas Improvisadas",
+      "category": "Geral",
+      "month": "Junho",
+      "page": 70,
+      "description": "Aprimora combate com objetos usados como armas improvisadas.",
+      "source": "Arquivos Secretos · Junho/2026 · p. 70"
+    },
+    {
+      "name": "Muito Sorrateiro",
+      "category": "Geral",
+      "month": "Junho",
+      "page": 70,
+      "description": "Reduz a visibilidade e melhora a Furtividade.",
+      "source": "Arquivos Secretos · Junho/2026 · p. 70"
+    },
+    {
+      "name": "Grilhões de Lodo",
+      "category": "Paranormal",
+      "month": "Junho",
+      "page": 71,
+      "description": "Cria uma área paranormal de restrição associada à Morte.",
+      "source": "Arquivos Secretos · Junho/2026 · p. 71"
+    },
+    {
+      "name": "Salto de Dados",
+      "category": "Paranormal",
+      "month": "Junho",
+      "page": 71,
+      "description": "Manipula dados mediante conexão com Energia.",
+      "source": "Arquivos Secretos · Junho/2026 · p. 71"
     }
   ],
   "items": [
