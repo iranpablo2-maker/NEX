@@ -3863,7 +3863,7 @@ update();
   function render(){
     sync();
     const query=search.value.trim().toLocaleLowerCase('pt-BR');
-    const groupLabels=['Ordem Paranormal','Sobrevivendo ao Horror','Homebrew','Outras origens'];
+    const groupLabels=['Ordem Paranormal','Sobrevivendo ao Horror','Arquivos Secretos','Homebrew','Outras origens'];
     const groups=new Map(groupLabels.map(label=>[label,[]]));
     const all=[...select.options].filter(opt=>opt.value && !opt.disabled && !opt.hidden);
     for(const opt of all){
