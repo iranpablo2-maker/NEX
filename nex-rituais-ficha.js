@@ -31,6 +31,12 @@ function catalogue(){
    if(!r?.name)continue;
    result.push({name:r.name,circle:Number(r.circle)||1,element:r.element||'Conhecimento',source:'Sobrevivendo ao Horror',description:ritualGuideFor(r)||r.description||'',key:'sah:'+r.name,...ritualMetaFor(r)});
  }
+ for(const r of window.NEX_ARQUIVOS?.rituals||[]){
+   if(!r?.name)continue;
+   result.push({name:r.name,circle:Number(r.circle)||1,element:r.element||'Conhecimento',source:'Arquivos Secretos · '+r.month+'/2026 · p. '+r.page,
+     description:r.description||'',ritualType:r.ritualType||'Suporte',otherElement:r.otherElement||'',
+     key:'arquivos:'+r.month+':'+r.name});
+ }
  const hb=window.NEX51?.readLibrary?.()||[];
  for(const r of hb.filter(x=>x?.type==='ritual'&&x?.name)){
    result.push({...r,source:'Homebrew',key:'hb:'+r.id,description:r.effect||r.description||''});
