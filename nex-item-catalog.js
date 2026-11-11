@@ -47,7 +47,7 @@ for(const entry of window.NEX_ARQUIVOS?.items||[]){
  if(!sections.includes(entry.section))continue;
  const existing=items.find(x=>norm(x.name)===norm(entry.name)&&x.section===entry.section);
  if(existing)continue;
- items.push({name:entry.name,section:entry.section,description:entry.description+' Consulte '+entry.source+' para as regras completas.',subtitle:'Arquivos Secretos',stats:[['Fonte',entry.source]],spaces:1,source:entry.source});
+ items.push({name:entry.name,section:entry.section,description:entry.description+' Consulte '+entry.source+' para as regras completas.',subtitle:'Arquivos Secretos',stats:[...(entry.tier!=null?[['Categoria',String(entry.tier)]]:[]),...(entry.spaces!=null?[['Espaços',String(entry.spaces)]]:[]),['Fonte',entry.source]],spaces:entry.spaces??1,source:entry.source});
 }
 // Preenche cada descrição com seu texto específico; só gera resumo quando faltar conteúdo.
 const bookDescriptions=window.NEX_ITEM_COMPLEMENTS?.descriptions||{};
