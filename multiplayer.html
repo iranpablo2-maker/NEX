@@ -125,8 +125,15 @@ html.nex-embedded #campaignLibrary{padding:0 4px}
 <script>
 if(new URLSearchParams(location.search).get('integrado')==='1'){
  document.documentElement.classList.add('nex-embedded');
+ let lastReportedHeight=0;
  const reportHeight=()=>{
-  try{window.parent.postMessage({type:'nex-campaign-height',height:Math.max(680,document.documentElement.scrollHeight)},location.origin)}catch(e){}
+  // A altura do iframe não pode participar do cálculo: isso causava crescimento contínuo.
+  const content=document.querySelector('main');
+  if(!content)return;
+  const height=Math.max(240,Math.ceil(content.getBoundingClientRect().top+content.scrollHeight+8));
+  if(Math.abs(height-lastReportedHeight)<2)return;
+  lastReportedHeight=height;
+  try{window.parent.postMessage({type:'nex-campaign-height',height},location.origin)}catch(e){}
  };
  window.addEventListener('load',reportHeight);
  window.addEventListener('resize',reportHeight);
