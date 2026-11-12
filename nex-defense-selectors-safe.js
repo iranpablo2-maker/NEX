@@ -123,7 +123,7 @@ function render(){
   ? linked.active.name+' · Defesa +'+(linked.active.bonus+linked.active.improvementBonus)
   : available.length
    ? 'Nenhuma equipada · No inventário: '+available.map(x=>x.name).join(', ')
-   : 'Sem proteção no inventário';
+   : 'Sem proteção';
  display.title='Proteção definida pelos itens equipados no Inventário. Não é possível alterar aqui.';
  $('nexDefExtraProf').innerHTML='<option value="">Escolha uma proficiência extra</option>'+names.filter(x=>!all.has(x)).map(x=>'<option>'+escape(x)+'</option>').join('');
  updateReadout();
