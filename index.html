@@ -2070,8 +2070,8 @@ body > #nexOriginPopup[hidden]{display:none!important;}
   <div class="nex20-defense n193-defense" aria-label="Defesa, bloqueio e esquiva">
     <div class="n193-defense-main">
       <div class="n193-defense-primary"><div class="n193-shield"><svg class="n196-shield-outline" viewBox="0 0 64 72" aria-hidden="true"><path d="M32 4 C42 11 52 12 61 13 L61 34 C61 51 49 62 32 69 C15 62 3 51 3 34 L3 13 C12 12 22 11 32 4Z" fill="none" stroke="white" stroke-width="3.2"/></svg><input type="number" id="defense" readonly min="0" aria-label="Defesa" title="10 + Agilidade + Proteção + Outros"></div><div class="n196-defense-text"><strong>DEFESA</strong><small>= 10 + AGI + <span id="n196ArmorValue">0</span> + <span id="n196OtherValue">0</span></small><div class="n196-tiny-captions"><i>Equip.</i><i>Outros.</i></div></div></div>
-      <div class="n193-defense-metric"><strong>BLOQUEIO</strong><output id="nex20Block" aria-live="polite" title="Redução de dano ao bloquear ataque corpo a corpo">—</output><small id="nex20BlockInfo">RD · Fortitude</small></div>
-      <div class="n193-defense-metric"><strong>ESQUIVA</strong><output id="nex20Dodge" aria-live="polite" title="Defesa durante a esquiva">—</output><small id="nex20DodgeInfo">Defesa + Reflexos</small></div>
+      <div class="n193-defense-metric"><strong>BLOQUEIO</strong><div class="nex-reaction-bonus" aria-label="Bônus de bloqueio"><span>Bônus</span><button type="button" data-reaction-bonus="block" data-reaction-delta="-1" aria-label="Diminuir bônus de Bloqueio">‹</button><input id="nexBlockExtra" type="number" min="-99" max="99" value="0" aria-label="Bônus de Bloqueio"><button type="button" data-reaction-bonus="block" data-reaction-delta="1" aria-label="Aumentar bônus de Bloqueio">›</button></div><output id="nex20Block" aria-live="polite" title="Redução de dano ao bloquear ataque corpo a corpo">—</output><small id="nex20BlockInfo">RD · Fortitude</small></div>
+      <div class="n193-defense-metric"><strong>ESQUIVA</strong><div class="nex-reaction-bonus" aria-label="Bônus de esquiva"><span>Bônus</span><button type="button" data-reaction-bonus="dodge" data-reaction-delta="-1" aria-label="Diminuir bônus de Esquiva">‹</button><input id="nexDodgeExtra" type="number" min="-99" max="99" value="0" aria-label="Bônus de Esquiva"><button type="button" data-reaction-bonus="dodge" data-reaction-delta="1" aria-label="Aumentar bônus de Esquiva">›</button></div><output id="nex20Dodge" aria-live="polite" title="Defesa durante a esquiva">—</output><small id="nex20DodgeInfo">Defesa + Reflexos</small></div>
     </div>
     <div class="n193-defense-line"><label for="nex20ArmorName">PROTEÇÃO</label><input id="nex20ArmorName" data-field="protectionName" placeholder="Sem proteção" maxlength="90"></div>
     <div class="n193-defense-line"><label for="n193Resistances">RESISTÊNCIAS</label><input id="n193Resistances" data-field="resistances" placeholder="—" maxlength="160"></div>
@@ -3816,12 +3816,31 @@ update();
  // Fichas anteriores são preservadas; não retiramos treinamentos sem metadados de origem.
 })();
 </script>
+<style id="nex-reaction-bonus-style">
+#sheetScreen .nex-reaction-bonus{display:flex;align-items:center;justify-content:center;gap:3px;margin:5px 0 4px;white-space:nowrap;font-size:10px;color:#cfc2d0}
+#sheetScreen .nex-reaction-bonus button{display:grid;place-items:center;width:24px;min-width:24px;height:24px;padding:0;border:1px solid #41354d;background:#1b1525;border-radius:4px;color:#fff;font-size:16px;line-height:1;cursor:pointer}
+#sheetScreen .nex-reaction-bonus input{box-sizing:border-box;width:38px!important;min-width:38px!important;max-width:38px!important;height:24px!important;margin:0!important;padding:2px!important;text-align:center;background:#100e19;color:#fff;border:1px solid #41354d;border-radius:4px;font-size:11px;font-weight:700;-moz-appearance:textfield;appearance:textfield}
+#sheetScreen .nex-reaction-bonus input::-webkit-inner-spin-button,#sheetScreen .nex-reaction-bonus input::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+</style>
 <script id="nex20-defense-runtime">
 'use strict';
 (function(){
   const byId=id=>document.getElementById(id);
+  function bonuses(){
+    if(!state.reactionBonuses||typeof state.reactionBonuses!=='object'||Array.isArray(state.reactionBonuses))state.reactionBonuses={block:0,dodge:0};
+    for(const key of ['block','dodge']){
+      const value=Number(state.reactionBonuses[key]);
+      state.reactionBonuses[key]=Number.isFinite(value)?Math.max(-99,Math.min(99,Math.trunc(value))):0;
+    }
+    return state.reactionBonuses;
+  }
   function updateDefense(){
     if(!byId('nex20Block'))return;
+    const extras=bonuses();
+    for(const [name,id] of [['block','nexBlockExtra'],['dodge','nexDodgeExtra']]){
+      const el=byId(id);
+      if(el&&document.activeElement!==el)el.value=String(extras[name]);
+    }
     const number=(v)=>{const n=Number(v);return Number.isFinite(n)?Math.trunc(n):0;};
     const agility=number(state.attributes?.agi);
     const armor=Math.max(0,number(state.protectionDefense));
@@ -3841,11 +3860,29 @@ update();
     const itemSkills=typeof nexItemBonuses==='function'?(nexItemBonuses().skills||{}):{};
     const fortBonus=number(fort.training)+number(fort.other)+number(itemSkills.Fortitude);
     const reflBonus=number(refl.training)+number(refl.other)+number(itemSkills.Reflexos);
-    byId('nex20Block').textContent=fortTrained?String(Math.max(0,fortBonus)):'—';
-    byId('nex20Dodge').textContent=reflTrained?String(Math.max(0,defense+reflBonus)):'—';
-    byId('nex20BlockInfo').textContent=fortTrained?'RD '+Math.max(0,fortBonus)+' · Fortitude treinada':'Exige Fortitude treinada (+5)';
-    byId('nex20DodgeInfo').textContent=reflTrained?'Defesa '+defense+' + Reflexos '+reflBonus:'Exige Reflexos treinados (+5)';
+    byId('nex20Block').textContent=fortTrained?String(Math.max(0,fortBonus+extras.block)):'—';
+    byId('nex20Dodge').textContent=reflTrained?String(Math.max(0,defense+reflBonus+extras.dodge)):'—';
+    byId('nex20BlockInfo').textContent=fortTrained?'RD '+Math.max(0,fortBonus+extras.block)+' · Fortitude + bônus':'Exige Fortitude treinada (+5)';
+    byId('nex20DodgeInfo').textContent=reflTrained?'Defesa '+defense+' + Reflexos '+reflBonus+(extras.dodge?' + bônus '+extras.dodge:''):'Exige Reflexos treinados (+5)';
   }
+  function setBonus(key,value){
+    if(!['block','dodge'].includes(key))return;
+    const number=Number(value);
+    bonuses()[key]=Number.isFinite(number)?Math.max(-99,Math.min(99,Math.trunc(number))):0;
+    updateDefense();
+    if(typeof save==='function')save();
+  }
+  document.addEventListener('click',event=>{
+    const button=event.target.closest('button[data-reaction-bonus][data-reaction-delta]');
+    if(!button)return;
+    event.preventDefault();
+    const key=button.dataset.reactionBonus;
+    setBonus(key,bonuses()[key]+Number(button.dataset.reactionDelta));
+  });
+  document.addEventListener('change',event=>{
+    if(event.target?.id==='nexBlockExtra')setBonus('block',event.target.value);
+    if(event.target?.id==='nexDodgeExtra')setBonus('dodge',event.target.value);
+  });
   const oldStats=renderStats;
   renderStats=function(){oldStats();updateDefense();};
   const oldFields=renderFields;
