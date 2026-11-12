@@ -36,6 +36,45 @@ html.nex-embedded main>h1{display:none}
 html.nex-embedded main>p:first-of-type{display:none}
 html.nex-embedded .panel{margin:9px 0}
 @media(max-width:650px){html.nex-embedded main{padding:8px 7px 25px}}
+
+/* NEX | Sala de campanha — visual compacto e responsivo */
+#room{padding:0;overflow:hidden;background:#100e11}
+#room .room-hero{padding:22px 22px 17px;background:linear-gradient(125deg,#24171d,#130f13 68%);border-bottom:1px solid #58303a}
+#room .room-top{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+#room .room-top h2{font-size:23px;letter-spacing:.01em;margin:0}
+#room #leaveRoom{margin-left:auto}
+#room .room-desc{margin:8px 0 0;line-height:1.5}
+#room .room-content{padding:18px 20px 24px;display:grid;gap:17px}
+#room .room-invite{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;background:#1e151a;border:1px solid #61313b;padding:14px;border-radius:9px}
+#room .room-invite-copy{display:flex;gap:7px;align-items:center;flex-wrap:wrap}
+#room .room-invite .code{font-size:18px;letter-spacing:.06em;font-weight:800;background:transparent;padding:0}
+#room .room-invite small{display:block;font-size:12px;color:#cbb4ba}
+#room .room-panel{border:1px solid #4d3038;background:#181317;border-radius:10px;padding:17px}
+#room .room-panel-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+#room .room-panel-head h3,#room .room-panel-head h2{font-size:16px;letter-spacing:0;text-transform:none;color:#f8e9ed;margin:0}
+#room .room-member-form{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr) auto;gap:9px;align-items:end}
+#room .room-member-form input{width:100%}
+#room .room-member-form button{min-height:42px}
+#room .room-members{grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+#room .room-members .card{border-color:#58313b;background:#21181d}
+#room .room-members .card b{color:#f9c9d2}
+#room .room-members .card p.code{font-size:11px;word-break:break-all;background:none;padding:7px 0}
+#room .room-sheets{grid-template-columns:repeat(auto-fit,minmax(230px,1fr))}
+#room .room-note{font-size:12px;line-height:1.6;margin:0 0 13px;color:#bdaeb4}
+#room #sheetFormPanel{margin:0 0 14px}
+#room #sheets .card{border-color:#57313a}
+#campaignCode{text-transform:uppercase;letter-spacing:.08em}
+@media(max-width:600px){
+ #room .room-hero{padding:17px 14px}
+ #room .room-top h2{font-size:19px}
+ #room .room-content{padding:12px;gap:12px}
+ #room .room-panel{padding:12px}
+ #room .room-member-form{grid-template-columns:1fr}
+ #room .room-member-form button{width:100%}
+ #room #leaveRoom{margin-left:0}
+ #room .room-invite-copy{width:100%}
+ #room .room-invite-copy button{flex:1}
+}
 </style>
 </head>
 <body>
@@ -71,29 +110,42 @@ if(new URLSearchParams(location.search).get('integrado')==='1'){
  <section class="panel"><h2>Abrir campanha</h2><form id="openCampaign"><label>Código da campanha<input id="campaignCode" placeholder="Cole o código enviado pelo mestre" required></label><button>Abrir sala</button></form></section>
  </div>
  <section id="room" class="panel hide">
-  <div class="row"><h2 id="roomTitle">Campanha</h2><span id="role" class="badge"></span><button class="alt" id="leaveRoom">Fechar sala</button></div>
-  <p id="roomDescription"></p>
-  <div class="row"><span>Convite: <code id="roomCode" class="code"></code></span><button class="alt" id="copyCode">Copiar código</button></div>
-  <div id="gmOnly" class="hide">
-   <h3 style="margin-top:20px">Autorizar jogador</h3>
-   <form id="inviteForm" class="row"><input id="newMemberUid" placeholder="ID do jogador" aria-label="ID do jogador" required style="flex:2"><input id="newMemberName" placeholder="Nome do jogador" aria-label="Nome do jogador" maxlength="50" style="flex:1"><button>Autorizar</button></form>
+  <div class="room-hero">
+   <div class="room-top"><h2 id="roomTitle">Campanha</h2><span id="role" class="badge"></span><button class="alt" id="leaveRoom">Fechar sala</button></div>
+   <p id="roomDescription" class="room-desc"></p>
   </div>
-  <h3 style="margin-top:20px">Participantes</h3><div id="members" class="grid"></div>
-  <div class="row" style="justify-content:space-between;margin:24px 0 12px"><h2 style="margin:0">Fichas da campanha</h2><button id="newSheet">Criar ficha</button></div>
-  <section id="sheetFormPanel" class="panel hide">
-   <h3 id="sheetFormTitle">Editar ficha</h3>
-   <form id="sheetForm"><label>Nome do personagem<input id="sheetName" maxlength="100" required></label>
-    <div class="grid"><label>NEX (%)<input type="number" id="sheetNex" min="0" max="99" value="5" required></label>
-     <label>PV<input type="number" id="sheetPV" min="0" max="9999" required></label>
-     <label>PE<input type="number" id="sheetPE" min="0" max="9999" required></label>
-     <label>SAN<input type="number" id="sheetSAN" min="0" max="9999" required></label></div>
-    <label>Anotações visíveis para todos<textarea id="sheetNotes" rows="3" maxlength="3000"></textarea></label>
-    <label id="sheetOwnerWrap" class="hide">Proprietário da ficha<select id="sheetOwner"></select></label>
-    <div class="row"><button type="submit">Salvar ficha</button><button type="button" id="cancelSheet" class="alt">Cancelar</button></div>
-   </form>
-  </section>
-  <div class="info">Fichas de outros jogadores são somente leitura. Alterações são sincronizadas para os participantes em tempo real.</div>
-  <div id="sheets" class="grid" style="margin-top:14px"></div>
+  <div class="room-content">
+   <div class="room-invite">
+    <div><small>Código de convite</small><code id="roomCode" class="code"></code></div>
+    <div class="room-invite-copy"><button class="alt" id="copyCode" type="button">Copiar código</button></div>
+   </div>
+   <section id="gmOnly" class="room-panel hide">
+    <div class="room-panel-head"><h3>Autorizar jogador</h3></div>
+    <form id="inviteForm" class="room-member-form"><input id="newMemberUid" placeholder="ID da conta do jogador" aria-label="ID do jogador" required><input id="newMemberName" placeholder="Nome do jogador" aria-label="Nome do jogador" maxlength="50"><button>Autorizar</button></form>
+    <p class="room-note">O jogador encontra o ID na própria conta. Somente pessoas autorizadas podem acessar as fichas.</p>
+   </section>
+   <section class="room-panel">
+    <div class="room-panel-head"><h3>Participantes</h3></div>
+    <div id="members" class="grid room-members"></div>
+   </section>
+   <section class="room-panel">
+    <div class="room-panel-head"><h2>Fichas da campanha</h2><button id="newSheet">Criar ficha</button></div>
+    <p class="room-note">Todos os participantes podem visualizar. Somente o dono da ficha e o mestre podem editar.</p>
+    <section id="sheetFormPanel" class="panel hide">
+     <h3 id="sheetFormTitle">Editar ficha</h3>
+     <form id="sheetForm"><label>Nome do personagem<input id="sheetName" maxlength="100" required></label>
+      <div class="grid"><label>NEX (%)<input type="number" id="sheetNex" min="0" max="99" value="5" required></label>
+       <label>PV<input type="number" id="sheetPV" min="0" max="9999" required></label>
+       <label>PE<input type="number" id="sheetPE" min="0" max="9999" required></label>
+       <label>SAN<input type="number" id="sheetSAN" min="0" max="9999" required></label></div>
+      <label>Anotações visíveis para todos<textarea id="sheetNotes" rows="3" maxlength="3000"></textarea></label>
+      <label id="sheetOwnerWrap" class="hide">Proprietário da ficha<select id="sheetOwner"></select></label>
+      <div class="row"><button type="submit">Salvar ficha</button><button type="button" id="cancelSheet" class="alt">Cancelar</button></div>
+     </form>
+    </section>
+    <div id="sheets" class="grid room-sheets"></div>
+   </section>
+  </div>
  </section>
 </section>
 </main>
@@ -139,7 +191,13 @@ if(!cfg||!cfg.projectId||!cfg.apiKey){show('setup',true);}else{
   const name=$('campaignNameOnline').value.trim(),description=$('campaignDescriptionOnline').value.trim();
   if(!uid)throw Error('Entre na sua conta NEX antes de criar uma campanha.');
   if(!name)throw Error('Informe um nome para a campanha.');
-  const ref=await addDoc(collection(db,'campaigns'),{name,description,gmUid:uid,createdAt:serverTimestamp()});
+  // 8 caracteres sem 0/O/1/I: fáceis de ditar e com entropia suficiente.
+  const alphabet='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  const bytes=new Uint8Array(8);
+  crypto.getRandomValues(bytes);
+  const code='NEX-'+Array.from(bytes,b=>alphabet[b%alphabet.length]).join('');
+  const ref=doc(db,'campaigns',code);
+  await setDoc(ref,{name,description,gmUid:uid,createdAt:serverTimestamp()});
   // A criação foi concluída antes de abrir a sala: preserve o código se a leitura falhar.
   $('campaignCode').value=ref.id;
   notice('Campanha criada. Código: '+ref.id);
@@ -149,9 +207,9 @@ if(!cfg||!cfg.projectId||!cfg.apiKey){show('setup',true);}else{
     console.error('Falha ao abrir campanha recém-criada',error);
   }
  });});
- $('openCampaign').addEventListener('submit',e=>{e.preventDefault();run(()=>enterRoom($('campaignCode').value.trim()))});
+ $('openCampaign').addEventListener('submit',e=>{e.preventDefault();run(()=>enterRoom($('campaignCode').value.trim().toUpperCase()))});
  async function enterRoom(id){
-  clearRoom();if(!/^[A-Za-z0-9]{15,40}$/.test(id)){notice('Código de campanha inválido.');return;}
+  clearRoom();if(!/^(?:NEX-[A-HJ-NP-Z2-9]{8}|[A-Za-z0-9]{15,40})$/.test(id)){notice('Código de campanha inválido.');return;}
   const ref=doc(db,'campaigns',id);
   const snap=await getDoc(ref);
   if(!snap.exists()){notice('Campanha não encontrada.');return;}
