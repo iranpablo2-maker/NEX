@@ -207,7 +207,7 @@ if(!cfg||!cfg.projectId||!cfg.apiKey){show('setup',true);}else{
     console.error('Falha ao abrir campanha recém-criada',error);
   }
  });});
- $('openCampaign').addEventListener('submit',e=>{e.preventDefault();run(()=>enterRoom($('campaignCode').value.trim().toUpperCase()))});
+ $('openCampaign').addEventListener('submit',e=>{e.preventDefault();run(()=>{const entered=$('campaignCode').value.trim();return enterRoom(/^nex-/i.test(entered)?entered.toUpperCase():entered);})});
  async function enterRoom(id){
   clearRoom();if(!/^(?:NEX-[A-HJ-NP-Z2-9]{8}|[A-Za-z0-9]{15,40})$/.test(id)){notice('Código de campanha inválido.');return;}
   const ref=doc(db,'campaigns',id);
