@@ -203,7 +203,8 @@ if(new URLSearchParams(location.search).get('integrado')==='1'){
     <div id="members" class="grid room-members"></div>
    </section>
    <section id="roomCharactersPanel" class="room-panel">
-    <div class="room-panel-head"><h2>Personagens</h2><button id="newSheet">Adicionar personagem</button></div>
+    <div class="room-panel-head"><h2>Personagens</h2><button id="newSheet">Criar ficha simples</button></div>
+    <div id="nexLinkPanel" class="row" style="margin:0 0 14px"><select id="nexAgentSelect" aria-label="Escolher personagem NEX" style="flex:1;min-width:180px"><option value="">Carregando fichas do NEX…</option></select><button type="button" id="nexLinkAgent">Vincular ficha existente</button><button type="button" id="nexRefreshAgents" class="alt">Atualizar lista</button></div>
     <p class="room-note">Todos os participantes podem visualizar. Somente o dono da ficha e o mestre podem editar.</p>
     <section id="sheetFormPanel" class="panel hide">
      <h3 id="sheetFormTitle">Editar ficha</h3>
@@ -239,6 +240,62 @@ if(!cfg||!cfg.projectId||!cfg.apiKey){show('setup',true);}else{
   const app=initializeApp(cfg);auth=getAuth(app);db=getFirestore(app);
  }catch(err){show('setup',true);notice('Configuração Firebase inválida.');throw err;}
  let uid=null,roomId='',gm=false,roomData=null,roomMembers=[],roomSheets=[],roomRequests=[],unsubs=[],editing=null,campaignUnsub=null,myCampaigns=[],privateShield=true;
+ const pendingBridge=new Map();
+ let bridgeSeq=0;
+ function requestNex(type,agentId){
+  if(window.parent===window)return Promise.reject(Error('Abra as campanhas dentro do NEX para vincular uma ficha.'));
+  return new Promise((resolve,reject)=>{
+   const requestId='nex-'+(++bridgeSeq);
+   const timeout=setTimeout(()=>{pendingBridge.delete(requestId);reject(Error('A ficha não respondeu. Abra novamente a aba Campanhas.'));},8000);
+   pendingBridge.set(requestId,{resolve,reject,timeout});
+   window.parent.postMessage({type,requestId,agentId},location.origin);
+  });
+ }
+ window.addEventListener('message',event=>{
+  if(event.origin!==location.origin||event.source!==window.parent)return;
+  if(event.data?.type!=='nex-agent-bridge-response')return;
+  const pending=pendingBridge.get(event.data.requestId);
+  if(!pending)return;
+  clearTimeout(pending.timeout);pendingBridge.delete(event.data.requestId);
+  pending.resolve(event.data);
+ });
+ async function refreshNexAgents(){
+  const select=$('nexAgentSelect');
+  try{
+   const response=await requestNex('nex-agent-list-request');
+   if(!response.ready){select.innerHTML='<option value="">As fichas ainda estão carregando</option>';return;}
+   select.innerHTML='<option value="">Selecione um personagem</option>'+response.agents.map(a=>'<option value="'+escape(a.id)+'">'+escape(a.name)+' · '+escape(a.className)+' · NEX '+escape(a.nex)+'%</option>').join('');
+  }catch(error){select.innerHTML='<option value="">Abra Campanhas pelo menu NEX</option>';}
+ }
+ $('nexRefreshAgents').addEventListener('click',()=>refreshNexAgents());
+ $('nexLinkAgent').addEventListener('click',()=>run(async()=>{
+  if(!uid||!roomId)throw Error('Entre em uma campanha antes de vincular a ficha.');
+  const agentId=$('nexAgentSelect').value;
+  if(!agentId)throw Error('Selecione uma ficha existente.');
+  const result=await requestNex('nex-agent-data-request',agentId);
+  const agent=result.agent;
+  if(!agent||agent.id!==agentId||!agent.data)throw Error('Ficha não encontrada neste dispositivo. Sincronize sua conta.');
+  const data=agent.data,serialized=JSON.stringify(data);
+  if(serialized.length>450000)throw Error('Ficha acima do limite de compartilhamento (450 KB).');
+  // Um registro por ficha e por dono: evita duplicações ao atualizar.
+  const key='linked-'+uid+'-'+agentId;
+  const sheetRef=doc(db,'campaigns',roomId,'sheets',key);
+  const existing=await getDoc(sheetRef);
+  if(existing.exists()&&existing.data().ownerUid!==uid)throw Error('Esta ficha pertence a outra conta.');
+  const payload={
+    name:String(data.name||'Personagem sem nome').slice(0,100),
+    nex:Math.max(0,Math.min(99,Math.trunc(Number(data.nex)||0))),
+    pv:Math.max(0,Math.trunc(Number(data.pv)||0)),
+    pe:Math.max(0,Math.trunc(Number(data.pe)||0)),
+    san:Math.max(0,Math.trunc(Number(data.san)||0)),
+    notes:'Ficha completa vinculada ao NEX',
+    fullSheet:data,linkedAgentId:agentId,sheetFormat:'nex-agent-v1',
+    updatedAt:serverTimestamp()
+  };
+  if(existing.exists())await updateDoc(sheetRef,payload);
+  else await setDoc(sheetRef,{...payload,ownerUid:uid});
+  notice('Ficha vinculada à campanha. A ficha original permanece salva na sua conta.');
+ }));
  const inviteId=new URLSearchParams(location.search).get('invite')||'';
  const run=async fn=>{try{notice('');await fn();}catch(err){
   const code=err?.code||'';
@@ -413,7 +470,7 @@ if(!cfg||!cfg.projectId||!cfg.apiKey){show('setup',true);}else{
   $('roomTitle').textContent=roomData.name;
   $('roomDescription').textContent=roomData.description||'';
   $('roomCode').textContent=id;$('role').textContent=gm?'Mestre':'Jogador';libraryMode('room');show('room',true);
-  show('roomMasterTab',gm);roomSection('characters');
+  show('roomMasterTab',gm);roomSection('characters');refreshNexAgents();
   if(gm)unsubs.push(onSnapshot(collection(db,'campaigns',id,'joinRequests'),snapshot=>{
     roomRequests=snapshot.docs.map(d=>({id:d.id,...d.data()}));
     $('joinRequests').innerHTML=roomRequests.length?roomRequests.map(item=>
@@ -438,7 +495,11 @@ if(!cfg||!cfg.projectId||!cfg.apiKey){show('setup',true);}else{
     const canEdit=gm||s.ownerUid===uid;
     return '<div class="card"><div class="row"><h3>'+escape(s.name)+'</h3><span class="badge">'+(canEdit?'Pode editar':'Somente leitura')+'</span></div>'+
      '<p>NEX '+escape(s.nex)+'% · PV '+escape(s.pv)+' · PE '+escape(s.pe)+' · SAN '+escape(s.san)+'</p>'+
-     '<p>'+escape(s.notes||'Sem anotações')+'</p>'+
+     (s.sheetFormat==='nex-agent-v1'&&s.fullSheet?
+       '<details><summary>Ver ficha completa</summary><div class="nex-full-sheet">'+
+       Object.entries(s.fullSheet).filter(([key,value])=>value!==null&&['string','number','boolean'].includes(typeof value)).slice(0,70).map(([key,value])=>'<p><strong>'+escape(key)+':</strong> '+escape(String(value))+'</p>').join('')+
+       '<p><small>Os demais campos estruturados da ficha continuam preservados no registro online.</small></p></div></details>'
+       :'<p>'+escape(s.notes||'Sem anotações')+'</p>')+
      '<p><small>Dono: '+escape(s.ownerUid)+'</small></p>'+
      (canEdit?'<button type="button" data-edit-sheet="'+escape(s.id)+'">Editar</button>':'')+'</div>';
   }).join(''):'<p>Nenhuma ficha compartilhada ainda.</p>';
