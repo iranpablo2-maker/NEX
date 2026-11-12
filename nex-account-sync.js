@@ -32,13 +32,37 @@ if(!open.isConnected)(document.querySelector('.topinner')||document.body).append
 const menu=document.createElement('div');
 menu.id='nexAccountMenu';
 menu.hidden=true;
-menu.innerHTML='<span id="nexAccountMenuEmail"></span><button type="button" id="nexAccountMenuLogout">Sair da conta</button>';
+menu.innerHTML='<button type="button" id="nexAccountMenuProfile"><span class="nex-account-menu-icon">◉</span>Ver Perfil</button><button type="button" id="nexAccountMenuLogout"><span class="nex-account-menu-icon">↪</span>Desconectar</button>';
 document.body.append(menu);
 css.textContent+=`
-#nexAccountMenu{position:fixed;z-index:100000;right:14px;top:60px;width:min(310px,calc(100vw - 28px));padding:13px;background:#191216;border:1px solid #8c3644;border-radius:9px;box-shadow:0 12px 28px #0009;display:flex;gap:12px;align-items:center;justify-content:space-between}
+#nexAccountMenu{position:fixed;z-index:100000;right:14px;top:60px;width:215px;max-width:calc(100vw - 28px);padding:6px;background:#151416;border:1px solid #8c3644;border-radius:8px;box-shadow:0 12px 28px #0009;display:flex;flex-direction:column;gap:3px}
 #nexAccountMenu[hidden]{display:none!important}
-#nexAccountMenuEmail{font-size:12px;color:#e6cbd1;overflow-wrap:anywhere;min-width:0}
-#nexAccountMenuLogout{flex-shrink:0;background:#321e25;color:#fff;border:1px solid #9d4855;padding:8px;border-radius:6px;cursor:pointer}`;
+#nexAccountMenu button{width:100%;display:flex;align-items:center;gap:12px;text-align:left;background:transparent;border:0;border-radius:5px;color:#f7f3f4;padding:10px 12px;font-size:13px;font-weight:650;cursor:pointer}
+#nexAccountMenu button:hover,#nexAccountMenu button:focus-visible{background:#3b2029;outline:0}
+#nexAccountMenu .nex-account-menu-icon{width:25px;height:25px;display:grid;place-items:center;background:#672b48;color:#fff;border-radius:50%;font-size:14px}
+#nexProfileDialog{width:min(95vw,590px);max-height:90vh;overflow:auto;background:#111113;border:1px solid #80424c;border-radius:10px;color:#fff;padding:22px;box-shadow:0 20px 60px #000a}
+#nexProfileDialog::backdrop{background:#000c}
+#nexProfileDialog .nex-profile-header{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:19px}
+#nexProfileDialog h2{margin:0;font-size:20px}
+#nexProfileDialog .nex-profile-close{background:none;border:0;color:#f4e7ec;font-size:25px;cursor:pointer}
+#nexProfileDialog .nex-profile-content{display:flex;gap:20px;align-items:flex-start}
+#nexProfileDialog .nex-profile-avatar{height:105px;width:105px;flex:0 0 105px;display:grid;place-items:center;background:#a53242;border:1px solid #c55661;border-radius:8px;font-size:44px;font-weight:800;color:#fff}
+#nexProfileDialog form{flex:1;min-width:0;display:grid;gap:12px}
+#nexProfileDialog label{display:grid;gap:5px;font-weight:650;font-size:12px;color:#f5e9ed}
+#nexProfileDialog input{width:100%;min-width:0;padding:10px;border:1px solid #543940;border-radius:6px;background:#1d1a1d;color:#fff;font-size:14px}
+#nexProfileDialog input:focus-visible{outline:2px solid #e25365;outline-offset:1px}
+#nexProfileDialog input[readonly]{opacity:.77}
+#nexProfileDialog .nex-profile-actions{display:flex;gap:8px;flex-wrap:wrap}
+#nexProfileDialog .nex-profile-actions button{padding:9px 12px;border:1px solid #ac4d5b;background:#a52f41;color:#fff;border-radius:6px;cursor:pointer;font-weight:650}
+#nexProfileDialog .nex-profile-actions button+button{background:#302025}
+#nexProfileStatus{display:block;min-height:1.5em;color:#f5bac3;font-size:12px;margin-top:12px}
+@media(max-width:470px){#nexProfileDialog .nex-profile-content{flex-direction:column}#nexProfileDialog .nex-profile-avatar{width:80px;height:80px;flex-basis:80px;font-size:33px}}
+`;
+const profile=document.createElement('dialog');
+profile.id='nexProfileDialog';
+profile.setAttribute('aria-label','Meu perfil NEX');
+profile.innerHTML='<div class="nex-profile-header"><h2>Meu perfil</h2><button type="button" class="nex-profile-close" id="nexProfileClose" aria-label="Fechar perfil">×</button></div><div class="nex-profile-content"><div class="nex-profile-avatar" id="nexProfileAvatar" aria-hidden="true">N</div><form id="nexProfileForm"><label>Nome<input id="nexProfileName" maxlength="60" autocomplete="name" required></label><label>E-mail<input id="nexProfileEmail" type="email" readonly></label><label>Idade (opcional)<input id="nexProfileAge" type="number" inputmode="numeric" min="1" max="120" placeholder="Não informada"></label><div class="nex-profile-actions"><button type="submit" id="nexProfileSave">Salvar perfil</button><button type="button" id="nexProfilePassword">Trocar senha</button></div></form></div><small id="nexProfileStatus" role="status"></small>';
+document.body.append(profile);
 const $=id=>document.getElementById(id);
 const status=t=>{$('nexAccountStatus').textContent=t;};
 const message=t=>{$('nexAccountMessage').textContent=t;};
@@ -127,6 +151,56 @@ else{
  window.addEventListener('nex-auto-local-change',()=>{dirty=true;schedule();});
  $('nexAccountLogout').onclick=async()=>{try{await signOut(auth);menu.hidden=true;}catch(e){message('Falha ao sair da conta.');}};
  $('nexAccountMenuLogout').onclick=()=>$('nexAccountLogout').click();
+ function currentProfile(){
+  const raw=current?.uid?localStorage.getItem('nex_account_profile_'+current.uid):null;
+  try{const profile=JSON.parse(raw||'{}');return profile&&typeof profile==='object'?profile:{};}catch{return {};}
+ }
+ function updateProfileDisplay(){
+   if(!current)return;
+   const saved=currentProfile();
+   const name=current.displayName||saved.name||'Usuário NEX';
+   $('nexProfileName').value=name;
+   $('nexProfileEmail').value=current.email||'';
+   $('nexProfileAge').value=Number.isInteger(saved.age)&&saved.age>=1&&saved.age<=120?saved.age:'';
+   $('nexProfileAvatar').textContent=name.trim().charAt(0).toUpperCase()||'N';
+ }
+ $('nexAccountMenuProfile').onclick=()=>{
+   if(!current)return;
+   menu.hidden=true;
+   updateProfileDisplay();
+   $('nexProfileStatus').textContent='';
+   profile.showModal();
+ };
+ $('nexProfileClose').onclick=()=>profile.close();
+ const profileStatus=text=>{$('nexProfileStatus').textContent=text;};
+ $('nexProfileForm').onsubmit=async event=>{
+   event.preventDefault();
+   if(!current)return;
+   const name=$('nexProfileName').value.trim();
+   const ageText=$('nexProfileAge').value.trim();
+   const age=ageText===''?null:Number(ageText);
+   if(name.length<2){profileStatus('Informe um nome com pelo menos 2 letras.');return;}
+   if(age!==null&&(!Number.isInteger(age)||age<1||age>120)){profileStatus('Informe uma idade válida ou deixe o campo vazio.');return;}
+   const button=$('nexProfileSave');button.disabled=true;
+   try{
+    await updateProfile(current,{displayName:name.slice(0,60)});
+    const updated={name:name.slice(0,60),age};
+    localStorage.setItem('nex_account_profile_'+current.uid,JSON.stringify(updated));
+    $('nexProfileAvatar').textContent=name.charAt(0).toUpperCase();
+    // Persist the optional age in the owner's existing private homebrew record on the next sync.
+    dirty=true;schedule();
+    profileStatus('Perfil salvo. As alterações serão sincronizadas automaticamente.');
+   }catch(error){profileStatus('Não foi possível salvar o perfil: '+(error?.code||'tente novamente'));}
+   finally{button.disabled=false;}
+ };
+ $('nexProfilePassword').onclick=async()=>{
+   if(!current?.email){profileStatus('Esta conta não possui e-mail para recuperação.');return;}
+   if(current.providerData?.some(p=>p.providerId==='google.com')&&!current.providerData?.some(p=>p.providerId==='password')){
+    profileStatus('Sua conta utiliza o Google. Altere sua senha nas configurações da Conta Google.');return;
+   }
+   try{await sendPasswordResetEmail(auth,current.email);profileStatus('Se o e-mail estiver habilitado para senha, você receberá um link para alterá-la.');}
+   catch(error){profileStatus('Não foi possível enviar o link: '+(error?.code||'tente novamente'));}
+ };
  $('nexAccountGoogle').onclick=async()=>{
   const button=$('nexAccountGoogle');
   button.disabled=true;
@@ -209,7 +283,7 @@ else{
   $('nexAccountGuest').hidden=!!user;$('nexAccountConnected').hidden=!user;
   open.textContent=user?'Minha conta':'Conta NEX';
   open.title=user?(accountSwitchBlocked?'Conta diferente detectada: sincronização pausada para proteger seus dados':(user.email||'Conta conectada')):'Entrar ou criar conta';
-  $('nexAccountMenuEmail').textContent=user?.email||'Conta NEX';
+  if(user) $('nexProfileEmail').value=user.email||'';
   menu.hidden=true;
   if(user){
    $('nexAccountWho').textContent=user.email||'Conta conectada';
