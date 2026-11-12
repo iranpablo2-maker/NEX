@@ -101,6 +101,16 @@ function render(){
  const d=data(),base=profs(),all=new Set([...base,...d.extraProficiencies.filter(x=>names.includes(x))]);
  const armor=$('nexDefArmor');
  const linked=inventorySelection(d);
+ // Recalcula ao adicionar/remover/vestir itens, sem manter defesa de proteção removida.
+ const equippedName=linked.active?linked.active.name:'';
+ const equippedBase=(linked.active?linked.active.bonus:0)+(linked.shield?2:0);
+ if(state.protectionName!==equippedName||Number(state.protectionDefense)!==equippedBase){
+  state.protectionName=equippedName;
+  state.protectionDefense=equippedBase;
+  origin.armor.value=equippedName;
+  const defenseInput=$('nex20ArmorBonus');if(defenseInput)defenseInput.value=equippedBase;
+  if(typeof save==='function')save();
+ }
  armor.innerHTML=armorOpts.map(([key,label,bonus])=>'<option value="'+key+'">'+(!allowedArmor(all,key)?'🔒 ':'')+label+(bonus?' · Defesa +'+bonus:'')+'</option>').join('')+
  linked.inventory.filter(x=>x.kind!=='escudo').map(x=>'<option value="item:'+escape(x.id)+'">'+(x.item.equipped?'✓ ':'')+escape(x.name)+' · Defesa +'+(x.bonus+x.improvementBonus)+'</option>').join('');
  armor.value=linked.active?'item:'+linked.active.id:'';
