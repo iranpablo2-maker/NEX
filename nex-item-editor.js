@@ -45,6 +45,7 @@ function detail(item){
  })();
  const isWeapon=(item.category==='Arma'||sec[item.category]==='Armas');
  const unavailable=isWeapon?'Não informado':'—';
+ const archiveItem=(window.NEX_ARQUIVOS?.items||[]).find(x=>norm(x.name)===norm(item.name)&&x.section===sec[item.category]);
  const fallback={
   name:item.name||model.name||'',
   category:cats.includes(item.category)?item.category:(model.section==='Armas'?'Arma':'Geral'),
@@ -67,6 +68,7 @@ function detail(item){
    const existing=String(item.description||'').trim();
    if(existing && !/detalhes a conferir|consulte (o livro|as regras|os valores|o mestre)|equipamento listado na tabela|estatísticas de jogo conforme|dados de jogo da tabela|munição listada na tabela|item amaldiçoado listado na tabela|é um equipamento geral de|é um artefato paranormal/i.test(existing))return existing;
    const replacement=model.name?window.NEX_ITEM_DESCRIBE?.(model):'';
+   if(archiveItem?.description)return archiveItem.description+' Fonte: '+archiveItem.source+'.';
    if(replacement)return replacement;
    const saved=String(item.detail||'').split(/\s*·\s*/)[0].trim();
    const auto=/^(?:Estatísticas de jogo conforme|Dados de jogo da tabela|Equipamento listado na tabela|Item amaldiçoado listado na tabela|Detalhes a conferir|Arma [·:]|Equipamento [·:]|Proteção [·:])/i;
