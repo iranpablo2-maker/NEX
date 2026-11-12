@@ -4472,4 +4472,74 @@ const PARANORMAL=[
     if(Number.isFinite(height))frame.style.height=Math.min(12000,Math.max(800,height+15))+'px';
   });
 })();
-</script></body></html>
+</script>
+<style id="nex-temporary-resource-points-v1">
+#sheetScreen .nex-temp-resource-controls{display:inline-flex;align-items:center;gap:5px;margin-left:auto;white-space:nowrap;font-size:11px;font-weight:500;color:#b6aebb}
+#sheetScreen .nex-temp-resource-controls .nex-temp-input{width:47px;min-width:47px;height:29px;padding:3px 2px;text-align:center;border:1px solid #3b3349;border-radius:4px;background:#15121f;color:#fff;font-size:12px;font-weight:700;appearance:textfield;-moz-appearance:textfield}
+#sheetScreen .nex-temp-resource-controls .nex-temp-input::-webkit-inner-spin-button,#sheetScreen .nex-temp-resource-controls .nex-temp-input::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+#sheetScreen .nex-temp-resource-controls button{width:25px;height:28px;display:grid;place-items:center;padding:0;border:1px solid #3b3349;background:#1b1524;color:#ede6f5;border-radius:4px;font-size:18px;cursor:pointer}
+#sheetScreen .nex-temp-resource-controls button:hover{background:#48254a}
+#sheetScreen .n193-resource-label{display:flex;align-items:center;gap:5px;justify-content:space-between;flex-wrap:wrap}
+#sheetScreen .n193-resource-label .nex-temp-resource-controls{font-size:11px;letter-spacing:0}
+@media(max-width:480px){#sheetScreen .nex-temp-resource-controls{gap:3px}#sheetScreen .nex-temp-resource-controls .nex-temp-input{width:39px;min-width:39px}}
+</style>
+<script id="nex-temporary-resource-points-script">
+(function(){
+ 'use strict';
+ if(typeof state==='undefined'||typeof maxValues!=='function'||typeof renderStats!=='function')return;
+ const keys=['pv','pe','san'];
+ function temps(){
+  if(!state.temporaryResources||typeof state.temporaryResources!=='object'||Array.isArray(state.temporaryResources))state.temporaryResources={pv:0,pe:0,san:0};
+  for(const key of keys)state.temporaryResources[key]=Math.max(0,Math.min(9999,Math.floor(Number(state.temporaryResources[key])||0)));
+  return state.temporaryResources;
+ }
+ const baseMaxValues=maxValues;
+ maxValues=function(){
+  const m=baseMaxValues();
+  const t=temps();
+  return {...m,pv:m.pv+t.pv,pe:m.pe+t.pe,san:m.san+t.san};
+ };
+ const originalRenderStats=renderStats;
+ renderStats=function(){
+  originalRenderStats();
+  const t=temps();
+  for(const key of keys){
+   const field=document.querySelector('#nexTemp-'+key);
+   if(field&&document.activeElement!==field)field.value=String(t[key]);
+  }
+ };
+ const specs={pv:['pvCurrent','PV'],pe:['peCurrent','PE'],san:['sanCurrent','SAN']};
+ for(const key of keys){
+  const [id,label]=specs[key];
+  const resource=document.getElementById(id)?.closest('.n193-resource');
+  const heading=resource?.querySelector('.n193-resource-label');
+  if(!heading||heading.querySelector('.nex-temp-resource-controls'))continue;
+  const tools=document.createElement('span');tools.className='nex-temp-resource-controls';
+  tools.innerHTML='<span>Temp.</span><button type="button" data-nex-temp="'+key+'" data-nex-delta="-1" aria-label="Remover 1 '+label+' temporário">‹</button><input class="nex-temp-input" type="number" id="nexTemp-'+key+'" min="0" max="9999" inputmode="numeric" aria-label="'+label+' temporários"><button type="button" data-nex-temp="'+key+'" data-nex-delta="1" aria-label="Adicionar 1 '+label+' temporário">›</button>';
+  heading.appendChild(tools);
+ }
+ function updateTemp(key,next){
+  if(!keys.includes(key))return;
+  const current=temps()[key];
+  const value=Math.max(0,Math.min(9999,Math.floor(Number(next)||0)));
+  if(current===value)return;
+  state.temporaryResources[key]=value;
+  renderStats();
+  if(typeof save==='function')save();
+ }
+ document.addEventListener('click',event=>{
+  const btn=event.target.closest('[data-nex-temp][data-nex-delta]');
+  if(!btn)return;
+  event.preventDefault();
+  const key=btn.dataset.nexTemp;
+  updateTemp(key,temps()[key]+Number(btn.dataset.nexDelta));
+ });
+ document.addEventListener('change',event=>{
+  const input=event.target.closest('input.nex-temp-input');
+  if(!input)return;
+  updateTemp(input.id.replace('nexTemp-',''),input.value);
+ });
+ renderStats();
+})();
+</script>
+</body></html>
