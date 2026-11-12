@@ -3347,7 +3347,6 @@ $('nexHomebrewFilter')?.addEventListener('input',()=>nex12RenderHomebrew());
      if(!persist()){toast('Não foi possível confirmar o salvamento. Exporte um backup.');return;}
      const target=agents.find(x=>x.id===b.dataset.deleteAgent);
      if(!target)return;
-     if(!confirm('Excluir a ficha "'+(target.data?.name||'Sem nome')+'" deste dispositivo? Para recuperá-la, será necessário restaurar um backup.'))return;
      try{removeAgentsSafely([{id:target.id,fingerprint:JSON.stringify(target)}],true);toast('Ficha excluída. A remoção será sincronizada com sua conta.');}
      catch(error){console.error('NEX: exclusão bloqueada',error);toast('A exclusão foi bloqueada para proteger seus dados.');}
      return;
@@ -4501,7 +4500,7 @@ const PARANORMAL=[
 <script src="nex-descricoes-completas.js?v=2094"></script>
 <script src="nex-item-catalog.js?v=20261112profgate1"></script>
 <script src="nex-item-modifiers.js?v=20261110cursedescriptions7"></script>
-<script src="nex-item-editor.js?v=20261112profgate1"></script>
+<script src="nex-item-editor.js?v=20261112cleancombat2"></script>
 <!-- Sincronização em nuvem desativada a pedido do proprietário: mantém salvamento local. -->
 
 <style id="nex-v2059-attribute-roll-skill-picker">
