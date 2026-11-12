@@ -4619,6 +4619,25 @@ const PARANORMAL=[
   const observer=new MutationObserver(loadWhenVisible);
   observer.observe(area,{attributes:true,attributeFilter:['class']});
   loadWhenVisible();
+  // Ponte restrita ao iframe de campanhas da mesma origem.
+  // Nunca altera nem remove a ficha original ao compartilhá-la.
+  window.addEventListener('message',event=>{
+    if(event.origin!==location.origin || event.source!==frame.contentWindow)return;
+    const msg=event.data||{};
+    if(msg.type!=='nex-agent-list-request' && msg.type!=='nex-agent-data-request')return;
+    const bridge=window.NEX_AUTO_BRIDGE;
+    if(!bridge?.ready?.()){
+      frame.contentWindow.postMessage({type:'nex-agent-bridge-response',requestId:msg.requestId,ready:false,agents:[]},location.origin);
+      return;
+    }
+    const agents=bridge.read().agents||[];
+    if(msg.type==='nex-agent-list-request'){
+      frame.contentWindow.postMessage({type:'nex-agent-bridge-response',requestId:msg.requestId,ready:true,agents:agents.filter(a=>a?.id&&a?.data).map(a=>({id:a.id,name:String(a.data.name||'Personagem sem nome'),className:String(a.data.class||''),nex:Number(a.data.nex)||0}))},location.origin);
+    }else{
+      const agent=agents.find(a=>a.id===msg.agentId);
+      frame.contentWindow.postMessage({type:'nex-agent-bridge-response',requestId:msg.requestId,ready:true,agent:agent?JSON.parse(JSON.stringify(agent)):null},location.origin);
+    }
+  });
   window.addEventListener('message',event=>{
     if(event.origin!==location.origin || event.source!==frame.contentWindow)return;
     if(event.data?.type!=='nex-campaign-height')return;
