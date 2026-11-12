@@ -1805,6 +1805,29 @@ body > #nexOriginPopup[hidden]{display:none!important;}
 #nexOriginPopup .nex-origin-choice[aria-selected="true"]{background:#622e32}
 #nexOriginPopup .nex-origin-empty{padding:9px;color:#bcb1bb;font-size:12px}
 @media(max-width:750px){#nexOriginPopup .nex-origin-options{max-height:min(230px,36vh)}}
+
+/* NEX: refinamento responsivo da navegação e menu lateral */
+@media(max-width:750px){
+ .nex-ref-nav{display:none!important}
+ .topinner{flex-wrap:nowrap!important;gap:9px!important;padding:9px 12px!important}
+ .topinner>.actions{width:auto!important;min-width:0!important;flex:0 1 auto!important;overflow-x:auto}
+ .topinner>.actions .btn{white-space:nowrap}
+ .brand{min-width:0!important;overflow:hidden}
+ .brand h1{font-size:clamp(20px,5vw,27px)!important}
+ .brand .subtitle{font-size:8px!important;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+ .n17-drawer{width:min(320px,88vw);padding:calc(16px + env(safe-area-inset-top)) 16px 20px;gap:8px}
+ .n17-drawer h2{margin:8px 0 0}
+ .n17-drawer button:not(.n17-close){min-height:48px}
+ .home-hero{padding:26px 20px!important}
+ .home-hero h2{font-size:clamp(38px,10vw,54px)!important}
+ .home-hero p{font-size:13px!important;line-height:1.6}
+ .home-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:10px}
+ .home-tile{min-width:0;min-height:145px;padding:14px!important;gap:9px}
+ .home-tile strong{font-size:13px!important}
+ .home-tile small{font-size:11px!important;overflow-wrap:anywhere}
+ .home-section-heading{gap:8px;flex-wrap:wrap}
+}
+@media(max-width:370px){.home-grid{grid-template-columns:1fr!important}.brand .subtitle{display:none}}
 </style></head><body>
 <script src="nex-sobrevivendo-ao-horror.js?v=2072"></script>
 <script src="nex-arquivos-secretos.js?v=20261112descs2"></script>
@@ -1821,18 +1844,18 @@ body > #nexOriginPopup[hidden]{display:none!important;}
 
 <div id="n17DrawerBackdrop" class="n17-drawer-backdrop" aria-hidden="true"></div>
 <aside id="n17Drawer" class="n17-drawer" aria-label="Menu de navegação" aria-hidden="true">
-<button class="n17-close" type="button" id="n17Close" aria-label="Fechar menu">×</button><h2>NEX</h2><p>SISTEMA DE FICHAS • V1.7</p>
+<button class="n17-close" type="button" id="n17Close" aria-label="Fechar menu">×</button><h2>NEX</h2><p>SISTEMA DE FICHAS</p>
 <button type="button" data-n17-action="home">⌂ &nbsp; Menu principal</button>
 <button type="button" data-n17-action="agents">♙ &nbsp; Meus personagens</button>
 <button type="button" data-n17-action="new">＋ &nbsp; Criar personagem</button>
 <button type="button" data-n17-action="campaigns">◎ &nbsp; Campanhas</button>
 <button type="button" data-n17-action="homebrew">✧ &nbsp; Homebrew</button>
-<button type="button" data-n17-action="backup">↓ &nbsp; Backup de todas as fichas</button>
-<div class="n17-drawer-bottom">As fichas são gravadas neste navegador. Para trocar de aparelho ou versão do HTML, exporte um backup JSON.</div></aside>
+
+</aside>
 
 <section id="mainMenu" aria-label="Menu principal NEX">
- <div class="home-hero"><div class="home-eyebrow">PLATAFORMA DE PERSONAGENS</div><h2>NEX</h2><p>O paranormal não espera. Organize seus personagens, consulte suas fichas e prepare sua próxima investigação em um único lugar. Seus registros ficam neste navegador.</p><div class="actions"><button class="home-action" type="button" id="menuNew">＋ Criar personagem</button><button class="home-action secondary" type="button" id="menuContinue" style="display:none!important" hidden tabindex="-1" aria-hidden="true">Abrir ficha atual →</button></div></div>
- <div class="home-section-heading"><h2>Central de operações</h2><span class="home-tag">◈ ACESSO LOCAL</span></div>
+ <div class="home-hero"><div class="home-eyebrow">PLATAFORMA DE PERSONAGENS</div><h2>NEX</h2><p>O paranormal não espera. Organize seus personagens, consulte suas fichas e prepare sua próxima investigação em um único lugar. </p><div class="actions"><button class="home-action" type="button" id="menuNew">＋ Criar personagem</button><button class="home-action secondary" type="button" id="menuContinue" style="display:none!important" hidden tabindex="-1" aria-hidden="true">Abrir ficha atual →</button></div></div>
+ <div class="home-section-heading"><h2>Central de operações</h2></div>
  <div class="home-grid"><button class="home-tile" data-home="agents"><span class="symbol">♙</span><strong>Meus personagens</strong><small>Visualize, abra e gerencie fichas de personagens.</small></button><button class="home-tile" data-home="new"><span class="symbol">＋</span><strong>Criar personagem</strong><small>Inicie uma nova ficha com as regras do NEX.</small></button><button class="home-tile" data-home="campaigns"><span class="symbol">◎</span><strong>Campanhas</strong><small>Crie mesas, convide amigos e acompanhe as fichas na mesma campanha.</small></button><button class="home-tile" data-home="homebrew"><span class="symbol">✧</span><strong>Homebrew</strong><small>Crie e edite origens personalizadas na biblioteca independente.</small></button></div>
  <div class="home-section-heading" id="agentsHeading"><h2>Personagens registrados</h2><div class="home-toolbar"><button class="btn sm" id="menuBackup" style="display:none!important" aria-hidden="true" tabindex="-1">↓ Exportar ficha atual</button><button class="btn sm" id="menuImport" style="display:none!important" aria-hidden="true" tabindex="-1">↑ Importar ficha</button></div></div>
  <div id="menuAgents" class="home-card-list"></div><p class="hint" style="margin-top:15px">Cada ficha é salva neste dispositivo. Exporte cópias de segurança em JSON para não perder seus personagens.</p>
