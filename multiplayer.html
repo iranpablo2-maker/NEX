@@ -385,7 +385,7 @@ if(!cfg||!cfg.projectId||!cfg.apiKey){show('setup',true);}else{
   const name=$('campaignNameOnline').value.trim(),description=$('campaignDescriptionOnline').value.trim();
   if(!uid)throw Error('Entre na sua conta NEX antes de criar uma campanha.');
   if(!name)throw Error('Informe um nome para a campanha.');
-  if(myCampaigns.length>=6)throw Error('Limite de 10 campanhas por conta.');
+  if(myCampaigns.length>=10)throw Error('Limite de 10 campanhas por conta.');
   // 8 caracteres sem 0/O/1/I: fáceis de ditar e com entropia suficiente.
   const alphabet='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
   const bytes=new Uint8Array(8);
