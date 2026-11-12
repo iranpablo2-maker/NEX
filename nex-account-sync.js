@@ -130,17 +130,36 @@ else{
    const cloud=await getDocs(uidPath());
    const records=new Map(cloud.docs.map(s=>[s.id,s.data()]));
    const patches=[],uploads=[];
+   // Exclusions are explicit tombstones, never inferred from a missing local sheet.
+   const deletedIds=new Set((local.deletedAgentIds||[]).filter(id=>typeof id==='string'&&/^[A-Za-z0-9_-]{2,90}$/.test(id)));
+   const localIds=new Set((local.agents||[]).map(a=>a.id));
+   for(const id of deletedIds){
+     const key='agent-'+id,remote=records.get(key);
+     if(remote&&!remote.deleted){
+       uploads.push({key,type:'agent',payload:{},deleted:true});
+     }
+   }
    for(const a of local.agents||[]){
-    if(!a?.id||!/^[A-Za-z0-9_-]{2,90}$/.test(a.id))continue;
+    if(!a?.id||!/^[A-Za-z0-9_-]{2,90}$/.test(a.id)||deletedIds.has(a.id))continue;
     const key='agent-'+a.id,r=records.get(key),other=r?.payload?.item;
-    if(other&&r.deleted!==true && Date.parse(other.updatedAt||0)>Date.parse(a.updatedAt||0)){
+    if(r?.deleted){
+      patches.push({id:key,entry:r});
+      continue; // A cloud deletion can never be undone by an older local copy.
+    }
+    if(other&&Date.parse(other.updatedAt||0)>Date.parse(a.updatedAt||0)){
       patches.push({id:key,entry:r});continue;
     }
-    if(!r||r.deleted||JSON.stringify(other)!==JSON.stringify(a))uploads.push({key,type:'agent',payload:{item:a}});
+    if(!r||JSON.stringify(other)!==JSON.stringify(a))uploads.push({key,type:'agent',payload:{item:a},deleted:false});
    }
    for(const [key,r] of records){
-    if(!key.startsWith('agent-')||r.deleted)continue;
-    if(!(local.agents||[]).some(a=>'agent-'+a.id===key))patches.push({id:key,entry:r});
+    if(!key.startsWith('agent-'))continue;
+    const id=key.slice(6);
+    if(deletedIds.has(id))continue;
+    if(r.deleted){
+      if(localIds.has(id))patches.push({id:key,entry:r});
+      continue;
+    }
+    if(!localIds.has(id))patches.push({id:key,entry:r});
    }
    for(const [name,items,idFn] of [
     ['campaigns',local.campaigns,x=>x.id],
@@ -172,7 +191,7 @@ else{
      bridge.apply(patches);
    }
    if(records.get('homebrew')?.payload?.advanced)mergeAdvanced(records.get('homebrew').payload.advanced);
-   for(const u of uploads)await setDoc(doc(uidPath(),u.key),{type:u.type,payload:safeClone(u.payload),deleted:false,updatedAt:serverTimestamp()});
+   for(const u of uploads)await setDoc(doc(uidPath(),u.key),{type:u.type,payload:safeClone(u.payload),deleted:!!u.deleted,updatedAt:serverTimestamp()});
    try{localStorage.setItem('nex_account_last_uid',current.uid);}catch(e){}
    ready=true;dirty=false;status('Conta conectada · sincronização concluída');
    message('Dados sincronizados: '+(local.agents||[]).length+' ficha(s), campanhas e homebrews. As fichas locais foram preservadas.');
