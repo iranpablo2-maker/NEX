@@ -48,7 +48,19 @@ css.textContent+=`
 #nexProfileDialog .nex-profile-content{display:flex;gap:20px;align-items:flex-start}
 #nexProfileDialog .nex-profile-avatar{height:105px;width:105px;flex:0 0 105px;display:grid;place-items:center;background:#a53242;border:1px solid #c55661;border-radius:8px;font-size:44px;font-weight:800;color:#fff}
 #nexProfileDialog .nex-profile-avatar{position:relative;overflow:hidden;cursor:pointer;background-position:center;background-size:cover;background-repeat:no-repeat}
-#nexProfileDialog .nex-profile-avatar:after{content:'✎';position:absolute;right:5px;bottom:5px;width:25px;height:25px;display:grid;place-items:center;border-radius:50%;font-size:14px;background:#111b;color:#fff;border:1px solid #fff5}
+#nexPhotoCropDialog{width:min(95vw,450px);max-height:90vh;overflow:auto;border:1px solid #914251;border-radius:12px;background:#141114;color:#fff;padding:18px}
+#nexPhotoCropDialog::backdrop{background:#000c}
+#nexPhotoCropDialog .nex-crop-top{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:12px}
+#nexPhotoCropDialog .nex-crop-top h2{font-size:19px;margin:0}
+#nexPhotoCropDialog .nex-crop-close{color:#fff;background:transparent;border:0;font-size:24px;cursor:pointer}
+#nexPhotoCropCanvas{display:block;max-width:100%;height:auto;margin:auto;background:#20191d;border:1px solid #5e3842;border-radius:6px;touch-action:none;cursor:grab}
+#nexPhotoCropCanvas:active{cursor:grabbing}
+#nexPhotoCropDialog label{display:flex;align-items:center;gap:12px;margin:14px 0;color:#f4d8df}
+#nexPhotoCropZoom{flex:1;min-width:0;accent-color:#c6384c}
+#nexPhotoCropDialog .nex-crop-actions{display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap}
+#nexPhotoCropDialog .nex-crop-actions button{background:#a52f41;border:1px solid #bd4b5a;border-radius:6px;color:#fff;padding:10px 13px;font-weight:650;cursor:pointer}
+#nexPhotoCropDialog .nex-crop-actions button:first-child{background:#302025}
+#nexPhotoCropStatus{display:block;min-height:1.4em;color:#f4b3bf;font-size:12px;margin-top:10px}
 #nexProfileDialog .nex-profile-avatar:focus-visible{outline:2px solid #ff7383;outline-offset:3px}
 #nexAccountOpen.nex-header-avatar{display:grid!important;place-items:center!important;width:52px!important;height:52px!important;min-width:52px!important;min-height:52px!important;max-width:52px!important;padding:0!important;line-height:1!important;border-radius:9px!important;background-color:#a53242!important;background-size:cover!important;background-position:center!important;background-repeat:no-repeat!important;border:2px solid #b54b5b!important;color:#fff!important;font-size:25px!important;font-weight:800!important;overflow:hidden!important;cursor:pointer!important}
 #nexAccountOpen.nex-header-avatar:focus-visible{outline:2px solid #ff9eaa!important;outline-offset:3px!important}
@@ -69,6 +81,11 @@ profile.id='nexProfileDialog';
 profile.setAttribute('aria-label','Meu perfil NEX');
 profile.innerHTML='<div class="nex-profile-header"><h2>Meu perfil</h2><button type="button" class="nex-profile-close" id="nexProfileClose" aria-label="Fechar perfil">×</button></div><div class="nex-profile-content"><button class="nex-profile-avatar" id="nexProfileAvatar" type="button" aria-label="Alterar foto do perfil" title="Clique para trocar sua foto">N</button><input type="file" id="nexProfilePhotoFile" accept="image/png,image/jpeg,image/webp" style="display:none" aria-label="Escolher foto do perfil"><form id="nexProfileForm"><label>Nome<input id="nexProfileName" maxlength="60" autocomplete="name" required></label><label>E-mail<input id="nexProfileEmail" type="email" readonly></label><label>Idade (opcional)<input id="nexProfileAge" type="number" inputmode="numeric" min="1" max="120" placeholder="Não informada"></label><div class="nex-profile-actions"><button type="submit" id="nexProfileSave">Salvar perfil</button><button type="button" id="nexProfilePassword">Trocar senha</button></div></form></div><small id="nexProfileStatus" role="status"></small>';
 document.body.append(profile);
+const cropDialog=document.createElement('dialog');
+cropDialog.id='nexPhotoCropDialog';
+cropDialog.setAttribute('aria-label','Ajustar foto do perfil');
+cropDialog.innerHTML='<div class="nex-crop-top"><h2>Ajustar foto</h2><button type="button" class="nex-crop-close" id="nexCropClose" aria-label="Fechar edição">×</button></div><p>Arraste a imagem para enquadrar antes de salvar.</p><canvas id="nexPhotoCropCanvas" width="320" height="320" aria-label="Prévia quadrada da foto; arraste para enquadrar"></canvas><label>Zoom <input id="nexPhotoCropZoom" type="range" min="1" max="3" value="1" step="0.01"></label><div class="nex-crop-actions"><button type="button" id="nexCropCancel">Cancelar</button><button type="button" id="nexCropSave">Salvar foto</button></div><small id="nexPhotoCropStatus" role="status"></small>';
+document.body.append(cropDialog);
 const $=id=>document.getElementById(id);
 const status=t=>{$('nexAccountStatus').textContent=t;};
 const message=t=>{$('nexAccountMessage').textContent=t;};
@@ -196,30 +213,56 @@ else{
    avatar.style.backgroundImage=valid?'url("'+photo+'")':'none';
    avatar.textContent=valid?'':(String(name||'N').trim().charAt(0).toUpperCase()||'N');
  }
- function resizeProfilePhoto(file){
-   return new Promise((resolve,reject)=>{
-     const url=URL.createObjectURL(file);
-     const img=new Image();
-     img.onload=()=>{
-       try{
-         const size=180;
-         const canvas=document.createElement('canvas');canvas.width=canvas.height=size;
-         const ctx=canvas.getContext('2d');
-         if(!ctx)throw new Error('Canvas indisponível');
-         ctx.fillStyle='#211518';ctx.fillRect(0,0,size,size);
-         const scale=Math.max(size/img.naturalWidth,size/img.naturalHeight);
-         const w=img.naturalWidth*scale,h=img.naturalHeight*scale;
-         ctx.drawImage(img,(size-w)/2,(size-h)/2,w,h);
-         const data=canvas.toDataURL('image/jpeg',0.75);
-         if(data.length>110000)throw new Error('A foto compactada ficou muito grande');
-         resolve(data);
-       }catch(err){reject(err);}
-       finally{URL.revokeObjectURL(url);}
-     };
-     img.onerror=()=>{URL.revokeObjectURL(url);reject(new Error('Imagem não pôde ser lida'));};
-     img.src=url;
-   });
+
+ const cropCanvas=$('nexPhotoCropCanvas'),cropContext=cropCanvas.getContext('2d');
+ let cropImage=null,cropOwner=null,cropUrl=null,cropZoom=1,cropX=0,cropY=0,cropPointer=null;
+ function cropBase(){
+   if(!cropImage)return 1;
+   return Math.max(320/cropImage.naturalWidth,320/cropImage.naturalHeight);
  }
+ function clampCrop(){
+   if(!cropImage)return;
+   const w=cropImage.naturalWidth*cropBase()*cropZoom;
+   const h=cropImage.naturalHeight*cropBase()*cropZoom;
+   cropX=Math.min((w-320)/2,Math.max(-(w-320)/2,cropX));
+   cropY=Math.min((h-320)/2,Math.max(-(h-320)/2,cropY));
+ }
+ function drawCrop(){
+   if(!cropImage||!cropContext)return;
+   clampCrop();
+   cropContext.fillStyle='#20191d';
+   cropContext.fillRect(0,0,320,320);
+   const w=cropImage.naturalWidth*cropBase()*cropZoom;
+   const h=cropImage.naturalHeight*cropBase()*cropZoom;
+   cropContext.drawImage(cropImage,(320-w)/2+cropX,(320-h)/2+cropY,w,h);
+ }
+ function closeCrop(){
+   if(cropDialog.open)cropDialog.close();
+   cropImage=null;cropOwner=null;cropPointer=null;
+   if(cropUrl){URL.revokeObjectURL(cropUrl);cropUrl=null;}
+ }
+ $('nexCropClose').onclick=closeCrop;
+ $('nexCropCancel').onclick=closeCrop;
+ cropDialog.addEventListener('close',()=>{
+   cropImage=null;cropOwner=null;cropPointer=null;
+   if(cropUrl){URL.revokeObjectURL(cropUrl);cropUrl=null;}
+ });
+ cropCanvas.addEventListener('pointerdown',event=>{
+   if(!cropImage)return;
+   cropPointer={id:event.pointerId,x:event.clientX,y:event.clientY,ox:cropX,oy:cropY};
+   cropCanvas.setPointerCapture(event.pointerId);
+ });
+ cropCanvas.addEventListener('pointermove',event=>{
+   if(!cropPointer||cropPointer.id!==event.pointerId)return;
+   const rect=cropCanvas.getBoundingClientRect();
+   cropX=cropPointer.ox+(event.clientX-cropPointer.x)*(320/rect.width);
+   cropY=cropPointer.oy+(event.clientY-cropPointer.y)*(320/rect.height);
+   drawCrop();
+ });
+ function endCropDrag(event){if(cropPointer?.id===event.pointerId)cropPointer=null;}
+ cropCanvas.addEventListener('pointerup',endCropDrag);
+ cropCanvas.addEventListener('pointercancel',endCropDrag);
+ $('nexPhotoCropZoom').oninput=event=>{cropZoom=Number(event.target.value)||1;drawCrop();};
  $('nexProfileAvatar').onclick=()=>{if(current)$('nexProfilePhotoFile').click();};
  $('nexProfilePhotoFile').addEventListener('change',async event=>{
    const file=event.target.files?.[0];
@@ -227,14 +270,39 @@ else{
    if(!file||!current)return;
    if(!['image/png','image/jpeg','image/webp'].includes(file.type)){profileStatus('Escolha uma imagem JPG, PNG ou WebP.');return;}
    if(file.size>5*1024*1024){profileStatus('Escolha uma foto de até 5 MB.');return;}
-   const owner=current.uid;
-   $('nexProfileAvatar').disabled=true;
-   profileStatus('Preparando foto do perfil…');
+   closeCrop();
+   cropOwner=current.uid;
+   const owner=cropOwner;
+   const url=URL.createObjectURL(file);
+   cropUrl=url;
+   const img=new Image();
+   img.onload=()=>{
+     if(cropOwner!==owner||cropUrl!==url||current?.uid!==owner)return;
+     cropImage=img;cropZoom=1;cropX=0;cropY=0;
+     $('nexPhotoCropZoom').value='1';
+     $('nexPhotoCropStatus').textContent='';
+     drawCrop();cropDialog.showModal();
+   };
+   img.onerror=()=>{
+     if(cropUrl===url){closeCrop();profileStatus('Não foi possível abrir a imagem.');}
+   };
+   img.src=url;
+ });
+ $('nexCropSave').onclick=async()=>{
+   if(!cropImage||!cropOwner||!current||current.uid!==cropOwner)return;
+   const owner=cropOwner,button=$('nexCropSave');
+   button.disabled=true;
    try{
-     const photo=await resizeProfilePhoto(file);
-     if(!current||current.uid!==owner)throw new Error('Conta alterada durante a seleção da foto');
-     const old=currentProfile();
-     const updated={...old,photo,updatedAt:new Date().toISOString()};
+     drawCrop();
+     const output=document.createElement('canvas');
+     output.width=output.height=180;
+     const ctx=output.getContext('2d');
+     if(!ctx)throw new Error('Editor indisponível');
+     ctx.drawImage(cropCanvas,0,0,180,180);
+     const photo=output.toDataURL('image/jpeg',0.75);
+     if(photo.length>110000)throw new Error('Imagem muito grande');
+     const updated={...currentProfile(),photo,updatedAt:new Date().toISOString()};
+     if(current?.uid!==owner)throw new Error('A conta foi alterada');
      localStorage.setItem('nex_account_profile_'+owner,JSON.stringify(updated));
      setProfileAvatar($('nexProfileName').value,photo);
      updateHeaderAvatar();
@@ -242,9 +310,10 @@ else{
      if(ready)schedule();
      else setTimeout(()=>{if(current?.uid===owner)sync();},1200);
      profileStatus('Foto alterada. A sincronização acontece automaticamente.');
-   }catch(err){profileStatus('Não foi possível salvar a foto: '+(err?.message||'tente novamente'));}
-   finally{$('nexProfileAvatar').disabled=false;}
- });
+     closeCrop();
+   }catch(err){$('nexPhotoCropStatus').textContent='Não foi possível salvar: '+(err?.message||'tente novamente');}
+   finally{button.disabled=false;}
+ };
  function updateProfileDisplay(){
    if(!current)return;
    const saved=currentProfile();
