@@ -75,6 +75,18 @@ html.nex-embedded .panel{margin:9px 0}
  #room .room-invite-copy{width:100%}
  #room .room-invite-copy button{flex:1}
 }
+
+#dashboard:has(#room:not(.hide))>#accountInfo,#dashboard:has(#room:not(.hide))>.grid{display:none}
+#room .room-navigation{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+#room .room-navigation button{min-width:0;text-align:left;padding:12px;background:#23191e;border:1px solid #64313d;color:#fff;border-radius:9px;font-weight:750}
+#room .room-navigation small{display:block;margin-top:4px;font-weight:400;font-size:11px;color:#c8b4ba}
+#room .room-navigation button[aria-pressed="true"]{background:#57232f;border-color:#d04b5c}
+#room .room-invite-label{display:block;color:#baa8af;font-size:12px;margin-top:5px}
+#room .room-request-card{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;background:#241a1e;border:1px solid #5b303c;border-radius:8px;padding:12px}
+#room .room-request-card button{margin-left:6px}
+#joinInvite:not(.hide){display:grid;gap:9px;margin-top:14px}
+#inviteStatus{display:block}
+@media(max-width:720px){#room .room-navigation{grid-template-columns:repeat(2,minmax(0,1fr))}}
 </style>
 </head>
 <body>
@@ -104,10 +116,10 @@ if(new URLSearchParams(location.search).get('integrado')==='1'){
  <p><small>Use uma senha própria. Nunca compartilhe a senha com o mestre ou os jogadores.</small></p>
 </section>
 <section id="dashboard" class="hide">
- <div class="panel"><div class="row"><strong id="who"></strong><button id="copyUid" class="alt">Copiar meu ID</button><button id="logout" class="alt">Sair</button></div><p><small>Para entrar numa campanha, envie seu ID ao mestre. Ele precisa autorizar sua entrada. Nenhum jogador recebe acesso às fichas sem autorização.</small></p></div>
+ <div id="accountInfo" class="panel"><div class="row"><strong>Conta NEX conectada</strong><button id="logout" class="alt">Desconectar</button></div><p><small>Crie uma campanha ou abra um link recebido. Entradas dependem da aprovação do mestre.</small></p></div>
  <div class="grid">
  <section class="panel"><h2>Criar campanha (mestre)</h2><form id="createCampaign"><label>Nome<input id="campaignNameOnline" maxlength="100" required placeholder="Vale das Pedras"></label><label>Descrição<input id="campaignDescriptionOnline" maxlength="300"></label><button>Criar campanha online</button></form></section>
- <section class="panel"><h2>Abrir campanha</h2><form id="openCampaign"><label>Código da campanha<input id="campaignCode" placeholder="Cole o código enviado pelo mestre" required></label><button>Abrir sala</button></form></section>
+ <section class="panel"><h2>Entrar em uma campanha</h2><p>Abra o link enviado pelo mestre. Não é necessário digitar códigos.</p><form id="openCampaign" class="hide"><input id="campaignCode"><button>Abrir sala</button></form><section id="joinInvite" class="hide"><p>Você recebeu um convite para uma campanha.</p><button type="button" id="requestEntry">Solicitar entrada</button><button type="button" class="alt" id="openApproved">Abrir campanha</button><small id="inviteStatus"></small></section></section>
  </div>
  <section id="room" class="panel hide">
   <div class="room-hero">
@@ -115,21 +127,27 @@ if(new URLSearchParams(location.search).get('integrado')==='1'){
    <p id="roomDescription" class="room-desc"></p>
   </div>
   <div class="room-content">
-   <div class="room-invite">
-    <div><small>Código de convite</small><code id="roomCode" class="code"></code></div>
-    <div class="room-invite-copy"><button class="alt" id="copyCode" type="button">Copiar código</button></div>
+   <div id="roomNavigation" class="room-navigation" role="group" aria-label="Seções da campanha">
+    <button type="button" data-room-section="characters" aria-pressed="true">Personagens<small>Fichas compartilhadas</small></button>
+    <button type="button" data-room-section="master" id="roomMasterTab" aria-pressed="false">Painel do mestre<small>Gerenciar campanha</small></button>
+    <button type="button" data-room-section="players" aria-pressed="false">Jogadores<small>Participantes</small></button>
+    <button type="button" data-room-section="invites" aria-pressed="false">Convites<small>Compartilhar link</small></button>
+   </div>
+   <div id="roomMasterPanel" class="room-panel hide"><h3>Painel do mestre</h3><p class="room-note">Gerencie as solicitações e acompanhe os personagens da sua campanha.</p></div>
+   <div class="room-invite" id="roomInvitePanel">
+    <div><small>Convide seus jogadores com um link</small><span class="room-invite-label">Somente o mestre pode aprovar novos participantes.</span><code id="roomCode" class="code hide"></code></div>
+    <div class="room-invite-copy"><button class="alt" id="copyCode" type="button">Copiar convite</button></div>
    </div>
    <section id="gmOnly" class="room-panel hide">
-    <div class="room-panel-head"><h3>Autorizar jogador</h3></div>
-    <form id="inviteForm" class="room-member-form"><input id="newMemberUid" placeholder="ID da conta do jogador" aria-label="ID do jogador" required><input id="newMemberName" placeholder="Nome do jogador" aria-label="Nome do jogador" maxlength="50"><button>Autorizar</button></form>
-    <p class="room-note">O jogador encontra o ID na própria conta. Somente pessoas autorizadas podem acessar as fichas.</p>
+    <div class="room-panel-head"><h3>Solicitações de entrada</h3></div>
+    <div id="joinRequests" class="grid room-members"><p>Nenhuma solicitação pendente.</p></div>
    </section>
-   <section class="room-panel">
-    <div class="room-panel-head"><h3>Participantes</h3></div>
+   <section id="roomPlayersPanel" class="room-panel">
+    <div class="room-panel-head"><h3>Jogadores</h3></div>
     <div id="members" class="grid room-members"></div>
    </section>
-   <section class="room-panel">
-    <div class="room-panel-head"><h2>Fichas da campanha</h2><button id="newSheet">Criar ficha</button></div>
+   <section id="roomCharactersPanel" class="room-panel">
+    <div class="room-panel-head"><h2>Personagens</h2><button id="newSheet">Adicionar personagem</button></div>
     <p class="room-note">Todos os participantes podem visualizar. Somente o dono da ficha e o mestre podem editar.</p>
     <section id="sheetFormPanel" class="panel hide">
      <h3 id="sheetFormTitle">Editar ficha</h3>
@@ -153,7 +171,7 @@ if(new URLSearchParams(location.search).get('integrado')==='1'){
 <script type="module">
 import {initializeApp} from 'https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js';
 import {getAuth,onAuthStateChanged,createUserWithEmailAndPassword,signInWithEmailAndPassword,signOut} from 'https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js';
-import {getFirestore,collection,doc,getDoc,setDoc,addDoc,updateDoc,onSnapshot,serverTimestamp} from 'https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js';
+import {getFirestore,collection,doc,getDoc,setDoc,addDoc,updateDoc,deleteDoc,onSnapshot,serverTimestamp} from 'https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js';
 const $=id=>document.getElementById(id);
 const show=(id,on)=>$(id).classList.toggle('hide',!on);
 const notice=msg=>$('notice').textContent=msg||'';
@@ -164,7 +182,8 @@ if(!cfg||!cfg.projectId||!cfg.apiKey){show('setup',true);}else{
  try{
   const app=initializeApp(cfg);auth=getAuth(app);db=getFirestore(app);
  }catch(err){show('setup',true);notice('Configuração Firebase inválida.');throw err;}
- let uid=null,roomId='',gm=false,roomData=null,roomMembers=[],roomSheets=[],unsubs=[],editing=null;
+ let uid=null,roomId='',gm=false,roomData=null,roomMembers=[],roomSheets=[],roomRequests=[],unsubs=[],editing=null;
+ const inviteId=new URLSearchParams(location.search).get('invite')||'';
  const run=async fn=>{try{notice('');await fn();}catch(err){
   const code=err?.code||'';
   const explanation=code==='permission-denied'?'Acesso negado pelo Firestore. Confira se as regras da coleção campaigns foram publicadas no Firebase.':(err?.message||'Ação não autorizada');
@@ -172,21 +191,54 @@ if(!cfg||!cfg.projectId||!cfg.apiKey){show('setup',true);}else{
  }};
  const clearRoom=()=>{
   for(const u of unsubs){try{u()}catch(e){}}unsubs=[];
-  roomId='';gm=false;roomMembers=[];roomSheets=[];roomData=null;editing=null;
+  roomId='';gm=false;roomMembers=[];roomSheets=[];roomRequests=[];roomData=null;editing=null;
   show('room',false);show('sheetFormPanel',false);
  };
  onAuthStateChanged(auth,user=>{
   clearRoom();uid=user?.uid||null;
   show('authPanel',!uid);show('dashboard',!!uid);
-  if(uid)$('who').textContent='ID da conta: '+uid;
+  if(uid&&inviteId){show('joinInvite',true);$('inviteStatus').textContent='Entre na campanha ou solicite aprovação do mestre.';}
+  if(uid&&!inviteId)show('joinInvite',false);
  });
  $('authForm').addEventListener('submit',e=>{e.preventDefault();run(async()=>{await signInWithEmailAndPassword(auth,$('email').value.trim(),$('password').value);});});
  $('register').addEventListener('click',()=>run(async()=>{await createUserWithEmailAndPassword(auth,$('email').value.trim(),$('password').value);}));
  $('logout').addEventListener('click',()=>run(async()=>{await signOut(auth)}));
  const copy=s=>navigator.clipboard?.writeText(s).then(()=>notice('Copiado.')).catch(()=>notice('Selecione e copie o código mostrado.'));
- $('copyUid').addEventListener('click',()=>copy(uid||''));
- $('copyCode').addEventListener('click',()=>copy(roomId));
- $('leaveRoom').addEventListener('click',clearRoom);
+
+ const inviteLink=id=>new URL('./index.html?campaignInvite='+encodeURIComponent(id),location.href).href;
+ $('copyCode').addEventListener('click',()=>copy(inviteLink(roomId)));
+ $('leaveRoom').addEventListener('click',()=>{clearRoom();show('joinInvite',!!inviteId);});
+ function roomSection(section){
+  const allowed=['characters','master','players','invites'];
+  if(!allowed.includes(section)||section==='master'&&!gm)section='characters';
+  document.querySelectorAll('[data-room-section]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.roomSection===section)));
+  show('roomCharactersPanel',section==='characters');
+  show('roomPlayersPanel',section==='players');
+  show('roomInvitePanel',section==='invites');
+  show('roomMasterPanel',section==='master');
+  show('gmOnly',section==='master'&&gm);
+ }
+ document.querySelectorAll('[data-room-section]').forEach(button=>button.addEventListener('click',()=>roomSection(button.dataset.roomSection)));
+ $('requestEntry').onclick=()=>run(async()=>{
+   if(!uid||!inviteId||!/[A-Za-z0-9-]{8,40}/.test(inviteId))throw Error('Link inválido ou conta desconectada.');
+   const display=auth.currentUser?.displayName||auth.currentUser?.email?.split('@')[0]||'Jogador';
+   await setDoc(doc(db,'campaigns',inviteId,'joinRequests',uid),{uid,name:display.slice(0,60),requestedAt:serverTimestamp()});
+   $('inviteStatus').textContent='Solicitação enviada. O mestre precisa aprovar seu acesso.';
+   $('requestEntry').disabled=true;
+ });
+ $('openApproved').onclick=()=>run(()=>enterRoom(inviteId));
+ $('joinRequests').addEventListener('click',event=>run(async()=>{
+   const button=event.target.closest('[data-approve-request],[data-deny-request]');
+   if(!button||!gm||!roomId)return;
+   const memberUid=button.dataset.approveRequest||button.dataset.denyRequest;
+   const entry=roomRequests.find(item=>item.uid===memberUid);
+   if(!entry)return;
+   button.disabled=true;
+   if(button.dataset.approveRequest){
+     await setDoc(doc(db,'campaigns',roomId,'members',memberUid),{uid:memberUid,name:String(entry.name||'Jogador').slice(0,60),joinedAt:serverTimestamp()});
+   }
+   await deleteDoc(doc(db,'campaigns',roomId,'joinRequests',memberUid));
+ }));
  $('createCampaign').addEventListener('submit',e=>{e.preventDefault();run(async()=>{
   const name=$('campaignNameOnline').value.trim(),description=$('campaignDescriptionOnline').value.trim();
   if(!uid)throw Error('Entre na sua conta NEX antes de criar uma campanha.');
@@ -216,7 +268,14 @@ if(!cfg||!cfg.projectId||!cfg.apiKey){show('setup',true);}else{
   roomId=id;roomData=snap.data();gm=roomData.gmUid===uid;
   $('roomTitle').textContent=roomData.name;
   $('roomDescription').textContent=roomData.description||'';
-  $('roomCode').textContent=id;$('role').textContent=gm?'Mestre':'Jogador';show('gmOnly',gm);show('room',true);
+  $('roomCode').textContent=id;$('role').textContent=gm?'Mestre':'Jogador';show('room',true);
+  show('roomMasterTab',gm);roomSection('characters');
+  if(gm)unsubs.push(onSnapshot(collection(db,'campaigns',id,'joinRequests'),snapshot=>{
+    roomRequests=snapshot.docs.map(d=>({id:d.id,...d.data()}));
+    $('joinRequests').innerHTML=roomRequests.length?roomRequests.map(item=>
+      '<div class="room-request-card"><strong>'+escape(item.name||'Jogador')+'</strong><div><button type="button" data-approve-request="'+escape(item.uid)+'">Aceitar</button><button type="button" class="alt" data-deny-request="'+escape(item.uid)+'">Recusar</button></div></div>'
+    ).join(''):'<p>Nenhuma solicitação pendente.</p>';
+  },error=>notice('Falha ao carregar solicitações: '+error.message)));
   unsubs.push(onSnapshot(collection(db,'campaigns',id,'members'),snapshot=>{
     roomMembers=snapshot.docs.map(d=>({id:d.id,...d.data()}));drawMembers();
   },e=>notice('Não foi possível carregar participantes: '+e.message)));
@@ -230,15 +289,6 @@ if(!cfg||!cfg.projectId||!cfg.apiKey){show('setup',true);}else{
   $('sheetOwner').innerHTML='<option value="'+escape(uid)+'">Minha conta</option>'+
     (gm?roomMembers.filter(m=>m.uid!==uid).map(m=>'<option value="'+escape(m.uid)+'">'+escape(m.name||m.uid)+'</option>').join(''):'');
  }
- $('inviteForm').addEventListener('submit',e=>{e.preventDefault();run(async()=>{
-  if(!gm||!roomId)throw Error('Somente o mestre autoriza participantes.');
-  const memberUid=$('newMemberUid').value.trim();
-  if(!/^[A-Za-z0-9]{15,140}$/.test(memberUid))throw Error('ID do jogador inválido.');
-  await setDoc(doc(db,'campaigns',roomId,'members',memberUid),
-    {uid:memberUid,name:$('newMemberName').value.trim().slice(0,50)||'Jogador',joinedAt:serverTimestamp()});
-  $('newMemberUid').value='';$('newMemberName').value='';
-  notice('Jogador autorizado. Agora ele pode abrir a campanha com o código.');
- });});
  function drawSheets(){
   $('sheets').innerHTML=roomSheets.length?roomSheets.map(s=>{
     const canEdit=gm||s.ownerUid===uid;
