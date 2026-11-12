@@ -87,6 +87,38 @@ html.nex-embedded .panel{margin:9px 0}
 #joinInvite:not(.hide){display:grid;gap:9px;margin-top:14px}
 #inviteStatus{display:block}
 @media(max-width:720px){#room .room-navigation{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+/* NEX campanhas: visual de biblioteca e criação independente da sala */
+#dashboard>.grid{display:none}
+#campaignLibrary{min-height:365px}
+#campaignLibrary .library-bar{display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;margin:10px 0 26px}
+#campaignLibrary .library-bar h2{font-size:18px;margin:0;color:#fff}
+#campaignLibrary .library-empty{min-height:280px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;text-align:center}
+#campaignLibrary .library-empty strong{font-size:16px}
+#campaignLibrary .library-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,350px));gap:18px}
+#campaignLibrary .library-card{background:#171719;border:1px solid #323034;border-radius:6px;overflow:hidden;min-width:0}
+#campaignLibrary .library-art{height:130px;background:radial-gradient(ellipse at 50% 20%,#59212a 0%,#23151a 38%,#110e12 83%);position:relative;display:flex;align-items:center;justify-content:center;color:#ad4e5a;font:700 38px Georgia,serif}
+#campaignLibrary .library-art span{opacity:.85}
+#campaignLibrary .library-card-body{padding:12px}
+#campaignLibrary .library-card-body strong{display:block;font-size:17px;overflow-wrap:anywhere}
+#campaignLibrary .library-card-body small{display:block;margin:6px 0 12px}
+#campaignLibrary .library-card-actions{display:flex;justify-content:space-between;align-items:center;gap:12px}
+#campaignLibrary .library-card-actions button{min-width:110px}
+#campaignCreateScreen{background:#1b1b1d;padding:22px;border-radius:5px;max-width:100%;border:1px solid #343035}
+#campaignCreateScreen h2{font-size:26px;font-weight:400;margin:0 0 20px}
+#campaignCreateScreen label{color:#f1f0f1;font-weight:650;margin:12px 0 6px}
+#campaignCreateScreen input,#campaignCreateScreen textarea{background:#101012;border-color:#373438;max-width:100%}
+#campaignCreateScreen #campaignNameOnline{max-width:380px}
+#campaignCreateScreen #campaignDescriptionOnline{min-height:180px}
+#campaignCreateScreen .create-actions{display:flex;justify-content:flex-end;gap:12px;margin-top:16px}
+#campaignCreateScreen .create-actions button{min-width:104px}
+#campaignCreateScreen .private-toggle{display:flex;gap:0;margin:5px 0}
+#campaignCreateScreen .private-toggle button{border-radius:0;width:145px;background:#151216;border-color:#873f4b;font-size:12px}
+#campaignCreateScreen .private-toggle button[aria-pressed="true"]{background:#bb3648;color:#fff}
+#campaignLibrary button,#campaignCreateScreen .create-actions button[type="submit"]{background:#bb3648}
+#campaignLibrary[hidden],#campaignCreateScreen[hidden]{display:none!important}
+html.nex-embedded #campaignLibrary{padding:0 4px}
+@media(max-width:600px){#campaignLibrary .library-cards{grid-template-columns:1fr}#campaignCreateScreen{padding:14px}#campaignCreateScreen .private-toggle button{width:50%}}
 </style>
 </head>
 <body>
@@ -116,11 +148,25 @@ if(new URLSearchParams(location.search).get('integrado')==='1'){
  <p><small>Use uma senha própria. Nunca compartilhe a senha com o mestre ou os jogadores.</small></p>
 </section>
 <section id="dashboard" class="hide">
- <div id="accountInfo" class="panel"><div class="row"><strong>Conta NEX conectada</strong><button id="logout" class="alt">Desconectar</button></div><p><small>Crie uma campanha ou abra um link recebido. Entradas dependem da aprovação do mestre.</small></p></div>
- <div class="grid">
- <section class="panel"><h2>Criar campanha (mestre)</h2><form id="createCampaign"><label>Nome<input id="campaignNameOnline" maxlength="100" required placeholder="Vale das Pedras"></label><label>Descrição<input id="campaignDescriptionOnline" maxlength="300"></label><button>Criar campanha online</button></form></section>
- <section class="panel"><h2>Entrar em uma campanha</h2><p>Abra o link enviado pelo mestre. Não é necessário digitar códigos.</p><form id="openCampaign" class="hide"><input id="campaignCode"><button>Abrir sala</button></form><section id="joinInvite" class="hide"><p>Você recebeu um convite para uma campanha.</p><button type="button" id="requestEntry">Solicitar entrada</button><button type="button" class="alt" id="openApproved">Abrir campanha</button><small id="inviteStatus"></small></section></section>
+
+ <div id="campaignLibrary">
+  <div class="library-bar"><h2 id="campaignCount">Campanhas: 0/6</h2><button id="showCreateCampaign" type="button">Nova Campanha</button></div>
+  <div id="campaignLoading" class="info">Carregando suas campanhas...</div>
+  <div id="campaignEmpty" class="library-empty hide"><strong>Você ainda não criou nenhuma campanha!</strong><button type="button" id="emptyCreateCampaign">Nova Campanha</button></div>
+  <div id="campaignCards" class="library-cards"></div>
+  <section id="joinInvite" class="panel hide"><p>Você recebeu um convite para uma campanha.</p><button type="button" id="requestEntry">Solicitar entrada</button> <button type="button" class="alt" id="openApproved">Abrir campanha</button><small id="inviteStatus"></small></section>
  </div>
+ <section id="campaignCreateScreen" hidden>
+  <h2>Criar Campanha</h2>
+  <form id="createCampaign">
+   <label for="campaignNameOnline">Nome*</label><input id="campaignNameOnline" maxlength="100" placeholder="Nova campanha" required>
+   <label>Escudo do Mestre Privado</label><small>Essa opção pode ser editada após a criação da campanha.</small>
+   <div class="private-toggle" role="group" aria-label="Escudo do Mestre Privado"><button type="button" id="privateOff" aria-pressed="false">DESLIGADO</button><button type="button" id="privateOn" aria-pressed="true">LIGADO</button></div>
+   <label for="campaignDescriptionOnline">Descrição</label><textarea id="campaignDescriptionOnline" maxlength="3000" placeholder="Conte um pouco sobre sua campanha..."></textarea>
+   <div class="create-actions"><button type="button" id="cancelCreateCampaign" class="alt">Cancelar</button><button type="submit">Criar</button></div>
+  </form>
+ </section>
+ <form id="openCampaign" class="hide"><input id="campaignCode"><button>Abrir sala</button></form>
  <section id="room" class="panel hide">
   <div class="room-hero">
    <div class="room-top"><h2 id="roomTitle">Campanha</h2><span id="role" class="badge"></span><button class="alt" id="leaveRoom">Fechar sala</button></div>
@@ -171,7 +217,7 @@ if(new URLSearchParams(location.search).get('integrado')==='1'){
 <script type="module">
 import {initializeApp} from 'https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js';
 import {getAuth,onAuthStateChanged,createUserWithEmailAndPassword,signInWithEmailAndPassword,signOut} from 'https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js';
-import {getFirestore,collection,doc,getDoc,setDoc,addDoc,updateDoc,deleteDoc,onSnapshot,serverTimestamp} from 'https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js';
+import {getFirestore,collection,doc,getDoc,setDoc,addDoc,updateDoc,deleteDoc,onSnapshot,serverTimestamp,query,where} from 'https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js';
 const $=id=>document.getElementById(id);
 const show=(id,on)=>$(id).classList.toggle('hide',!on);
 const notice=msg=>$('notice').textContent=msg||'';
@@ -182,7 +228,7 @@ if(!cfg||!cfg.projectId||!cfg.apiKey){show('setup',true);}else{
  try{
   const app=initializeApp(cfg);auth=getAuth(app);db=getFirestore(app);
  }catch(err){show('setup',true);notice('Configuração Firebase inválida.');throw err;}
- let uid=null,roomId='',gm=false,roomData=null,roomMembers=[],roomSheets=[],roomRequests=[],unsubs=[],editing=null;
+ let uid=null,roomId='',gm=false,roomData=null,roomMembers=[],roomSheets=[],roomRequests=[],unsubs=[],editing=null,campaignUnsub=null,myCampaigns=[],privateShield=true;
  const inviteId=new URLSearchParams(location.search).get('invite')||'';
  const run=async fn=>{try{notice('');await fn();}catch(err){
   const code=err?.code||'';
@@ -194,11 +240,67 @@ if(!cfg||!cfg.projectId||!cfg.apiKey){show('setup',true);}else{
   roomId='';gm=false;roomMembers=[];roomSheets=[];roomRequests=[];roomData=null;editing=null;
   show('room',false);show('sheetFormPanel',false);
  };
+ function libraryMode(mode){
+  const inRoom=mode==='room';
+  show('campaignLibrary',mode==='list');
+  $('campaignCreateScreen').hidden=mode!=='create';
+  if(!inRoom)show('room',false);
+ }
+ function renderLibrary(){
+  $('campaignCount').textContent='Campanhas: '+myCampaigns.length+'/6';
+  show('campaignLoading',false);
+  show('campaignEmpty',myCampaigns.length===0);
+  $('campaignCards').innerHTML=myCampaigns.map(c=>{
+   const date=c.createdAt?.toDate?.();
+   const dateText=date?date.toLocaleDateString('pt-BR'):'Data não informada';
+   return '<article class="library-card"><div class="library-art" aria-hidden="true"><span>✦</span></div><div class="library-card-body"><strong>'+escape(c.name||'Campanha')+'</strong><small>Iniciada em: '+escape(dateText)+' | DM</small><div class="library-card-actions"><span class="badge">Mestre</span><button type="button" data-open-campaign="'+escape(c.id)+'">Acessar</button></div></div></article>';
+  }).join('');
+  const full=myCampaigns.length>=6;
+  $('showCreateCampaign').disabled=full;
+  $('emptyCreateCampaign').disabled=full;
+ }
+ function subscribeCampaigns(){
+  if(campaignUnsub){campaignUnsub();campaignUnsub=null;}
+  myCampaigns=[];
+  $('campaignCards').innerHTML='';
+  show('campaignLoading',!!uid);
+  show('campaignEmpty',false);
+  $('campaignCount').textContent='Campanhas: 0/6';
+  if(!uid)return;
+  campaignUnsub=onSnapshot(query(collection(db,'campaigns'),where('gmUid','==',uid)),snapshot=>{
+    myCampaigns=snapshot.docs.map(d=>({id:d.id,...d.data()}));
+    myCampaigns.sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
+    renderLibrary();
+  },error=>{
+    show('campaignLoading',false);
+    show('campaignEmpty',false);
+    notice('Não foi possível carregar suas campanhas: '+(error?.message||'erro de acesso')+'. Confira as permissões de listagem no Firestore.');
+  });
+ }
+ function openCreate(){
+  if(myCampaigns.length>=6){notice('Limite de 6 campanhas por conta.');return;}
+  $('createCampaign').reset();privateShield=true;updatePrivateButtons();libraryMode('create');notice('');
+ }
+ function updatePrivateButtons(){
+  $('privateOn').setAttribute('aria-pressed',String(privateShield));
+  $('privateOff').setAttribute('aria-pressed',String(!privateShield));
+ }
+ $('showCreateCampaign').onclick=openCreate;
+ $('emptyCreateCampaign').onclick=openCreate;
+ $('cancelCreateCampaign').onclick=()=>libraryMode('list');
+ $('privateOn').onclick=()=>{privateShield=true;updatePrivateButtons();};
+ $('privateOff').onclick=()=>{privateShield=false;updatePrivateButtons();};
+ $('campaignCards').addEventListener('click',e=>{
+  const id=e.target.closest('[data-open-campaign]')?.dataset.openCampaign;
+  if(id)run(()=>enterRoom(id));
+ });
  onAuthStateChanged(auth,user=>{
   clearRoom();uid=user?.uid||null;
   show('authPanel',!uid);show('dashboard',!!uid);
-  if(uid&&inviteId){show('joinInvite',true);$('inviteStatus').textContent='Entre na campanha ou solicite aprovação do mestre.';}
-  if(uid&&!inviteId)show('joinInvite',false);
+  libraryMode('list');
+  subscribeCampaigns();
+  show('joinInvite',!!uid&&!!inviteId);
+  if(uid&&inviteId)$('inviteStatus').textContent='Entre na campanha ou solicite aprovação do mestre.';
  });
  $('authForm').addEventListener('submit',e=>{e.preventDefault();run(async()=>{await signInWithEmailAndPassword(auth,$('email').value.trim(),$('password').value);});});
  $('register').addEventListener('click',()=>run(async()=>{await createUserWithEmailAndPassword(auth,$('email').value.trim(),$('password').value);}));
@@ -207,7 +309,7 @@ if(!cfg||!cfg.projectId||!cfg.apiKey){show('setup',true);}else{
 
  const inviteLink=id=>new URL('./index.html?campaignInvite='+encodeURIComponent(id),location.href).href;
  $('copyCode').addEventListener('click',()=>copy(inviteLink(roomId)));
- $('leaveRoom').addEventListener('click',()=>{clearRoom();show('joinInvite',!!inviteId);});
+ $('leaveRoom').addEventListener('click',()=>{clearRoom();libraryMode('list');show('joinInvite',!!inviteId);});
  function roomSection(section){
   const allowed=['characters','master','players','invites'];
   if(!allowed.includes(section)||section==='master'&&!gm)section='characters';
@@ -243,16 +345,18 @@ if(!cfg||!cfg.projectId||!cfg.apiKey){show('setup',true);}else{
   const name=$('campaignNameOnline').value.trim(),description=$('campaignDescriptionOnline').value.trim();
   if(!uid)throw Error('Entre na sua conta NEX antes de criar uma campanha.');
   if(!name)throw Error('Informe um nome para a campanha.');
+  if(myCampaigns.length>=6)throw Error('Limite de 6 campanhas por conta.');
   // 8 caracteres sem 0/O/1/I: fáceis de ditar e com entropia suficiente.
   const alphabet='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
   const bytes=new Uint8Array(8);
   crypto.getRandomValues(bytes);
   const code='NEX-'+Array.from(bytes,b=>alphabet[b%alphabet.length]).join('');
   const ref=doc(db,'campaigns',code);
-  await setDoc(ref,{name,description,gmUid:uid,createdAt:serverTimestamp()});
+  await setDoc(ref,{name,description,gmUid:uid,privateShield,createdAt:serverTimestamp(),updatedAt:serverTimestamp()});
   // A criação foi concluída antes de abrir a sala: preserve o código se a leitura falhar.
   $('campaignCode').value=ref.id;
   notice('Campanha criada. Código: '+ref.id);
+  $('createCampaign').reset();libraryMode('list');
   try{await enterRoom(ref.id);}
   catch(error){
     notice('Campanha criada, mas não foi possível abrir a sala. Código: '+ref.id+'. Verifique as regras de leitura do Firestore. Detalhe: '+(error?.code||error?.message||'falha de acesso'));
@@ -268,7 +372,7 @@ if(!cfg||!cfg.projectId||!cfg.apiKey){show('setup',true);}else{
   roomId=id;roomData=snap.data();gm=roomData.gmUid===uid;
   $('roomTitle').textContent=roomData.name;
   $('roomDescription').textContent=roomData.description||'';
-  $('roomCode').textContent=id;$('role').textContent=gm?'Mestre':'Jogador';show('room',true);
+  $('roomCode').textContent=id;$('role').textContent=gm?'Mestre':'Jogador';libraryMode('room');show('room',true);
   show('roomMasterTab',gm);roomSection('characters');
   if(gm)unsubs.push(onSnapshot(collection(db,'campaigns',id,'joinRequests'),snapshot=>{
     roomRequests=snapshot.docs.map(d=>({id:d.id,...d.data()}));
