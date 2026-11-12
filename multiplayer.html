@@ -104,6 +104,9 @@ html.nex-embedded .panel{margin:9px 0}
 #campaignLibrary .library-card-body small{display:block;margin:6px 0 12px}
 #campaignLibrary .library-card-actions{display:flex;justify-content:space-between;align-items:center;gap:12px}
 #campaignLibrary .library-card-actions button{min-width:110px}
+#campaignLibrary .library-card-actions .library-delete{min-width:0;padding:7px 9px;background:#21171a;border:1px solid #7d3944;color:#ffb1b9;font-size:12px}
+#campaignLibrary .library-card-actions .library-delete:hover{background:#5b202a}
+#campaignLibrary .library-card-actions .library-delete:disabled{opacity:.5}
 #campaignCreateScreen{background:#1b1b1d;padding:22px;border-radius:5px;max-width:100%;border:1px solid #343035}
 #campaignCreateScreen h2{font-size:26px;font-weight:400;margin:0 0 20px}
 #campaignCreateScreen label{color:#f1f0f1;font-weight:650;margin:12px 0 6px}
@@ -157,7 +160,7 @@ if(new URLSearchParams(location.search).get('integrado')==='1'){
 <section id="dashboard" class="hide">
 
  <div id="campaignLibrary">
-  <div class="library-bar"><h2 id="campaignCount">Campanhas: 0/6</h2><button id="showCreateCampaign" type="button">Nova Campanha</button></div>
+  <div class="library-bar"><h2 id="campaignCount">Campanhas: 0/10</h2><button id="showCreateCampaign" type="button">Nova Campanha</button></div>
   <div id="campaignLoading" class="info">Carregando suas campanhas...</div>
   <div id="campaignEmpty" class="library-empty hide"><strong>Você ainda não criou nenhuma campanha!</strong><button type="button" id="emptyCreateCampaign">Nova Campanha</button></div>
   <div id="campaignCards" class="library-cards"></div>
@@ -224,7 +227,7 @@ if(new URLSearchParams(location.search).get('integrado')==='1'){
 <script type="module">
 import {initializeApp} from 'https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js';
 import {getAuth,onAuthStateChanged,createUserWithEmailAndPassword,signInWithEmailAndPassword,signOut} from 'https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js';
-import {getFirestore,collection,doc,getDoc,setDoc,addDoc,updateDoc,deleteDoc,onSnapshot,serverTimestamp,query,where} from 'https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js';
+import {getFirestore,collection,doc,getDoc,getDocs,setDoc,addDoc,updateDoc,deleteDoc,onSnapshot,serverTimestamp,query,where} from 'https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js';
 const $=id=>document.getElementById(id);
 const show=(id,on)=>$(id).classList.toggle('hide',!on);
 const notice=msg=>$('notice').textContent=msg||'';
@@ -254,15 +257,15 @@ if(!cfg||!cfg.projectId||!cfg.apiKey){show('setup',true);}else{
   if(!inRoom)show('room',false);
  }
  function renderLibrary(){
-  $('campaignCount').textContent='Campanhas: '+myCampaigns.length+'/6';
+  $('campaignCount').textContent='Campanhas: '+myCampaigns.length+'/10';
   show('campaignLoading',false);
   show('campaignEmpty',myCampaigns.length===0);
   $('campaignCards').innerHTML=myCampaigns.map(c=>{
    const date=c.createdAt?.toDate?.();
    const dateText=date?date.toLocaleDateString('pt-BR'):'Data não informada';
-   return '<article class="library-card"><div class="library-art" aria-hidden="true"><span>✦</span></div><div class="library-card-body"><strong>'+escape(c.name||'Campanha')+'</strong><small>Iniciada em: '+escape(dateText)+' | DM</small><div class="library-card-actions"><span class="badge">Mestre</span><button type="button" data-open-campaign="'+escape(c.id)+'">Acessar</button></div></div></article>';
+   return '<article class="library-card"><div class="library-art" aria-hidden="true"><span>✦</span></div><div class="library-card-body"><strong>'+escape(c.name||'Campanha')+'</strong><small>Iniciada em: '+escape(dateText)+' | DM</small><div class="library-card-actions"><span class="badge">Mestre</span><div class="row"><button type="button" class="library-delete" data-delete-campaign="'+escape(c.id)+'" aria-label="Excluir campanha '+escape(c.name||'Campanha')+'">Excluir</button><button type="button" data-open-campaign="'+escape(c.id)+'">Acessar</button></div></div></div></article>';
   }).join('');
-  const full=myCampaigns.length>=6;
+  const full=myCampaigns.length>=10;
   $('showCreateCampaign').disabled=full;
   $('emptyCreateCampaign').disabled=full;
  }
@@ -272,7 +275,7 @@ if(!cfg||!cfg.projectId||!cfg.apiKey){show('setup',true);}else{
   $('campaignCards').innerHTML='';
   show('campaignLoading',!!uid);
   show('campaignEmpty',false);
-  $('campaignCount').textContent='Campanhas: 0/6';
+  $('campaignCount').textContent='Campanhas: 0/10';
   if(!uid)return;
   campaignUnsub=onSnapshot(query(collection(db,'campaigns'),where('gmUid','==',uid)),snapshot=>{
     myCampaigns=snapshot.docs.map(d=>({id:d.id,...d.data()}));
@@ -285,7 +288,7 @@ if(!cfg||!cfg.projectId||!cfg.apiKey){show('setup',true);}else{
   });
  }
  function openCreate(){
-  if(myCampaigns.length>=6){notice('Limite de 6 campanhas por conta.');return;}
+  if(myCampaigns.length>=10){notice('Limite de 10 campanhas por conta.');return;}
   $('createCampaign').reset();privateShield=true;updatePrivateButtons();libraryMode('create');notice('');
  }
  function updatePrivateButtons(){
@@ -297,7 +300,37 @@ if(!cfg||!cfg.projectId||!cfg.apiKey){show('setup',true);}else{
  $('cancelCreateCampaign').onclick=()=>libraryMode('list');
  $('privateOn').onclick=()=>{privateShield=true;updatePrivateButtons();};
  $('privateOff').onclick=()=>{privateShield=false;updatePrivateButtons();};
+ async function deleteCampaignWithData(id){
+  if(!uid)throw Error('Entre na conta NEX.');
+  const ref=doc(db,'campaigns',id);
+  const snap=await getDoc(ref);
+  if(!snap.exists())throw Error('A campanha não existe mais.');
+  if(snap.data().gmUid!==uid)throw Error('Somente o mestre pode excluir a campanha.');
+  // O Firestore não apaga automaticamente as subcoleções junto com o documento pai.
+  // Excluí-las antes evita dados órfãos e convites ainda existentes.
+  for(const subcollection of ['joinRequests','sheets','masterNotes','members']){
+   const docs=await getDocs(collection(db,'campaigns',id,subcollection));
+   for(const item of docs.docs)await deleteDoc(item.ref);
+  }
+  await deleteDoc(ref);
+ }
  $('campaignCards').addEventListener('click',e=>{
+  const del=e.target.closest('[data-delete-campaign]');
+  if(del){
+   const id=del.dataset.deleteCampaign;
+   const campaign=myCampaigns.find(c=>c.id===id);
+   if(!campaign||campaign.gmUid!==uid)return;
+   if(!window.confirm('Excluir definitivamente a campanha "'+campaign.name+'" e todos os personagens, jogadores e dados online dela? Esta ação não pode ser desfeita.'))return;
+   del.disabled=true;
+   run(async()=>{
+    try{
+     await deleteCampaignWithData(id);
+     if(roomId===id){clearRoom();libraryMode('list');}
+     notice('Campanha excluída da sua conta.');
+    }catch(error){del.disabled=false;throw error;}
+   });
+   return;
+  }
   const id=e.target.closest('[data-open-campaign]')?.dataset.openCampaign;
   if(id)run(()=>enterRoom(id));
  });
@@ -352,7 +385,7 @@ if(!cfg||!cfg.projectId||!cfg.apiKey){show('setup',true);}else{
   const name=$('campaignNameOnline').value.trim(),description=$('campaignDescriptionOnline').value.trim();
   if(!uid)throw Error('Entre na sua conta NEX antes de criar uma campanha.');
   if(!name)throw Error('Informe um nome para a campanha.');
-  if(myCampaigns.length>=6)throw Error('Limite de 6 campanhas por conta.');
+  if(myCampaigns.length>=6)throw Error('Limite de 10 campanhas por conta.');
   // 8 caracteres sem 0/O/1/I: fáceis de ditar e com entropia suficiente.
   const alphabet='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
   const bytes=new Uint8Array(8);
