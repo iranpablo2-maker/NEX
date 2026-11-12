@@ -498,7 +498,7 @@ function confirmCast(){
  if((needsDamage&&!rollSimpleDicePattern(fields.damageDice))||(needsHeal&&!rollSimpleDicePattern(fields.healDice))){
   toast('Dados inválidos: informe uma expressão como 2d6+2.');return;
  }
- if(!confirm('Conjurar '+r.name+' ('+v+') por '+total+' PE e rolar o TO?'))return;
+ if(!confirm('Conjurar '+r.name+' ('+v+') por '+total+' PE e rolar o Teste de Ocultismo?'))return;
  // A confirmação acontece antes do gasto e das rolagens.
  castCommitted=true;
  const effect=computeEffect(fields);
