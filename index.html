@@ -3832,14 +3832,19 @@ update();
     if(byId('n196OtherValue'))byId('n196OtherValue').textContent=other;
     if(byId('n196Squares'))byId('n196Squares').textContent=' / '+Math.max(0,Math.round(number(state.speed)/1.5))+' q';
     byId('nex20OtherDefense').value=other;
+    // A perícia existir na ficha não libera a reação: ela deve ter pelo menos +5 de treino.
+    // O valor aplicado é o bônus total da mesma perícia exibida em Perícias.
     const fort=state.skills?.['Fortitude']||{};
     const refl=state.skills?.['Reflexos']||{};
-    const fortTrained=number(fort.training)>0;
-    const reflTrained=number(refl.training)>0;
-    byId('nex20Block').textContent=fortTrained?String(Math.max(0,number(fort.training)+number(fort.other))):'—';
-    byId('nex20Dodge').textContent=reflTrained?String(Math.max(0,defense+number(refl.training)+number(refl.other))):'—';
-    byId('nex20BlockInfo').textContent=fortTrained?'RD · Fortitude '+(number(fort.training)+number(fort.other)):'Exige Fortitude treinada';
-    byId('nex20DodgeInfo').textContent=reflTrained?'Defesa + Reflexos '+(number(refl.training)+number(refl.other)):'Exige Reflexos treinados';
+    const fortTrained=number(fort.training)>=5;
+    const reflTrained=number(refl.training)>=5;
+    const itemSkills=typeof nexItemBonuses==='function'?(nexItemBonuses().skills||{}):{};
+    const fortBonus=number(fort.training)+number(fort.other)+number(itemSkills.Fortitude);
+    const reflBonus=number(refl.training)+number(refl.other)+number(itemSkills.Reflexos);
+    byId('nex20Block').textContent=fortTrained?String(Math.max(0,fortBonus)):'—';
+    byId('nex20Dodge').textContent=reflTrained?String(Math.max(0,defense+reflBonus)):'—';
+    byId('nex20BlockInfo').textContent=fortTrained?'RD '+Math.max(0,fortBonus)+' · Fortitude treinada':'Exige Fortitude treinada (+5)';
+    byId('nex20DodgeInfo').textContent=reflTrained?'Defesa '+defense+' + Reflexos '+reflBonus:'Exige Reflexos treinados (+5)';
   }
   const oldStats=renderStats;
   renderStats=function(){oldStats();updateDefense();};
