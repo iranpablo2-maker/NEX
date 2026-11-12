@@ -108,5 +108,5 @@ else{
   else{status('Entre ou crie uma conta para sincronizar suas fichas.');message('O NEX continua funcionando sem login neste navegador.');}
  });
  // Periodic reconciliation while signed in, including changes from other devices.
- setInterval(()=>{if(current&&ready&&!busy)sync();},45000);
+ setInterval(()=>{if(current&&!busy)sync();},45000);
 }
