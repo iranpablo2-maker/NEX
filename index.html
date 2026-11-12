@@ -1777,6 +1777,25 @@ body > #nexOriginPopup .nex-origin-group-title{position:sticky;top:0;z-index:1;b
 body > #nexOriginPopup .nex-origin-choice{display:block;width:100%;padding:10px 8px;text-align:left;border:0;border-radius:3px;background:transparent;color:#f3edf5;font-size:13px;cursor:pointer}
 body > #nexOriginPopup .nex-origin-choice[aria-selected="true"],body > #nexOriginPopup .nex-origin-choice:focus-visible{background:#622e32;color:#fff}
 body > #nexOriginPopup .nex-origin-empty{padding:10px;color:#ada2af}
+</style>
+<style id="nex-origin-popup-portaled-fix-20261112">
+/* Origem: menu posicionado no body para não ser cortado por cartões e abas. */
+body > #nexOriginPopup{position:fixed!important;z-index:100050!important;box-sizing:border-box;display:block;overflow-y:auto;overscroll-behavior:contain;min-width:0;background:#1a1314;color:#f5eef8;padding:8px;border:1px solid #a05359;border-radius:5px;box-shadow:0 18px 38px #000d;}
+body > #nexOriginPopup[hidden]{display:none!important;}
+#nexOriginPopup .nex-origin-group-caption{display:flex;justify-content:space-between;align-items:center;font-size:11px;color:#fbc7cb;font-weight:700;letter-spacing:.06em;padding:6px 3px 10px}
+#nexOriginPopup .nex-origin-build{font-size:10px;color:#c9979b;font-weight:500}
+#nexOriginPopup .nex-origin-categories{display:flex;flex-wrap:wrap;gap:5px;margin:0 0 9px;padding:3px 0 7px;border-bottom:1px solid #4c3335}
+#nexOriginPopup .nex-origin-category{border:1px solid #644447;border-radius:3px;padding:6px 8px;font-size:11px;background:#2d191c;color:#edd5d7;cursor:pointer;line-height:1.3}
+#nexOriginPopup .nex-origin-category[aria-pressed="true"]{border-color:#e65a66;background:#94323a;color:#fff;font-weight:700}
+#nexOriginPopup .nex-origin-search{display:block;box-sizing:border-box;width:100%;min-height:33px;padding:7px 8px;margin:0 0 7px;background:#0d0d12;color:#fff;border:1px solid #594548;border-radius:3px;font-size:12px}
+#nexOriginPopup .nex-origin-options{max-height:min(276px,45vh);overflow:auto;overscroll-behavior:contain;scrollbar-width:thin}
+#nexOriginPopup .nex-origin-group{padding:3px 0 7px;border-bottom:1px solid #433033}
+#nexOriginPopup .nex-origin-group-title{position:sticky;top:0;z-index:1;background:#2d191c;border-left:3px solid #e65a66;color:#ffc2c7;font-size:10px;letter-spacing:.075em;text-transform:uppercase;font-weight:750;padding:7px 9px}
+#nexOriginPopup .nex-origin-choice{display:block;width:100%;padding:9px 8px;text-align:left;border:0;border-radius:3px;background:transparent;color:#f3edf5;font-size:12px;cursor:pointer}
+#nexOriginPopup .nex-origin-choice:hover,#nexOriginPopup .nex-origin-choice:focus-visible{background:#4a272a;color:#fff;outline:1px solid #e8828a}
+#nexOriginPopup .nex-origin-choice[aria-selected="true"]{background:#622e32}
+#nexOriginPopup .nex-origin-empty{padding:9px;color:#bcb1bb;font-size:12px}
+@media(max-width:750px){#nexOriginPopup .nex-origin-options{max-height:min(230px,36vh)}}
 </style></head><body>
 <script src="nex-sobrevivendo-ao-horror.js?v=2072"></script>
 <script src="nex-arquivos-secretos.js?v=20261110a4"></script>
@@ -3885,9 +3904,9 @@ update();
   const popup=wrapper.querySelector('.nex-origin-popup');
   // Portaled to body: never clipped by the character panel or horizontal scroll.
   document.body.appendChild(popup);
-  const search=wrapper.querySelector('.nex-origin-search');
-  const options=wrapper.querySelector('.nex-origin-options');
-  const categoryBox=wrapper.querySelector('.nex-origin-categories');
+  const search=popup.querySelector('.nex-origin-search');
+  const options=popup.querySelector('.nex-origin-options');
+  const categoryBox=popup.querySelector('.nex-origin-categories');
   let categoryFilter='all';
   const current=wrapper.querySelector('.nex-origin-current');
   const close=()=>{popup.hidden=true;trigger.setAttribute('aria-expanded','false');};
