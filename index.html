@@ -3716,7 +3716,7 @@ document.addEventListener('change',function(event){
  const resourceKeys=[['pv','pvCurrent'],['pe','peCurrent'],['san','sanCurrent']];
  const snapshots=new WeakMap();
  const previousRenderStats=renderStats;
- function limits(){const m=maxValues();return {pv:m.pv,pe:m.pe,san:m.san};}
+ function limits(){const m=window.NEX_RESOURCE_BASE_MAX?window.NEX_RESOURCE_BASE_MAX():maxValues();return {pv:m.pv,pe:m.pe,san:m.san};}
  renderStats=function(){
    // As três classes oficiais usam sua progressão do livro, independentemente
    // de um valor legado do antigo seletor de progressão (agora removido).
@@ -4570,6 +4570,8 @@ const PARANORMAL=[
  const fieldOf=key=>key==='san'?'sanCurrent':key+'Current';
  const limit=(value,min,max)=>Math.max(min,Math.min(max,Math.floor(Number(value)||0)));
  const baseMaxValues=maxValues;
+ // Exponha o limite base ao preservador de dano; mudanças em PT não são mudanças de vida normal.
+ window.NEX_RESOURCE_BASE_MAX=baseMaxValues;
  const originalRenderStats=renderStats;
  function temps(){
   if(!state.temporaryResources||typeof state.temporaryResources!=='object'||Array.isArray(state.temporaryResources))
