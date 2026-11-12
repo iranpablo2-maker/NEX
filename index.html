@@ -2729,7 +2729,8 @@ $('nexHomebrewFilter')?.addEventListener('input',()=>nex12RenderHomebrew());
    read:()=>({
      agents:JSON.parse(JSON.stringify(agents)),
      campaigns:JSON.parse(JSON.stringify(campaigns)),
-     homebrew:JSON.parse(JSON.stringify(globalHomebrew()))
+     homebrew:JSON.parse(JSON.stringify(globalHomebrew())),
+     deletedAgentIds:[...removedAgentIds]
    }),
    apply:patches=>{
      if(!storageReady)throw new Error('Banco local em recuperação');
@@ -2738,8 +2739,13 @@ $('nexHomebrewFilter')?.addEventListener('input',()=>nex12RenderHomebrew());
        if(id.startsWith('agent-')){
          const agentId=id.slice(6);
          const at=agents.findIndex(a=>a.id===agentId);
-         if(record.deleted){if(at>=0)agents.splice(at,1);}
+         if(record.deleted){
+           const next=new Set(removedAgentIds);next.add(agentId);
+           writeRemovedIds(next);
+           if(at>=0)agents.splice(at,1);
+         }
          else{
+           if(removedAgentIds.has(agentId))continue;
            const raw=record.payload?.item;
            if(!raw || raw.id!==agentId || !raw.data || typeof raw.data!=='object')continue;
            const valid={id:agentId,data:normalize(JSON.parse(JSON.stringify(raw.data))),
@@ -2761,6 +2767,7 @@ $('nexHomebrewFilter')?.addEventListener('input',()=>nex12RenderHomebrew());
          }
        }
      }
+     agents=agents.filter(a=>!removedAgentIds.has(a.id));
      if(!agents.some(a=>a.id===active))active=agents.length?agents[0].id:null;
      state=active?normalize(JSON.parse(JSON.stringify(agents.find(a=>a.id===active).data))):normalize(defaults());
      if(active)try{rehydrate();}catch(e){console.error('NEX: atualização visual da nuvem',e);}
@@ -3317,7 +3324,7 @@ $('nexHomebrewFilter')?.addEventListener('input',()=>nex12RenderHomebrew());
      const target=agents.find(x=>x.id===b.dataset.deleteAgent);
      if(!target)return;
      if(!confirm('Excluir a ficha "'+(target.data?.name||'Sem nome')+'" deste dispositivo? Para recuperá-la, será necessário restaurar um backup.'))return;
-     try{removeAgentsSafely([{id:target.id,fingerprint:JSON.stringify(target)}],true);toast('Ficha excluída deste dispositivo.');}
+     try{removeAgentsSafely([{id:target.id,fingerprint:JSON.stringify(target)}],true);toast('Ficha excluída. A remoção será sincronizada com sua conta.');}
      catch(error){console.error('NEX: exclusão bloqueada',error);toast('A exclusão foi bloqueada para proteger seus dados.');}
      return;
    }
