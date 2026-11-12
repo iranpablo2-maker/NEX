@@ -53,7 +53,7 @@ function addPanel(input,html){
  return container;
 }
 addPanel(origin.armor,'<div id="nexDefArmorDisplay" role="status" aria-live="polite">Nenhuma proteção equipada</div><small id="nexDefArmorNote"></small>');
-addPanel(origin.resist,'<div id="nexDefResList"></div><button type="button" id="nexDefAddRes">+ Adicionar resistência</button><small>Informe o valor e a fonte. Uma resistência não é concedida só por selecionar seu tipo.</small>');
+addPanel(origin.resist,'<div id="nexDefResLabels" class="nex-def-roles" aria-label="Resistências adicionadas"></div><div id="nexDefResList"></div><button type="button" id="nexDefAddRes">+ Adicionar resistência</button><small>Escolha o tipo e o valor da resistência. Edite pelos campos abaixo ou remova pela etiqueta.</small>');
 addPanel(origin.prof,'<div id="nexDefProfLabels" class="nex-def-roles"></div><select id="nexDefExtraProf" aria-label="Adicionar proficiência concedida pelo mestre ou homebrew"></select><button type="button" id="nexDefAddProf">Adicionar proficiência extra</button><small>Proficiências da classe e poderes reconhecidos são automáticas; extras são escolhas manuais.</small>');
 const armorOpts=[['','Sem proteção',0]];
 const heavyResistances=['Balístico','Corte','Impacto','Perfuração'];
@@ -75,6 +75,15 @@ function inventorySelection(d){
  return {inventory,active,shield};
 }
 function allowedArmor(profs,kind){return !kind||(kind==='leve'?profs.has('Proteções leves'):profs.has('Proteções pesadas'));}
+function renderResistanceLabels(){
+ const panel=$('nexDefResLabels');
+ if(!panel)return;
+ panel.innerHTML=data().resistances.map((r,i)=>{
+  if(!r||!r.kind)return '';
+  const kind=escape(r.kind),value=Math.max(0,Math.min(99,Number(r.bonus)||0));
+  return '<span class="nex-def-role">'+kind+' · '+value+' <button type="button" data-remove-res-label="'+i+'" aria-label="Remover resistência '+kind+'" title="Remover resistência">×</button></span>';
+ }).join('');
+}
 function updateReadout(){
  const d=data(),base=profs(),all=new Set([...base,...d.extraProficiencies.filter(x=>names.includes(x))]);
  const profLabel=$('nexDefProfLabels');
@@ -117,6 +126,7 @@ function render(){
  $('nexDefExtraProf').innerHTML='<option value="">Escolha uma proficiência extra</option>'+names.filter(x=>!all.has(x)).map(x=>'<option>'+escape(x)+'</option>').join('');
  updateReadout();
  const rows=$('nexDefResList');
+ renderResistanceLabels();
  rows.innerHTML=d.resistances.slice(0,15).map((r,i)=>'<div class="nex-def-resrow" data-index="'+i+'"><select aria-label="Tipo de resistência">'+types.map(t=>'<option'+(t===r.kind?' selected':'')+'>'+escape(t)+'</option>').join('')+'</select><input type="number" min="0" max="99" aria-label="Valor da resistência" value="'+Math.max(0,Number(r.bonus)||0)+'"><button type="button" data-remove="'+i+'" aria-label="Remover resistência">×</button><input data-source type="text" maxlength="120" aria-label="Origem da resistência" placeholder="Fonte: poder, item ou efeito" value="'+escape(r.source||'')+'"></div>').join('');
 }
 function persist(){
@@ -148,6 +158,14 @@ $('nexDefAddProf').addEventListener('click',()=>{
  const v=$('nexDefExtraProf').value,d=data();
  if(v&&names.includes(v)&&!d.extraProficiencies.includes(v)){d.extraProficiencies.push(v);persist();render();}
 });
+$('nexDefResLabels').addEventListener('click',event=>{
+ const button=event.target.closest('button[data-remove-res-label]');
+ if(!button)return;
+ const index=Number(button.dataset.removeResLabel);
+ if(!Number.isInteger(index)||index<0||index>=data().resistances.length)return;
+ data().resistances.splice(index,1);
+ persist();render();
+});
 $('nexDefAddRes').addEventListener('click',()=>{
  const d=data();if(d.resistances.length>=15)return;
  d.resistances.push({kind:'Físico',bonus:0,source:''});persist();render();
@@ -162,7 +180,7 @@ $('nexDefResList').addEventListener('change',event=>{
  record.kind=row.querySelector('select').value;
  record.bonus=Math.max(0,Math.min(99,Math.floor(Number(row.querySelector('input[type=number]').value)||0)));
  record.source=row.querySelector('input[data-source]').value.slice(0,120);
- persist();
+ persist();renderResistanceLabels();
 });
 document.addEventListener('change',event=>{
  if(event.target.id==='class'||event.target.id==='origin')queueMicrotask(()=>{render();});
