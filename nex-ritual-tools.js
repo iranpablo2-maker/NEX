@@ -73,6 +73,8 @@ function effectSettings(r,version){
  const homeType=d.ritualType==='Suporte'?'Buff':d.ritualType;
  const type=homeType||preset.type||'Buff';
  const configured=kit().effectConfigs[key+'|'+version];
+ const isWeaponBuff=norm(r.name)==='amaldicoar arma'&&['conhecimento','energia','morte','sangue'].includes(norm(r.element));
+ const buffDice=isWeaponBuff?({Normal:'1d6',Discente:'2d6',Verdadeiro:'4d6'}[version]||'1d6'):'';
  const baseEffect=String(d.description||d.note||d.effect||'Efeito não cadastrado. Consulte a descrição do ritual.').trim();
  const upgrade=version==='Discente'?d.discente:version==='Verdadeiro'?d.verdadeiro:'';
  const upgradeText=String(upgrade||'').trim();
@@ -87,7 +89,7 @@ function effectSettings(r,version){
   if(type==='Cura'&&(typedDice||!preset.healVersions?.[version]))healDice=currentDice;
   else if(type!=='Cura'&&(typedDice||!preset.versions?.[version]))damageDice=currentDice;
  }
- const defaults={type,damageDice,healDice,healFromDamage:Boolean(preset.healFromDamage),buffText:summary};
+ const defaults={type,damageDice,healDice,healFromDamage:Boolean(preset.healFromDamage),buffDice,buffText:summary};
  return {...defaults,...configured};
 }
 const die=faces=>{
@@ -223,7 +225,7 @@ function renderBody(){
   const arr=kit().history;
   el.innerHTML='<div class="tk-row"><span class="tk-sub">Últimas 200 ações desta ficha.</span><button type="button" class="tk-button" data-tk-clear="1" '+(!arr.length?'disabled':'')+'>Limpar histórico</button></div>'+
    (arr.length?'<div class="tk-cards">'+arr.map(h=>'<article class="tk-card"><div class="tk-row"><strong>'+esc(h.type)+'</strong><small>'+esc(new Date(h.at).toLocaleString('pt-BR'))+'</small></div><p>'+esc(h.name||h.note||'')+(h.version?' · '+esc(h.version):'')+'</p><p class="tk-sub">'+(Number(h.cost)>0?'-'+esc(h.cost)+' PE'+(h.peAfter!==undefined?' · Restantes: '+esc(h.peAfter)+' PE':''):'Sem gasto de PE')+'</p>'+
-   (h.to?'<p>TO: '+esc(h.to.total)+' / DT '+esc(h.to.dt)+' · '+(h.to.passed?'Sucesso':'Falha')+'</p>':h.type==='Conjuração'?'<p>TO: dispensado (Medo)</p>':'')+
+   (h.to?'<p>Teste de Ocultismo: '+esc(h.to.total)+' / DT '+esc(h.to.dt)+' · '+(h.to.passed?'Sucesso':'Falha')+'</p>':h.type==='Conjuração'?'<p>Teste de Ocultismo: dispensado (Medo)</p>':'')+
    (h.effect?.damage?'<p>Dano: '+esc(h.effect.damage.total)+' ('+esc(h.effect.damage.expression)+')</p>':'')+
    (h.effect?.healing?'<p>Cura: '+esc(h.effect.healing.total)+' ('+esc(h.effect.healing.expression)+')</p>':'')+
    (h.effect?.type==='Buff'?'<p>Buff/Suporte: '+esc(h.effect.buffText||'Efeito registrado')+'</p>':'')+
@@ -263,8 +265,8 @@ function drawLearned(){
    const config=effectSettings(r,version);
    const isDamage=['Dano','Dano + Cura'].includes(config.type);
    const isHeal=config.type==='Cura';
-   const formula=!optionAvailable?'':isDamage?(config.damageDice||'VARIÁVEL'):isHeal?(config.healDice||'CURA'):'EFEITO';
-   const effectDetails=String(config.buffText||d.note||d.description||'Efeito não cadastrado.').trim();
+   const formula=!optionAvailable?'':config.buffDice?'+'+config.buffDice+' bônus':isDamage?(config.damageDice||'VARIÁVEL'):isHeal?(config.healDice||'CURA'):'EFEITO';
+   const effectDetails=(config.buffDice?'Bônus de dano: +'+config.buffDice+' do elemento '+r.element+'. Aplica-se nos ataques enquanto o efeito durar.\n':'')+String(config.buffText||d.note||d.description||'Efeito não cadastrado.').trim();
    const shortEffect=effectDetails.length>190?effectDetails.slice(0,187)+'…':effectDetails;
    const required=version==='Discente'?Number(d.discenteCircle)||requirement(d.discente):version==='Verdadeiro'?Number(d.verdadeiroCircle)||requirement(d.verdadeiro):0;
    const price=finalPrice(r,version,0),needsCost=version!=='Normal'&&enhancePrice(enhanced)===null;
@@ -367,10 +369,10 @@ function openCast(rid,requestedVersion='Normal'){
  '<form id="tkCastForm"><div class="tk-modal-fields">'+
  '<label>Versão<select id="tkCastVersion">'+options.map(v=>'<option>'+esc(v)+'</option>').join('')+'</select></label>'+
  '<label>PE adicional por ajustes<input id="tkCastExtra" type="number" min="0" max="99" step="1" value="0"></label>'+
- '<label>Bônus extra no TO<input id="tkTOBonus" type="number" min="-99" max="99" step="1" value="0"></label>'+
+ '<label>Bônus extra no Teste de Ocultismo<input id="tkTOBonus" type="number" min="-99" max="99" step="1" value="0"></label>'+
  '<label>Custo de sustentação (PE/rodada)<input id="tkCastUpkeep" type="number" min="0" max="99" step="1" value="'+(/sustentad/i.test(d.duration||'')?'1':'0')+'"></label>'+
  '</div><label><input id="tkCastActive" type="checkbox" '+(isActive?'checked':'')+'>Manter ativo e acompanhar rodadas</label>'+
- '<h3>TO + efeito do ritual</h3>'+
+ '<h3>Teste de Ocultismo + efeito do ritual</h3>'+
  '<div class="tk-modal-fields"><label>Tipo de efeito<select id="tkEffectType"><option>Dano</option><option>Cura</option><option>Buff</option><option>Dano + Cura</option></select></label>'+
  '<label id="tkDamageLine">Dados de dano<input id="tkDamageDice" placeholder="Ex.: 3d6, 2d8+2" maxlength="24"></label>'+
  '<label id="tkHealLine">Dados de cura<input id="tkHealDice" placeholder="Ex.: 3d8+3" maxlength="24"></label></div>'+
@@ -378,7 +380,7 @@ function openCast(rid,requestedVersion='Normal'){
  '<label id="tkBuffLine">Buff / suporte (efeito para aplicar)<textarea id="tkBuffText" rows="3" maxlength="500" style="width:100%;background:#120f18;color:#fff;border:1px solid #6a4649"></textarea></label>'+
  '<p id="tkToPreview" class="tk-sub"></p>'+
  '<p id="tkCostPreview" class="tk-warning"></p><p id="tkRulesPreview" class="tk-sub"></p>'+
- '<div class="tk-foot"><button type="button" data-tk-modal-close="1">Cancelar</button><button type="submit">Rolar TO e conjurar</button></div></form>';
+ '<div class="tk-foot"><button type="button" data-tk-modal-close="1">Cancelar</button><button type="submit">Rolar Teste de Ocultismo e conjurar</button></div></form>';
  const versionField=modal.querySelector('#tkCastVersion');if(versionField)versionField.value=requestedVersion;
  modal.classList.remove('nex-tk-result-compact');
  if(typeof modal.showModal==='function')modal.showModal();else modal.open=true;
@@ -403,7 +405,7 @@ function preview(){
  const hasHeal=['Cura','Dano + Cura'].includes(effect.type);
  const missingDice=(hasDamage&&!rollSimpleDicePattern(effect.damageDice))||(hasHeal&&!(effect.type==='Dano + Cura'&&effect.healFromDamage)&&!rollSimpleDicePattern(effect.healDice));
  const toDt=20+v.total;
- if(toNode)toNode.textContent=norm(v.r.element)==='medo'?'Medo: sem TO. Sanidade reduzida conforme a versão.':'Teste de Ocultismo (TO): '+(Number(state.attributes?.[state.skills?.Ocultismo?.attr||'int'])||0)+'d20 (atributo) + '+(Number(state.skills?.Ocultismo?.training)||0)+' de treino + bônus extra. DT '+toDt+'.';
+ if(toNode)toNode.textContent=norm(v.r.element)==='medo'?'Medo: sem Teste de Ocultismo. Sanidade reduzida conforme a versão.':'Teste de Ocultismo: '+(Number(state.attributes?.[state.skills?.Ocultismo?.attr||'int'])||0)+'d20 (atributo) + '+(Number(state.skills?.Ocultismo?.training)||0)+' de treino + bônus extra. DT '+toDt+'.';
  if(costNode)costNode.textContent='Custo total: '+v.total+' PE · PE atuais: '+pe()+' · Disponíveis neste turno: '+availableTurnPE()+' de '+PE_LIMIT()+' PE.';
  let note=v.enhance||'Versão básica. Verifique o limite de PE por turno.';
  const required=Math.max(requirement(v.enhance),v.v==='Discente'?Number(v.d.discenteCircle)||0:v.v==='Verdadeiro'?Number(v.d.verdadeiroCircle)||0:0);
@@ -457,12 +459,12 @@ function castingResultHTML(m,check,sanity,effect){
  rows.push('<p><strong>Sanidade:</strong> -'+sanity.lost+' atual'+(sanity.permanent?' · -'+sanity.permanent+' permanente':'')+'</p>');
  if(effect.damage)rows.push('<p><strong>Dano:</strong> '+esc(effect.damage.expression)+' → ['+esc(effect.damage.rolls.join(', '))+'] = '+effect.damage.total+'</p>');
  if(effect.healing)rows.push('<p><strong>Cura:</strong> '+esc(effect.healing.expression)+' = '+effect.healing.total+' (não aplicada automaticamente ao alvo)</p>');
- if(effect.type==='Buff')rows.push('<p><strong>Suporte/Buff:</strong> '+esc(effect.buffText||'Consultar ritual')+'</p>');
+ if(effect.type==='Buff')rows.push('<p><strong>Suporte/Buff:</strong> '+(norm(m.r.name)==='amaldicoar arma'?'Bônus de dano aos ataques: +'+esc(({Normal:'1d6',Discente:'2d6',Verdadeiro:'4d6'}[m.v]||'1d6'))+' ('+esc(m.r.element)+'). ':'')+esc(effect.buffText||'Consultar ritual')+'</p>');
  rows.push('<p><strong>DT de resistência do alvo:</strong> '+targetRitualDT()+' (quando aplicável).</p>');
- rows.push('<p class="tk-sub">Falhar no TO não impede a conjuração básica, mas pode causar perda de Sanidade. Confira os efeitos e resistências com o mestre.</p>');
+ rows.push('<p class="tk-sub">Falhar no Teste de Ocultismo não impede a conjuração básica, mas pode causar perda de Sanidade. Confira os efeitos e resistências com o mestre.</p>');
  const infoRows=rows.join('')+renderResistanceRoll(m.r);
  if(effect.damage||effect.healing||effect.type==='Buff'){
-  const toValue=check?check.total:'—',toLabel=check?'OCULTISMO':'SEM TO';
+  const toValue=check?check.total:'—',toLabel=check?'TESTE DE OCULTISMO':'SEM TESTE DE OCULTISMO';
   const secondValue=effect.damage?effect.damage.total:effect.healing?effect.healing.total:'✓';
   const secondLabel=effect.damage?'DANO':effect.healing?'CURA':'EFEITO';
   return '<div class="tk-roll-result">'+
