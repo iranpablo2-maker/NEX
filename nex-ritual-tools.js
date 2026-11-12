@@ -490,7 +490,7 @@ function castingResultHTML(m,check,sanity,effect){
  rows.push('<p class="tk-sub">Falhar no Teste de Ocultismo não impede a conjuração básica, mas pode causar perda de Sanidade. Confira os efeitos e resistências com o mestre.</p>');
  const infoRows=rows.join('')+renderResistanceRoll(m.r);
  const details=info(m.r);
- const effectSummary=conciseRitualEffect(effect.buffText||details.description||details.note);
+ const effectSummary=conciseRitualEffect(details.description||details.note||effect.buffText);
  const castingParameters=ritualCastingParams(details);
  const publicEffect='<div class="tk-roll-effect-show">'+
   (effect.buff?'<p><strong>Bônus: +'+esc(effect.buff.total)+'</strong></p>':'')+
