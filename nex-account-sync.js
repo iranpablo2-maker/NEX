@@ -184,7 +184,7 @@ else{
    }
    const data=currentProfile();
    const name=user.displayName||data.name||user.email||'N';
-   const photo=typeof data.photo==='string'&&data.photo.length<120000&&/^data:image\\/jpeg;base64,[A-Za-z0-9+/=]+$/.test(data.photo)?data.photo:null;
+   const photo=typeof data.photo==='string'&&data.photo.length<120000&&/^data:image\/jpeg;base64,[A-Za-z0-9+/=]+$/.test(data.photo)?data.photo:null;
    open.classList.add('nex-header-avatar');
    open.textContent=photo?'':(String(name).trim().charAt(0).toUpperCase()||'N');
    open.style.setProperty('background-image',photo?'url("'+photo+'")':'none','important');
