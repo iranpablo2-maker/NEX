@@ -124,11 +124,23 @@ else{
     ['homebrew',local.homebrew,x=>x.id||x.name]
    ]){
     const r=records.get(name);
+    let syncedProfile={};
+    if(name==='homebrew'){
+      const localProfile=currentProfile();
+      const cloudProfile=r?.payload?.profile&&typeof r.payload.profile==='object'?r.payload.profile:{};
+      const localStamp=Date.parse(localProfile.updatedAt||'')||0;
+      const cloudStamp=Date.parse(cloudProfile.updatedAt||'')||0;
+      syncedProfile=cloudStamp>localStamp?cloudProfile:localProfile;
+      if(cloudStamp>localStamp){
+        try{localStorage.setItem('nex_account_profile_'+current.uid,JSON.stringify(syncedProfile));}catch(error){console.warn('Perfil local indisponível',error);}
+        if(profile.open)updateProfileDisplay();
+      }
+    }
     const full=merge(normalizeItems(items),normalizeItems(r?.payload?.items),idFn);
     // Never delete cloud-only entries or local entries during first sign-in.
     if(JSON.stringify(full)!==JSON.stringify(items))patches.push({id:name,entry:{type:name,deleted:false,payload:{items:full}}});
-    if(!r||JSON.stringify(r.payload?.items)!==JSON.stringify(full)||name==='homebrew'&&JSON.stringify(r.payload?.advanced||[])!==JSON.stringify(advanced())){
-      uploads.push({key:name,type:name,payload:{items:full,...(name==='homebrew'?{advanced:merge(advanced(),r?.payload?.advanced,x=>x.id||[x.type,x.name].join(':'))}:{})}});
+    if(!r||JSON.stringify(r.payload?.items)!==JSON.stringify(full)||name==='homebrew'&&(JSON.stringify(r.payload?.advanced||[])!==JSON.stringify(advanced())||JSON.stringify(r.payload?.profile||{})!==JSON.stringify(syncedProfile))){
+      uploads.push({key:name,type:name,payload:{items:full,...(name==='homebrew'?{advanced:merge(advanced(),r?.payload?.advanced,x=>x.id||[x.type,x.name].join(':')),profile:syncedProfile}:{})}});
     }
    }
    // Save the local pre-merge collection as a recovery point.
@@ -184,7 +196,7 @@ else{
    const button=$('nexProfileSave');button.disabled=true;
    try{
     await updateProfile(current,{displayName:name.slice(0,60)});
-    const updated={name:name.slice(0,60),age};
+    const updated={name:name.slice(0,60),age,updatedAt:new Date().toISOString()};
     localStorage.setItem('nex_account_profile_'+current.uid,JSON.stringify(updated));
     $('nexProfileAvatar').textContent=name.charAt(0).toUpperCase();
     // Persist the optional age in the owner's existing private homebrew record on the next sync.
