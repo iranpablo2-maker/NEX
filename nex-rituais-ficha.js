@@ -106,8 +106,8 @@ function lines(label,value){return value?'<p><span>'+esc(label)+':</span> '+esc(
 function shortRitualEffect(value){
  const raw=String(value||'').trim();
  if(!raw)return 'Efeito não cadastrado. Consulte o livro ou edite o ritual.';
- const specific=raw.split(/\\bParâmetros\\s*:/i)[0].split(/\\bAnotação da ficha\\s*:/i)[0].trim();
- const clean=(specific||raw).replace(/\\s+/g,' ').trim();
+ const specific=raw.split(/\bParâmetros\s*:/i)[0].split(/\bAnotação da ficha\s*:/i)[0].trim();
+ const clean=(specific||raw).replace(/\s+/g,' ').trim();
  if(clean.length<=250)return clean;
  const cut=clean.slice(0,247);
  const boundary=Math.max(cut.lastIndexOf('. '),cut.lastIndexOf('; '));
