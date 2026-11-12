@@ -51,17 +51,22 @@ service cloud.firestore {
         resource.data.gmUid == request.auth.uid ||
         exists(/databases/$(database)/documents/campaigns/$(cid)/members/$(request.auth.uid))
       );
-      allow list: if false;
+      // O Firestore permite a consulta somente quando filtrada pelo UID do mestre.
+      // Nunca exponha todas as campanhas a usuários autenticados.
+      allow list: if request.auth != null && resource.data.gmUid == request.auth.uid;
       allow create: if request.auth != null
-        && request.resource.data.keys().hasOnly(['name','description','gmUid','createdAt'])
+        && request.resource.data.keys().hasOnly(['name','description','gmUid','privateShield','createdAt','updatedAt'])
         && request.resource.data.gmUid == request.auth.uid
         && request.resource.data.name is string
         && request.resource.data.name.size() > 0
         && request.resource.data.name.size() <= 100
-        && request.resource.data.description is string;
+        && request.resource.data.description is string
+        && request.resource.data.privateShield is bool
+        && request.resource.data.createdAt is timestamp
+        && request.resource.data.updatedAt is timestamp;
       allow update: if nexGM(cid)
         && request.resource.data.gmUid == resource.data.gmUid
-        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['name','description']);
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['name','description','privateShield','updatedAt']);
       allow delete: if nexGM(cid);
       // Solicitações feitas por usuários autenticados que possuem um link de convite.
       // O convite não concede leitura das fichas nem entrada automática.
