@@ -1,10 +1,10 @@
 /* NEX Contas: login seguro e sincronização por usuário; o armazenamento local continua independente. */
 import {initializeApp,getApps} from 'https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js';
-import {getAuth,onAuthStateChanged,createUserWithEmailAndPassword,signInWithEmailAndPassword,signOut,sendPasswordResetEmail} from 'https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js';
+import {getAuth,onAuthStateChanged,createUserWithEmailAndPassword,signInWithEmailAndPassword,signOut,sendPasswordResetEmail,GoogleAuthProvider,signInWithPopup} from 'https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js';
 import {getFirestore,collection,doc,getDocs,setDoc,serverTimestamp} from 'https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js';
 const cfg=window.NEX_FIREBASE_CONFIG;
 const panel=document.createElement('dialog');panel.id='nexAccountDialog';
-panel.innerHTML=`<div class="nex-account-heading"><strong>Conta NEX</strong><button type="button" id="nexAccountClose" aria-label="Fechar">×</button></div><p id="nexAccountStatus">Conectando ao serviço de contas…</p><div id="nexAccountGuest"><form id="nexAccountForm"><label>E-mail<input id="nexAccountEmail" autocomplete="email" type="email" required></label><label>Senha<input id="nexAccountPassword" autocomplete="current-password" type="password" minlength="6" required></label><div class="nex-account-actions"><button type="submit">Entrar</button><button type="button" id="nexAccountRegister">Criar conta</button><button type="button" id="nexAccountReset">Recuperar senha</button></div></form></div><div id="nexAccountConnected" hidden><p id="nexAccountWho"></p><p class="nex-account-help">Suas fichas, campanhas locais e homebrews são mantidos neste navegador e podem ser sincronizados com a sua conta. Não compartilhe sua senha.</p><div class="nex-account-actions"><button id="nexAccountSync" type="button">Sincronizar agora</button><button id="nexAccountLogout" type="button">Sair da conta</button></div></div><small id="nexAccountMessage" role="status"></small>`;
+panel.innerHTML=`<div class="nex-account-heading"><strong>Conta NEX</strong><button type="button" id="nexAccountClose" aria-label="Fechar">×</button></div><p id="nexAccountStatus">Conectando ao serviço de contas…</p><div id="nexAccountGuest"><button type="button" id="nexAccountGoogle" class="nex-account-google"><span aria-hidden="true">G</span> Continuar com Google</button><div class="nex-account-separator">ou entrar com e-mail</div><form id="nexAccountForm"><label>E-mail<input id="nexAccountEmail" autocomplete="email" type="email" required></label><label>Senha<input id="nexAccountPassword" autocomplete="current-password" type="password" minlength="6" required></label><div class="nex-account-actions"><button type="submit">Entrar</button><button type="button" id="nexAccountRegister">Criar conta</button><button type="button" id="nexAccountReset">Recuperar senha</button></div></form></div><div id="nexAccountConnected" hidden><p id="nexAccountWho"></p><p class="nex-account-help">Suas fichas, campanhas locais e homebrews são mantidos neste navegador e podem ser sincronizados com a sua conta. Não compartilhe sua senha.</p><div class="nex-account-actions"><button id="nexAccountSync" type="button">Sincronizar agora</button><button id="nexAccountLogout" type="button">Sair da conta</button></div></div><small id="nexAccountMessage" role="status"></small>`;
 const css=document.createElement('style');css.textContent=`
 #nexAccountOpen{border:1px solid #9d3543;border-radius:8px;background:#32171d;color:#fff;padding:8px 13px;font-weight:700;cursor:pointer}
 #nexAccountDialog{width:min(94vw,460px);max-height:88vh;overflow:auto;border:1px solid #a34250;border-radius:12px;padding:20px;background:#141114;color:#fff;box-shadow:0 20px 70px #000a}
@@ -17,7 +17,7 @@ const css=document.createElement('style');css.textContent=`
 #nexAccountDialog .nex-account-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
 #nexAccountDialog .nex-account-actions button{background:#a72d3e;color:#fff;border:1px solid #bd4b5a;border-radius:6px;padding:10px 12px;cursor:pointer}
 #nexAccountDialog .nex-account-actions button:not(:first-child){background:#332026}
-#nexAccountMessage{display:block;color:#e6a7b2;margin-top:12px;line-height:1.5}
+ #nexAccountDialog .nex-account-google{display:flex;align-items:center;justify-content:center;gap:12px;width:100%;margin:12px 0;background:#fff;color:#202124;border:1px solid #dadce0;border-radius:6px;padding:11px 14px;font-weight:700;cursor:pointer}#nexAccountDialog .nex-account-google span{font-size:18px;font-weight:900;color:#4285f4}#nexAccountDialog .nex-account-separator{color:#b7a9ac;text-align:center;font-size:12px;margin:14px 0}#nexAccountMessage{display:block;color:#e6a7b2;margin-top:12px;line-height:1.5}
 #nexAccountDialog [hidden]{display:none!important}`;
 document.head.append(css);document.body.append(panel);
 const open=document.getElementById('nexAccountOpen')||document.createElement('button');open.id='nexAccountOpen';open.type='button';open.textContent='Conta NEX';
@@ -105,6 +105,27 @@ else{
   await sync();
  };
  $('nexAccountLogout').onclick=async()=>{try{await signOut(auth);}catch(e){message('Falha ao sair da conta.');}};
+ $('nexAccountGoogle').onclick=async()=>{
+  const button=$('nexAccountGoogle');
+  button.disabled=true;
+  message('Abrindo login do Google…');
+  try{
+   const provider=new GoogleAuthProvider();
+   provider.setCustomParameters({prompt:'select_account'});
+   await signInWithPopup(auth,provider);
+   message('Login Google realizado. Conferindo sincronização…');
+  }catch(error){
+   const msg={
+    'auth/popup-closed-by-user':'A janela de login foi fechada. Tente novamente.',
+    'auth/cancelled-popup-request':'A tentativa anterior foi cancelada. Tente novamente.',
+    'auth/popup-blocked':'O navegador bloqueou a janela do Google. Permita pop-ups para este site.',
+    'auth/unauthorized-domain':'O domínio deste site não foi autorizado no Firebase. Adicione nexrpg.pages.dev em Authentication → Configurações → Domínios autorizados.',
+    'auth/account-exists-with-different-credential':'Este e-mail já está associado a outro método de login. Entre pelo método original.',
+    'auth/network-request-failed':'Erro de conexão. Confira sua internet.'
+   };
+   message(msg[error?.code]||'Falha no login Google: '+(error?.code||'erro desconhecido'));
+  }finally{button.disabled=false;}
+ };
  $('nexAccountForm').onsubmit=async e=>{e.preventDefault();try{await signInWithEmailAndPassword(auth,$('nexAccountEmail').value.trim(),$('nexAccountPassword').value);}catch(error){message('Não foi possível entrar: '+(error.code||'verifique e-mail e senha'));}};
  $('nexAccountRegister').onclick=async()=>{
   const email=$('nexAccountEmail').value.trim();
