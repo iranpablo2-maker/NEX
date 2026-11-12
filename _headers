@@ -1,0 +1,17 @@
+# NEX - entrega da versão atual em navegadores móveis e desktop
+# HTML não deve ficar preso no cache do navegador ou intermediários.
+/index.html
+  Cache-Control: no-cache, no-store, must-revalidate
+
+/
+  Cache-Control: no-cache, no-store, must-revalidate
+
+# Scripts e folhas de estilo precisam revalidar ao mudar uma versão.
+/*.js
+  Cache-Control: no-cache, must-revalidate
+
+/*.css
+  Cache-Control: no-cache, must-revalidate
+
+/version.json
+  Cache-Control: no-cache, no-store, must-revalidate
