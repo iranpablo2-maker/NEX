@@ -20,8 +20,8 @@ const css=document.createElement('style');css.textContent=`
 #nexAccountMessage{display:block;color:#e6a7b2;margin-top:12px;line-height:1.5}
 #nexAccountDialog [hidden]{display:none!important}`;
 document.head.append(css);document.body.append(panel);
-const open=document.createElement('button');open.id='nexAccountOpen';open.type='button';open.textContent='Conta NEX';
-(document.querySelector('.topinner')||document.body).append(open);
+const open=document.getElementById('nexAccountOpen')||document.createElement('button');open.id='nexAccountOpen';open.type='button';open.textContent='Conta NEX';
+if(!open.isConnected)(document.querySelector('.topinner')||document.body).append(open);
 const $=id=>document.getElementById(id);
 const status=t=>{$('nexAccountStatus').textContent=t;};
 const message=t=>{$('nexAccountMessage').textContent=t;};
@@ -86,7 +86,8 @@ else{
    }
    if(records.get('homebrew')?.payload?.advanced)mergeAdvanced(records.get('homebrew').payload.advanced);
    for(const u of uploads)await setDoc(doc(uidPath(),u.key),{type:u.type,payload:safeClone(u.payload),deleted:false,updatedAt:serverTimestamp()});
-   try{localStorage.setItem('nex_account_last_uid',current.uid);}catch(e){}\n   ready=true;dirty=false;status('Conta conectada · sincronização concluída');
+   try{localStorage.setItem('nex_account_last_uid',current.uid);}catch(e){}
+   ready=true;dirty=false;status('Conta conectada · sincronização concluída');
    message('Dados sincronizados: '+(local.agents||[]).length+' ficha(s), campanhas e homebrews. As fichas locais foram preservadas.');
   }catch(error){
     console.error('NEX sincronização',error);
@@ -96,15 +97,25 @@ else{
  }
  function schedule(){if(!current||!ready)return;clearTimeout(timer);timer=setTimeout(sync,1800);}
  window.addEventListener('nex-auto-local-change',()=>{dirty=true;schedule();});
- $('nexAccountSync').onclick=async()=>{\n  if(accountSwitchBlocked){\n   if(!confirm('Este navegador já foi usado com outra conta NEX. Misturar os arquivos locais com a conta atual pode revelar fichas pessoais. Deseja realmente sincronizar estes arquivos com esta conta?'))return;\n   accountSwitchBlocked=false;\n  }\n  await sync();\n };
+ $('nexAccountSync').onclick=async()=>{
+  if(accountSwitchBlocked){
+   if(!confirm('Este navegador já foi usado com outra conta NEX. Misturar os arquivos locais com a conta atual pode revelar fichas pessoais. Deseja realmente sincronizar estes arquivos com esta conta?'))return;
+   accountSwitchBlocked=false;
+  }
+  await sync();
+ };
  $('nexAccountLogout').onclick=async()=>{try{await signOut(auth);}catch(e){message('Falha ao sair da conta.');}};
  $('nexAccountForm').onsubmit=async e=>{e.preventDefault();try{await signInWithEmailAndPassword(auth,$('nexAccountEmail').value.trim(),$('nexAccountPassword').value);}catch(error){message('Não foi possível entrar: '+(error.code||'verifique e-mail e senha'));}};
  $('nexAccountRegister').onclick=async()=>{try{await createUserWithEmailAndPassword(auth,$('nexAccountEmail').value.trim(),$('nexAccountPassword').value);}catch(error){message('Não foi possível criar a conta: '+(error.code||'verifique os dados'));}};
  $('nexAccountReset').onclick=async()=>{const email=$('nexAccountEmail').value.trim();if(!email){message('Digite seu e-mail antes de recuperar a senha.');return;}try{await sendPasswordResetEmail(auth,email);message('Se a conta existir, você receberá instruções de recuperação.');}catch(error){message('Não foi possível enviar a recuperação: '+(error.code||'erro'));}};
  onAuthStateChanged(auth,user=>{
-  current=user;ready=false;clearTimeout(timer);dirty=false;\n  let previous='';try{previous=localStorage.getItem('nex_account_last_uid')||'';}catch(e){}\n  accountSwitchBlocked=!!user&&!!previous&&previous!==user.uid;
+  current=user;ready=false;clearTimeout(timer);dirty=false;
+  let previous='';try{previous=localStorage.getItem('nex_account_last_uid')||'';}catch(e){}
+  accountSwitchBlocked=!!user&&!!previous&&previous!==user.uid;
   $('nexAccountGuest').hidden=!!user;$('nexAccountConnected').hidden=!user;
-  if(user){$('nexAccountWho').textContent=user.email||'Conta conectada';status(accountSwitchBlocked?'Outra conta foi usada neste navegador':'Conta conectada · verificando arquivos');\n   if(accountSwitchBlocked)message('Sincronização automática pausada para evitar misturar dados de contas diferentes. Use Sincronizar agora somente se desejar compartilhar estes arquivos com a conta atual.');\n   else setTimeout(sync,900);}
+  if(user){$('nexAccountWho').textContent=user.email||'Conta conectada';status(accountSwitchBlocked?'Outra conta foi usada neste navegador':'Conta conectada · verificando arquivos');
+   if(accountSwitchBlocked)message('Sincronização automática pausada para evitar misturar dados de contas diferentes. Use Sincronizar agora somente se desejar compartilhar estes arquivos com a conta atual.');
+   else setTimeout(sync,900);}
   else{status('Entre ou crie uma conta para sincronizar suas fichas.');message('O NEX continua funcionando sem login neste navegador.');}
  });
  // Periodic reconciliation while signed in, including changes from other devices.
