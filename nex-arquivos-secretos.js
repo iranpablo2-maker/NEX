@@ -945,7 +945,8 @@ window.NEX_ARQUIVOS={
           "Maldição Suprema",
           "Aprimora os limites da reprodução de maldições."
         ]
-      ]
+      ],
+      "description": "Trilha de Ocultista dedicada a identificar, analisar e manipular maldições ligadas a itens paranormais. Suas habilidades progridem da identificação à reprodução temporária de efeitos estudados, sujeitas aos limites do estágio."
     },
     {
       "name": "Criptologista do Oculto",
@@ -969,7 +970,8 @@ window.NEX_ARQUIVOS={
           "Selo Supremo",
           "Aprimora os efeitos dos selos criados pelo ocultista."
         ]
-      ]
+      ],
+      "description": "Trilha de Ocultista especializada na preparação e utilização de selos paranormais. Seus estágios aprimoram o uso, a leitura e o alcance de selos até versões mais avançadas."
     },
     {
       "name": "Granadeiro Blaster",
@@ -993,7 +995,8 @@ window.NEX_ARQUIVOS={
           "Memória Muscular",
           "Aprimora o uso e o dano de explosivos autorais."
         ]
-      ]
+      ],
+      "description": "Trilha de Especialista voltada ao uso de explosivos próprios em combate. As habilidades desenvolvem a criação, o posicionamento e a improvisação de explosivos, incluindo riscos e limitações da técnica."
     }
   ],
   "rituals": [
