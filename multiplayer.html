@@ -173,6 +173,7 @@ if(new URLSearchParams(location.search).get('integrado')==='1'){
    <label>Escudo do Mestre Privado</label><small>Essa opção pode ser editada após a criação da campanha.</small>
    <div class="private-toggle" role="group" aria-label="Escudo do Mestre Privado"><button type="button" id="privateOff" aria-pressed="false">DESLIGADO</button><button type="button" id="privateOn" aria-pressed="true">LIGADO</button></div>
    <label for="campaignDescriptionOnline">Descrição</label><textarea id="campaignDescriptionOnline" maxlength="3000" placeholder="Conte um pouco sobre sua campanha..."></textarea>
+   <p id="campaignCreateMessage" role="alert" style="color:#ffb3bb;margin:10px 0 0"></p>
    <div class="create-actions"><button type="button" id="cancelCreateCampaign" class="alt">Cancelar</button><button type="submit">Criar</button></div>
   </form>
  </section>
@@ -438,28 +439,44 @@ if(!cfg||!cfg.projectId||!cfg.apiKey){show('setup',true);}else{
    }
    await deleteDoc(doc(db,'campaigns',roomId,'joinRequests',memberUid));
  }));
- $('createCampaign').addEventListener('submit',e=>{e.preventDefault();run(async()=>{
+ $('createCampaign').addEventListener('submit',async e=>{
+  e.preventDefault();
+  const form=$('createCampaign'),submit=form.querySelector('button[type="submit"]'),message=$('campaignCreateMessage');
+  if(submit.disabled)return;
   const name=$('campaignNameOnline').value.trim(),description=$('campaignDescriptionOnline').value.trim();
-  if(!uid)throw Error('Entre na sua conta NEX antes de criar uma campanha.');
-  if(!name)throw Error('Informe um nome para a campanha.');
-  if(myCampaigns.length>=10)throw Error('Limite de 10 campanhas por conta.');
-  // 8 caracteres sem 0/O/1/I: fáceis de ditar e com entropia suficiente.
-  const alphabet='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-  const bytes=new Uint8Array(8);
-  crypto.getRandomValues(bytes);
-  const code='NEX-'+Array.from(bytes,b=>alphabet[b%alphabet.length]).join('');
-  const ref=doc(db,'campaigns',code);
-  await setDoc(ref,{name,description,gmUid:uid,privateShield,createdAt:serverTimestamp(),updatedAt:serverTimestamp()});
-  // A criação foi concluída antes de abrir a sala: preserve o código se a leitura falhar.
-  $('campaignCode').value=ref.id;
-  notice('Campanha criada. Código: '+ref.id);
-  $('createCampaign').reset();libraryMode('list');
-  try{await enterRoom(ref.id);}
-  catch(error){
-    notice('Campanha criada, mas não foi possível abrir a sala. Código: '+ref.id+'. Verifique as regras de leitura do Firestore. Detalhe: '+(error?.code||error?.message||'falha de acesso'));
-    console.error('Falha ao abrir campanha recém-criada',error);
-  }
- });});
+  message.textContent='';
+  if(!uid){message.textContent='Entre na sua conta NEX antes de criar uma campanha.';return;}
+  if(!name){message.textContent='Informe um nome para a campanha.';return;}
+  if(myCampaigns.length>=10){message.textContent='Limite de 10 campanhas por conta.';return;}
+  submit.disabled=true;submit.textContent='Criando…';
+  try{
+   const alphabet='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+   const bytes=new Uint8Array(8);crypto.getRandomValues(bytes);
+   const code='NEX-'+Array.from(bytes,b=>alphabet[b%alphabet.length]).join('');
+   const ref=doc(db,'campaigns',code);
+   const core={name,description,gmUid:uid,createdAt:serverTimestamp()};
+   // Regras já atualizadas aceitam os campos extras. Regras anteriores aceitavam apenas core.
+   try{
+    await setDoc(ref,{...core,privateShield,updatedAt:serverTimestamp()});
+   }catch(error){
+    if(error?.code!=='permission-denied')throw error;
+    await setDoc(ref,core);
+   }
+   $('campaignCode').value=ref.id;
+   form.reset();libraryMode('list');
+   notice('Campanha criada e salva na conta. Código: '+ref.id);
+   try{await enterRoom(ref.id);}catch(openError){
+    libraryMode('list');
+    notice('Campanha salva, mas a sala não abriu. Código: '+ref.id+'. '+(openError?.message||'Erro de leitura.'));
+   }
+  }catch(error){
+   console.error('Falha ao criar campanha',error);
+   message.textContent=error?.code==='permission-denied'?
+    'O Firebase recusou a criação. É necessário publicar as regras de campanhas no Firestore.':
+    'Não foi possível criar: '+(error?.message||'erro desconhecido');
+   notice(message.textContent);
+  }finally{submit.disabled=false;submit.textContent='Criar';}
+ });
  $('openCampaign').addEventListener('submit',e=>{e.preventDefault();run(()=>{const entered=$('campaignCode').value.trim();return enterRoom(/^nex-/i.test(entered)?entered.toUpperCase():entered);})});
  async function enterRoom(id){
   clearRoom();if(!/^(?:NEX-[A-HJ-NP-Z2-9]{8}|[A-Za-z0-9]{15,40})$/.test(id)){notice('Código de campanha inválido.');return;}
