@@ -103,6 +103,21 @@ function addRecord(template){
  save();render();close();
 }
 function lines(label,value){return value?'<p><span>'+esc(label)+':</span> '+esc(value)+'</p>':'';}
+function shortRitualEffect(value){
+ const raw=String(value||'').trim();
+ if(!raw)return 'Efeito não cadastrado. Consulte o livro ou edite o ritual.';
+ const specific=raw.split(/\\bParâmetros\\s*:/i)[0].split(/\\bAnotação da ficha\\s*:/i)[0].trim();
+ const clean=(specific||raw).replace(/\\s+/g,' ').trim();
+ if(clean.length<=250)return clean;
+ const cut=clean.slice(0,247);
+ const boundary=Math.max(cut.lastIndexOf('. '),cut.lastIndexOf('; '));
+ return (boundary>85?cut.slice(0,boundary+1):cut.slice(0,247).trimEnd()+'…');
+}
+function ritualParamLine(d){
+ return [['Execução',d.execution],['Alcance',d.range],['Alvo/Área',d.target],['Duração',d.duration]]
+  .filter(([,value])=>String(value||'').trim()&&!/^N[aã]o especificad/i.test(String(value)))
+  .map(([label,value])=>'<strong>'+esc(label)+':</strong> '+esc(value)).join('; ');
+}
 function render(){
  // Sincroniza a ficha com Conjurar ao adicionar, editar ou remover um ritual.
  const refreshCasting=()=>window.NEX_RITUAL_TOOLS?.refresh?.();
@@ -116,8 +131,10 @@ function render(){
   const blocked=state.class==='Ocultista'&&Number(r.circle)>circleAccess();
   return '<article class="nex-ritual-card"><details><summary><span class="nex-ritual-arrow">⌃</span><strong>'+esc(r.name)+'</strong></summary>'+
    '<div class="nex-ritual-detail"><div class="nex-ritual-pill nex-ritual-'+esc(r.element)+'">'+esc(r.element).toUpperCase()+' '+esc(r.circle)+'</div>'+
-   '<div class="nex-ritual-properties">'+lines('Execução',d.execution)+lines('Alcance',d.range)+lines('Alvo',d.target)+lines('Duração',d.duration)+lines('Resistência',d.resistance)+'</div>'+
-   '<p class="nex-ritual-summary">'+esc(d.guide||d.note||d.description||'Efeito não cadastrado. Consulte o livro ou edite o resumo.')+'</p>'+(d.summaryKind?'<small class="nex-ritual-summary-kind">'+esc(d.summaryKind)+'</small>':'')+
+   '<p class="nex-ritual-summary">'+esc(shortRitualEffect(d.guide||d.note||d.description))+'</p>'+
+   '<p class="nex-ritual-params">'+ritualParamLine(d)+'</p>'+
+   (d.resistance?'<p class="nex-ritual-resistance">'+lines('Resistência',d.resistance)+'</p>':'')+
+   (d.summaryKind?'<small class="nex-ritual-summary-kind">'+esc(d.summaryKind)+'</small>':'')+
    (d.discente?'<p class="nex-ritual-enhance"><b>Discente:</b> '+esc(d.discente)+'</p>':'')+
    (d.verdadeiro?'<p class="nex-ritual-enhance"><b>Verdadeiro:</b> '+esc(d.verdadeiro)+'</p>':'')+
    '<div class="nex-ritual-actions"><button type="button" data-ritual-remove="'+esc(r.id)+'">Remover</button><button type="button" data-ritual-edit="'+esc(r.id)+'">Editar</button></div>'+
