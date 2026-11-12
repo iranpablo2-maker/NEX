@@ -34,12 +34,13 @@ function data(){
  }
  if(!Array.isArray(d.extraProficiencies))d.extraProficiencies=[];
  if(typeof d.armor!=='string')d.armor='';
+ if(typeof d.shield!=='boolean')d.shield=false;
  return d;
 }
 if(document.getElementById('nexDefArmor'))return;
 const style=document.createElement('style');style.id='nexDefChoicesStyles';
 style.textContent='#sheetScreen .nex-def-choice{display:grid;gap:5px;width:100%;min-width:0}#sheetScreen .nex-def-choice select,#sheetScreen .nex-def-choice input{width:100%;min-width:0;background:#171216;color:#fff;border:1px solid #705056;border-radius:4px;padding:7px;font-size:12px}#sheetScreen .nex-def-choice small{color:#bfb0b4;line-height:1.4}#sheetScreen .nex-def-choice button{border:1px solid #6d434c;background:#392128;border-radius:4px;color:#f4e6e7;padding:6px;cursor:pointer}#sheetScreen .nex-def-roles{display:flex;flex-wrap:wrap;gap:5px}#sheetScreen .nex-def-roles span{border:1px solid #5b343b;padding:4px 6px;border-radius:4px;background:#25161b;font-size:11px}#sheetScreen .nex-def-resrow{display:grid;grid-template-columns:minmax(90px,1fr) 65px 31px;gap:5px;margin-bottom:5px}#sheetScreen .nex-def-resrow input[data-source]{grid-column:1/-1}';
-style.textContent += '#sheetScreen .n193-defense-line:has(.nex-def-choice){display:flex!important;flex-direction:column!important;align-items:stretch!important;gap:7px!important}#sheetScreen .n193-defense-line:has(.nex-def-choice)>label{display:block!important;width:100%!important;min-width:0!important;margin:0!important;font-weight:800!important;letter-spacing:.04em}#sheetScreen .n193-defense-line:has(.nex-def-choice)>.nex-def-choice{width:100%!important;max-width:none!important}#sheetScreen .nex-def-roles{align-items:center}#sheetScreen .nex-def-roles .nex-def-role{display:inline-flex;gap:6px;align-items:center;border:1px solid #5b343b;padding:4px 6px;border-radius:4px;background:#25161b;font-size:11px}#sheetScreen .nex-def-roles .nex-def-role button{border:0;background:#572932;color:#fff;border-radius:3px;padding:0 5px;min-width:22px;min-height:22px;font-size:17px;font-weight:700;line-height:1;cursor:pointer}#sheetScreen .nex-def-roles .nex-def-role button:hover{background:#9a3747}#sheetScreen .nex-def-armor-locked{color:#f0bcc2;font-size:11px}';
+style.textContent += '#sheetScreen .nex-def-choice{width:min(100%,310px)!important;gap:4px!important}#sheetScreen .nex-def-choice select,#sheetScreen .nex-def-choice input{height:29px!important;min-height:29px!important;padding:4px 6px!important;font-size:11px!important}#sheetScreen .nex-def-choice>button{min-height:28px!important;padding:4px 7px!important;font-size:11px!important}#sheetScreen .nex-def-resrow{grid-template-columns:minmax(105px,1fr) 50px 25px!important;gap:4px!important;margin-bottom:4px!important}#sheetScreen .nex-def-resrow button{min-width:25px!important;width:25px!important;height:29px!important;padding:0!important}#sheetScreen .nex-def-choice small{font-size:10px!important;line-height:1.25!important}#sheetScreen .nex-def-roles .nex-def-role{font-size:10px!important;padding:2px 5px!important}#sheetScreen .n193-defense-line:has(.nex-def-choice){display:flex!important;flex-direction:column!important;align-items:stretch!important;gap:7px!important}#sheetScreen .n193-defense-line:has(.nex-def-choice)>label{display:block!important;width:100%!important;min-width:0!important;margin:0!important;font-weight:800!important;letter-spacing:.04em}#sheetScreen .n193-defense-line:has(.nex-def-choice)>.nex-def-choice{width:100%!important;max-width:none!important}#sheetScreen .nex-def-roles{align-items:center}#sheetScreen .nex-def-roles .nex-def-role{display:inline-flex;gap:6px;align-items:center;border:1px solid #5b343b;padding:4px 6px;border-radius:4px;background:#25161b;font-size:11px}#sheetScreen .nex-def-roles .nex-def-role button{border:0;background:#572932;color:#fff;border-radius:3px;padding:0 5px;min-width:22px;min-height:22px;font-size:17px;font-weight:700;line-height:1;cursor:pointer}#sheetScreen .nex-def-roles .nex-def-role button:hover{background:#9a3747}#sheetScreen .nex-def-armor-locked{color:#f0bcc2;font-size:11px}';
 document.head.append(style);
 function addPanel(input,html){
  const container=document.createElement('div');container.className='nex-def-choice';
@@ -49,10 +50,11 @@ function addPanel(input,html){
  input.setAttribute('aria-hidden','true');
  return container;
 }
-addPanel(origin.armor,'<select id="nexDefArmor" aria-label="Selecionar proteção"></select><small id="nexDefArmorNote"></small>');
+addPanel(origin.armor,'<select id="nexDefArmor" aria-label="Selecionar proteção"></select><label style="display:flex;align-items:center;gap:5px;font-size:11px"><input id="nexDefShield" type="checkbox" style="width:auto;height:auto!important"/>Escudo (+2 Defesa)</label><small id="nexDefArmorNote"></small>');
 addPanel(origin.resist,'<div id="nexDefResList"></div><button type="button" id="nexDefAddRes">+ Adicionar resistência</button><small>Informe o valor e a fonte. Uma resistência não é concedida só por selecionar seu tipo.</small>');
 addPanel(origin.prof,'<div id="nexDefProfLabels" class="nex-def-roles"></div><select id="nexDefExtraProf" aria-label="Adicionar proficiência concedida pelo mestre ou homebrew"></select><button type="button" id="nexDefAddProf">Adicionar proficiência extra</button><small>Proficiências da classe e poderes reconhecidos são automáticas; extras são escolhas manuais.</small>');
 const armorOpts=[['','Sem proteção',0],['leve','Proteção leve',5],['pesada','Proteção pesada',10]];
+const heavyResistances=['Balístico','Corte','Impacto','Perfuração'];
 function allowedArmor(profs,kind){return !kind||(kind==='leve'?profs.has('Proteções leves'):profs.has('Proteções pesadas'));}
 function updateReadout(){
  const d=data(),base=profs(),all=new Set([...base,...d.extraProficiencies.filter(x=>names.includes(x))]);
@@ -63,19 +65,25 @@ function updateReadout(){
  const armor=$('nexDefArmor');
  if(armor){
   for(const opt of armor.options){
-   const blocked=!allowedArmor(all,opt.value);
-   opt.disabled=blocked;
+   const untrained=!allowedArmor(all,opt.value);
    const item=armorOpts.find(entry=>entry[0]===opt.value);
-   if(item)opt.textContent=(blocked?'🔒 ':'')+item[1]+(item[2]?' · Defesa +'+item[2]:'');
+   opt.disabled=false;
+   if(item)opt.textContent=(untrained?'🔒 ':'')+item[1]+(item[2]?' · Defesa +'+item[2]:'');
   }
-  const unavailable=armorOpts.filter(entry=>entry[0]&&!allowedArmor(all,entry[0]));
-  $('nexDefArmorNote').innerHTML=unavailable.length?'<span class="nex-def-armor-locked">🔒 '+unavailable.map(entry=>escape(entry[1])).join(' · ')+' — exige proficiência correspondente.</span>':'Todas as proteções disponíveis conforme suas proficiências.';
+  const lacking=d.armor&&!allowedArmor(all,d.armor);
+  const shieldUntrained=d.shield&&!all.has('Proteções pesadas');
+  const note=[];
+  if(lacking||shieldUntrained)note.push('🔒 Sem proficiência: –2d20 em testes de Força e Agilidade.');
+  if(d.armor==='pesada')note.push('Proteção pesada: RD 2 (balístico, corte, impacto e perfuração), –5 em perícias afetadas por carga.');
+  if(d.shield)note.push('Escudo: +2 Defesa, usa uma mão e exige proficiência em proteção pesada para evitar penalidade.');
+  $('nexDefArmorNote').textContent=note.join(' ')||'Escolha sua proteção (leve: +5; pesada: +10). Sem proficiência, há penalidade.';
  }
 }
 function render(){
  const d=data(),base=profs(),all=new Set([...base,...d.extraProficiencies.filter(x=>names.includes(x))]);
  const armor=$('nexDefArmor');
- armor.innerHTML=armorOpts.map(([key,label,bonus])=>'<option value="'+key+'"'+(!allowedArmor(all,key)?' disabled':'')+'>'+(!allowedArmor(all,key)?'🔒 ':'')+label+(bonus?' · Defesa +'+bonus:'')+'</option>').join('');
+ armor.innerHTML=armorOpts.map(([key,label,bonus])=>'<option value="'+key+'">'+(!allowedArmor(all,key)?'🔒 ':'')+label+(bonus?' · Defesa +'+bonus:'')+'</option>').join('');
+ $('nexDefShield').checked=Boolean(d.shield);
  armor.value=d.armor;
  if(armor.value!==d.armor)armor.value='';
  $('nexDefExtraProf').innerHTML='<option value="">Escolha uma proficiência extra</option>'+names.filter(x=>!all.has(x)).map(x=>'<option>'+escape(x)+'</option>').join('');
@@ -85,14 +93,14 @@ function render(){
 }
 function persist(){
  const d=data(),p=new Set([...profs(),...d.extraProficiencies.filter(x=>names.includes(x))]);
- const chosen=armorOpts.find(x=>x[0]===d.armor)||armorOpts[0];
- if(!allowedArmor(p,chosen[0])){d.armor='';}
  const selected=armorOpts.find(x=>x[0]===d.armor)||armorOpts[0];
  state.protectionName=selected[1]==='Sem proteção'?'':selected[1];
- state.protectionDefense=selected[2];
+ state.protectionDefense=selected[2]+(d.shield?2:0);
  origin.armor.value=state.protectionName;
  const hiddenBonus=$('nex20ArmorBonus');if(hiddenBonus)hiddenBonus.value=state.protectionDefense;
- origin.resist.value=d.resistances.map(r=>r.kind+(r.bonus?' '+r.bonus:'')+(r.source?' · '+r.source:'')).join('; ');
+ const manualRes=d.resistances.map(r=>r.kind+(r.bonus?' '+r.bonus:'')+(r.source?' · '+r.source:'')).join('; ');
+ const heavyRes=d.armor==='pesada'?heavyResistances.map(t=>t+' 2 (Proteção pesada)').join('; '):'';
+ origin.resist.value=[manualRes,heavyRes].filter(Boolean).join('; ');
  state.resistances=origin.resist.value;
  origin.prof.value=[...p].join(', ');
  state.proficiencies=origin.prof.value;
@@ -100,6 +108,7 @@ function persist(){
  if(typeof renderStats==='function')renderStats();
 }
 $('nexDefArmor').addEventListener('change',event=>{data().armor=event.target.value;persist();updateReadout();});
+$('nexDefShield').addEventListener('change',event=>{data().shield=event.target.checked;persist();updateReadout();});
 $('nexDefProfLabels').addEventListener('click',event=>{
  const button=event.target.closest('button[data-remove-prof]');
  if(!button)return;
