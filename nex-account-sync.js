@@ -47,6 +47,9 @@ css.textContent+=`
 #nexProfileDialog .nex-profile-close{background:none;border:0;color:#f4e7ec;font-size:25px;cursor:pointer}
 #nexProfileDialog .nex-profile-content{display:flex;gap:20px;align-items:flex-start}
 #nexProfileDialog .nex-profile-avatar{height:105px;width:105px;flex:0 0 105px;display:grid;place-items:center;background:#a53242;border:1px solid #c55661;border-radius:8px;font-size:44px;font-weight:800;color:#fff}
+#nexProfileDialog .nex-profile-avatar{position:relative;overflow:hidden;cursor:pointer;background-position:center;background-size:cover;background-repeat:no-repeat}
+#nexProfileDialog .nex-profile-avatar:after{content:'✎';position:absolute;right:5px;bottom:5px;width:25px;height:25px;display:grid;place-items:center;border-radius:50%;font-size:14px;background:#111b;color:#fff;border:1px solid #fff5}
+#nexProfileDialog .nex-profile-avatar:focus-visible{outline:2px solid #ff7383;outline-offset:3px}
 #nexProfileDialog form{flex:1;min-width:0;display:grid;gap:12px}
 #nexProfileDialog label{display:grid;gap:5px;font-weight:650;font-size:12px;color:#f5e9ed}
 #nexProfileDialog input{width:100%;min-width:0;padding:10px;border:1px solid #543940;border-radius:6px;background:#1d1a1d;color:#fff;font-size:14px}
@@ -61,7 +64,7 @@ css.textContent+=`
 const profile=document.createElement('dialog');
 profile.id='nexProfileDialog';
 profile.setAttribute('aria-label','Meu perfil NEX');
-profile.innerHTML='<div class="nex-profile-header"><h2>Meu perfil</h2><button type="button" class="nex-profile-close" id="nexProfileClose" aria-label="Fechar perfil">×</button></div><div class="nex-profile-content"><div class="nex-profile-avatar" id="nexProfileAvatar" aria-hidden="true">N</div><form id="nexProfileForm"><label>Nome<input id="nexProfileName" maxlength="60" autocomplete="name" required></label><label>E-mail<input id="nexProfileEmail" type="email" readonly></label><label>Idade (opcional)<input id="nexProfileAge" type="number" inputmode="numeric" min="1" max="120" placeholder="Não informada"></label><div class="nex-profile-actions"><button type="submit" id="nexProfileSave">Salvar perfil</button><button type="button" id="nexProfilePassword">Trocar senha</button></div></form></div><small id="nexProfileStatus" role="status"></small>';
+profile.innerHTML='<div class="nex-profile-header"><h2>Meu perfil</h2><button type="button" class="nex-profile-close" id="nexProfileClose" aria-label="Fechar perfil">×</button></div><div class="nex-profile-content"><button class="nex-profile-avatar" id="nexProfileAvatar" type="button" aria-label="Alterar foto do perfil" title="Clique para trocar sua foto">N</button><input type="file" id="nexProfilePhotoFile" accept="image/png,image/jpeg,image/webp" style="display:none" aria-label="Escolher foto do perfil"><form id="nexProfileForm"><label>Nome<input id="nexProfileName" maxlength="60" autocomplete="name" required></label><label>E-mail<input id="nexProfileEmail" type="email" readonly></label><label>Idade (opcional)<input id="nexProfileAge" type="number" inputmode="numeric" min="1" max="120" placeholder="Não informada"></label><div class="nex-profile-actions"><button type="submit" id="nexProfileSave">Salvar perfil</button><button type="button" id="nexProfilePassword">Trocar senha</button></div></form></div><small id="nexProfileStatus" role="status"></small>';
 document.body.append(profile);
 const $=id=>document.getElementById(id);
 const status=t=>{$('nexAccountStatus').textContent=t;};
@@ -167,6 +170,60 @@ else{
   const raw=current?.uid?localStorage.getItem('nex_account_profile_'+current.uid):null;
   try{const profile=JSON.parse(raw||'{}');return profile&&typeof profile==='object'?profile:{};}catch{return {};}
  }
+ function setProfileAvatar(name,photo){
+   const avatar=$('nexProfileAvatar');
+   const valid=typeof photo==='string'&&photo.length<120000&&/^data:image\/jpeg;base64,[A-Za-z0-9+/=]+$/.test(photo);
+   avatar.style.backgroundImage=valid?'url("'+photo+'")':'none';
+   avatar.textContent=valid?'':(String(name||'N').trim().charAt(0).toUpperCase()||'N');
+ }
+ function resizeProfilePhoto(file){
+   return new Promise((resolve,reject)=>{
+     const url=URL.createObjectURL(file);
+     const img=new Image();
+     img.onload=()=>{
+       try{
+         const size=180;
+         const canvas=document.createElement('canvas');canvas.width=canvas.height=size;
+         const ctx=canvas.getContext('2d');
+         if(!ctx)throw new Error('Canvas indisponível');
+         ctx.fillStyle='#211518';ctx.fillRect(0,0,size,size);
+         const scale=Math.max(size/img.naturalWidth,size/img.naturalHeight);
+         const w=img.naturalWidth*scale,h=img.naturalHeight*scale;
+         ctx.drawImage(img,(size-w)/2,(size-h)/2,w,h);
+         const data=canvas.toDataURL('image/jpeg',0.75);
+         if(data.length>110000)throw new Error('A foto compactada ficou muito grande');
+         resolve(data);
+       }catch(err){reject(err);}
+       finally{URL.revokeObjectURL(url);}
+     };
+     img.onerror=()=>{URL.revokeObjectURL(url);reject(new Error('Imagem não pôde ser lida'));};
+     img.src=url;
+   });
+ }
+ $('nexProfileAvatar').onclick=()=>{if(current)$('nexProfilePhotoFile').click();};
+ $('nexProfilePhotoFile').addEventListener('change',async event=>{
+   const file=event.target.files?.[0];
+   event.target.value='';
+   if(!file||!current)return;
+   if(!['image/png','image/jpeg','image/webp'].includes(file.type)){profileStatus('Escolha uma imagem JPG, PNG ou WebP.');return;}
+   if(file.size>5*1024*1024){profileStatus('Escolha uma foto de até 5 MB.');return;}
+   const owner=current.uid;
+   $('nexProfileAvatar').disabled=true;
+   profileStatus('Preparando foto do perfil…');
+   try{
+     const photo=await resizeProfilePhoto(file);
+     if(!current||current.uid!==owner)throw new Error('Conta alterada durante a seleção da foto');
+     const old=currentProfile();
+     const updated={...old,photo,updatedAt:new Date().toISOString()};
+     localStorage.setItem('nex_account_profile_'+owner,JSON.stringify(updated));
+     setProfileAvatar($('nexProfileName').value,photo);
+     dirty=true;
+     if(ready)schedule();
+     else setTimeout(()=>{if(current?.uid===owner)sync();},1200);
+     profileStatus('Foto alterada. A sincronização acontece automaticamente.');
+   }catch(err){profileStatus('Não foi possível salvar a foto: '+(err?.message||'tente novamente'));}
+   finally{$('nexProfileAvatar').disabled=false;}
+ });
  function updateProfileDisplay(){
    if(!current)return;
    const saved=currentProfile();
@@ -174,7 +231,7 @@ else{
    $('nexProfileName').value=name;
    $('nexProfileEmail').value=current.email||'';
    $('nexProfileAge').value=Number.isInteger(saved.age)&&saved.age>=1&&saved.age<=120?saved.age:'';
-   $('nexProfileAvatar').textContent=name.trim().charAt(0).toUpperCase()||'N';
+   setProfileAvatar(name,saved.photo);
  }
  $('nexAccountMenuProfile').onclick=()=>{
    if(!current)return;
@@ -196,9 +253,9 @@ else{
    const button=$('nexProfileSave');button.disabled=true;
    try{
     await updateProfile(current,{displayName:name.slice(0,60)});
-    const updated={name:name.slice(0,60),age,updatedAt:new Date().toISOString()};
+    const updated={...currentProfile(),name:name.slice(0,60),age,updatedAt:new Date().toISOString()};
     localStorage.setItem('nex_account_profile_'+current.uid,JSON.stringify(updated));
-    $('nexProfileAvatar').textContent=name.charAt(0).toUpperCase();
+    setProfileAvatar(name,updated.photo);
     // Persist the optional age in the owner's existing private homebrew record on the next sync.
     dirty=true;schedule();
     profileStatus('Perfil salvo. As alterações serão sincronizadas automaticamente.');
