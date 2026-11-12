@@ -57,6 +57,27 @@ for(const item of items){
  item.description=window.NEX_ITEM_DESCRIBE?.(item)||item.description||'';
 }
 items.sort((a,b)=>a.name.localeCompare(b.name,'pt-BR'));
+// Proficiências aplicadas ao catálogo; também usadas pelo inventário ao equipar armas.
+function weaponTraining(item){
+ if(!item||!['Armas','Arma'].includes(String(item.section||item.category||'')))return {required:'',allowed:true};
+ const normalized=s=>norm(s||'').replace(/[\u0300-\u036f]/g,'');
+ const model=(window.NEX_BASE_WEAPONS||[]).find(x=>norm(x.name)===norm(item.name));
+ const meta=[item.nexInfo?.proficiency,item.proficiency,
+ (item.stats||[]).find(x=>norm(x[0])==='proficiencia')?.[1],
+ model?.subtitle,item.subtitle,item.description].filter(Boolean).join(' · ');
+ const text=normalized(meta);
+ const required=/(?:^|\W)(?:armas? )?pesad[ao]s?(?:\W|$)/.test(text)?'Armas pesadas':
+ /(?:^|\W)(?:armas? )?tatic[ao]s?(?:\W|$)/.test(text)?'Armas táticas':
+ /(?:^|\W)(?:armas? )?simples(?:\W|$)/.test(text)?'Armas simples':'';
+ const powers=[...(Array.isArray(state.powers)?state.powers:[]),...(Array.isArray(state.n16?.abilities)?state.n16.abilities:[])].map(x=>norm(x.name));
+ const names=new Set(['Armas simples']);
+ if(state.class==='Combatente')names.add('Armas táticas');
+ if(powers.includes('ninja urbano'))names.add('Armas táticas');
+ if(powers.includes('armamento pesado'))names.add('Armas pesadas');
+ for(const x of state.nexDefenseSelect?.extraProficiencies||[])names.add(x);
+ return {required,allowed:required?names.has(required):false};
+}
+window.NEX_WEAPON_PROFICIENCY=weaponTraining;
 function homebrewItems(){
  const fromLibrary=typeof window.NEX51?.readLibrary==='function'?window.NEX51.readLibrary():[];
  const fromSheet=Array.isArray(state?.nex51Items)?state.nex51Items:[];
@@ -158,13 +179,15 @@ function render(){
    const index=list.indexOf(item);
    const categoryStat=String((item.stats||[]).find(x=>norm(x[0])==='categoria')?.[1]||'0');
    const preview={name:item.name,quantity:1,spaces:item.spaces,nexInfo:{tier:categoryStat}};
-   const blocked=window.NEX_CARRY && !window.NEX_CARRY.canAddItem(preview);
+   const itemProficiency=weaponTraining(item);
+   const lacksProficiency=item.section==='Armas'&&!itemProficiency.allowed;
+   const blocked=Boolean(lacksProficiency||(window.NEX_CARRY && !window.NEX_CARRY.canAddItem(preview)));
    const blockedByTier=window.NEX_CARRY && !window.NEX_CARRY.isMundane() && window.NEX_CARRY.tier(preview)>0 && (window.NEX_CARRY.prestige().limits[window.NEX_CARRY.tier(preview)-1]||0)<=0;
    return '<article class="nex-item-card" data-item-index="'+index+'"><div class="nex-item-card-header">'+
    '<button type="button" class="nex-item-expand" data-expand="'+index+'" aria-expanded="false" aria-label="Detalhes do item">⌄</button>'+
    '<div><span class="nex-item-name">'+escape(item.name)+'</span><span class="nex-item-desc">'+escape(item.subtitle||item.source||'Item')+' · '+escape(item.source||'')+'</span>'+ 
    '<div class="nex-item-meta">'+(item.stats.length?item.stats.map(m=>'<span><b>'+escape(m[0])+':</b> '+escape(m[1])+'</span>').join(''):'<span><b>Espaços:</b> '+item.spaces+'</span>')+'</div></div>'+
-   '<button type="button" class="nex-item-plus" data-add="'+index+'" '+(blocked?'disabled title="'+(blockedByTier?'Categoria indisponível nesta patente':'Limite de categoria ou carga atingido')+'"':'')+' aria-label="'+(blocked?'Bloqueado: ':'Adicionar ')+escape(item.name)+'">'+(blocked?'<svg class="nex-lock-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>':'+')+'</button></div>'+
+   '<button type="button" class="nex-item-plus" data-add="'+index+'" '+(blocked?'disabled title="'+(lacksProficiency?(itemProficiency.required?'Exige proficiência: '+itemProficiency.required:'Proficiência da arma não cadastrada'):(blockedByTier?'Categoria indisponível nesta patente':'Limite de categoria ou carga atingido'))+'"':'')+' aria-label="'+(blocked?'Bloqueado: ':'Adicionar ')+escape(item.name)+'">'+(blocked?'<svg class="nex-lock-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>':'+')+'</button></div>'+
    '<div class="nex-item-detail" hidden><div class="nex-item-detail-source">'+escape(item.source||'Equipamento')+'</div><div>'+escape(item.description||window.NEX_ITEM_DESCRIBE?.(item)||'Descrição personalizada não cadastrada.')+'</div></div></article>';
  }).join(''):'<div class="nex-item-empty">'+(selectedSource==='Itens Homebrew'?'Nenhum item homebrew nesta categoria. Cadastre um na biblioteca Homebrew.':'Nenhum item encontrado nesta categoria.')+'</div>';
 }
@@ -172,6 +195,11 @@ function open(){lastFocus=document.activeElement;selectedSource='Itens';selected
 function close(){modal.hidden=true;document.body.classList.remove('nex-item-modal-open');lastFocus?.focus?.();}
 function add(index){
  const item=renderedItems[index];if(!item)return;
+ const requirement=weaponTraining(item);
+ if(item.section==='Armas'&&!requirement.allowed){
+  toast(requirement.required?'Exige proficiência: '+requirement.required+'.':'A proficiência desta arma não está cadastrada. Configure-a antes de adicionar.');
+  render();return;
+ }
  if(!Array.isArray(state.items))state.items=[];
  if(state.items.length>=100){toast('Limite de 100 itens no inventário.');return;}
  
