@@ -51,7 +51,7 @@ function addPanel(input,html){
  input.setAttribute('aria-hidden','true');
  return container;
 }
-addPanel(origin.armor,'<select id="nexDefArmor" aria-label="Selecionar proteção"></select><label style="display:flex;align-items:center;gap:5px;font-size:11px"><input id="nexDefShield" type="checkbox" style="width:auto;height:auto!important"/>Escudo (+2 Defesa)</label><small id="nexDefArmorNote"></small>');
+addPanel(origin.armor,'<select id="nexDefArmor" aria-label="Selecionar proteção"></select><small id="nexDefArmorNote"></small>');
 addPanel(origin.resist,'<div id="nexDefResList"></div><button type="button" id="nexDefAddRes">+ Adicionar resistência</button><small>Informe o valor e a fonte. Uma resistência não é concedida só por selecionar seu tipo.</small>');
 addPanel(origin.prof,'<div id="nexDefProfLabels" class="nex-def-roles"></div><select id="nexDefExtraProf" aria-label="Adicionar proficiência concedida pelo mestre ou homebrew"></select><button type="button" id="nexDefAddProf">Adicionar proficiência extra</button><small>Proficiências da classe e poderes reconhecidos são automáticas; extras são escolhas manuais.</small>');
 const armorOpts=[['','Sem proteção',0],['leve','Proteção leve',5],['pesada','Proteção pesada',10]];
@@ -90,12 +90,10 @@ function updateReadout(){
   }
   const linked=inventorySelection(d);
   const lacking=d.armor&&!allowedArmor(all,d.armor);
-  const shieldUntrained=d.shield&&!all.has('Proteções pesadas');
+  const shieldUntrained=linked.shield&&!all.has('Proteções pesadas');
   const note=[];
   if(lacking||shieldUntrained)note.push('🔒 Sem proficiência: –2d20 em testes de Força e Agilidade.');
   if(d.armor==='pesada')note.push('Proteção pesada: RD 2 (balístico, corte, impacto e perfuração), –5 em perícias afetadas por carga.');
-  if(d.shield||linked.shield)note.push('Escudo: +2 Defesa, usa uma mão e exige proficiência em proteção pesada para evitar penalidade.');
-  if(linked.active)note.unshift('Equipado: '+linked.active.name+' · Defesa +'+(linked.active.bonus+linked.active.improvementBonus)+' (inclui melhorias).');
   $('nexDefArmorNote').textContent=note.join(' ')||'Escolha sua proteção (leve: +5; pesada: +10). Sem proficiência, há penalidade.';
  }
 }
@@ -105,7 +103,6 @@ function render(){
  const linked=inventorySelection(d);
  armor.innerHTML=armorOpts.map(([key,label,bonus])=>'<option value="'+key+'">'+(!allowedArmor(all,key)?'🔒 ':'')+label+(bonus?' · Defesa +'+bonus:'')+'</option>').join('')+
  linked.inventory.filter(x=>x.kind!=='escudo').map(x=>'<option value="item:'+escape(x.id)+'">'+(x.item.equipped?'✓ ':'')+escape(x.name)+' · Defesa +'+(x.bonus+x.improvementBonus)+'</option>').join('');
- $('nexDefShield').checked=Boolean(d.shield||linked.shield);
  armor.value=linked.active?'item:'+linked.active.id:d.armor;
  if(armor.value!==(linked.active?'item:'+linked.active.id:d.armor))armor.value='';
  $('nexDefExtraProf').innerHTML='<option value="">Escolha uma proficiência extra</option>'+names.filter(x=>!all.has(x)).map(x=>'<option>'+escape(x)+'</option>').join('');
@@ -118,7 +115,7 @@ function persist(){
  const linked=inventorySelection(d);
  const selected=armorOpts.find(x=>x[0]===d.armor)||armorOpts[0];
  state.protectionName=linked.active?linked.active.name:(selected[1]==='Sem proteção'?'':selected[1]);
- state.protectionDefense=(linked.active?linked.active.bonus:selected[2])+(d.shield||linked.shield?2:0);
+ state.protectionDefense=(linked.active?linked.active.bonus:selected[2])+(linked.shield?2:0);
  origin.armor.value=state.protectionName;
  const hiddenBonus=$('nex20ArmorBonus');if(hiddenBonus)hiddenBonus.value=state.protectionDefense;
  const manualRes=d.resistances.map(r=>r.kind+(r.bonus?' '+r.bonus:'')+(r.source?' · '+r.source:'')).join('; ');
@@ -139,17 +136,6 @@ $('nexDefArmor').addEventListener('change',event=>{
   d.inventoryArmorId=found?.id||'';
   d.armor=found?.kind||'';
  }else{d.inventoryArmorId='';d.armor=v;}
- persist();render();
- if(typeof renderInventory==='function')renderInventory();
-});
-$('nexDefShield').addEventListener('change',event=>{
- const d=data(),value=event.target.checked;
- const shields=inventoryProtectionItems().filter(x=>x.kind==='escudo');
- if(shields.length){
-  shields[0].item.equipped=value;
-  for(const item of shields.slice(1))item.item.equipped=false;
-  d.shield=false;
- }else d.shield=value;
  persist();render();
  if(typeof renderInventory==='function')renderInventory();
 });
@@ -200,7 +186,6 @@ document.addEventListener('change',event=>{
  if(!event.target.closest?.('[data-nex-item-equipped]'))return;
  queueMicrotask(()=>{
   const d=data(),linked=inventorySelection(d);
-  d.shield=linked.shield?false:d.shield;
   persist();
   render();
  });
