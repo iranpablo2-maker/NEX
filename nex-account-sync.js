@@ -28,7 +28,7 @@ const message=t=>{$('nexAccountMessage').textContent=t;};
 open.addEventListener('click',()=>panel.showModal());$('nexAccountClose').onclick=()=>panel.close();
 if(!cfg?.apiKey||!cfg?.projectId){status('Configuração do Firebase não encontrada.');message('Confira firebase-config.js.');}
 else{
- const app=getApps().find(a=>a.name==='nex-accounts')||initializeApp(cfg,'nex-accounts');
+ const app=getApps().find(a=>a.name==='[DEFAULT]')||initializeApp(cfg);
  const auth=getAuth(app),db=getFirestore(app);let current=null,busy=false,ready=false,dirty=false,timer=0;
  const getBridge=()=>window.NEX_AUTO_BRIDGE?.ready?.()?window.NEX_AUTO_BRIDGE:null;
  const safeClone=v=>JSON.parse(JSON.stringify(v));
