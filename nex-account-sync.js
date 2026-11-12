@@ -106,7 +106,26 @@ else{
  };
  $('nexAccountLogout').onclick=async()=>{try{await signOut(auth);}catch(e){message('Falha ao sair da conta.');}};
  $('nexAccountForm').onsubmit=async e=>{e.preventDefault();try{await signInWithEmailAndPassword(auth,$('nexAccountEmail').value.trim(),$('nexAccountPassword').value);}catch(error){message('Não foi possível entrar: '+(error.code||'verifique e-mail e senha'));}};
- $('nexAccountRegister').onclick=async()=>{try{await createUserWithEmailAndPassword(auth,$('nexAccountEmail').value.trim(),$('nexAccountPassword').value);}catch(error){message('Não foi possível criar a conta: '+(error.code||'verifique os dados'));}};
+ $('nexAccountRegister').onclick=async()=>{
+  const email=$('nexAccountEmail').value.trim();
+  const password=$('nexAccountPassword').value;
+  const emailInput=$('nexAccountEmail');
+  if(!emailInput.validity.valid||!email){message('Digite um endereço de e-mail válido.');emailInput.focus();return;}
+  if(password.length<6){message('A senha precisa ter pelo menos 6 caracteres.');$('nexAccountPassword').focus();return;}
+  message('Criando sua conta…');
+  try{await createUserWithEmailAndPassword(auth,email,password);}
+  catch(error){
+   const code=error?.code||'';
+   const friendly={
+    'auth/email-already-in-use':'Este e-mail já possui uma conta. Use Entrar ou Recuperar senha.',
+    'auth/invalid-email':'Digite um endereço de e-mail válido.',
+    'auth/weak-password':'Escolha uma senha mais forte.',
+    'auth/network-request-failed':'Não foi possível conectar. Verifique sua internet e tente novamente.',
+    'auth/operation-not-allowed':'O cadastro por e-mail e senha não está ativado no Firebase.'
+   };
+   message(friendly[code]||'Não foi possível criar a conta: '+(code||'verifique os dados'));
+  }
+ };
  $('nexAccountReset').onclick=async()=>{const email=$('nexAccountEmail').value.trim();if(!email){message('Digite seu e-mail antes de recuperar a senha.');return;}try{await sendPasswordResetEmail(auth,email);message('Se a conta existir, você receberá instruções de recuperação.');}catch(error){message('Não foi possível enviar a recuperação: '+(error.code||'erro'));}};
  onAuthStateChanged(auth,user=>{
   current=user;ready=false;clearTimeout(timer);dirty=false;
