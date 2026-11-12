@@ -2070,8 +2070,8 @@ body > #nexOriginPopup[hidden]{display:none!important;}
   <div class="nex20-defense n193-defense" aria-label="Defesa, bloqueio e esquiva">
     <div class="n193-defense-main">
       <div class="n193-defense-primary"><div class="n193-shield"><svg class="n196-shield-outline" viewBox="0 0 64 72" aria-hidden="true"><path d="M32 4 C42 11 52 12 61 13 L61 34 C61 51 49 62 32 69 C15 62 3 51 3 34 L3 13 C12 12 22 11 32 4Z" fill="none" stroke="white" stroke-width="3.2"/></svg><input type="number" id="defense" readonly min="0" aria-label="Defesa" title="10 + Agilidade + Proteção + Outros"></div><div class="n196-defense-text"><strong>DEFESA</strong><small>= 10 + AGI + <span id="n196ArmorValue">0</span> + <span id="n196OtherValue">0</span></small><div class="n196-tiny-captions"><i>Equip.</i><i>Outros.</i></div></div></div>
-      <div class="n193-defense-metric"><strong>BLOQUEIO</strong><div class="nex-reaction-bonus" aria-label="Bônus de bloqueio"><span>Bônus</span><button type="button" data-reaction-bonus="block" data-reaction-delta="-1" aria-label="Diminuir bônus de Bloqueio">‹</button><input id="nexBlockExtra" type="number" min="-99" max="99" value="0" aria-label="Bônus de Bloqueio"><button type="button" data-reaction-bonus="block" data-reaction-delta="1" aria-label="Aumentar bônus de Bloqueio">›</button></div><output id="nex20Block" aria-live="polite" title="Redução de dano ao bloquear ataque corpo a corpo">—</output><small id="nex20BlockInfo">RD · Fortitude</small></div>
-      <div class="n193-defense-metric"><strong>ESQUIVA</strong><div class="nex-reaction-bonus" aria-label="Bônus de esquiva"><span>Bônus</span><button type="button" data-reaction-bonus="dodge" data-reaction-delta="-1" aria-label="Diminuir bônus de Esquiva">‹</button><input id="nexDodgeExtra" type="number" min="-99" max="99" value="0" aria-label="Bônus de Esquiva"><button type="button" data-reaction-bonus="dodge" data-reaction-delta="1" aria-label="Aumentar bônus de Esquiva">›</button></div><output id="nex20Dodge" aria-live="polite" title="Defesa durante a esquiva">—</output><small id="nex20DodgeInfo">Defesa + Reflexos</small></div>
+      <div class="n193-defense-metric"><strong>BLOQUEIO</strong><output id="nex20Block" aria-live="polite" title="Redução de dano ao bloquear ataque corpo a corpo">—</output><small id="nex20BlockInfo">RD · Fortitude</small><div class="nex-reaction-bonus" aria-label="Bônus de bloqueio"><span>Bônus</span><button type="button" data-reaction-bonus="block" data-reaction-delta="-1" aria-label="Diminuir bônus de Bloqueio">‹</button><input id="nexBlockExtra" type="number" min="-99" max="99" value="0" aria-label="Bônus de Bloqueio"><button type="button" data-reaction-bonus="block" data-reaction-delta="1" aria-label="Aumentar bônus de Bloqueio">›</button></div></div>
+      <div class="n193-defense-metric"><strong>ESQUIVA</strong><output id="nex20Dodge" aria-live="polite" title="Defesa durante a esquiva">—</output><small id="nex20DodgeInfo">Defesa + Reflexos</small><div class="nex-reaction-bonus" aria-label="Bônus de esquiva"><span>Bônus</span><button type="button" data-reaction-bonus="dodge" data-reaction-delta="-1" aria-label="Diminuir bônus de Esquiva">‹</button><input id="nexDodgeExtra" type="number" min="-99" max="99" value="0" aria-label="Bônus de Esquiva"><button type="button" data-reaction-bonus="dodge" data-reaction-delta="1" aria-label="Aumentar bônus de Esquiva">›</button></div></div>
     </div>
     <div class="n193-defense-line"><label for="nex20ArmorName">PROTEÇÃO</label><input id="nex20ArmorName" data-field="protectionName" placeholder="Sem proteção" maxlength="90"></div>
     <div class="n193-defense-line"><label for="n193Resistances">RESISTÊNCIAS</label><input id="n193Resistances" data-field="resistances" placeholder="—" maxlength="160"></div>
@@ -3826,6 +3826,8 @@ update();
 #sheetScreen .nex-reaction-bonus span{grid-column:1/-1!important;grid-row:1!important;font-size:10px!important}
 #sheetScreen .nex-reaction-bonus button{width:18px!important;min-width:18px!important;height:24px!important;padding:0!important;font-size:14px!important}
 #sheetScreen .nex-reaction-bonus input{width:32px!important;min-width:32px!important;max-width:32px!important;height:24px!important;margin:0!important;padding:0 1px!important;font-size:11px!important}
+#sheetScreen .nex-reaction-bonus{margin:9px auto 0!important}
+#sheetScreen .n193-defense-metric small{margin-bottom:4px!important}
 </style>
 <script id="nex20-defense-runtime">
 'use strict';
@@ -4566,13 +4568,29 @@ const PARANORMAL=[
   const t=temps();
   return {...m,pv:m.pv+t.pv,pe:m.pe+t.pe,san:m.san+t.san};
  };
+ // Recurso temporário é uma reserva consumível, não um bônus permanente.
+ // Perdas de PV/PE/SAN gastam primeiro a reserva e reduzem o limite exibido.
  const originalRenderStats=renderStats;
+ const lastCurrent={};
+ let changingTemp=false;
  renderStats=function(){
-  originalRenderStats();
   const t=temps();
+  if(!changingTemp){
+   for(const key of keys){
+    const field=key==='san'?'sanCurrent':key+'Current';
+    const now=Math.max(0,Number(state[field])||0);
+    const previous=lastCurrent[key];
+    if(previous!==undefined && now<previous && t[key]>0){
+     t[key]=Math.max(0,t[key]-Math.min(t[key],Math.floor(previous-now)));
+    }
+   }
+  }
+  originalRenderStats();
   for(const key of keys){
-   const field=document.querySelector('#nexTemp-'+key);
-   if(field&&document.activeElement!==field)field.value=String(t[key]);
+   const field=key==='san'?'sanCurrent':key+'Current';
+   lastCurrent[key]=Math.max(0,Number(state[field])||0);
+   const input=document.querySelector('#nexTemp-'+key);
+   if(input&&document.activeElement!==input)input.value=String(t[key]);
   }
  };
  const specs={pv:['pvCurrent','PV'],pe:['peCurrent','PE'],san:['sanCurrent','SAN']};
@@ -4590,8 +4608,16 @@ const PARANORMAL=[
   const current=temps()[key];
   const value=Math.max(0,Math.min(9999,Math.floor(Number(next)||0)));
   if(current===value)return;
-  state.temporaryResources[key]=value;
-  renderStats();
+  const field=key==='san'?'sanCurrent':key+'Current';
+  changingTemp=true;
+  try{
+   state.temporaryResources[key]=value;
+   const change=value-current;
+   const now=Number(state[field])||0;
+   const cap=Number(baseMaxValues()[key])||0;
+   state[field]=Math.max(0,Math.min(cap+value,now+change));
+   renderStats();
+  }finally{changingTemp=false;}
   if(typeof save==='function')save();
  }
  document.addEventListener('click',event=>{
