@@ -1900,7 +1900,7 @@ body > #nexOriginPopup[hidden]{display:none!important;}
  <div class="home-section-heading"><h2>Campanhas</h2><span class="home-tag">MESAS E PERSONAGENS</span></div>
  <p class="muted" style="margin:4px 0 16px">Crie sua campanha, autorize jogadores e acompanhe as fichas na mesma sala. Todos os participantes podem visualizar; somente o dono e o mestre podem editar.</p>
  <div class="nex-campaign-integrated" aria-label="Área de campanhas online">
-  <iframe id="nexCampaignRoomFrame" title="Campanhas online do NEX" data-src="./multiplayer.html?integrado=1&v=20261112library1" loading="lazy" referrerpolicy="strict-origin-when-cross-origin"></iframe>
+  <iframe id="nexCampaignRoomFrame" title="Campanhas online do NEX" data-src="./multiplayer.html?integrado=1&v=20261112heightfix2" loading="lazy" referrerpolicy="strict-origin-when-cross-origin"></iframe>
  </div>
  <details class="nex-campaign-legacy">
   <summary>Campanhas salvas neste dispositivo <span class="muted">(modo local anterior)</span></summary>
@@ -4587,14 +4587,14 @@ const PARANORMAL=[
 <style id="nex-campaigns-inline-multiplayer">
 /* Campanhas online dentro da área Campanhas, sem menu ou página externa. */
 #campaignPanel .nex-campaign-integrated{margin:10px 0 18px;background:#0c0b0d;border:1px solid #65232d;border-radius:12px;overflow:hidden;box-shadow:0 12px 36px #0005}
-#campaignPanel #nexCampaignRoomFrame{display:block;width:100%;height:max(850px,calc(100vh - 230px));min-height:740px;border:0;background:#0d0c0f}
+#campaignPanel #nexCampaignRoomFrame{display:block;width:100%;height:460px;min-height:240px;border:0;background:#0d0c0f}
 #campaignPanel .nex-campaign-legacy{margin:16px 0 28px;border:1px solid #423036;border-radius:10px;background:#141116}
 #campaignPanel .nex-campaign-legacy>summary{cursor:pointer;padding:17px 18px;font-weight:750;color:#f5d9dd}
 #campaignPanel .nex-campaign-legacy>summary:hover{color:#ff9ca6}
 #campaignPanel .nex-campaign-legacy-inside{padding:8px 16px 20px}
 @media(max-width:760px){
  #campaignPanel{padding:0 10px 24px}
- #campaignPanel #nexCampaignRoomFrame{height:max(880px,calc(100dvh - 140px));min-height:800px}
+ #campaignPanel #nexCampaignRoomFrame{height:460px;min-height:240px}
  #campaignPanel .nex-campaign-integrated{border-radius:8px;margin-left:-6px;margin-right:-6px}
  #campaignPanel .nex-campaign-legacy-inside{padding:8px 10px 16px}
 }
@@ -4623,7 +4623,7 @@ const PARANORMAL=[
     if(event.origin!==location.origin || event.source!==frame.contentWindow)return;
     if(event.data?.type!=='nex-campaign-height')return;
     const height=Number(event.data.height);
-    if(Number.isFinite(height))frame.style.height=Math.min(12000,Math.max(800,height+15))+'px';
+    if(Number.isFinite(height))frame.style.height=Math.min(5000,Math.max(240,height+8))+'px';
   });
 })();
 </script>
