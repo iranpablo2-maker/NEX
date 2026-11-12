@@ -990,6 +990,15 @@ html,body{background:#000!important;background-image:none!important}
 .nex-campaign-session-form .nex-campaign-notes{grid-column:1/-1}
 .nex-campaign-session-form button{justify-self:start}
 @media(max-width:600px){.nex-campaign-session-form{grid-template-columns:1fr}.nex-campaign-session-form .nex-campaign-notes{grid-column:1}.nex-campaign-session-form input,.nex-campaign-session-form textarea{font-size:16px}}
+</style><style id="nex-campaign-internal-tabs-v1">
+#campaignList .nex-campaign-tabs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-top:15px}
+#campaignList .nex-campaign-tabs button{display:flex;flex-direction:column;gap:4px;text-align:left;padding:13px 12px;border:1px solid #5a333b;border-radius:8px;color:#f5eff0;background:#25191c;font-weight:750;cursor:pointer;min-width:0}
+#campaignList .nex-campaign-tabs button small{font-size:11px;color:#d1a5ab;font-weight:450}
+#campaignList .nex-campaign-tabs button[aria-selected="true"]{border-color:#ed4554;background:#411d25;box-shadow:inset 3px 0 0 #ed4554}
+#campaignList .nex-campaign-tabpanel[hidden]{display:none!important}
+#campaignList .nex-campaign-tabpanel .nex-campaign-section:first-child{border-top:0;margin-top:8px}
+#campaignList .nex-campaign-help{color:#bfaeb2;font-size:12px;margin:0 0 12px}
+@media(max-width:440px){#campaignList .nex-campaign-tabs button{padding:10px 9px;font-size:12px}#campaignList .nex-campaign-tabs button small{font-size:10px}}
 </style><style id="nex-v2049-homebrew">
 .nex-hb-search{display:flex;gap:9px;flex-wrap:wrap;align-items:center;background:#181b21;border:1px solid #383d46;border-radius:8px;padding:12px;margin-bottom:15px}
 .nex-hb-search label{font-size:12px;font-weight:600;color:#ddd}
@@ -2922,6 +2931,7 @@ $('nexHomebrewFilter')?.addEventListener('input',()=>nex12RenderHomebrew());
  function renderCampaigns(){
    const list=$('campaignList');
    const opened=new Set([...list.querySelectorAll('details[data-campaign-details][open]')].map(el=>el.dataset.campaignDetails));
+   const selectedTabs=new Map([...list.querySelectorAll('[data-campaign-tab][aria-selected="true"]')].map(el=>[el.dataset.campaignId,el.dataset.campaignTab]));
    if(!campaigns.length){list.innerHTML='<p class="home-empty">Você ainda não cadastrou campanhas.</p>';return;}
    list.innerHTML=campaigns.map(c=>{
      const linked=Array.isArray(c.agentIds)?c.agentIds:[];
@@ -2939,17 +2949,23 @@ $('nexHomebrewFilter')?.addEventListener('input',()=>nex12RenderHomebrew());
      ).join('')||'<li class="muted">Nenhuma sessão registrada.</li>';
      return '<article class="campaign-entry">'+
        '<h3>'+escapeHtml(c.name||'Campanha sem nome')+'</h3><p>'+escapeHtml(c.note||'Sem descrição.')+'</p>'+
-       '<details class="nex-campaign-details" data-campaign-details="'+escapeHtml(c.id)+'" '+(opened.has(c.id)?'open':'')+'><summary>Gerenciar personagens e sessões <small>· '+linked.length+' personagem(ns) · '+sessions.length+' sessão(ões)</small></summary>'+
-       '<div class="nex-campaign-section"><h4>Personagens da campanha</h4><div class="nex-campaign-characters">'+linkedHtml+'</div>'+
+       '<details class="nex-campaign-details" data-campaign-details="'+escapeHtml(c.id)+'" '+(opened.has(c.id)?'open':'')+'><summary>Entrar na campanha <small>· '+linked.length+' personagem(ns) · '+sessions.length+' sessão(ões)</small></summary>'+
+       '<div class="nex-campaign-tabs" role="tablist" aria-label="Áreas da campanha">'+
+       '<button type="button" role="tab" data-campaign-id="'+escapeHtml(c.id)+'" data-campaign-tab="characters" aria-selected="'+(selectedTabs.get(c.id)!=='master')+'">Personagens<small>Fichas compartilhadas</small></button>'+
+       '<button type="button" role="tab" data-campaign-id="'+escapeHtml(c.id)+'" data-campaign-tab="master" aria-selected="'+(selectedTabs.get(c.id)==='master')+'">Painel do mestre<small>Permissões e sessões</small></button></div>'+
+       '<section class="nex-campaign-tabpanel" data-campaign-panel="characters" data-campaign-id="'+escapeHtml(c.id)+'" '+(selectedTabs.get(c.id)==='master'?'hidden':'')+'>'+
+       '<div class="nex-campaign-section"><h4>Personagens · Fichas compartilhadas</h4><p class="nex-campaign-help">Personagens vinculados a esta campanha neste dispositivo.</p><div class="nex-campaign-characters">'+linkedHtml+'</div>'+
        '<div class="nex-campaign-add-player"><select aria-label="Escolher personagem" data-campaign-agent-select="'+escapeHtml(c.id)+'">'+
        (choices?'<option value="">Escolha uma ficha existente</option>'+choices:'<option value="">Nenhuma ficha disponível</option>')+
-       '</select><button class="btn sm" type="button" data-campaign-add-agent="'+escapeHtml(c.id)+'" '+(!choices?'disabled':'')+'>Vincular personagem</button></div></div>'+
+       '</select><button class="btn sm" type="button" data-campaign-add-agent="'+escapeHtml(c.id)+'" '+(!choices?'disabled':'')+'>Vincular personagem</button></div></div></section>'+
+       '<section class="nex-campaign-tabpanel" data-campaign-panel="master" data-campaign-id="'+escapeHtml(c.id)+'" '+(selectedTabs.get(c.id)==='master'?'':'hidden')+'>'+
+       '<div class="nex-campaign-section"><h4>Permissões</h4><p class="nex-campaign-help">Planejado para o multiplayer: jogadores visualizam fichas; somente o dono da ficha e o mestre poderão editá-la. As permissões online ainda não estão ativas.</p></div>'+
        '<div class="nex-campaign-section"><h4>Diário de sessões</h4><ul class="nex-campaign-sessions">'+sessionHtml+'</ul>'+
        '<form data-campaign-new-session="'+escapeHtml(c.id)+'" class="nex-campaign-session-form">'+
        '<label>Nome da sessão<input name="title" maxlength="100" required placeholder="Ex.: Primeira investigação"></label>'+
        '<label>Data<input name="date" type="date"></label>'+
        '<label class="nex-campaign-notes">Anotações<textarea name="notes" maxlength="800" rows="3" placeholder="Resumo dos acontecimentos"></textarea></label>'+
-       '<button class="btn primary sm" type="submit">Adicionar sessão</button></form></div></details>'+
+       '<button class="btn primary sm" type="submit">Adicionar sessão</button></form></div></section></details>'+
        '<button class="btn sm" type="button" data-remove-campaign="'+escapeHtml(c.id)+'">Excluir campanha</button></article>';
    }).join('');
  }
@@ -2959,6 +2975,15 @@ $('nexHomebrewFilter')?.addEventListener('input',()=>nex12RenderHomebrew());
    persist();
    renderCampaigns();
  }
+ $('campaignList').addEventListener('click',e=>{
+   const tab=e.target.closest('button[data-campaign-tab]');
+   if(!tab)return;
+   const parent=tab.closest('details[data-campaign-details]');
+   if(!parent)return;
+   const choice=tab.dataset.campaignTab;
+   parent.querySelectorAll('button[data-campaign-tab]').forEach(el=>el.setAttribute('aria-selected',String(el===tab)));
+   parent.querySelectorAll('[data-campaign-panel]').forEach(el=>{el.hidden=el.dataset.campaignPanel!==choice;});
+ });
  $('campaignList').addEventListener('submit',e=>{
    const form=e.target.closest('[data-campaign-new-session]');if(!form)return;
    e.preventDefault();
