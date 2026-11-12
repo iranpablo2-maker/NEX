@@ -3679,15 +3679,24 @@ document.addEventListener('click',function(e){
  const key=btn.dataset.resourceChange;
  if(!['pv','pe','san'].includes(key))return;
  const field=key==='san'?'sanCurrent':key+'Current';
- state[field]=clamp(int(state[field])+int(btn.dataset.resourceDelta),0,maxValues()[key]);
- renderStats();save();
+ if(typeof window.NEX_TEMP_RESOURCE_CHANGE==='function'){
+  window.NEX_TEMP_RESOURCE_CHANGE(key,int(btn.dataset.resourceDelta));
+ }else{
+  state[field]=clamp(int(state[field])+int(btn.dataset.resourceDelta),0,maxValues()[key]);
+  renderStats();save();
+ }
 });
 document.addEventListener('change',function(e){
  const el=e.target;
  if(!el.matches('#pvCurrent,#peCurrent,#sanCurrent'))return;
  const key=el.id==='sanCurrent'?'san':el.id.slice(0,2);
- state[el.id]=clamp(int(el.value),0,maxValues()[key]);
- el.value=state[el.id];renderStats();save();
+ if(typeof window.NEX_TEMP_RESOURCE_SET==='function'){
+  window.NEX_TEMP_RESOURCE_SET(key,int(el.value));
+  el.value=String(Math.max(0,Number(state[el.id])||0)+Math.max(0,Number(state.temporaryResources?.[key])||0));
+ }else{
+  state[el.id]=clamp(int(el.value),0,maxValues()[key]);
+  el.value=state[el.id];renderStats();save();
+ }
 });
 
 // Limite máximo de atributo na ficha: 9. Corrige texto digitado fora do intervalo.
@@ -4553,84 +4562,120 @@ const PARANORMAL=[
 @media(max-width:480px){#sheetScreen .nex-temp-resource-controls{gap:3px}#sheetScreen .nex-temp-resource-controls .nex-temp-input{width:39px;min-width:39px}}
 </style>
 <script id="nex-temporary-resource-points-script">
+
 (function(){
  'use strict';
  if(typeof state==='undefined'||typeof maxValues!=='function'||typeof renderStats!=='function')return;
  const keys=['pv','pe','san'];
+ const fieldOf=key=>key==='san'?'sanCurrent':key+'Current';
+ const limit=(value,min,max)=>Math.max(min,Math.min(max,Math.floor(Number(value)||0)));
+ const baseMaxValues=maxValues;
+ const originalRenderStats=renderStats;
  function temps(){
-  if(!state.temporaryResources||typeof state.temporaryResources!=='object'||Array.isArray(state.temporaryResources))state.temporaryResources={pv:0,pe:0,san:0};
-  for(const key of keys)state.temporaryResources[key]=Math.max(0,Math.min(9999,Math.floor(Number(state.temporaryResources[key])||0)));
+  if(!state.temporaryResources||typeof state.temporaryResources!=='object'||Array.isArray(state.temporaryResources))
+   state.temporaryResources={pv:0,pe:0,san:0};
+  for(const k of keys)state.temporaryResources[k]=limit(state.temporaryResources[k],0,9999);
   return state.temporaryResources;
  }
- const baseMaxValues=maxValues;
- maxValues=function(){
-  const m=baseMaxValues();
-  const t=temps();
-  return {...m,pv:m.pv+t.pv,pe:m.pe+t.pe,san:m.san+t.san};
- };
- // Recurso temporário é uma reserva consumível, não um bônus permanente.
- // Perdas de PV/PE/SAN gastam primeiro a reserva e reduzem o limite exibido.
- const originalRenderStats=renderStats;
- const lastCurrent={};
- let changingTemp=false;
- renderStats=function(){
-  const t=temps();
-  if(!changingTemp){
-   for(const key of keys){
-    const field=key==='san'?'sanCurrent':key+'Current';
-    const now=Math.max(0,Number(state[field])||0);
-    const previous=lastCurrent[key];
-    if(previous!==undefined && now<previous && t[key]>0){
-     t[key]=Math.max(0,t[key]-Math.min(t[key],Math.floor(previous-now)));
-    }
-   }
+ // Migração única: o código antigo somava pontos temporários aos pontos normais.
+ // No novo modelo, os recursos atuais da ficha guardam somente pontos normais.
+ if(state.temporaryResourceMode!=='separated-v2'){
+  const t=temps(),caps=baseMaxValues();
+  for(const k of keys){
+   const field=fieldOf(k);
+   state[field]=limit((Number(state[field])||0)-t[k],0,Number(caps[k])||0);
   }
-  originalRenderStats();
-  for(const key of keys){
-   const field=key==='san'?'sanCurrent':key+'Current';
-   lastCurrent[key]=Math.max(0,Number(state[field])||0);
-   const input=document.querySelector('#nexTemp-'+key);
-   if(input&&document.activeElement!==input)input.value=String(t[key]);
-  }
- };
- const specs={pv:['pvCurrent','PV'],pe:['peCurrent','PE'],san:['sanCurrent','SAN']};
- for(const key of keys){
-  const [id,label]=specs[key];
-  const resource=document.getElementById(id)?.closest('.n193-resource');
-  const heading=resource?.querySelector('.n193-resource-label');
-  if(!heading||heading.querySelector('.nex-temp-resource-controls'))continue;
-  const tools=document.createElement('span');tools.className='nex-temp-resource-controls';
-  tools.innerHTML='<span>Temp.</span><button type="button" data-nex-temp="'+key+'" data-nex-delta="-1" aria-label="Remover 1 '+label+' temporário">‹</button><input class="nex-temp-input" type="number" id="nexTemp-'+key+'" min="0" max="9999" inputmode="numeric" aria-label="'+label+' temporários"><button type="button" data-nex-temp="'+key+'" data-nex-delta="1" aria-label="Adicionar 1 '+label+' temporário">›</button>';
-  heading.appendChild(tools);
- }
- function updateTemp(key,next){
-  if(!keys.includes(key))return;
-  const current=temps()[key];
-  const value=Math.max(0,Math.min(9999,Math.floor(Number(next)||0)));
-  if(current===value)return;
-  const field=key==='san'?'sanCurrent':key+'Current';
-  changingTemp=true;
-  try{
-   state.temporaryResources[key]=value;
-   const change=value-current;
-   const now=Number(state[field])||0;
-   const cap=Number(baseMaxValues()[key])||0;
-   state[field]=Math.max(0,Math.min(cap+value,now+change));
-   renderStats();
-  }finally{changingTemp=false;}
+  state.temporaryResourceMode='separated-v2';
   if(typeof save==='function')save();
  }
+ maxValues=function(){
+  const m=baseMaxValues(),t=temps();
+  return {...m,pv:m.pv+t.pv,pe:m.pe+t.pe,san:m.san+t.san};
+ };
+ // A ficha mantém os pontos normais em state.pvCurrent/peCurrent/sanCurrent,
+ // enquanto a reserva temporária fica isolada em temporaryResources.
+ function showResource(key){
+  const baseCap=Math.max(0,Number(baseMaxValues()[key])||0);
+  const t=temps()[key];
+  const field=fieldOf(key);
+  const normal=limit(state[field],0,baseCap);
+  state[field]=normal;
+  const total=normal+t;
+  const maximum=baseCap+t;
+  const input=document.getElementById(field);
+  const now=document.getElementById(key+'NowText');
+  const max=document.getElementById(key+'MaxText');
+  const bar=document.getElementById(key+'Bar');
+  if(now)now.textContent=String(total);
+  if(max)max.textContent=String(maximum);
+  if(input){input.value=String(total);input.max=String(maximum);}
+  const percent=maximum>0?Math.max(0,Math.min(100,(100*total/maximum))):0;
+  const percentText=percent.toFixed(3)+'%';
+  if(bar)bar.style.width=percentText;
+  const box=input?.closest('.n193-resource-bar');
+  if(box)box.style.setProperty('--nex-resource-fill',percentText);
+  const tempInput=document.getElementById('nexTemp-'+key);
+  if(tempInput && document.activeElement!==tempInput)tempInput.value=String(t);
+ }
+ renderStats=function(){
+  originalRenderStats();
+  for(const key of keys)showResource(key);
+ };
+ function applyDelta(key,amount){
+  if(!keys.includes(key))return;
+  const delta=Math.trunc(Number(amount)||0), t=temps();
+  const field=fieldOf(key),cap=Math.max(0,Number(baseMaxValues()[key])||0);
+  const original=limit(state[field],0,cap);
+  if(delta<0){
+   const cost=-delta;
+   const used=Math.min(t[key],cost);
+   t[key]-=used;
+   state[field]=Math.max(0,original-(cost-used));
+  }else if(delta>0){
+   // Cura e recuperação não recriam pontos temporários já gastos.
+   state[field]=Math.min(cap,original+delta);
+  }
+  renderStats();
+  if(typeof save==='function')save();
+ }
+ window.NEX_TEMP_RESOURCE_CHANGE=applyDelta;
+ window.NEX_TEMP_RESOURCE_SET=(key,target)=>{
+  if(!keys.includes(key))return;
+  const field=fieldOf(key),t=temps(),cap=Math.max(0,Number(baseMaxValues()[key])||0);
+  const total=limit(state[field],0,cap)+t[key];
+  const desired=limit(target,0,cap+t[key]);
+  applyDelta(key,desired-total);
+ };
+ function setTemp(key,next){
+  if(!keys.includes(key))return;
+  const t=temps(),value=limit(next,0,9999);
+  if(value===t[key])return;
+  t[key]=value;
+  // Não altera os pontos normais: bônus temporário tem reserva própria.
+  renderStats();
+  if(typeof save==='function')save();
+ }
+ const labels={pv:['pvCurrent','PV'],pe:['peCurrent','PE'],san:['sanCurrent','SAN']};
+ for(const key of keys){
+  const [id,label]=labels[key];
+  const heading=document.getElementById(id)?.closest('.n193-resource')?.querySelector('.n193-resource-label');
+  if(!heading||heading.querySelector('.nex-temp-resource-controls'))continue;
+  const controls=document.createElement('span');
+  controls.className='nex-temp-resource-controls';
+  controls.innerHTML='<span>Temp.</span><button type="button" data-nex-temp="'+key+'" data-nex-delta="-1" aria-label="Remover 1 '+label+' temporário">‹</button><input class="nex-temp-input" type="number" id="nexTemp-'+key+'" min="0" max="9999" inputmode="numeric" aria-label="'+label+' temporários"><button type="button" data-nex-temp="'+key+'" data-nex-delta="1" aria-label="Adicionar 1 '+label+' temporário">›</button>';
+  heading.appendChild(controls);
+ }
  document.addEventListener('click',event=>{
-  const btn=event.target.closest('[data-nex-temp][data-nex-delta]');
+  const btn=event.target.closest('button[data-nex-temp][data-nex-delta]');
   if(!btn)return;
   event.preventDefault();
   const key=btn.dataset.nexTemp;
-  updateTemp(key,temps()[key]+Number(btn.dataset.nexDelta));
+  setTemp(key,temps()[key]+Number(btn.dataset.nexDelta));
  });
  document.addEventListener('change',event=>{
   const input=event.target.closest('input.nex-temp-input');
   if(!input)return;
-  updateTemp(input.id.replace('nexTemp-',''),input.value);
+  setTemp(input.id.replace('nexTemp-',''),input.value);
  });
  renderStats();
 })();
