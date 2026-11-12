@@ -101,7 +101,7 @@ service cloud.firestore {
       match /sheets/{sheetId} {
         allow get, list: if nexInCampaign(cid);
         allow create: if nexInCampaign(cid)
-          && request.resource.data.keys().hasOnly(['ownerUid','name','nex','pv','pe','san','notes','updatedAt'])
+          && request.resource.data.keys().hasOnly(['ownerUid','name','nex','pv','pe','san','notes','updatedAt','fullSheet','linkedAgentId','sheetFormat'])
           && request.resource.data.ownerUid is string
           && (
             request.resource.data.ownerUid == request.auth.uid ||
@@ -112,17 +112,29 @@ service cloud.firestore {
           && request.resource.data.pv is int
           && request.resource.data.pe is int
           && request.resource.data.san is int
-          && request.resource.data.notes is string;
+          && request.resource.data.notes is string
+          && (!request.resource.data.keys().hasAny(['fullSheet']) || (
+             request.resource.data.fullSheet is map
+             && request.resource.data.linkedAgentId is string
+             && request.resource.data.sheetFormat == 'nex-agent-v1'
+             && request.resource.data.ownerUid == request.auth.uid
+          ));
         allow update: if nexInCampaign(cid)
           && (resource.data.ownerUid == request.auth.uid || nexGM(cid))
           && request.resource.data.ownerUid == resource.data.ownerUid
-          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['name','nex','pv','pe','san','notes','updatedAt'])
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['name','nex','pv','pe','san','notes','updatedAt','fullSheet','linkedAgentId','sheetFormat'])
           && request.resource.data.name is string
           && request.resource.data.nex is int
           && request.resource.data.pv is int
           && request.resource.data.pe is int
           && request.resource.data.san is int
-          && request.resource.data.notes is string;
+          && request.resource.data.notes is string
+          && (!request.resource.data.keys().hasAny(['fullSheet']) || (
+             request.resource.data.fullSheet is map
+             && request.resource.data.linkedAgentId is string
+             && request.resource.data.sheetFormat == 'nex-agent-v1'
+             && request.resource.data.ownerUid == request.auth.uid
+          ));
         allow delete: if nexInCampaign(cid) && (resource.data.ownerUid == request.auth.uid || nexGM(cid));
       }
       match /masterNotes/{noteId} {
