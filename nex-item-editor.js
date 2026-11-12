@@ -493,7 +493,14 @@ document.addEventListener('change',event=>{
  const checkbox=event.target.closest?.('[data-nex-item-equipped]');
  if(!checkbox)return;
  const item=find(checkbox.dataset.nexItemEquipped);if(!item)return;
- const category=detail(item).category;
+ const info=detail(item);
+ const category=info.category;
+ if(category==='Arma'&&checkbox.checked&&window.NEX_WEAPON_PROFICIENCY&&!window.NEX_WEAPON_PROFICIENCY({...info,section:'Armas'}).allowed){
+  checkbox.checked=false;
+  const check=window.NEX_WEAPON_PROFICIENCY({...info,section:'Armas'});
+  toast(check.required?'Exige proficiência: '+check.required+'.':'Proficiência da arma não cadastrada.');
+  return;
+ }
  if(category!=='Arma'&&category!=='Proteção'&&window.NEX_ITEM_MODS?.typeOf(detail(item))!=='accessory'){checkbox.checked=false;return;}
  item.equipped=checkbox.checked;
  renderAttacks();
