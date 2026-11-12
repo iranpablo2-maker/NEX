@@ -489,6 +489,14 @@ function castingResultHTML(m,check,sanity,effect){
  rows.push('<p><strong>DT de resistência do alvo:</strong> '+targetRitualDT()+' (quando aplicável).</p>');
  rows.push('<p class="tk-sub">Falhar no Teste de Ocultismo não impede a conjuração básica, mas pode causar perda de Sanidade. Confira os efeitos e resistências com o mestre.</p>');
  const infoRows=rows.join('')+renderResistanceRoll(m.r);
+ const details=info(m.r);
+ const effectSummary=conciseRitualEffect(effect.buffText||details.description||details.note);
+ const castingParameters=ritualCastingParams(details);
+ const publicEffect='<div class="tk-roll-effect-show">'+
+  (effect.buff?'<p><strong>Bônus: +'+esc(effect.buff.total)+'</strong></p>':'')+
+  '<p>'+esc(effectSummary)+'</p>'+
+  (castingParameters?'<p class="tk-roll-casting-params">'+castingParameters+'</p>':'')+
+  '</div>';
  if(effect.damage||effect.healing||effect.type==='Buff'){
   const toValue=check?check.total:'—',toLabel=check?'TESTE DE OCULTISMO':'SEM TESTE DE OCULTISMO';
   const secondValue=effect.damage?effect.damage.total:effect.healing?effect.healing.total:effect.buff?'+'+effect.buff.total:'✓';
@@ -499,12 +507,12 @@ function castingResultHTML(m,check,sanity,effect){
    '<div class="tk-roll-stat"><strong>'+esc(toValue)+'</strong><span>'+toLabel+'</span></div>'+
    '<div class="tk-roll-divider" aria-hidden="true"></div>'+
    '<div class="tk-roll-stat"><strong>'+esc(secondValue)+'</strong><span>'+secondLabel+'</span></div></div>'+
-   (effect.type==='Buff'?'<p class="tk-roll-effect-show">'+(effect.buff?'<strong>Bônus: +'+esc(effect.buff.total)+' · '+esc(effect.buff.expression)+' ['+esc(effect.buff.rolls.join(', '))+']</strong><br>':'')+esc(effect.buffText||'Consulte o efeito do ritual.')+'</p>':'')+
+   publicEffect+
    '<details class="tk-roll-more"><summary>Detalhes da conjuração</summary><div class="tk-roll-more-body">'+infoRows+'</div></details>'+
    '</div>';
  }
  return '<div class="tk-row"><h3>Conjuração concluída</h3><button type="button" data-tk-modal-close="1">✕</button></div>'+
- '<p><strong>'+esc(m.r.name)+'</strong> · '+esc(m.v)+'</p>'+infoRows+
+ '<p><strong>'+esc(m.r.name)+'</strong> · '+esc(m.v)+'</p>'+publicEffect+infoRows+
  '<div class="tk-foot"><button type="button" data-tk-modal-close="1">Fechar resultado</button></div>';
 }
 function confirmCast(){
