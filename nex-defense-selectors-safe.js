@@ -75,13 +75,14 @@ function inventorySelection(d){
  return {inventory,active,shield};
 }
 function allowedArmor(profs,kind){return !kind||(kind==='leve'?profs.has('Proteções leves'):profs.has('Proteções pesadas'));}
+let resistanceEditorIndex=null; // null = fechado; -1 = nova; >=0 = editar
 function renderResistanceLabels(){
  const panel=$('nexDefResLabels');
  if(!panel)return;
  panel.innerHTML=data().resistances.map((r,i)=>{
   if(!r||!r.kind)return '';
   const kind=escape(r.kind),value=Math.max(0,Math.min(99,Number(r.bonus)||0));
-  return '<span class="nex-def-role">'+kind+' · '+value+' <button type="button" data-remove-res-label="'+i+'" aria-label="Remover resistência '+kind+'" title="Remover resistência">×</button></span>';
+  return '<span class="nex-def-role">'+kind+' · '+value+' <button type="button" data-edit-res-label="'+i+'" aria-label="Editar resistência '+kind+'" title="Editar resistência">✎</button> <button type="button" data-remove-res-label="'+i+'" aria-label="Remover resistência '+kind+'" title="Remover resistência">×</button></span>';
  }).join('');
 }
 function updateReadout(){
@@ -127,7 +128,10 @@ function render(){
  updateReadout();
  const rows=$('nexDefResList');
  renderResistanceLabels();
- rows.innerHTML=d.resistances.slice(0,15).map((r,i)=>'<div class="nex-def-resrow" data-index="'+i+'"><select aria-label="Tipo de resistência">'+types.map(t=>'<option'+(t===r.kind?' selected':'')+'>'+escape(t)+'</option>').join('')+'</select><input type="number" min="0" max="99" aria-label="Valor da resistência" value="'+Math.max(0,Number(r.bonus)||0)+'"><button type="button" data-remove="'+i+'" aria-label="Remover resistência">×</button><input data-source type="text" maxlength="120" aria-label="Origem da resistência" placeholder="Fonte: poder, item ou efeito" value="'+escape(r.source||'')+'"></div>').join('');
+ const editing=resistanceEditorIndex!==null;
+ const r=resistanceEditorIndex===-1?{kind:'Físico',bonus:0,source:''}:d.resistances[resistanceEditorIndex];
+ rows.innerHTML=editing&&r?'<div class="nex-def-resrow" data-res-editor><select aria-label="Tipo de resistência">'+types.map(t=>'<option'+(t===r.kind?' selected':'')+'>'+escape(t)+'</option>').join('')+'</select><input type="number" min="0" max="99" aria-label="Valor da resistência" value="'+Math.max(0,Number(r.bonus)||0)+'"><button type="button" data-res-cancel aria-label="Cancelar resistência">×</button><input data-source type="text" maxlength="120" aria-label="Origem da resistência" placeholder="Fonte: poder, item ou efeito" value="'+escape(r.source||'')+'"><button type="button" data-res-save style="grid-column:1/-1">Salvar resistência</button></div>':'';
+ $('nexDefAddRes').hidden=editing||d.resistances.length>=15;
 }
 function persist(){
  const d=data(),p=new Set([...profs(),...d.extraProficiencies.filter(x=>names.includes(x))]);
@@ -159,28 +163,35 @@ $('nexDefAddProf').addEventListener('click',()=>{
  if(v&&names.includes(v)&&!d.extraProficiencies.includes(v)){d.extraProficiencies.push(v);persist();render();}
 });
 $('nexDefResLabels').addEventListener('click',event=>{
- const button=event.target.closest('button[data-remove-res-label]');
- if(!button)return;
- const index=Number(button.dataset.removeResLabel);
+ const edit=event.target.closest('button[data-edit-res-label]');
+ if(edit){resistanceEditorIndex=Number(edit.dataset.editResLabel);render();return;}
+ const remove=event.target.closest('button[data-remove-res-label]');
+ if(!remove)return;
+ const index=Number(remove.dataset.removeResLabel);
  if(!Number.isInteger(index)||index<0||index>=data().resistances.length)return;
  data().resistances.splice(index,1);
+ if(resistanceEditorIndex===index)resistanceEditorIndex=null;
+ else if(resistanceEditorIndex!==null&&resistanceEditorIndex>index)resistanceEditorIndex--;
  persist();render();
 });
 $('nexDefAddRes').addEventListener('click',()=>{
- const d=data();if(d.resistances.length>=15)return;
- d.resistances.push({kind:'Físico',bonus:0,source:''});persist();render();
+ if(data().resistances.length>=15)return;
+ resistanceEditorIndex=-1;render();
 });
 $('nexDefResList').addEventListener('click',event=>{
- const b=event.target.closest('[data-remove]');if(!b)return;
- data().resistances.splice(Number(b.dataset.remove),1);persist();render();
-});
-$('nexDefResList').addEventListener('change',event=>{
- const row=event.target.closest('[data-index]');if(!row)return;
- const record=data().resistances[Number(row.dataset.index)];if(!record)return;
- record.kind=row.querySelector('select').value;
- record.bonus=Math.max(0,Math.min(99,Math.floor(Number(row.querySelector('input[type=number]').value)||0)));
- record.source=row.querySelector('input[data-source]').value.slice(0,120);
- persist();renderResistanceLabels();
+ if(event.target.closest('[data-res-cancel]')){resistanceEditorIndex=null;render();return;}
+ if(!event.target.closest('[data-res-save]'))return;
+ const row=$('nexDefResList').querySelector('[data-res-editor]');
+ if(!row)return;
+ const record={
+  kind:row.querySelector('select').value,
+  bonus:Math.max(0,Math.min(99,Math.floor(Number(row.querySelector('input[type=number]').value)||0))),
+  source:row.querySelector('input[data-source]').value.slice(0,120)
+ };
+ if(resistanceEditorIndex===-1)data().resistances.push(record);
+ else if(resistanceEditorIndex!==null&&data().resistances[resistanceEditorIndex])data().resistances[resistanceEditorIndex]=record;
+ resistanceEditorIndex=null;
+ persist();render();
 });
 document.addEventListener('change',event=>{
  if(event.target.id==='class'||event.target.id==='origin')queueMicrotask(()=>{render();});
