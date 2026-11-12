@@ -39,6 +39,21 @@ function catalog(){
   .map(r=>({...r,circle:Number(r.circle)||1,element:r.element||'Conhecimento',source:'Homebrew',description:r.effect||r.description||''}));
  return [...official,...hb];
 }
+function conciseRitualEffect(value){
+ const raw=String(value||'').trim();
+ if(!raw)return 'Efeito não cadastrado. Consulte o livro ou edite o ritual.';
+ const specific=raw.split(/\bParâmetros\s*:/i)[0].split(/\bAnotação da ficha\s*:/i)[0].trim();
+ const clean=(specific||raw).replace(/\s+/g,' ').trim();
+ if(clean.length<=250)return clean;
+ const cut=clean.slice(0,247);
+ const boundary=Math.max(cut.lastIndexOf('. '),cut.lastIndexOf('; '));
+ return boundary>85?cut.slice(0,boundary+1):cut.trimEnd()+'…';
+}
+function ritualCastingParams(d){
+ return [['Execução',d.execution],['Alcance',d.range],['Alvo/Área',d.target],['Duração',d.duration]]
+  .filter(([,v])=>String(v||'').trim()&&!/^N[aã]o especificad/i.test(String(v)))
+  .map(([name,value])=>'<strong>'+esc(name)+':</strong> '+esc(value)).join('; ');
+}
 function info(r){
  const found=catalog().find(x=>signature(x)===signature(r)&&(!r.source||r.source==='Personalizado'||!x.source||x.source===r.source));
  const guide=window.NEX_RITUAL_GUIDES?.[signature(r)]?.description||'';
@@ -295,12 +310,13 @@ function drawLearned(){
   const type=effectSettings(r,'Normal').type;
   const categories=window.NEX_RITUAL_EFFECTS?.[signature(r)]?.categories;
   const category=categories?.length>1?categories.join(' + '):type==='Cura'?'Cura':type==='Buff'?'Suporte':type==='Dano + Cura'?'Dano + Cura':'Dano';
-  const summary=String(d.description||d.note||'Efeito não cadastrado. Consulte o livro ou edite o ritual.').trim();
-  const parameters=[['Execução',d.execution],['Alcance',d.range],['Alvo',d.target],['Duração',d.duration],['Resistência',d.resistance]].filter(x=>x[1]&&!/^N[aã]o especificad/i.test(String(x[1])));
+  const summary=conciseRitualEffect(d.description||d.note);
+  const parameters=ritualCastingParams(d);
   return '<details class="tk-dmg-card" open><summary><span class="tk-dmg-chevron">⌄</span><strong>'+esc(r.name)+'</strong><span class="tk-dmg-element">'+esc(category)+' · '+esc(r.element)+' · '+esc(r.circle)+'º</span></summary>'+
   '<div class="tk-dmg-grid">'+columns+'</div>'+
   '<details class="tk-dmg-about"><summary>Ver efeito e dados do ritual</summary><div class="tk-dmg-about-content"><p>'+esc(summary)+'</p>'+
-  (parameters.length?'<p>'+parameters.map(x=>'<strong>'+esc(x[0])+':</strong> '+esc(x[1])).join(' · ')+'</p>':'')+
+  (parameters?'<p class="tk-ritual-parameters">'+parameters+'</p>':'')+
+  (d.resistance?'<p><strong>Resistência:</strong> '+esc(d.resistance)+'</p>':'')+
   '</div></details></details>';
  }).join(''):'<p class="tk-sub">Nenhum ritual aprendido encontrado. Adicione rituais na aba Rituais.</p>';
 }
