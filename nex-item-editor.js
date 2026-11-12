@@ -588,16 +588,6 @@ renderAttacks=function(){
  const list=by('attacksList');
  if(!list)return result;
  const items=(state.items||[]).filter(item=>item.equipped===true && detail(item).category==='Arma');
- const available=(state.items||[]).filter(item=>detail(item).category==='Arma'&&item.equipped!==true);
- const options=available.map(item=>'<option value="'+safe(item.id)+'">'+safe(detail(item).name||item.name)+'</option>').join('');
- const picker=document.createElement('div');
- picker.className='nex-combat-weapon-picker';
- picker.style.cssText='display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:9px;background:#000;border:1px solid #29242a;margin-bottom:8px';
- picker.innerHTML='<label for="nexCombatWeaponPicker" style="color:#f2ebee;font-weight:700">Armas do inventário</label>'+
- '<select id="nexCombatWeaponPicker" aria-label="Escolher arma para combate" style="flex:1;min-width:140px;background:#080808;color:#fff;border:1px solid #42353a;padding:7px">'+
- (options?'<option value="">Selecione uma arma</option>'+options:'<option value="">Todas as armas já estão no combate</option>')+'</select>'+
- '<button type="button" class="btn sm" data-nex-combat-add-weapon '+(!available.length?'disabled':'')+'>Adicionar ao combate</button>';
- list.prepend(picker);
  if(!items.length)return result;
  const cards=items.map(item=>{
   const w=weaponData(item),d=w.d,id=safe(item.id),bonus=w.bonus,damage=String(d.damage||'').trim();
@@ -634,17 +624,6 @@ renderAttacks=function(){
 };
 function hideWeaponRoll(){weaponRollPanel.hidden=true;}
 document.addEventListener('click',e=>{
- const add=e.target.closest('[data-nex-combat-add-weapon]');
- if(add){
-  e.preventDefault();
-  const chosen=by('nexCombatWeaponPicker')?.value;
-  const item=chosen&&find(chosen);
-  if(!item||detail(item).category!=='Arma')return;
-  item.equipped=true;
-  renderInventory();renderAttacks();save();
-  toast('Arma adicionada ao combate.');
-  return;
- }
  const toggle=e.target.closest('[data-nex-weapon-toggle]');
  if(toggle){
   e.preventDefault();
