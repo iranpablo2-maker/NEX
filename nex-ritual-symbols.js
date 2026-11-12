@@ -17,7 +17,7 @@ window.NEX_RITUAL_SYMBOL_URL=symbol;
 const style=document.createElement('style');
 style.textContent='.nex-symbol-thumb{width:36px;height:36px;object-fit:contain;flex:none;margin-left:4px}.nex-symbol-large{max-width:118px;max-height:118px;float:right;object-fit:contain;margin:0 0 10px 12px}.nex-ritual-option .nex-symbol-thumb{width:38px;height:38px}';
 document.head.appendChild(style);
-const imgFor=(name,element,cls)=>{const src=symbol(name,element);if(!src)return null;const img=document.createElement('img');img.className=cls;img.alt='Símbolo do ritual '+name;img.loading='lazy';img.src=src;img.onerror=()=>img.remove();img.dataset.nexSymbol='true';return img;};
+const imgFor=(name,element,cls)=>{const src=symbol(name,element);if(!src)return null;const img=document.createElement('img');img.className=cls;img.alt='Símbolo do ritual '+name;img.loading='lazy';img.src=src;img.onerror=()=>{if(!img.dataset.nexTriedBlack){img.dataset.nexTriedBlack='1';img.src=src.replace(/\.png$/,'-preto.png');}else img.remove()};img.dataset.nexSymbol='true';return img;};
 function apply(){
  const list=document.getElementById('ritualList');
  if(list)for(const card of list.querySelectorAll('.nex-ritual-card')){
