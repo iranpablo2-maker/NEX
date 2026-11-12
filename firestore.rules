@@ -46,7 +46,11 @@ service cloud.firestore {
         get(/databases/$(database)/documents/campaigns/$(cid)).data.gmUid == request.auth.uid;
     }
     match /campaigns/{cid} {
-      allow get: if nexInCampaign(cid);
+      // Evita a chamada recursiva ao próprio documento durante a leitura.
+      allow get: if request.auth != null && (
+        resource.data.gmUid == request.auth.uid ||
+        exists(/databases/$(database)/documents/campaigns/$(cid)/members/$(request.auth.uid))
+      );
       allow list: if false;
       allow create: if request.auth != null
         && request.resource.data.keys().hasOnly(['name','description','gmUid','createdAt'])
