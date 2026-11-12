@@ -113,7 +113,11 @@ if(!cfg||!cfg.projectId||!cfg.apiKey){show('setup',true);}else{
   const app=initializeApp(cfg);auth=getAuth(app);db=getFirestore(app);
  }catch(err){show('setup',true);notice('Configuração Firebase inválida.');throw err;}
  let uid=null,roomId='',gm=false,roomData=null,roomMembers=[],roomSheets=[],unsubs=[],editing=null;
- const run=async fn=>{try{notice('');await fn();}catch(err){notice('Falha: '+(err?.message||'Ação não autorizada'));console.error(err);}};
+ const run=async fn=>{try{notice('');await fn();}catch(err){
+  const code=err?.code||'';
+  const explanation=code==='permission-denied'?'Acesso negado pelo Firestore. Confira se as regras da coleção campaigns foram publicadas no Firebase.':(err?.message||'Ação não autorizada');
+  notice('Falha: '+explanation);console.error(err);
+ }};
  const clearRoom=()=>{
   for(const u of unsubs){try{u()}catch(e){}}unsubs=[];
   roomId='';gm=false;roomMembers=[];roomSheets=[];roomData=null;editing=null;
@@ -133,8 +137,17 @@ if(!cfg||!cfg.projectId||!cfg.apiKey){show('setup',true);}else{
  $('leaveRoom').addEventListener('click',clearRoom);
  $('createCampaign').addEventListener('submit',e=>{e.preventDefault();run(async()=>{
   const name=$('campaignNameOnline').value.trim(),description=$('campaignDescriptionOnline').value.trim();
+  if(!uid)throw Error('Entre na sua conta NEX antes de criar uma campanha.');
+  if(!name)throw Error('Informe um nome para a campanha.');
   const ref=await addDoc(collection(db,'campaigns'),{name,description,gmUid:uid,createdAt:serverTimestamp()});
-  await enterRoom(ref.id);
+  // A criação foi concluída antes de abrir a sala: preserve o código se a leitura falhar.
+  $('campaignCode').value=ref.id;
+  notice('Campanha criada. Código: '+ref.id);
+  try{await enterRoom(ref.id);}
+  catch(error){
+    notice('Campanha criada, mas não foi possível abrir a sala. Código: '+ref.id+'. Verifique as regras de leitura do Firestore. Detalhe: '+(error?.code||error?.message||'falha de acesso'));
+    console.error('Falha ao abrir campanha recém-criada',error);
+  }
  });});
  $('openCampaign').addEventListener('submit',e=>{e.preventDefault();run(()=>enterRoom($('campaignCode').value.trim()))});
  async function enterRoom(id){
