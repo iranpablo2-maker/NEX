@@ -79,7 +79,7 @@ css.textContent+=`
 const profile=document.createElement('dialog');
 profile.id='nexProfileDialog';
 profile.setAttribute('aria-label','Meu perfil NEX');
-profile.innerHTML='<div class="nex-profile-header"><h2>Meu perfil</h2><button type="button" class="nex-profile-close" id="nexProfileClose" aria-label="Fechar perfil">×</button></div><div class="nex-profile-content"><button class="nex-profile-avatar" id="nexProfileAvatar" type="button" aria-label="Alterar foto do perfil" title="Clique para trocar sua foto">N</button><input type="file" id="nexProfilePhotoFile" accept="image/png,image/jpeg,image/webp" style="display:none" aria-label="Escolher foto do perfil"><form id="nexProfileForm"><label>Nome<input id="nexProfileName" maxlength="60" autocomplete="name" required></label><label>E-mail<input id="nexProfileEmail" type="email" readonly></label><label>Idade (opcional)<input id="nexProfileAge" type="number" inputmode="numeric" min="1" max="120" placeholder="Não informada"></label><div class="nex-profile-actions"><button type="submit" id="nexProfileSave">Salvar perfil</button><button type="button" id="nexProfilePassword">Trocar senha</button></div></form></div><small id="nexProfileStatus" role="status"></small>';
+profile.innerHTML='<div class="nex-profile-header"><h2>Meu perfil</h2><button type="button" class="nex-profile-close" id="nexProfileClose" aria-label="Fechar perfil">×</button></div><div class="nex-profile-content"><button class="nex-profile-avatar" id="nexProfileAvatar" type="button" aria-label="Alterar foto do perfil" title="Clique para trocar sua foto">N</button><input type="file" id="nexProfilePhotoFile" accept="image/png,image/jpeg,image/webp" style="display:none" aria-label="Escolher foto do perfil"><form id="nexProfileForm"><label>Nome<input id="nexProfileName" maxlength="60" autocomplete="name" required></label><label>E-mail<input id="nexProfileEmail" type="email" readonly></label><label>Idade (opcional)<input id="nexProfileAge" type="number" inputmode="numeric" min="1" max="120" placeholder="Não informada"></label><div class="nex-profile-actions"><button type="submit" id="nexProfileSave">Salvar perfil</button><button type="button" id="nexProfilePassword">Trocar senha</button><button type="button" id="nexProfileLogout">Desconectar</button></div></form></div><small id="nexProfileStatus" role="status"></small>';
 document.body.append(profile);
 const cropDialog=document.createElement('dialog');
 cropDialog.id='nexPhotoCropDialog';
@@ -205,6 +205,19 @@ else{
  window.addEventListener('nex-auto-local-change',()=>{dirty=true;schedule();});
  $('nexAccountLogout').onclick=async()=>{try{await signOut(auth);menu.hidden=true;}catch(e){message('Falha ao sair da conta.');}};
  $('nexAccountMenuLogout').onclick=()=>$('nexAccountLogout').click();
+ $('nexProfileLogout').onclick=async()=>{
+   const button=$('nexProfileLogout');
+   button.disabled=true;
+   try{
+     await signOut(auth);
+     if(profile.open)profile.close();
+     menu.hidden=true;
+   }catch(error){
+     $('nexProfileStatus').textContent='Não foi possível desconectar. Tente novamente.';
+   }finally{
+     button.disabled=false;
+   }
+ };
  function currentProfile(){
   const raw=current?.uid?localStorage.getItem('nex_account_profile_'+current.uid):null;
   try{const profile=JSON.parse(raw||'{}');return profile&&typeof profile==='object'?profile:{};}catch{return {};}
