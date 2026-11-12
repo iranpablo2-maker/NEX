@@ -1850,6 +1850,7 @@ body > #nexOriginPopup[hidden]{display:none!important;}
 <button type="button" data-n17-action="new">＋ &nbsp; Criar personagem</button>
 <button type="button" data-n17-action="campaigns">◎ &nbsp; Campanhas</button>
 <button type="button" data-n17-action="homebrew">✧ &nbsp; Homebrew</button>
+<button type="button" data-n17-action="account">◈ &nbsp; Conta NEX</button>
 
 </aside>
 
@@ -3711,6 +3712,7 @@ $('nexHomebrewFilter')?.addEventListener('input',()=>nex12RenderHomebrew());
  const obs=new MutationObserver(sync);for(const id of ['mainMenu','agentsPanel','wizardScreen','campaignPanel','sheetScreen']){const el=document.getElementById(id);if(el)obs.observe(el,{attributes:true,attributeFilter:['class']});}
  window.addEventListener('resize',sync);
  menu.addEventListener('click',e=>{const b=e.target.closest('[data-n17-action]');if(!b)return;const action=b.dataset.n17Action;openDrawerQuietly();
+   if(action==='account'){document.getElementById('nexAccountOpen')?.click();return;}
    if(!window.NEX17)return;
    if(action==='home')window.NEX17.openHome();
    else if(action==='agents'){window.NEX17.openAgents();}
