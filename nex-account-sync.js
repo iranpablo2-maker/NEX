@@ -4,7 +4,7 @@ import {getAuth,onAuthStateChanged,createUserWithEmailAndPassword,signInWithEmai
 import {getFirestore,collection,doc,getDocs,setDoc,serverTimestamp} from 'https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js';
 const cfg=window.NEX_FIREBASE_CONFIG;
 const panel=document.createElement('dialog');panel.id='nexAccountDialog';
-panel.innerHTML=`<div class="nex-account-heading"><strong>Conta NEX</strong><button type="button" id="nexAccountClose" aria-label="Fechar">×</button></div><p id="nexAccountStatus">Conectando ao serviço de contas…</p><div id="nexAccountGuest"><button type="button" id="nexAccountGoogle" class="nex-account-google"><span aria-hidden="true">G</span> Continuar com Google</button><div class="nex-account-separator">ou usar e-mail</div><div class="nex-account-modes" role="group" aria-label="Acesso à conta"><button type="button" id="nexAccountModeLogin" aria-pressed="true">Entrar</button><button type="button" id="nexAccountModeCreate" aria-pressed="false">Criar conta</button></div><form id="nexAccountForm"><div id="nexAccountRegistration" hidden><label>Nome para exibição<input id="nexAccountName" autocomplete="name" type="text" maxlength="60"></label></div><label>E-mail<input id="nexAccountEmail" autocomplete="email" type="email" required></label><label>Senha<input id="nexAccountPassword" autocomplete="current-password" type="password" minlength="6" required></label><div id="nexAccountConfirmation" hidden><label>Confirmar senha<input id="nexAccountConfirm" autocomplete="new-password" type="password" minlength="6"></label><small>Use um nome de exibição e confirme sua senha para criar a conta.</small></div><div class="nex-account-actions"><button type="submit" id="nexAccountSubmit">Entrar na conta</button><button type="button" id="nexAccountReset">Recuperar senha</button></div></form></div><div id="nexAccountConnected" hidden><p id="nexAccountWho"></p><p class="nex-account-help">Suas fichas, campanhas locais e homebrews são mantidos neste navegador e podem ser sincronizados com a sua conta. Não compartilhe sua senha.</p><div class="nex-account-actions"><button id="nexAccountSync" type="button">Sincronizar agora</button><button id="nexAccountLogout" type="button">Sair da conta</button></div></div><small id="nexAccountMessage" role="status"></small>`;
+panel.innerHTML=`<div class="nex-account-heading"><strong>Conta NEX</strong><button type="button" id="nexAccountClose" aria-label="Fechar">×</button></div><p id="nexAccountStatus">Conectando ao serviço de contas…</p><div id="nexAccountGuest"><button type="button" id="nexAccountGoogle" class="nex-account-google"><span aria-hidden="true">G</span> Continuar com Google</button><div class="nex-account-separator">ou usar e-mail</div><div class="nex-account-modes" role="group" aria-label="Acesso à conta"><button type="button" id="nexAccountModeLogin" aria-pressed="true">Entrar</button><button type="button" id="nexAccountModeCreate" aria-pressed="false">Criar conta</button></div><form id="nexAccountForm"><div id="nexAccountRegistration" hidden><label>Nome para exibição<input id="nexAccountName" autocomplete="name" type="text" maxlength="60"></label></div><label>E-mail<input id="nexAccountEmail" autocomplete="email" type="email" required></label><label>Senha<input id="nexAccountPassword" autocomplete="current-password" type="password" minlength="6" required></label><div id="nexAccountConfirmation" hidden><label>Confirmar senha<input id="nexAccountConfirm" autocomplete="new-password" type="password" minlength="6"></label><small>Use um nome de exibição e confirme sua senha para criar a conta.</small></div><div class="nex-account-actions"><button type="submit" id="nexAccountSubmit">Entrar na conta</button><button type="button" id="nexAccountReset">Recuperar senha</button></div></form></div><div id="nexAccountConnected" hidden><p id="nexAccountWho"></p><p class="nex-account-help">Suas fichas, campanhas locais e homebrews são mantidos neste navegador e podem ser sincronizados com a sua conta. Não compartilhe sua senha.</p><div class="nex-account-actions"><button id="nexAccountLogout" type="button">Sair da conta</button></div></div><small id="nexAccountMessage" role="status"></small>`;
 const css=document.createElement('style');css.textContent=`
 #nexAccountOpen{border:1px solid #9d3543;border-radius:8px;background:#32171d;color:#fff;padding:8px 13px;font-weight:700;cursor:pointer}
 #nexAccountDialog{width:min(94vw,460px);max-height:88vh;overflow:auto;border:1px solid #a34250;border-radius:12px;padding:20px;background:#141114;color:#fff;box-shadow:0 20px 70px #000a}
@@ -25,14 +25,35 @@ const css=document.createElement('style');css.textContent=`
 #nexAccountDialog .nex-account-modes button:focus-visible,#nexAccountDialog input:focus-visible{outline:2px solid #ff7887;outline-offset:2px}
 #nexAccountDialog .nex-account-actions button[type="submit"]{background:#ad303f;color:#fff;border-color:#dd5160}
 #nexAccountDialog #nexAccountConfirmation small{color:#bdaeb4;font-size:11px}
-#nexAccountDialog [hidden]{display:none!important}`;
+#nexAccountDialog [hidden],#nexAccountMenu[hidden]{display:none!important}`;
 document.head.append(css);document.body.append(panel);
 const open=document.getElementById('nexAccountOpen')||document.createElement('button');open.id='nexAccountOpen';open.type='button';open.textContent='Conta NEX';
 if(!open.isConnected)(document.querySelector('.topinner')||document.body).append(open);
+const menu=document.createElement('div');
+menu.id='nexAccountMenu';
+menu.hidden=true;
+menu.innerHTML='<span id="nexAccountMenuEmail"></span><button type="button" id="nexAccountMenuLogout">Sair da conta</button>';
+document.body.append(menu);
+css.textContent+=`
+#nexAccountMenu{position:fixed;z-index:100000;right:14px;top:60px;width:min(310px,calc(100vw - 28px));padding:13px;background:#191216;border:1px solid #8c3644;border-radius:9px;box-shadow:0 12px 28px #0009;display:flex;gap:12px;align-items:center;justify-content:space-between}
+#nexAccountMenu[hidden]{display:none!important}
+#nexAccountMenuEmail{font-size:12px;color:#e6cbd1;overflow-wrap:anywhere;min-width:0}
+#nexAccountMenuLogout{flex-shrink:0;background:#321e25;color:#fff;border:1px solid #9d4855;padding:8px;border-radius:6px;cursor:pointer}`;
 const $=id=>document.getElementById(id);
 const status=t=>{$('nexAccountStatus').textContent=t;};
 const message=t=>{$('nexAccountMessage').textContent=t;};
-open.addEventListener('click',()=>panel.showModal());$('nexAccountClose').onclick=()=>panel.close();
+open.addEventListener('click',()=>{
+ if(window.NEX_ACCOUNT_USER){
+  menu.hidden=!menu.hidden;
+  if(!menu.hidden){
+   const rect=open.getBoundingClientRect();
+   menu.style.top=Math.min(window.innerHeight-65,rect.bottom+8)+'px';
+   menu.style.right=Math.max(8,window.innerWidth-rect.right)+'px';
+  }
+ }else panel.showModal();
+});
+document.addEventListener('click',event=>{if(!menu.contains(event.target)&&event.target!==open)menu.hidden=true;});
+$('nexAccountClose').onclick=()=>panel.close();
 if(!cfg?.apiKey||!cfg?.projectId){status('Configuração do Firebase não encontrada.');message('Confira firebase-config.js.');}
 else{
  const app=getApps().find(a=>a.name==='[DEFAULT]')||initializeApp(cfg);
@@ -104,14 +125,8 @@ else{
  }
  function schedule(){if(!current||!ready)return;clearTimeout(timer);timer=setTimeout(sync,1800);}
  window.addEventListener('nex-auto-local-change',()=>{dirty=true;schedule();});
- $('nexAccountSync').onclick=async()=>{
-  if(accountSwitchBlocked){
-   if(!confirm('Este navegador já foi usado com outra conta NEX. Misturar os arquivos locais com a conta atual pode revelar fichas pessoais. Deseja realmente sincronizar estes arquivos com esta conta?'))return;
-   accountSwitchBlocked=false;
-  }
-  await sync();
- };
- $('nexAccountLogout').onclick=async()=>{try{await signOut(auth);}catch(e){message('Falha ao sair da conta.');}};
+ $('nexAccountLogout').onclick=async()=>{try{await signOut(auth);menu.hidden=true;}catch(e){message('Falha ao sair da conta.');}};
+ $('nexAccountMenuLogout').onclick=()=>$('nexAccountLogout').click();
  $('nexAccountGoogle').onclick=async()=>{
   const button=$('nexAccountGoogle');
   button.disabled=true;
@@ -190,11 +205,23 @@ else{
   current=user;ready=false;clearTimeout(timer);dirty=false;
   let previous='';try{previous=localStorage.getItem('nex_account_last_uid')||'';}catch(e){}
   accountSwitchBlocked=!!user&&!!previous&&previous!==user.uid;
+  window.NEX_ACCOUNT_USER=user||null;
   $('nexAccountGuest').hidden=!!user;$('nexAccountConnected').hidden=!user;
-  if(user){$('nexAccountWho').textContent=user.email||'Conta conectada';status(accountSwitchBlocked?'Outra conta foi usada neste navegador':'Conta conectada · verificando arquivos');
-   if(accountSwitchBlocked)message('Sincronização automática pausada para evitar misturar dados de contas diferentes. Use Sincronizar agora somente se desejar compartilhar estes arquivos com a conta atual.');
-   else setTimeout(sync,900);}
-  else{status('Entre ou crie uma conta para sincronizar suas fichas.');message('O NEX continua funcionando sem login neste navegador.');}
+  open.textContent=user?'Minha conta':'Conta NEX';
+  open.title=user?(accountSwitchBlocked?'Conta diferente detectada: sincronização pausada para proteger seus dados':(user.email||'Conta conectada')):'Entrar ou criar conta';
+  $('nexAccountMenuEmail').textContent=user?.email||'Conta NEX';
+  menu.hidden=true;
+  if(user){
+   $('nexAccountWho').textContent=user.email||'Conta conectada';
+   if(panel.open)panel.close();
+   if(accountSwitchBlocked){
+    status('Troca de conta detectada · sincronização pausada');
+    console.warn('NEX: sincronização automática impedida para não misturar dados de contas diferentes neste navegador.');
+   }else{status('Conta conectada · sincronização automática');setTimeout(sync,900);}
+  }else{
+   status('Entre ou crie uma conta para sincronizar suas fichas.');
+   message('O NEX continua funcionando sem login neste navegador.');
+  }
  });
  // Periodic reconciliation while signed in, including changes from other devices.
  setInterval(()=>{if(current&&!busy)sync();},45000);
