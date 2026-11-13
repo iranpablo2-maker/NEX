@@ -692,7 +692,7 @@ if(!cfg||!cfg.projectId||!cfg.apiKey){show('setup',true);}else{
     return '<article class="card nex-manager-assignment">'+
       '<div class="nex-assignment-top"><span class="nex-assignment-avatar" aria-hidden="true">'+escape(name.slice(0,1).toUpperCase())+'</span>'+
       '<div class="nex-assignment-main"><b title="'+escape(name)+'">'+escape(name)+'</b><small>Proprietário: '+escape(ownerName)+'</small></div></div>'+
-      '<div class="nex-assignment-details"><span>Jogador responsável</span><strong>'+escape(responsible)+'</strong><small>Pode editar: '+escape(editors)+'</small></div>'+
+      '<div class="nex-assignment-details">'+(s.isHidden?'<small class="nex-assignment-private">🔒 Oculta · apenas o Mestre</small>':'')+'<span>Jogador responsável</span><strong>'+escape(responsible)+'</strong><small>Pode editar: '+escape(s.isHidden?'Somente o Mestre (enquanto oculta)':editors)+'</small></div>'+
       '<button type="button" class="alt nex-assignment-change" data-toggle-assignment="'+escape(s.id)+'" aria-expanded="false">Alterar responsável</button>'+
       '<div class="nex-assignment-edit" hidden><label>Selecionar jogador<select data-assign-sheet="'+escape(s.id)+'"><option value="'+escape(roomData?.gmUid||'')+'" '+(assigned===roomData?.gmUid?'selected':'')+'>Mestre</option>'+roomMembers.filter(m=>m.uid!==roomData?.gmUid).map(m=>'<option value="'+escape(m.uid)+'" '+(assigned===m.uid?'selected':'')+'>'+escape(m.name||'Jogador')+'</option>').join('')+'</select></label><small>Escolher um responsável salva a alteração automaticamente.</small></div>'+
     '</article>';
@@ -945,7 +945,7 @@ if(!cfg||!cfg.projectId||!cfg.apiKey){show('setup',true);}else{
  }};
  const clearRoom=()=>{
   for(const u of [...unsubs,...combatRollUnsubs]){try{u()}catch(e){}}unsubs=[];combatRollUnsubs=[];
-  roomId='';gm=false;roomMembers=[];roomSheets=[];roomRequests=[];extraSlotRequests=[];slotPending=false;roomCombats=[];roomData=null;editing=null;localPortraits.clear();
+  roomId='';gm=false;roomMembers=[];roomSheets=[];publicSheets=[];privateSheets=[];roomRequests=[];extraSlotRequests=[];slotPending=false;roomCombats=[];roomData=null;editing=null;localPortraits.clear();
   $('roomAgentPicker').hidden=true;$('roomEditConfiguration').hidden=true;$('nexCampaignSheetDialog').close?.();
   show('room',false);show('sheetFormPanel',false);
  };
@@ -1027,7 +1027,7 @@ if(!cfg||!cfg.projectId||!cfg.apiKey){show('setup',true);}else{
   if(snap.data().gmUid!==uid)throw Error('Somente o mestre pode excluir a campanha.');
   // O Firestore não apaga automaticamente as subcoleções junto com o documento pai.
   // Excluí-las antes evita dados órfãos e convites ainda existentes.
-  for(const subcollection of ['joinRequests','sheets','masterNotes','members']){
+  for(const subcollection of ['joinRequests','sheets','privateSheets','masterNotes','members']){
    const docs=await getDocs(collection(db,'campaigns',id,subcollection));
    for(const item of docs.docs)await deleteDoc(item.ref);
   }
@@ -1382,7 +1382,7 @@ if(!cfg||!cfg.projectId||!cfg.apiKey){show('setup',true);}else{
     const assigned=String(s.controllerUid||s.ownerUid||'');
     const responsible=assigned===roomData?.gmUid?'Mestre':(roomMembers.find(m=>m.uid===assigned)?.name||'Jogador');
     const editors=assigned===roomData?.gmUid?'Mestre':responsible+' e Mestre';
-    const managing='<div class="nex-character-responsible"><small class="nex-character-meta-label">Jogador responsável</small><strong class="nex-character-meta-value">'+escape(responsible)+'</strong><small class="nex-character-meta-editors">Pode editar: '+escape(editors)+'</small></div>';
+    const managing='<div class="nex-character-responsible"><small class="nex-character-meta-label">Jogador responsável</small><strong class="nex-character-meta-value">'+escape(responsible)+'</strong><small class="nex-character-meta-editors">Pode editar: '+escape(s.isHidden?'Somente o Mestre (oculta)':editors)+'</small></div>';
     return '<article class="nex-character-card" data-card-layout="referencia-20261113">'+pic+'<div class="nex-character-info"><strong title="'+escape(name)+'">'+escape(name)+'</strong><span>'+escape(cls)+'</span><small>NEX '+escape(s.nex)+'%'+(!mine?' · Jogador da campanha':'')+'</small>'+(s.isHidden?'<span class="nex-hidden-label">🔒 Oculta</span>':'')+'<button type="button" data-open-campaign-sheet="'+escape(s.id)+'">Acessar Ficha</button>'+managing+'</div>'+(editable?'<details class="nex-character-settings"><summary aria-label="Opções do personagem" title="Opções do personagem">⚙</summary><button type="button" data-toggle-private-sheet="'+escape(s.id)+'">'+(s.isHidden?'Mostrar ficha':'Ocultar ficha')+'</button><button type="button" data-remove-campaign-sheet="'+escape(s.id)+'">Remover da campanha</button></details>':'')+'</article>';
   }).join(''):'<p class="room-note">Ainda não há personagens nesta campanha. Use “Adicionar Personagens” para escolher uma ficha da sua conta NEX.</p>';
  }
