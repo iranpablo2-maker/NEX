@@ -312,7 +312,7 @@ function drawLearned(){
   const category=categories?.length>1?categories.join(' + '):type==='Cura'?'Cura':type==='Buff'?'Suporte':type==='Dano + Cura'?'Dano + Cura':'Dano';
   const summary=conciseRitualEffect(d.description||d.note);
   const parameters=ritualCastingParams(d);
-  return '<details class="tk-dmg-card" open><summary><span class="tk-dmg-chevron">⌄</span><strong>'+esc(r.name)+'</strong><span class="tk-dmg-element">'+esc(category)+' · '+esc(r.element)+' · '+esc(r.circle)+'º</span></summary>'+
+  return '<details class="tk-dmg-card" data-ritual-element="'+esc(String(r.element||'Conhecimento').trim())+'" open><summary><span class="tk-dmg-chevron">⌄</span><strong>'+esc(r.name)+'</strong><span class="tk-dmg-element">'+esc(category)+' · '+esc(r.element)+' · '+esc(r.circle)+'º</span></summary>'+
   '<div class="tk-dmg-grid">'+columns+'</div>'+
   '<details class="tk-dmg-about"><summary>Ver efeito e dados do ritual</summary><div class="tk-dmg-about-content"><p>'+esc(summary)+'</p>'+
   (parameters?'<p class="tk-ritual-parameters">'+parameters+'</p>':'')+
@@ -331,7 +331,7 @@ function drawGrimoire(){
   const learnedItem=learned().find(x=>signature(x)===signature(r));
   const blocked=!accessible||(state.class==='Ocultista'&&Number(r.circle)>unlocked);
   const data=info(r);
-  return '<article class="tk-card"><div class="tk-row"><strong>'+esc(r.name)+'</strong><small>'+esc(r.element)+' · '+esc(r.circle)+'º círculo · '+esc(r.source)+'</small></div>'+
+  return '<article class="tk-card" data-ritual-element="'+esc(String(r.element||'Conhecimento').trim())+'"><div class="tk-row"><strong>'+esc(r.name)+'</strong><small>'+esc(r.element)+' · '+esc(r.circle)+'º círculo · '+esc(r.source)+'</small></div>'+
    '<details><summary>Ver informações</summary>'+
    '<p>Execução: '+esc(data.execution||'Não especificada')+' · Alcance: '+esc(data.range||'Não especificado')+'</p>'+
    '<p>Alvo: '+esc(data.target||'Conferir no livro')+' · Duração: '+esc(data.duration||'Conferir no livro')+'</p>'+
