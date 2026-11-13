@@ -161,6 +161,32 @@ html.nex-embedded #room{border:none;background:transparent;box-shadow:none}
 #room .campaign-cover{width:100%;max-height:210px;object-fit:cover;border-radius:8px}
 #room .campaign-cover[hidden]{display:none!important}
 @media(max-width:620px){#room .campaign-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}#room .campaign-actions button{padding:9px 5px}#room .room-navigation{gap:14px}#room .room-top h2{font-size:23px}}
+
+/* Painel de campanha amplo em desktop, legível no celular */
+html.nex-embedded main{max-width:100%;padding:10px 12px 28px}
+#room{width:100%;max-width:none;min-height:480px;margin:0 auto}
+#room .room-hero{padding:20px 8px 28px}
+#room .room-top h2{font-size:38px;font-weight:600;line-height:1.2}
+#room .campaign-actions{gap:12px;margin:8px 0 26px}
+#room .campaign-actions button{min-height:46px;padding:12px 18px;font-size:15px}
+#room .room-content{padding:0 8px 32px;gap:20px}
+#room .room-navigation{gap:30px}
+#room .room-navigation button{font-size:21px;padding:13px 4px}
+#room .room-panel{padding:18px 4px}
+#room .room-panel p{font-size:15px}
+#room .room-panel small{font-size:13px}
+@media(max-width:700px){
+ html.nex-embedded main{padding:8px 4px 22px}
+ #room{min-height:350px}
+ #room .room-hero{padding:14px 4px 20px}
+ #room .room-top h2{font-size:27px}
+ #room .campaign-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-bottom:20px}
+ #room .campaign-actions button{font-size:13px;padding:10px 8px;min-height:44px}
+ #room .room-navigation{gap:18px}
+ #room .room-navigation button{font-size:16px;padding:11px 2px}
+ #room .room-content{padding:0 3px 25px}
+ #room .room-panel p{font-size:14px}
+}
 </style>
 </head>
 <body>
@@ -219,7 +245,6 @@ if(new URLSearchParams(location.search).get('integrado')==='1'){
  <form id="openCampaign" class="hide"><input id="campaignCode"><button>Abrir sala</button></form>
  <section id="room" class="panel hide">
   <nav class="campaign-actions" aria-label="Ações da campanha">
-   <button type="button" id="roomCoverAction">Foto de Capa</button>
    <button type="button" id="roomAddAgentsAction">Adicionar Personagens</button>
    <button type="button" id="roomInviteAction">Convidar Jogadores</button>
    <button type="button" id="roomEditAction">Editar Campanha</button>
@@ -245,7 +270,7 @@ if(new URLSearchParams(location.search).get('integrado')==='1'){
   </section>
   <div class="room-content">
    <div id="roomNavigation" class="room-navigation" role="group" aria-label="Seções da campanha">
-    <button type="button" data-room-section="characters" aria-pressed="true">Agentes</button>
+    <button type="button" data-room-section="characters" aria-pressed="true">Personagens</button>
     <button type="button" data-room-section="players" aria-pressed="false">Jogadores</button>
     <button type="button" data-room-section="combats" aria-pressed="false">Combates</button>
     <button type="button" data-room-section="master" id="roomMasterTab" aria-pressed="false" class="hide">Escudo do Mestre</button>
@@ -372,7 +397,6 @@ if(!cfg||!cfg.projectId||!cfg.apiKey){show('setup',true);}else{
   $('roomEditConfiguration').hidden=false;
   if(cover)$('roomEditCover').focus();
  }
- $('roomCoverAction').onclick=()=>showRoomEditor(true);
  $('roomEditAction').onclick=()=>showRoomEditor(false);
  $('roomCancelConfiguration').onclick=()=>{$('roomEditConfiguration').hidden=true;};
  $('roomSaveConfiguration').onclick=()=>run(async()=>{
@@ -649,7 +673,7 @@ if(!cfg||!cfg.projectId||!cfg.apiKey){show('setup',true);}else{
   $('roomTitle').textContent=roomData.name;
   $('roomDescription').textContent=roomData.description||'';
   $('roomCode').textContent=id;$('role').textContent=gm?'Mestre':'Jogador';libraryMode('room');show('room',true);
-  for(const key of ['roomCoverAction','roomEditAction','roomCreateCombatAction','roomMasterAction'])$(key).hidden=!gm;
+  for(const key of ['roomEditAction','roomCreateCombatAction','roomMasterAction'])$(key).hidden=!gm;
   updateRoomCover();
   show('roomMasterTab',gm);roomSection('characters');refreshNexAgents();
   // A permissão de combates é independente da das fichas; falhas ficam restritas à aba.
