@@ -251,6 +251,14 @@ html.nex-embedded main{max-width:100%;padding:10px 12px 28px}
 #room .nex-sheet-fields b,#room .nex-sheet-fields span{display:block}
 #room .nex-sheet-fields b{font-size:11px;color:#cdaab1;margin-bottom:5px}
 @media(max-width:480px){#room .nex-character-grid{grid-template-columns:1fr}#room .nex-character-photo{width:108px;flex-basis:108px}}
+
+/* Engrenagem: apenas remover o vínculo da campanha */
+#room .nex-character-card{position:relative}
+#room .nex-character-settings{position:absolute;right:7px;top:4px;z-index:4}
+#room .nex-character-settings summary{list-style:none;cursor:pointer;color:#ece8eb;font-size:19px;line-height:25px;width:27px;height:27px;text-align:center;text-shadow:0 1px 2px #000}
+#room .nex-character-settings summary::-webkit-details-marker{display:none}
+#room .nex-character-settings button{position:absolute;top:28px;right:0;white-space:nowrap;background:#131114;color:#ff7486;border:1px solid #61343e;border-radius:5px;padding:10px 16px;box-shadow:0 5px 20px #000a}
+#room .nex-character-info{padding-right:34px}
 </style>
 <script src="./nex-image-crop.js?v=20261113crop1"></script>
 </head>
@@ -896,7 +904,7 @@ if(!cfg||!cfg.projectId||!cfg.apiKey){show('setup',true);}else{
     (gm?roomMembers.filter(m=>m.uid!==uid).map(m=>'<option value="'+escape(m.uid)+'">'+escape(m.name||m.uid)+'</option>').join(''):'');
  }
  function safePortrait(v){
-  return typeof v==='string'&&v.length<120000&&(/^(https:\/\/)/i.test(v)||/^data:image\/(?:png|jpeg|webp);base64,[a-z0-9+/=]+$/i.test(v))?v:'';
+  return typeof v==='string'&&v.length<600000&&(/^(https:\/\/)/i.test(v)||/^data:image\/(?:png|jpeg|webp);base64,[a-z0-9+/=]+$/i.test(v))?v:'';
  }
  function sheetPortrait(s){
   if(s.ownerUid===uid&&s.linkedAgentId){const local=localPortraits.get(s.linkedAgentId);if(local)return local;}
@@ -919,7 +927,7 @@ if(!cfg||!cfg.projectId||!cfg.apiKey){show('setup',true);}else{
     const newPhoto=photos.get(sheet.linkedAgentId)||'';
     if(localPortraits.get(sheet.linkedAgentId)!==newPhoto){localPortraits.set(sheet.linkedAgentId,newPhoto);redraw=true;}
     const oldPhoto=safePortrait(sheet.fullSheet?.photo);
-    if(newPhoto===oldPhoto)continue;
+    if(newPhoto===oldPhoto||newPhoto.length>110000)continue;
     try{
      await updateDoc(doc(db,'campaigns',campaign,'sheets',sheet.id),{'fullSheet.photo':newPhoto,updatedAt:serverTimestamp()});
     }catch(error){console.warn('NEX: não foi possível atualizar foto compartilhada',error);}
@@ -937,11 +945,26 @@ if(!cfg||!cfg.projectId||!cfg.apiKey){show('setup',true);}else{
     const cls=String(s.className||s.fullSheet?.class||s.fullSheet?.classe||'Classe não informada');
     const photo=sheetPortrait(s);
     const pic=photo?'<img class="nex-character-photo" src="'+escape(photo)+'" alt="Retrato de '+escape(name)+'" loading="lazy">':'<span class="nex-character-photo nex-character-placeholder" aria-hidden="true">'+escape(name.slice(0,1).toUpperCase())+'</span>';
-    return '<article class="nex-character-card">'+pic+'<div class="nex-character-info"><strong title="'+escape(name)+'">'+escape(name)+'</strong><span>'+escape(cls)+'</span><small>NEX '+escape(s.nex)+'%'+(!mine?' · Jogador da campanha':'')+'</small><button type="button" data-open-campaign-sheet="'+escape(s.id)+'">Acessar Ficha</button></div></article>';
+    return '<article class="nex-character-card">'+pic+'<div class="nex-character-info"><strong title="'+escape(name)+'">'+escape(name)+'</strong><span>'+escape(cls)+'</span><small>NEX '+escape(s.nex)+'%'+(!mine?' · Jogador da campanha':'')+'</small><button type="button" data-open-campaign-sheet="'+escape(s.id)+'">Acessar Ficha</button></div>'+(editable?'<details class="nex-character-settings"><summary aria-label="Opções do personagem" title="Opções do personagem">⚙</summary><button type="button" data-remove-campaign-sheet="'+escape(s.id)+'">Remover</button></details>':'')+'</article>';
   }).join(''):'<p class="room-note">Ainda não há personagens nesta campanha. Use “Adicionar Personagens” para escolher uma ficha da sua conta NEX.</p>';
  }
  $('nexCampaignSheetClose').onclick=()=>$('nexCampaignSheetDialog').close();
  $('sheets').addEventListener('click',e=>{
+  const remove=e.target.closest('[data-remove-campaign-sheet]');
+  if(remove){
+   const sheet=roomSheets.find(item=>item.id===remove.dataset.removeCampaignSheet);
+   if(!sheet||!(sheet.ownerUid===uid||gm))return;
+   if(!confirm('Remover "'+(sheet.name||'Personagem')+'" desta campanha? A ficha original da conta NEX não será apagada.'))return;
+   remove.disabled=true;
+   run(async()=>{
+    try{
+     await deleteDoc(doc(db,'campaigns',roomId,'sheets',sheet.id));
+     if(sheet.ownerUid===uid&&sheet.linkedAgentId)localPortraits.delete(sheet.linkedAgentId);
+     notice('Personagem removido da campanha. A ficha original continua salva na conta NEX.');
+    }catch(error){remove.disabled=false;throw error;}
+   });
+   return;
+  }
   const button=e.target.closest('[data-open-campaign-sheet]');if(!button)return;
   const sheet=roomSheets.find(item=>item.id===button.dataset.openCampaignSheet);
   if(!sheet)return;
