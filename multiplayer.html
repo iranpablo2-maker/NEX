@@ -393,8 +393,13 @@ if(!cfg||!cfg.projectId||!cfg.apiKey){show('setup',true);}else{
   const name=prompt('Nome do combate:','Novo combate');
   if(name===null)return;
   if(!name.trim())throw Error('Informe o nome do combate.');
-  await addDoc(collection(db,'campaigns',roomId,'combats'),{name:name.trim().slice(0,100),status:'Preparação',createdAt:serverTimestamp()});
-  roomSection('combats');notice('Combate criado.');
+  try{
+    await addDoc(collection(db,'campaigns',roomId,'combats'),{name:name.trim().slice(0,100),status:'Preparação',createdAt:serverTimestamp()});
+    roomSection('combats');notice('Combate criado.');
+  }catch(error){
+    if(error.code==='permission-denied')throw Error('O Firebase bloqueou a criação. Publique as regras atualizadas de Combates no Firestore do projeto nex-rpg.');
+    throw error;
+  }
  });
  $('nexRefreshAgents').addEventListener('click',()=>refreshNexAgents());
  $('nexLinkAgent').addEventListener('click',()=>run(async()=>{
@@ -644,7 +649,13 @@ if(!cfg||!cfg.projectId||!cfg.apiKey){show('setup',true);}else{
   for(const key of ['roomCoverAction','roomEditAction','roomCreateCombatAction','roomMasterAction'])$(key).hidden=!gm;
   updateRoomCover();
   show('roomMasterTab',gm);roomSection('characters');refreshNexAgents();
-  unsubs.push(onSnapshot(collection(db,'campaigns',id,'combats'),snapshot=>{roomCombats=snapshot.docs.map(d=>({id:d.id,...d.data()}));renderCombats();},error=>notice('Falha ao carregar combates: '+error.message)));
+  // A permissão de combates é independente da das fichas; falhas ficam restritas à aba.
+  unsubs.push(onSnapshot(collection(db,'campaigns',id,'combats'),snapshot=>{
+    roomCombats=snapshot.docs.map(d=>({id:d.id,...d.data()}));renderCombats();
+  },error=>{
+    console.warn('NEX: não foi possível consultar combates',error);
+    $('roomCombats').innerHTML='<p role="status">Não foi possível carregar os combates desta campanha. '+(error.code==='permission-denied'?'As regras de Combates precisam ser publicadas no Firebase.':'Verifique a conexão e tente novamente.')+'</p>';
+  }));
   if(gm)unsubs.push(onSnapshot(collection(db,'campaigns',id,'joinRequests'),snapshot=>{
     roomRequests=snapshot.docs.map(d=>({id:d.id,...d.data()}));
     $('joinRequests').innerHTML=roomRequests.length?roomRequests.map(item=>
