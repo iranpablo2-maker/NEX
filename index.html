@@ -1841,6 +1841,7 @@ body > #nexOriginPopup[hidden]{display:none!important;}
 @media(max-width:899px){#sheetScreen .nex216-identity{grid-template-columns:88px minmax(0,1fr);column-gap:9px}#sheetScreen .nex216-portrait-block{width:88px}#sheetScreen .nex216-portrait-block #portraitPreview{width:84px;height:88px}}
 @media(max-width:540px){#sheetScreen .nex216-identity{grid-template-columns:78px minmax(0,1fr);column-gap:7px}#sheetScreen .nex216-portrait-block{width:78px}#sheetScreen .nex216-portrait-block #portraitPreview{width:75px;height:80px}}
 </style>
+<script src="./nex-image-crop.js?v=20261113crop1"></script>
 </head><body>
 <script src="nex-sobrevivendo-ao-horror.js?v=2072"></script>
 <script src="nex-arquivos-secretos.js?v=20261112descs2"></script>
@@ -2360,22 +2361,16 @@ $('portraitPreview')?.addEventListener('click',()=>$('portraitInput').click());
 $('portraitPreview')?.addEventListener('keydown',event=>{
   if(event.key==='Enter'||event.key===' '){event.preventDefault();$('portraitInput').click();}
 });
-$('portraitInput')?.addEventListener('change',e=>{const file=e.target.files&&e.target.files[0];if(!file)return; if(!String(file.type||'').startsWith('image/')){toast('Escolha uma imagem válida.'); e.target.value=''; return;} const reader=new FileReader(); reader.onload=()=>{
-  const raw=String(reader.result||'');
-  const img=new Image();
-  img.onload=()=>{
-    try{
-      const canvas=document.createElement('canvas');const limit=380;
-      const factor=Math.min(1,limit/Math.max(img.width,img.height));
-      canvas.width=Math.max(1,Math.round(img.width*factor));canvas.height=Math.max(1,Math.round(img.height*factor));
-      const ctx=canvas.getContext('2d');ctx.drawImage(img,0,0,canvas.width,canvas.height);
-      state.photo=canvas.toDataURL('image/jpeg',0.72);
-    }catch(error){console.warn('Compressão indisponível',error);state.photo=raw;}
-    renderPortrait();save();toast('Foto atualizada.');e.target.value='';
-  };
-  img.onerror=()=>{state.photo=raw;renderPortrait();save();e.target.value='';};
-  img.src=raw;
-}; reader.onerror=()=>{toast('Falha ao carregar a imagem.'); e.target.value='';}; reader.readAsDataURL(file);});$('exportBtn').onclick=()=>{const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='nex-personagem-'+(state.name||'agente').replace(/[^a-z0-9_-]/gi,'-')+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);};$('importBtn').onclick=()=>$('fileInput').click();$('fileInput').onchange=async e=>{const file=e.target.files?.[0];if(!file)return;if(file.size>500000){toast('Arquivo muito grande.');return;}try{state=normalize(JSON.parse(await file.text()));renderFields();save(true);}catch(error){toast('Não foi possível importar o JSON.');}e.target.value='';};$('newChar').onclick=()=>{if(!confirm('Criar nova ficha? Exporte a atual antes, caso queira guardá-la.'))return;state=defaults();log=[];renderFields();save(true);};}
+$('portraitInput')?.addEventListener('change',async event=>{
+ const file=event.target.files?.[0];event.target.value='';
+ if(!file)return;
+ try{
+  const cropped=await window.NEX_IMAGE_CROP.edit(file,{aspectRatio:88/92,width:340,maxLength:110000,label:'personagem'});
+  if(!cropped)return;
+  state.photo=cropped;renderPortrait();save();toast('Foto do personagem atualizada.');
+ }catch(error){toast(error.message||'Não foi possível editar a foto.');}
+});
+$('exportBtn').onclick=()=>{const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='nex-personagem-'+(state.name||'agente').replace(/[^a-z0-9_-]/gi,'-')+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);};$('importBtn').onclick=()=>$('fileInput').click();$('fileInput').onchange=async e=>{const file=e.target.files?.[0];if(!file)return;if(file.size>500000){toast('Arquivo muito grande.');return;}try{state=normalize(JSON.parse(await file.text()));renderFields();save(true);}catch(error){toast('Não foi possível importar o JSON.');}e.target.value='';};$('newChar').onclick=()=>{if(!confirm('Criar nova ficha? Exporte a atual antes, caso queira guardá-la.'))return;state=defaults();log=[];renderFields();save(true);};}
 bind();renderFields();save();
 
 // Integração da interface compacta com os cálculos existentes.
