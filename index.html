@@ -1873,12 +1873,12 @@ body > #nexOriginPopup[hidden]{display:none!important;}
  <div class="home-section-heading"><h2>Central de operações</h2></div>
  <div class="home-grid"><button class="home-tile" data-home="agents"><span class="symbol">♙</span><strong>Meus personagens</strong><small>Visualize, abra e gerencie fichas de personagens.</small></button><button class="home-tile" data-home="new"><span class="symbol">＋</span><strong>Criar personagem</strong><small>Inicie uma nova ficha com as regras do NEX.</small></button><button class="home-tile" data-home="campaigns"><span class="symbol">◎</span><strong>Campanhas</strong><small>Crie mesas, convide amigos e acompanhe as fichas na mesma campanha.</small></button><button class="home-tile" data-home="homebrew"><span class="symbol">✧</span><strong>Homebrew</strong><small>Crie e edite origens personalizadas na biblioteca independente.</small></button></div>
  <div class="home-section-heading" id="agentsHeading"><h2>Personagens registrados</h2><div class="home-toolbar"><button class="btn sm" id="menuBackup" style="display:none!important" aria-hidden="true" tabindex="-1">↓ Exportar ficha atual</button><button class="btn sm" id="menuImport" style="display:none!important" aria-hidden="true" tabindex="-1">↑ Importar ficha</button></div></div>
- <div id="menuAgents" class="home-card-list"></div><p class="hint" style="margin-top:15px">Cada ficha é salva neste dispositivo. Exporte cópias de segurança em JSON para não perder seus personagens.</p>
+ <div id="menuAgents" class="home-card-list"></div><p class="hint" style="margin-top:15px">As fichas são vinculadas à sua conta NEX e sincronizadas com o Firebase. A cópia deste navegador serve apenas para recuperação se a conexão falhar.</p>
 </section>
 <section id="agentsPanel" class="hide agents-panel" aria-label="Personagens salvos">
  <div class="agents-panel-header">
   <div>
-   <div class="home-eyebrow">ARQUIVO LOCAL · PERSONAGENS</div>
+   <div class="home-eyebrow">CONTA NEX · PERSONAGENS</div>
    <h2>Personagens</h2>
    <p>Abra, duplique e gerencie suas fichas em um painel visual inspirado no estilo da referência que você enviou.</p>
   </div>
@@ -2652,8 +2652,8 @@ $('nexHomebrewFilter')?.addEventListener('input',()=>nex12RenderHomebrew());
        await dbPut(candidate);
        if(latestSnapshot===candidate){
          const marker=document.getElementById('nex29SheetSaveIndicator');
-         if(marker){marker.textContent='● Ficha salva no banco local';marker.style.color='#84d6a2';}
-         showStorageStatus(true,'Ficha salva no banco local');
+         if(marker&&!window.NEX_ACCOUNT_USER){marker.textContent='● Cópia temporária no navegador';marker.style.color='#e5bf79';}
+         if(!window.NEX_ACCOUNT_USER)showStorageStatus(true,'Cópia temporária no navegador');
        }
      }while(writeRequested);
    }catch(e){console.error('Falha ao gravar no IndexedDB',e);if(!storageOK)showStorageStatus(false,'Nenhum armazenamento confirmado — exporte um backup');}
@@ -2689,7 +2689,7 @@ $('nexHomebrewFilter')?.addEventListener('input',()=>nex12RenderHomebrew());
      document.dispatchEvent(new Event('nex51-ready'));
      if(db){
        // Wait for the IndexedDB transaction before claiming the second copy succeeded.
-       if(storageOK)showStorageStatus(true,'Ficha salva no navegador · banco local em atualização');
+       if(storageOK&&!window.NEX_ACCOUNT_USER)showStorageStatus(true,'Cópia temporária no navegador · pronta para migração');
      }else if(!storageOK){
        showStorageStatus(false,'Armazenamento deste navegador indisponível — exporte backup JSON');
      }
@@ -2733,12 +2733,15 @@ $('nexHomebrewFilter')?.addEventListener('input',()=>nex12RenderHomebrew());
    if(db)scheduleDbSave(snapshot);
    const saving=!!db;
    const status=document.getElementById('nex29SheetSaveIndicator');
-   if(status){status.textContent=localSaved?'● Alterações salvas neste navegador':saving?'● Gravando no banco local...':'⚠ Salve um backup';status.style.color=localSaved||saving?'#84d6a2':'#ff9a9f';}
-   showStorageStatus(localSaved||saving,localSaved?'Ficha salva no navegador'+(saving?' · atualizando cópia local':''):saving?'Gravando no banco local':'Armazenamento indisponível');
+   if(status){
+    const loggedIn=!!window.NEX_ACCOUNT_USER;
+    status.textContent=loggedIn?'◌ Aguardando sincronização com a conta NEX':localSaved?'● Cópia temporária neste navegador':'⚠ Entre na conta NEX';
+    status.style.color=loggedIn?'#e5bf79':localSaved?'#e5bf79':'#ff9a9f';
+   }
+   showStorageStatus(localSaved||saving,window.NEX_ACCOUNT_USER?'Aguardando confirmação do salvamento na conta NEX':localSaved?'Cópia temporária no navegador · entre na conta NEX':'Entre na sua conta NEX para salvar');
    if(show){
-     if(localSaved)toast('Ficha salva. Para transferir a outra versão, baixe um backup completo.');
-     else if(saving)toast('Gravando no banco local. Faça também um backup JSON.');
-     else toast('Salvamento indisponível. Use Exportar backup completo.');
+     if(window.NEX_ACCOUNT_USER)toast('Enviando alterações para a conta NEX…');
+     else toast('Entre na sua conta NEX para salvar na nuvem.');
    }
    return localSaved||saving;
  }
@@ -2923,7 +2926,10 @@ $('nexHomebrewFilter')?.addEventListener('input',()=>nex12RenderHomebrew());
   if(count)count.textContent=`Agentes: ${agents.length} fichas · ${roster.hidden} cópia(s) agrupada(s)`;
  }
  function rehydrate(){state.homebrew=globalHomebrew();if(typeof nex12Ensure==='function')nex12Ensure();renderFields();if(typeof nex12PopulateOrigins==='function')nex12PopulateOrigins();if(typeof nex12RenderHomebrew==='function')nex12RenderHomebrew();if(typeof nex12RenderTrail==='function')nex12RenderTrail();if(typeof nex12RenderPowerList==='function')nex12RenderPowerList();if(typeof nex12RenderRitualList==='function')nex12RenderRitualList();if(typeof nex12UpdateTabVisibility==='function')nex12UpdateTabVisibility();renderAttacks();renderInventory();renderStats();if(window.NEX51)window.NEX51.renderSheet();}
- function openAgent(id){if(!agents.some(a=>a.id===id))return;persist();active=id;state=normalize(JSON.parse(JSON.stringify(agents.find(a=>a.id===id).data)));visible('sheet');try{rehydrate();}catch(err){console.error(err);renderFields();renderStats();}save();}
+ function openAgent(id){
+  if(!window.NEX_ACCOUNT_USER){toast('Entre na sua conta NEX para abrir esta ficha.');return;}
+  if(!window.NEX_ACCOUNT_SYNC_READY){toast('Carregando seus personagens da nuvem.');return;}
+  if(!agents.some(a=>a.id===id))return;persist();active=id;state=normalize(JSON.parse(JSON.stringify(agents.find(a=>a.id===id).data)));visible('sheet');try{rehydrate();}catch(err){console.error(err);renderFields();renderStats();}save();}
 
  function showHome(){persist();renderAgents();visible('home');}
  function showAgents(){persist();renderAgents();visible('agents');}
@@ -3250,7 +3256,10 @@ $('nexHomebrewFilter')?.addEventListener('input',()=>nex12RenderHomebrew());
    }).join('');
  }
   function wRender(){document.querySelectorAll('[data-wpanel]').forEach(el=>el.hidden=Number(el.dataset.wpanel)!==wStep);document.querySelectorAll('[data-wstep]').forEach(el=>{const i=Number(el.dataset.wstep);el.classList.toggle('current',i===wStep);el.classList.toggle('completed',i<wStep);});$('wBack').textContent=wStep===0?'← Menu principal':'← Voltar';$('wNext').textContent=wStep===4?'Finalizar personagem ✓':'Próximo →';if(wStep===0)wRenderAttrs();if(wStep===1)wRenderOrigins();if(wStep===2)wRenderClass();if(wStep===3)wRenderTrainSkills();window.scrollTo(0,0);}
- function createAgent(){persist();wDraft=normalize({...defaults(),homebrew:JSON.parse(JSON.stringify(globalHomebrew())),name:'',origin:'',class:'Combatente',attributes:{agi:1,for:1,int:1,pre:1,vig:1},nex:5});wCategory='ordem';wStep=0;wOpen='';$('wSearch').value='';for(const id of ['wName','wPlayer','wAppearance','wPersonality','wHistory','wObjective'])$(id).value='';visible('wizard');wRender();}
+ function createAgent(){
+  if(!window.NEX_ACCOUNT_USER){toast('Entre na sua conta NEX antes de criar personagens.');document.getElementById('nexAccountOpen')?.click();return;}
+  if(!window.NEX_ACCOUNT_SYNC_READY){toast('Aguarde o carregamento dos personagens da sua conta NEX.');return;}
+  persist();wDraft=normalize({...defaults(),homebrew:JSON.parse(JSON.stringify(globalHomebrew())),name:'',origin:'',class:'Combatente',attributes:{agi:1,for:1,int:1,pre:1,vig:1},nex:5});wCategory='ordem';wStep=0;wOpen='';$('wSearch').value='';for(const id of ['wName','wPlayer','wAppearance','wPersonality','wHistory','wObjective'])$(id).value='';visible('wizard');wRender();}
  function wFinish(){
   if(wPoints()!==0){toast('Confira os pontos de atributos do NEX escolhido.');wStep=0;wRender();return;}
   const name=$('wName').value.trim();if(!name){toast('Informe o nome do personagem.');$('wName').focus();return;}
@@ -4849,7 +4858,19 @@ const PARANORMAL=[
 
 <script src="nex-defense-selectors-safe.js?v=20261112readonly3"></script>
 <script src="./firebase-config.js?v=20261112accounts1"></script>
-<script type="module" src="./nex-account-sync.js?v=20261112profilelogout1"></script>
+<script type="module" src="./nex-account-sync.js?v=20261113cloudaccounts2"></script>
+<script>
+window.addEventListener('nex-cloud-sync-state',event=>{
+ const detail=event.detail||{};
+ if(detail.uid!==window.NEX_ACCOUNT_USER?.uid)return;
+ const marker=document.getElementById('nex29SheetSaveIndicator');
+ const small=document.getElementById('n17SaveIndicator');
+ const ok=detail.state==='saved';
+ const message=ok?'● Salvo na conta NEX':'⚠ Sem sincronização · cópia temporária';
+ if(marker){marker.textContent=message;marker.style.color=ok?'#84d6a2':'#ff9a9f';}
+ if(small)small.textContent=message;
+});
+</script>
 <script id="nex-mobile-version-check">
 (()=>{
  const currentVersion='2026.11.12-mobile-refresh-1';
