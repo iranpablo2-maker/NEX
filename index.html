@@ -1900,7 +1900,7 @@ body > #nexOriginPopup[hidden]{display:none!important;}
  <div class="home-section-heading"><h2>Campanhas</h2><span class="home-tag">MESAS E PERSONAGENS</span></div>
  <p class="muted" style="margin:4px 0 16px">Crie sua campanha, autorize jogadores e acompanhe as fichas na mesma sala. Todos os participantes podem visualizar; somente o dono e o mestre podem editar.</p>
  <div class="nex-campaign-integrated" aria-label="Área de campanhas online">
-  <iframe id="nexCampaignRoomFrame" title="Campanhas online do NEX" data-src="./multiplayer.html?integrado=1&v=20261113restorepage1" loading="eager" referrerpolicy="strict-origin-when-cross-origin"></iframe>
+  <iframe id="nexCampaignRoomFrame" title="Campanhas online do NEX" data-src="./multiplayer.html?integrado=1&v=20261113resetmenu2" loading="eager" referrerpolicy="strict-origin-when-cross-origin"></iframe>
  </div>
  <details class="nex-campaign-legacy">
   <summary>Campanhas salvas neste dispositivo <span class="muted">(modo local anterior)</span></summary>
@@ -2679,7 +2679,7 @@ $('nexHomebrewFilter')?.addEventListener('input',()=>nex12RenderHomebrew());
      db=null;
    }finally{
      storageReady=true;
-     persist();renderAgents();renderCampaigns();restorePage();
+     persist();renderAgents();renderCampaigns();visible('home');
      document.dispatchEvent(new Event('nex51-ready'));
      if(db){
        // Wait for the IndexedDB transaction before claiming the second copy succeeded.
@@ -2747,72 +2747,14 @@ $('nexHomebrewFilter')?.addEventListener('input',()=>nex12RenderHomebrew());
    document.querySelectorAll('#sheetScreen [data-attr]').forEach(el=>state.attributes[el.dataset.attr]=clamp(int(el.value),0,9));
  }
  save=function(show=false){if(show)captureDisplayedFields();persist(show);};
- const NEX_LAST_PAGE_KEY='nex-last-page-v2';
- const NEX_PAGE_NAMES=['home','agents','campaigns','sheet','wizard','homebrew'];
- function readRememberedPage(){
-  let saved=null;
-  // URL is authoritative on refresh; storage is fallback for older bookmarks.
-  try{
-   const hash=new URLSearchParams(location.hash.replace(/^#/,'')); 
-   const page=hash.get('nexPage');
-   if(NEX_PAGE_NAMES.includes(page))saved={page,agentId:hash.get('agent')||null};
-  }catch(e){}
-  if(!saved){
-   for(const storageName of ['sessionStorage','localStorage']){
-    try{
-     const store=window[storageName];
-     const candidate=JSON.parse(store.getItem(NEX_LAST_PAGE_KEY)||'null');
-     if(candidate&&NEX_PAGE_NAMES.includes(candidate.page)){saved=candidate;break;}
-    }catch(e){}
-   }
-  }
-  if(!saved){
-   try{
-    const older=JSON.parse(sessionStorage.getItem('nex-last-page-v1')||'null');
-    if(older&&NEX_PAGE_NAMES.includes(older.page))saved=older;
-   }catch(e){}
-  }
-  return saved;
- }
- function rememberPage(which){
-  if(!NEX_PAGE_NAMES.includes(which))return;
-  const saved={page:which,agentId:which==='sheet'?active:null};
-  try{sessionStorage.setItem(NEX_LAST_PAGE_KEY,JSON.stringify(saved));}catch(e){}
-  try{localStorage.setItem(NEX_LAST_PAGE_KEY,JSON.stringify(saved));}catch(e){}
-  try{
-   const params=new URLSearchParams(location.hash.replace(/^#/,''));
-   params.set('nexPage',which);
-   if(saved.agentId)params.set('agent',saved.agentId);
-   else params.delete('agent');
-   history.replaceState(history.state,'',location.pathname+location.search+'#'+params.toString());
-  }catch(e){}
- }
- function visible(which,restore=false){
+ function visible(which){
   $('mainMenu').classList.toggle('hide',which!=='home');
   $('agentsPanel').classList.toggle('hide',which!=='agents');
   $('campaignPanel').classList.toggle('hide',which!=='campaigns');
   $('sheetScreen').classList.toggle('hide',which!=='sheet');
   $('wizardScreen').classList.toggle('hide',which!=='wizard');
   $('homebrewScreen').classList.toggle('hide',which!=='homebrew');
-  if(!restore)rememberPage(which);
-  if(!restore)window.scrollTo(0,0);
- }
- function restorePage(){
-  const saved=readRememberedPage();
-  if(!saved){visible('home');return;}
-  if(saved.page==='sheet'){
-   const id=saved.agentId||active;
-   if(id && agents.some(a=>a.id===id)){openAgent(id);return;}
-   renderAgents();visible('agents');return;
-  }
-  if(saved.page==='homebrew'){showHomebrew();return;}
-  if(saved.page==='wizard'){
-   // A wizard draft is not guaranteed to be saved: don't silently recreate it.
-   renderAgents();visible('agents');return;
-  }
-  if(saved.page==='agents')renderAgents();
-  if(saved.page==='campaigns')renderCampaigns();
-  visible(saved.page,true);
+  window.scrollTo(0,0);
  }
  window.NEX_AUTO_BRIDGE={
    ready:()=>storageReady,
@@ -3502,23 +3444,15 @@ $('nexHomebrewFilter')?.addEventListener('input',()=>nex12RenderHomebrew());
  };
 
  document.addEventListener('nex-homebrew-changed',()=>{try{const lib=state.homebrew||[];localStorage.setItem(HB_KEY,JSON.stringify(lib));for(const a of agents){a.data.homebrew=structuredClone(lib);}persist();}catch(e){console.error('Falha ao salvar biblioteca Homebrew',e);}});
- window.addEventListener('pagehide',()=>{try{
-  const current=['home','agents','campaigns','sheet','wizard','homebrew'].find(section=>{
-   const id={home:'mainMenu',agents:'agentsPanel',campaigns:'campaignPanel',sheet:'sheetScreen',wizard:'wizardScreen',homebrew:'homebrewScreen'}[section];
-   return !$(id).classList.contains('hide');
-  });
-  if(current)rememberPage(current);
-  persist();
- }catch(err){console.error(err);}});
- // Abrir a última página imediatamente: IndexedDB pode demorar ou ficar bloqueado.
- // A recuperação de dados continua separadamente e depois confirma a ficha selecionada.
+ window.addEventListener('pagehide',()=>{try{persist();}catch(err){console.error(err);}});
+ // Retirar apenas o hash de navegação anterior, mantendo links de convite intactos.
  try{
-  const lastPage=readRememberedPage();
-  if(lastPage){
-   const target=lastPage.page==='wizard'?'agents':lastPage.page;
-   if(NEX_PAGE_NAMES.includes(target))visible(target,true);
+  const params=new URLSearchParams(location.hash.replace(/^#/,''));
+  if(params.has('nexPage')){
+   params.delete('nexPage');params.delete('agent');
+   history.replaceState(history.state,'',location.pathname+location.search+(params.toString()?'#'+params.toString():''));
   }
- }catch(error){console.warn('Não foi possível pré-restaurar a navegação NEX',error);}
+ }catch(error){}
  // Loading from the second store must finish BEFORE the first write.
  void initializePersistentStorage();
 })();
