@@ -220,6 +220,12 @@ html.nex-embedded main{max-width:100%;padding:10px 12px 28px}
  #room .room-intro .campaign-cover{flex:none;width:100%;height:auto;max-height:260px;aspect-ratio:16/9}
  #room .room-intro .room-desc{font-size:14px;line-height:1.6;width:100%}
 }
+
+/* Perfil do mestre na lista de jogadores */
+#room .nex-member-card{display:flex;align-items:center;gap:12px;min-width:0}
+#room .nex-member-card b{overflow-wrap:anywhere}
+#room .nex-member-avatar{width:52px;height:52px;flex:0 0 52px;object-fit:cover;border-radius:10px;border:1px solid #783842;background:#21151b}
+#room .nex-member-placeholder{display:grid;place-items:center;background:#7e2638;color:white;font-size:22px;font-weight:700}
 </style>
 </head>
 <body>
@@ -794,6 +800,16 @@ if(!cfg||!cfg.projectId||!cfg.apiKey){show('setup',true);}else{
   const snap=await getDoc(ref);
   if(!snap.exists()){notice('Campanha não encontrada.');return;}
   roomId=id;roomData=snap.data();gm=roomData.gmUid===uid;
+  if(gm){
+   const profile=nexMasterProfile();
+   if(profile){
+    const updates={};
+    if(roomData.gmName!==profile.name)updates.gmName=profile.name;
+    if(roomData.gmPhoto!==profile.photo)updates.gmPhoto=profile.photo;
+    Object.assign(roomData,updates);
+    if(Object.keys(updates).length)updateDoc(ref,updates).catch(error=>console.warn('NEX: perfil do mestre não sincronizado na campanha',error));
+   }
+  }
   $('roomTitle').textContent=roomData.name;
   $('roomDescription').textContent=roomData.description||'';
   $('roomCode').textContent=id;$('role').textContent=gm?'Mestre':'Jogador';libraryMode('room');show('room',true);
@@ -820,9 +836,25 @@ if(!cfg||!cfg.projectId||!cfg.apiKey){show('setup',true);}else{
     roomSheets=snapshot.docs.map(d=>({id:d.id,...d.data()}));drawSheets();
   },e=>notice('Não foi possível carregar fichas: '+e.message)));
  }
+ function nexMasterProfile(){
+  const user=auth.currentUser;
+  if(!user||user.uid!==roomData?.gmUid)return null;
+  let stored={};
+  try{stored=JSON.parse(localStorage.getItem('nex_account_profile_'+user.uid)||'{}')||{};}catch(error){}
+  const name=String(stored.name||user.displayName||user.email?.split('@')[0]||'Mestre').trim().slice(0,60);
+  const photo=typeof stored.photo==='string'&&stored.photo.length<120000&&/^data:image\/jpeg;base64,[A-Za-z0-9+/=]+$/.test(stored.photo)?stored.photo:
+    (typeof user.photoURL==='string'&&/^https:\/\//.test(user.photoURL)?user.photoURL:'');
+  return {name,photo};
+ }
  function drawMembers(){
-  $('members').innerHTML='<div class="card"><b>Mestre</b><p class="code">'+escape(roomData?.gmUid)+'</p></div>'+
-    roomMembers.map(m=>'<div class="card"><b>'+escape(m.name||'Jogador')+'</b><p class="code">'+escape(m.uid)+'</p></div>').join('');
+  const own=gm?nexMasterProfile():null;
+  const masterName=own?.name||roomData?.gmName||'Mestre';
+  const masterPhoto=own?.photo||roomData?.gmPhoto||'';
+  const safePhoto=typeof masterPhoto==='string'&&(/^data:image\/jpeg;base64,[a-z0-9+/=]+$/i.test(masterPhoto)||/^https:\/\//i.test(masterPhoto))?masterPhoto:'';
+  const portrait=safePhoto?'<img class="nex-member-avatar" alt="" src="'+escape(safePhoto)+'">':
+   '<span class="nex-member-avatar nex-member-placeholder" aria-hidden="true">'+escape(masterName.charAt(0).toUpperCase())+'</span>';
+  $('members').innerHTML='<div class="card nex-member-card">'+portrait+'<b>Mestre | '+escape(masterName)+'</b></div>'+
+    roomMembers.map(m=>'<div class="card"><b>'+escape(m.name||'Jogador')+'</b></div>').join('');
   $('sheetOwner').innerHTML='<option value="'+escape(uid)+'">Minha conta</option>'+
     (gm?roomMembers.filter(m=>m.uid!==uid).map(m=>'<option value="'+escape(m.uid)+'">'+escape(m.name||m.uid)+'</option>').join(''):'');
  }
