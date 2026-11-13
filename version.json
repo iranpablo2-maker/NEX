@@ -1,5 +1,5 @@
 {
-  "version": "2026.11.13-card-owner-3",
-  "build": "20261113cardowner3",
-  "description": "Corrige permissões duplicadas e atualiza cartões dos personagens"
+  "version": "2026.11.13-card-layout-4",
+  "build": "20261113cardlayout4",
+  "description": "Ajusta tamanho e disposicao do card do personagem conforme referencia"
 }
