@@ -474,7 +474,7 @@ if(!cfg||!cfg.projectId||!cfg.apiKey){show('setup',true);}else{
   grid.innerHTML=agents.length?agents.map(a=>{
    const added=roomSheets.some(sheet=>sheet.linkedAgentId===a.id&&sheet.ownerUid===uid);
    const date=a.createdAt?new Date(a.createdAt).toLocaleDateString('pt-BR'):'Data não informada';
-   return '<article class="agent-picker-card"><div class="agent-picker-info">'+(safePortrait(a.portrait)?'<img class="agent-picker-avatar" src="'+escape(a.portrait)+'" alt="">':'')+'<div><strong>'+escape(a.name)+'</strong><small>'+escape(a.className||'Classe não informada')+' · NEX '+escape(a.nex)+'%</small><small>Registrado em '+escape(date)+'</small></div></div><button type="button" data-select-agent="'+escape(a.id)+'" '>'+(added?'Atualizar':'Adicionar')+'</button></article>';
+   return '<article class="agent-picker-card"><div class="agent-picker-info">'+(safePortrait(a.portrait)?'<img class="agent-picker-avatar" src="'+escape(a.portrait)+'" alt="">':'')+'<div><strong>'+escape(a.name)+'</strong><small>'+escape(a.className||'Classe não informada')+' · NEX '+escape(a.nex)+'%</small><small>Registrado em '+escape(date)+'</small></div></div><button type="button" data-select-agent="'+escape(a.id)+'">'+(added?'Atualizar':'Adicionar')+'</button></article>';
   }).join(''):'<p>Nenhum personagem encontrado. Crie um personagem no NEX.</p>';
  }catch(err){grid.textContent='Erro ao carregar personagens: '+err.message;}
 }
