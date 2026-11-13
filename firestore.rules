@@ -112,19 +112,46 @@ service cloud.firestore {
         allow update: if (nexGM(cid) || owned(uid))
           && request.resource.data.uid == resource.data.uid
           && resource.data.uid == uid
-          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['name','photo'])
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(nexGM(cid) ? ['name','photo','maxSheets'] : ['name','photo'])
+          && (!request.resource.data.keys().hasAny(['maxSheets']) || (request.resource.data.maxSheets is int && request.resource.data.maxSheets >= 1 && request.resource.data.maxSheets <= 20))
           && (request.resource.data.name is string && request.resource.data.name.size() <= 60)
           && (!request.resource.data.keys().hasAny(['photo']) || (request.resource.data.photo is string && request.resource.data.photo.size() <= 115000));
         allow delete: if nexGM(cid) || owned(uid);
       }
+      // Pedidos individuais de vagas extras: só o Mestre autoriza.
+      match /slotRequests/{playerUid} {
+        allow create: if nexInCampaign(cid)
+          && request.auth.uid == playerUid
+          && exists(/databases/$(database)/documents/campaigns/$(cid)/members/$(playerUid))
+          && request.resource.data.keys().hasOnly(['uid','requestedAt'])
+          && request.resource.data.uid == playerUid
+          && request.resource.data.requestedAt is timestamp;
+        allow get: if nexGM(cid) || owned(playerUid);
+        allow list: if nexGM(cid);
+        allow delete: if nexGM(cid);
+        allow update: if false;
+      }
+      function allowedSlot(playerUid, sheetId) {
+        return exists(/databases/$(database)/documents/campaigns/$(cid)/members/$(playerUid))
+          && request.resource.data.keys().hasAll(['slotNumber'])
+          && request.resource.data.slotNumber is int
+          && request.resource.data.slotNumber >= 1
+          && request.resource.data.slotNumber <= get(/databases/$(database)/documents/campaigns/$(cid)/members/$(playerUid)).data.get('maxSheets',1)
+          && sheetId == 'slot-' + playerUid + '-' + string(request.resource.data.slotNumber);
+      }
       match /sheets/{sheetId} {
         allow get, list: if nexInCampaign(cid);
         allow create: if nexInCampaign(cid)
-          && request.resource.data.keys().hasOnly(['ownerUid','name','nex','pv','pe','san','notes','updatedAt','fullSheet','linkedAgentId','sheetFormat'])
+          && request.resource.data.keys().hasOnly(['ownerUid','controllerUid','slotNumber','name','nex','pv','pe','san','notes','updatedAt','fullSheet','linkedAgentId','sheetFormat'])
           && request.resource.data.ownerUid is string
           && (
-            request.resource.data.ownerUid == request.auth.uid ||
-            (nexGM(cid) && exists(/databases/$(database)/documents/campaigns/$(cid)/members/$(request.resource.data.ownerUid)))
+            nexGM(cid) ||
+            (request.resource.data.ownerUid == request.auth.uid && allowedSlot(request.auth.uid,sheetId))
+          )
+          && (
+            !request.resource.data.keys().hasAny(['controllerUid']) ||
+            (nexGM(cid) && request.resource.data.controllerUid is string &&
+             exists(/databases/$(database)/documents/campaigns/$(cid)/members/$(request.resource.data.controllerUid)))
           )
           && request.resource.data.name is string
           && request.resource.data.nex is int
@@ -139,9 +166,22 @@ service cloud.firestore {
              && request.resource.data.ownerUid == request.auth.uid
           ));
         allow update: if nexInCampaign(cid)
-          && (resource.data.ownerUid == request.auth.uid || nexGM(cid))
+          && (
+            nexGM(cid) || resource.data.ownerUid == request.auth.uid ||
+            resource.data.get('controllerUid','') == request.auth.uid
+          )
           && request.resource.data.ownerUid == resource.data.ownerUid
-          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['name','nex','pv','pe','san','notes','updatedAt','fullSheet','linkedAgentId','sheetFormat'])
+          && (
+            nexGM(cid) ||
+            (
+              request.resource.data.get('controllerUid','') == resource.data.get('controllerUid','')
+              && request.resource.data.get('slotNumber',0) == resource.data.get('slotNumber',0)
+            )
+          )
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['name','nex','pv','pe','san','notes','updatedAt','fullSheet','linkedAgentId','sheetFormat','controllerUid'])
+          && (!request.resource.data.keys().hasAny(['controllerUid']) ||
+              request.resource.data.controllerUid == request.resource.data.ownerUid ||
+              exists(/databases/$(database)/documents/campaigns/$(cid)/members/$(request.resource.data.controllerUid)))
           && request.resource.data.name is string
           && request.resource.data.nex is int
           && request.resource.data.pv is int
@@ -152,9 +192,10 @@ service cloud.firestore {
              request.resource.data.fullSheet is map
              && request.resource.data.linkedAgentId is string
              && request.resource.data.sheetFormat == 'nex-agent-v1'
-             && request.resource.data.ownerUid == request.auth.uid
+             && (request.resource.data.ownerUid == request.auth.uid ||
+                 resource.data.get('controllerUid','') == request.auth.uid || nexGM(cid))
           ));
-        allow delete: if nexInCampaign(cid) && (resource.data.ownerUid == request.auth.uid || nexGM(cid));
+        allow delete: if nexGM(cid);
       }
       match /combats/{combatId} {
         allow get, list: if nexInCampaign(cid);
@@ -173,7 +214,8 @@ service cloud.firestore {
           && request.resource.data.keys().hasOnly(['ownerUid','sheetId','characterName','result','createdAt'])
           && request.resource.data.ownerUid == request.auth.uid
           && request.resource.data.sheetId is string
-          && get(/databases/$(database)/documents/campaigns/$(cid)/sheets/$(request.resource.data.sheetId)).data.ownerUid == request.auth.uid
+          && (get(/databases/$(database)/documents/campaigns/$(cid)/sheets/$(request.resource.data.sheetId)).data.ownerUid == request.auth.uid ||
+           get(/databases/$(database)/documents/campaigns/$(cid)/sheets/$(request.resource.data.sheetId)).data.get('controllerUid','') == request.auth.uid)
           && request.resource.data.characterName is string
           && request.resource.data.characterName.size() <= 100
           && request.resource.data.result is int
