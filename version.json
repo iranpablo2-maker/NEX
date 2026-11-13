@@ -1,5 +1,5 @@
 {
-  "version": "2026.11.13-permissions-6",
-  "build": "20261113permissions6",
-  "description": "Cartões compactos e seletor de responsável recolhido no painel do mestre"
+  "version": "2026.11.13-hide-7",
+  "build": "20261113hide7",
+  "description": "Engrenagem: ocultar e mostrar fichas somente para o mestre da campanha"
 }
