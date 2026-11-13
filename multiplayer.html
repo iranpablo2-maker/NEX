@@ -470,7 +470,7 @@ if(!cfg||!cfg.projectId||!cfg.apiKey){show('setup',true);}else{
  let uid=null,roomId='',gm=false,roomData=null,roomMembers=[],roomSheets=[],roomRequests=[],unsubs=[],editing=null,campaignUnsub=null,myCampaigns=[],privateShield=true,roomCombats=[],playerCampaigns=[],joinedUnsub=null,combatRollUnsubs=[],inviteUnsub=null,inviteState='checking';
  const localPortraits=new Map();
  let portraitSyncBusy=false;
- let extraSlotRequests=[],slotUnsub=null,mySlotRequestUnsub=null;
+ let extraSlotRequests=[],slotPending=false;
  const pendingBridge=new Map();
  let bridgeSeq=0;
  function requestNex(type,agentId){
@@ -513,7 +513,7 @@ if(!cfg||!cfg.projectId||!cfg.apiKey){show('setup',true);}else{
    if(!roomId)return;
    const used=playerCount(uid),max=characterLimit(uid);
    $('mySheetQuota').textContent=gm?'Como Mestre, você pode atribuir personagens aos jogadores.':'Personagens na campanha: '+used+' de '+max+'.';
-   show('requestExtraSlot',!gm&&used>=max);
+   show('requestExtraSlot',!gm&&used>=max&&!slotPending);
  }
  function renderSlotManagement(){
    if(!gm)return;
@@ -523,7 +523,7 @@ if(!cfg||!cfg.projectId||!cfg.apiKey){show('setup',true);}else{
  $('requestExtraSlot').onclick=()=>run(async()=>{
    if(gm||!roomId||playerCount(uid)<characterLimit(uid))return;
    await setDoc(doc(db,'campaigns',roomId,'slotRequests',uid),{uid,requestedAt:serverTimestamp()});
-   $('extraSlotStatus').textContent='Solicitação enviada ao Mestre.';
+   slotPending=true;renderQuota();$('extraSlotStatus').textContent='Solicitação enviada ao Mestre.';
  });
  $('gmSlotRequests').addEventListener('click',event=>run(async()=>{
    const approve=event.target.closest('[data-approve-slot]');
@@ -753,7 +753,7 @@ if(!cfg||!cfg.projectId||!cfg.apiKey){show('setup',true);}else{
  }};
  const clearRoom=()=>{
   for(const u of [...unsubs,...combatRollUnsubs]){try{u()}catch(e){}}unsubs=[];combatRollUnsubs=[];
-  roomId='';gm=false;roomMembers=[];roomSheets=[];roomRequests=[];extraSlotRequests=[];roomCombats=[];roomData=null;editing=null;localPortraits.clear();
+  roomId='';gm=false;roomMembers=[];roomSheets=[];roomRequests=[];extraSlotRequests=[];slotPending=false;roomCombats=[];roomData=null;editing=null;localPortraits.clear();
   $('roomAgentPicker').hidden=true;$('roomEditConfiguration').hidden=true;$('nexCampaignSheetDialog').close?.();
   show('room',false);show('sheetFormPanel',false);
  };
@@ -1103,7 +1103,8 @@ if(!cfg||!cfg.projectId||!cfg.apiKey){show('setup',true);}else{
    extraSlotRequests=snapshot.docs.map(d=>d.data());renderSlotManagement();
   },error=>console.warn('Solicitações de vagas indisponíveis',error)));
   else unsubs.push(onSnapshot(doc(db,'campaigns',id,'slotRequests',uid),snap=>{
-   $('extraSlotStatus').textContent=snap.exists()?'Aguardando autorização do Mestre.':'';
+   slotPending=snap.exists();renderQuota();
+   $('extraSlotStatus').textContent=slotPending?'Aguardando autorização do Mestre.':'';
   },error=>console.warn('Status da vaga indisponível',error)));
     if(gm)unsubs.push(onSnapshot(collection(db,'campaigns',id,'joinRequests'),snapshot=>{
     roomRequests=snapshot.docs.map(d=>({id:d.id,...d.data()}));
