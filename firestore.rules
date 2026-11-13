@@ -66,7 +66,8 @@ service cloud.firestore {
         && request.resource.data.updatedAt is timestamp;
       allow update: if nexGM(cid)
         && request.resource.data.gmUid == resource.data.gmUid
-        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['name','description','privateShield','updatedAt']);
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['name','description','privateShield','updatedAt','coverUrl'])
+        && (!request.resource.data.keys().hasAny(['coverUrl']) || (request.resource.data.coverUrl is string && request.resource.data.coverUrl.size() <= 2048));
       allow delete: if nexGM(cid);
       // Solicitações feitas por usuários autenticados que possuem um link de convite.
       // O convite não concede leitura das fichas nem entrada automática.
@@ -136,6 +137,17 @@ service cloud.firestore {
              && request.resource.data.ownerUid == request.auth.uid
           ));
         allow delete: if nexInCampaign(cid) && (resource.data.ownerUid == request.auth.uid || nexGM(cid));
+      }
+      match /combats/{combatId} {
+        allow get, list: if nexInCampaign(cid);
+        allow create: if nexGM(cid)
+          && request.resource.data.keys().hasOnly(['name','status','createdAt'])
+          && request.resource.data.name is string
+          && request.resource.data.name.size() > 0
+          && request.resource.data.name.size() <= 100
+          && request.resource.data.status == 'Preparação'
+          && request.resource.data.createdAt is timestamp;
+        allow update, delete: if nexGM(cid);
       }
       match /masterNotes/{noteId} {
         allow read, write: if nexGM(cid);
