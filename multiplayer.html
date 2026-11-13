@@ -204,6 +204,22 @@ html.nex-embedded main{max-width:100%;padding:10px 12px 28px}
 #roomImageDialog .image-dialog-actions{display:flex;justify-content:flex-end;gap:10px;flex-wrap:wrap}
 #roomImageDialog button{padding:10px 13px}
 #roomImageSummary{display:block;margin:8px 0}
+
+/* Título acima da capa; descrição ao lado em telas largas */
+#room .room-hero{padding:18px 8px 26px}
+#room .room-top{margin-bottom:18px}
+#room .room-intro{display:flex;align-items:flex-start;gap:24px;min-width:0}
+#room .room-intro .campaign-cover{display:block;flex:0 0 clamp(220px,32%,370px);width:clamp(220px,32%,370px);height:210px;max-height:none;object-fit:cover;border-radius:7px;margin:0}
+#room .room-intro .campaign-cover[hidden]{display:none!important}
+#room .room-intro .room-desc{flex:1;min-width:0;font-size:16px;line-height:1.65;margin:0;white-space:pre-wrap;overflow-wrap:anywhere;color:#c9c3c9}
+#room .room-intro .room-desc:empty{display:none}
+@media(max-width:700px){
+ #room .room-hero{padding:14px 4px 20px}
+ #room .room-top{margin-bottom:14px}
+ #room .room-intro{flex-direction:column;gap:14px}
+ #room .room-intro .campaign-cover{flex:none;width:100%;height:auto;max-height:260px;aspect-ratio:16/9}
+ #room .room-intro .room-desc{font-size:14px;line-height:1.6;width:100%}
+}
 </style>
 </head>
 <body>
@@ -269,9 +285,11 @@ if(new URLSearchParams(location.search).get('integrado')==='1'){
    <button type="button" id="roomMasterAction">Escudo do Mestre</button>
   </nav>
   <div class="room-hero">
-   <img class="campaign-cover" id="roomCoverImage" alt="Capa da campanha" hidden>
    <div class="room-top"><h2 id="roomTitle">Campanha</h2><span id="role" class="badge"></span></div>
-   <p id="roomDescription" class="room-desc"></p>
+   <div class="room-intro">
+    <img class="campaign-cover" id="roomCoverImage" alt="Capa da campanha" hidden>
+    <p id="roomDescription" class="room-desc"></p>
+   </div>
   </div>
   <section id="roomEditConfiguration" class="campaign-configuration" hidden>
    <h3>Editar campanha</h3>
