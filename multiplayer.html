@@ -275,6 +275,11 @@ html.nex-embedded main{max-width:100%;padding:10px 12px 28px}
 #joinInvite .row{margin-top:14px}
 #joinInvite #requestEntry.hide,#joinInvite #openApproved.hide{display:none!important}
 #joinInvite #inviteStatus{display:block;color:#bfb2bb}
+
+#room #mySheetQuota{font-weight:600;margin-bottom:8px}
+#room #requestExtraSlot.hide{display:none!important}
+#room #gmSlotLimits .card,#room #gmSlotRequests .card{padding:12px;border:1px solid #4d2e38;border-radius:7px}
+#room #gmSlotLimits .row{display:flex;gap:10px}
 </style>
 <script src="./nex-image-crop.js?v=20261113crop1"></script>
 </head>
@@ -379,7 +384,7 @@ if(new URLSearchParams(location.search).get('integrado')==='1'){
   </dialog>
   <section id="roomAgentPicker" class="agent-picker" hidden>
    <button type="button" id="roomBackFromPicker" class="agent-picker-back">← Voltar à campanha</button>
-   <h3>Escolha um personagem para adicionar à campanha!</h3>
+   <h3>Escolha um personagem para adicionar à campanha!</h3><p id="mySheetQuota" class="room-note"></p><button type="button" id="requestExtraSlot" class="alt hide">Solicitar mais uma vaga</button><p id="extraSlotStatus" role="status" class="room-note"></p>
    <div id="roomAgentPickerCards" class="agent-picker-grid"><p>Carregando personagens da sua conta...</p></div>
   </section>
   <div class="room-content">
@@ -394,7 +399,7 @@ if(new URLSearchParams(location.search).get('integrado')==='1'){
      <div class="room-panel-head"><h3>Combates</h3></div>
      <div id="roomCombats" class="campaign-combats"><p>Nenhum combate cadastrado.</p></div><div id="roomCombatFeedback" role="status" class="room-note"></div>
    </section>
-   <div id="roomMasterPanel" class="room-panel hide"><h3>Painel do mestre</h3><p class="room-note">Gerencie as solicitações e acompanhe os personagens da sua campanha.</p></div>
+   <div id="roomMasterPanel" class="room-panel hide"><h3>Painel do mestre</h3><p class="room-note">Defina o limite de fichas de cada jogador e autorize novas vagas.</p><div id="gmSlotRequests" class="grid room-members"></div><div id="gmSlotLimits" class="grid room-members"></div></div>
    <div class="room-invite" id="roomInvitePanel">
     <div><small>Convide seus jogadores com um link</small><span class="room-invite-label">Somente o mestre pode aprovar novos participantes.</span><code id="roomCode" class="code hide"></code></div>
     <div class="room-invite-copy"><input id="roomInviteLink" type="text" readonly aria-label="Link de convite" title="Link de convite da campanha"><button class="alt" id="copyCode" type="button">Copiar convite</button></div>
@@ -462,6 +467,7 @@ if(!cfg||!cfg.projectId||!cfg.apiKey){show('setup',true);}else{
  let uid=null,roomId='',gm=false,roomData=null,roomMembers=[],roomSheets=[],roomRequests=[],unsubs=[],editing=null,campaignUnsub=null,myCampaigns=[],privateShield=true,roomCombats=[],playerCampaigns=[],joinedUnsub=null,combatRollUnsubs=[],inviteUnsub=null,inviteState='checking';
  const localPortraits=new Map();
  let portraitSyncBusy=false;
+ let extraSlotRequests=[],slotUnsub=null,mySlotRequestUnsub=null;
  const pendingBridge=new Map();
  let bridgeSeq=0;
  function requestNex(type,agentId){
@@ -489,17 +495,65 @@ if(!cfg||!cfg.projectId||!cfg.apiKey){show('setup',true);}else{
   clearTimeout(pending.timeout);pendingBridge.delete(event.data.requestId);
   pending.resolve(event.data);
  });
+ function assignedTo(sheet,player){
+   return (sheet.controllerUid||sheet.ownerUid)===player;
+ }
+ function characterLimit(player){
+   if(player===roomData?.gmUid)return 99;
+   const member=roomMembers.find(m=>m.uid===player);
+   return Math.min(20,Math.max(1,Number(member?.maxSheets)||1));
+ }
+ function playerCount(player){
+   return roomSheets.filter(sheet=>assignedTo(sheet,player)).length;
+ }
+ function renderQuota(){
+   if(!roomId)return;
+   const used=playerCount(uid),max=characterLimit(uid);
+   $('mySheetQuota').textContent=gm?'Como Mestre, você pode atribuir personagens aos jogadores.':'Personagens na campanha: '+used+' de '+max+'.';
+   show('requestExtraSlot',!gm&&used>=max);
+ }
+ function renderSlotManagement(){
+   if(!gm)return;
+   $('gmSlotRequests').innerHTML=extraSlotRequests.length?extraSlotRequests.map(req=>'<div class="card"><b>'+escape(roomMembers.find(m=>m.uid===req.uid)?.name||'Jogador')+'</b><p>Solicitou mais uma vaga para personagem.</p><button type="button" data-approve-slot="'+escape(req.uid)+'">Autorizar +1 vaga</button><button type="button" class="alt" data-deny-slot="'+escape(req.uid)+'">Recusar</button></div>').join(''):'<p class="room-note">Nenhum pedido de vaga pendente.</p>';
+   $('gmSlotLimits').innerHTML=roomMembers.filter(m=>m.uid!==roomData?.gmUid).map(m=>'<div class="card"><b>'+escape(m.name||'Jogador')+'</b><p>Personagens: '+playerCount(m.uid)+' / '+characterLimit(m.uid)+'</p><div class="row"><button type="button" data-slot-limit="'+escape(m.uid)+'" data-step="-1" '+(characterLimit(m.uid)<=Math.max(1,playerCount(m.uid))?'disabled':'')+'>−</button><button type="button" data-slot-limit="'+escape(m.uid)+'" data-step="1" '+(characterLimit(m.uid)>=20?'disabled':'')+'>+</button></div></div>').join('');
+ }
+ $('requestExtraSlot').onclick=()=>run(async()=>{
+   if(gm||!roomId||playerCount(uid)<characterLimit(uid))return;
+   await setDoc(doc(db,'campaigns',roomId,'slotRequests',uid),{uid,requestedAt:serverTimestamp()});
+   $('extraSlotStatus').textContent='Solicitação enviada ao Mestre.';
+ });
+ $('gmSlotRequests').addEventListener('click',event=>run(async()=>{
+   const approve=event.target.closest('[data-approve-slot]');
+   const deny=event.target.closest('[data-deny-slot]');
+   const player=approve?.dataset.approveSlot||deny?.dataset.denySlot;
+   if(!gm||!player||!roomMembers.some(m=>m.uid===player))return;
+   if(approve){
+    const member=roomMembers.find(m=>m.uid===player);
+    await updateDoc(doc(db,'campaigns',roomId,'members',player),{maxSheets:Math.min(20,characterLimit(player)+1)});
+   }
+   await deleteDoc(doc(db,'campaigns',roomId,'slotRequests',player));
+ }));
+ $('gmSlotLimits').addEventListener('click',event=>run(async()=>{
+   const button=event.target.closest('[data-slot-limit]');
+   if(!gm||!button)return;
+   const player=button.dataset.slotLimit,step=Number(button.dataset.step);
+   if(!roomMembers.some(m=>m.uid===player))return;
+   const next=Math.min(20,Math.max(playerCount(player),1,characterLimit(player)+step));
+   await updateDoc(doc(db,'campaigns',roomId,'members',player),{maxSheets:next});
+ }));
  async function refreshNexAgents(){
  const select=$('nexAgentSelect'),grid=$('roomAgentPickerCards');
  try{
   const response=await requestNex('nex-agent-list-request');
   if(!response.ready){grid.textContent='As fichas ainda estão carregando.';return;}
   const agents=response.agents||[];
+  renderQuota();
   select.innerHTML='<option value="">Escolha um personagem</option>'+agents.map(a=>'<option value="'+escape(a.id)+'">'+escape(a.name)+'</option>').join('');
   grid.innerHTML=agents.length?agents.map(a=>{
    const added=roomSheets.some(sheet=>sheet.linkedAgentId===a.id&&sheet.ownerUid===uid);
+   const limitReached=!gm&&!added&&playerCount(uid)>=characterLimit(uid);
    const date=a.createdAt?new Date(a.createdAt).toLocaleDateString('pt-BR'):'Data não informada';
-   return '<article class="agent-picker-card"><div class="agent-picker-info">'+(safePortrait(a.portrait)?'<img class="agent-picker-avatar" src="'+escape(a.portrait)+'" alt="">':'')+'<div><strong>'+escape(a.name)+'</strong><small>'+escape(a.className||'Classe não informada')+' · NEX '+escape(a.nex)+'%</small><small>Registrado em '+escape(date)+'</small></div></div><button type="button" data-select-agent="'+escape(a.id)+'">'+(added?'Atualizar':'Adicionar')+'</button></article>';
+   return '<article class="agent-picker-card"><div class="agent-picker-info">'+(safePortrait(a.portrait)?'<img class="agent-picker-avatar" src="'+escape(a.portrait)+'" alt="">':'')+'<div><strong>'+escape(a.name)+'</strong><small>'+escape(a.className||'Classe não informada')+' · NEX '+escape(a.nex)+'%</small><small>Registrado em '+escape(date)+'</small></div></div><button type="button" data-select-agent="'+escape(a.id)+'" '+(limitReached?'disabled':'')+'>'+(added?'Atualizar':limitReached?'Sem vagas':'Adicionar')+'</button></article>';
   }).join(''):'<p>Nenhum personagem encontrado. Crie um personagem no NEX.</p>';
  }catch(err){grid.textContent='Erro ao carregar personagens: '+err.message;}
 }
@@ -656,10 +710,15 @@ if(!cfg||!cfg.projectId||!cfg.apiKey){show('setup',true);}else{
   const data=agent.data,serialized=JSON.stringify(data);
   if(serialized.length>450000)throw Error('Ficha acima do limite de compartilhamento (450 KB).');
   // Um registro por ficha e por dono: evita duplicações ao atualizar.
-  const key='linked-'+uid+'-'+agentId;
+  const already=roomSheets.find(sheet=>sheet.ownerUid===uid&&sheet.linkedAgentId===agentId);
+  const takenSlots=new Set(roomSheets.filter(sh=>sh.ownerUid===uid&&Number.isInteger(sh.slotNumber)).map(sh=>sh.slotNumber));
+  let slot=1;while(takenSlots.has(slot))slot++;
+  const key=already?.id||(gm?'linked-'+uid+'-'+agentId:'slot-'+uid+'-'+slot);
   const sheetRef=doc(db,'campaigns',roomId,'sheets',key);
   const existing=await getDoc(sheetRef);
   if(existing.exists()&&existing.data().ownerUid!==uid)throw Error('Esta ficha pertence a outra conta.');
+  if(!existing.exists()&&!gm&&playerCount(uid)>=characterLimit(uid))
+   throw Error('Limite de personagens atingido. Solicite outra vaga ao Mestre.');
   const payload={
     name:String(data.name||'Personagem sem nome').slice(0,100),
     nex:Math.max(0,Math.min(99,Math.trunc(Number(data.nex)||0))),
@@ -674,7 +733,7 @@ if(!cfg||!cfg.projectId||!cfg.apiKey){show('setup',true);}else{
   // Não acrescentar className, portrait ou createdAt diretamente ao documento da campanha.
   try{
    if(existing.exists())await updateDoc(sheetRef,payload);
-   else await setDoc(sheetRef,{...payload,ownerUid:uid});
+   else await setDoc(sheetRef,{...payload,ownerUid:uid,...(gm?{}:{slotNumber:slot})});
   }catch(error){
    if(error?.code==='permission-denied')throw Error('O Firebase recusou a inclusão da ficha. Verifique se você é participante aprovado e se as regras de campanhas do Firestore estão publicadas.');
    throw error;
@@ -691,7 +750,7 @@ if(!cfg||!cfg.projectId||!cfg.apiKey){show('setup',true);}else{
  }};
  const clearRoom=()=>{
   for(const u of [...unsubs,...combatRollUnsubs]){try{u()}catch(e){}}unsubs=[];combatRollUnsubs=[];
-  roomId='';gm=false;roomMembers=[];roomSheets=[];roomRequests=[];roomCombats=[];roomData=null;editing=null;localPortraits.clear();
+  roomId='';gm=false;roomMembers=[];roomSheets=[];roomRequests=[];extraSlotRequests=[];roomCombats=[];roomData=null;editing=null;localPortraits.clear();
   $('roomAgentPicker').hidden=true;$('roomEditConfiguration').hidden=true;$('nexCampaignSheetDialog').close?.();
   show('room',false);show('sheetFormPanel',false);
  };
@@ -1037,18 +1096,24 @@ if(!cfg||!cfg.projectId||!cfg.apiKey){show('setup',true);}else{
     console.warn('NEX: não foi possível consultar combates',error);
     $('roomCombats').innerHTML='<p role="status">Não foi possível carregar os combates desta campanha. '+(error.code==='permission-denied'?'As regras de Combates precisam ser publicadas no Firebase.':'Verifique a conexão e tente novamente.')+'</p>';
   }));
-  if(gm)unsubs.push(onSnapshot(collection(db,'campaigns',id,'joinRequests'),snapshot=>{
+  if(gm)unsubs.push(onSnapshot(collection(db,'campaigns',id,'slotRequests'),snapshot=>{
+   extraSlotRequests=snapshot.docs.map(d=>d.data());renderSlotManagement();
+  },error=>console.warn('Solicitações de vagas indisponíveis',error)));
+  else unsubs.push(onSnapshot(doc(db,'campaigns',id,'slotRequests',uid),snap=>{
+   $('extraSlotStatus').textContent=snap.exists()?'Aguardando autorização do Mestre.':'';
+  },error=>console.warn('Status da vaga indisponível',error)));
+    if(gm)unsubs.push(onSnapshot(collection(db,'campaigns',id,'joinRequests'),snapshot=>{
     roomRequests=snapshot.docs.map(d=>({id:d.id,...d.data()}));
     $('joinRequests').innerHTML=roomRequests.length?roomRequests.map(item=>
       '<div class="room-request-card"><strong>'+escape(item.name||'Jogador')+'</strong><div><button type="button" data-approve-request="'+escape(item.uid)+'">Aceitar</button><button type="button" class="alt" data-deny-request="'+escape(item.uid)+'">Recusar</button></div></div>'
     ).join(''):'<p>Nenhuma solicitação pendente.</p>';
   },error=>notice('Falha ao carregar solicitações: '+error.message)));
   unsubs.push(onSnapshot(collection(db,'campaigns',id,'members'),snapshot=>{
-    roomMembers=snapshot.docs.map(d=>({id:d.id,...d.data()}));drawMembers();
+    roomMembers=snapshot.docs.map(d=>({id:d.id,...d.data()}));drawMembers();renderQuota();renderSlotManagement();
     if(gm)for(const m of roomMembers)ensurePlayerIndex(id,m.uid).catch(error=>console.warn('Índice do jogador',error));
   },e=>notice('Não foi possível carregar participantes: '+e.message)));
   unsubs.push(onSnapshot(collection(db,'campaigns',id,'sheets'),snapshot=>{
-    roomSheets=snapshot.docs.map(d=>({id:d.id,...d.data()}));drawSheets();drawMembers();renderCombats();syncOwnCharacterPhotos();
+    roomSheets=snapshot.docs.map(d=>({id:d.id,...d.data()}));drawSheets();drawMembers();renderQuota();renderSlotManagement();renderCombats();syncOwnCharacterPhotos();
   },e=>notice('Não foi possível carregar fichas: '+e.message)));
  }
  function nexMasterProfile(){
@@ -1066,9 +1131,10 @@ if(!cfg||!cfg.projectId||!cfg.apiKey){show('setup',true);}else{
   const masterName=own?.name||roomData?.gmName||'Mestre';
   const masterPhoto=own?.photo||roomData?.gmPhoto||'';
   const avatar=photo=>safePortrait(photo)?'<img class="nex-member-avatar" src="'+escape(photo)+'" alt="">':'<span class="nex-member-avatar nex-member-placeholder">♟</span>';
-  const characters=memberUid=>roomSheets.filter(item=>item.ownerUid===memberUid).map(item=>item.name).join(', ')||'Nenhum personagem adicionado';
+  const characters=memberUid=>roomSheets.filter(item=>assignedTo(item,memberUid)).map(item=>item.name).join(', ')||'Nenhum personagem adicionado';
   $('members').innerHTML='<div class="card room-member-profile">'+avatar(masterPhoto)+'<div><b>Mestre | '+escape(masterName)+'</b><small class="member-characters">'+escape(characters(roomData?.gmUid))+'</small></div></div>'+
   roomMembers.map(m=>'<div class="card room-member-profile">'+avatar(m.photo||'')+'<div><b>Jogador | '+escape(m.name||'Jogador')+'</b><small class="member-characters">'+escape(characters(m.uid))+'</small></div></div>').join('');
+  renderSlotManagement();
   $('sheetOwner').innerHTML='<option value="'+escape(uid)+'">Minha conta</option>'+
    (gm?roomMembers.filter(m=>m.uid!==uid).map(m=>'<option value="'+escape(m.uid)+'">'+escape(m.name||'Jogador')+'</option>').join(''):'');
  }
