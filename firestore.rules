@@ -67,7 +67,7 @@ service cloud.firestore {
       allow update: if nexGM(cid)
         && request.resource.data.gmUid == resource.data.gmUid
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['name','description','privateShield','updatedAt','coverUrl'])
-        && (!request.resource.data.keys().hasAny(['coverUrl']) || (request.resource.data.coverUrl is string && request.resource.data.coverUrl.size() <= 2048));
+        && (!request.resource.data.keys().hasAny(['coverUrl']) || (request.resource.data.coverUrl is string && request.resource.data.coverUrl.size() <= 390000));
       allow delete: if nexGM(cid);
       // Solicitações feitas por usuários autenticados que possuem um link de convite.
       // O convite não concede leitura das fichas nem entrada automática.
