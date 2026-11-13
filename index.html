@@ -2755,7 +2755,14 @@ $('nexHomebrewFilter')?.addEventListener('input',()=>nex12RenderHomebrew());
    });
    document.querySelectorAll('#sheetScreen [data-attr]').forEach(el=>state.attributes[el.dataset.attr]=clamp(int(el.value),0,9));
  }
- save=function(show=false){if(show)captureDisplayedFields();persist(show);};
+ save=function(show=false){
+   if(!window.NEX_ACCOUNT_USER||!window.NEX_ACCOUNT_SYNC_READY){
+    if(show)toast('Entre na conta NEX e aguarde a sincronização.');
+    return false;
+   }
+   if(show)captureDisplayedFields();
+   return persist(show);
+ };
  function visible(which){
   $('mainMenu').classList.toggle('hide',which!=='home');
   $('agentsPanel').classList.toggle('hide',which!=='agents');
@@ -3261,6 +3268,7 @@ $('nexHomebrewFilter')?.addEventListener('input',()=>nex12RenderHomebrew());
   if(!window.NEX_ACCOUNT_SYNC_READY){toast('Aguarde o carregamento dos personagens da sua conta NEX.');return;}
   persist();wDraft=normalize({...defaults(),homebrew:JSON.parse(JSON.stringify(globalHomebrew())),name:'',origin:'',class:'Combatente',attributes:{agi:1,for:1,int:1,pre:1,vig:1},nex:5});wCategory='ordem';wStep=0;wOpen='';$('wSearch').value='';for(const id of ['wName','wPlayer','wAppearance','wPersonality','wHistory','wObjective'])$(id).value='';visible('wizard');wRender();}
  function wFinish(){
+  if(!window.NEX_ACCOUNT_USER||!window.NEX_ACCOUNT_SYNC_READY){toast('Entre na conta NEX e aguarde carregar as fichas antes de salvar.');return;}
   if(wPoints()!==0){toast('Confira os pontos de atributos do NEX escolhido.');wStep=0;wRender();return;}
   const name=$('wName').value.trim();if(!name){toast('Informe o nome do personagem.');$('wName').focus();return;}
   if(!wDraft.origin){toast('Escolha uma origem antes de finalizar.');return;}
@@ -4858,7 +4866,7 @@ const PARANORMAL=[
 
 <script src="nex-defense-selectors-safe.js?v=20261112readonly3"></script>
 <script src="./firebase-config.js?v=20261112accounts1"></script>
-<script type="module" src="./nex-account-sync.js?v=20261113cloudaccounts2"></script>
+<script type="module" src="./nex-account-sync.js?v=20261113cloudaccounts3"></script>
 <script>
 window.addEventListener('nex-cloud-sync-state',event=>{
  const detail=event.detail||{};
