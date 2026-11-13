@@ -2679,7 +2679,7 @@ $('nexHomebrewFilter')?.addEventListener('input',()=>nex12RenderHomebrew());
      db=null;
    }finally{
      storageReady=true;
-     persist();renderAgents();renderCampaigns();visible('home');
+     persist();renderAgents();renderCampaigns();restorePage();
      document.dispatchEvent(new Event('nex51-ready'));
      if(db){
        // Wait for the IndexedDB transaction before claiming the second copy succeeded.
@@ -2747,7 +2747,37 @@ $('nexHomebrewFilter')?.addEventListener('input',()=>nex12RenderHomebrew());
    document.querySelectorAll('#sheetScreen [data-attr]').forEach(el=>state.attributes[el.dataset.attr]=clamp(int(el.value),0,9));
  }
  save=function(show=false){if(show)captureDisplayedFields();persist(show);};
- function visible(which){$('mainMenu').classList.toggle('hide',which!=='home');$('agentsPanel').classList.toggle('hide',which!=='agents');$('campaignPanel').classList.toggle('hide',which!=='campaigns');$('sheetScreen').classList.toggle('hide',which!=='sheet');$('wizardScreen').classList.toggle('hide',which!=='wizard');$('homebrewScreen').classList.toggle('hide',which!=='homebrew');window.scrollTo(0,0);}
+ const NEX_LAST_PAGE_KEY='nex-last-page-v1';
+ function rememberPage(which){
+  if(!['home','agents','campaigns','sheet','wizard','homebrew'].includes(which))return;
+  try{sessionStorage.setItem(NEX_LAST_PAGE_KEY,JSON.stringify({page:which,agentId:which==='sheet'?active:null}));}catch(e){}
+ }
+ function visible(which,restore=false){
+  $('mainMenu').classList.toggle('hide',which!=='home');
+  $('agentsPanel').classList.toggle('hide',which!=='agents');
+  $('campaignPanel').classList.toggle('hide',which!=='campaigns');
+  $('sheetScreen').classList.toggle('hide',which!=='sheet');
+  $('wizardScreen').classList.toggle('hide',which!=='wizard');
+  $('homebrewScreen').classList.toggle('hide',which!=='homebrew');
+  if(!restore)rememberPage(which);
+  if(!restore)window.scrollTo(0,0);
+ }
+ function restorePage(){
+  let saved=null;
+  try{saved=JSON.parse(sessionStorage.getItem(NEX_LAST_PAGE_KEY)||'null');}catch(e){}
+  if(!saved || !['home','agents','campaigns','sheet','homebrew'].includes(saved.page)){visible('home');return;}
+  if(saved.page==='sheet'){
+   const id=saved.agentId;
+   if(id && agents.some(a=>a.id===id)){openAgent(id);return;}
+   renderAgents();visible('agents');return;
+  }
+  if(saved.page==='homebrew'){
+   showHomebrew();return;
+  }
+  if(saved.page==='agents')renderAgents();
+  if(saved.page==='campaigns')renderCampaigns();
+  visible(saved.page,true);
+ }
  window.NEX_AUTO_BRIDGE={
    ready:()=>storageReady,
    read:()=>({
