@@ -154,7 +154,8 @@ service cloud.firestore {
           && (
             !request.resource.data.keys().hasAny(['controllerUid']) ||
             (nexGM(cid) && request.resource.data.controllerUid is string &&
-             exists(/databases/$(database)/documents/campaigns/$(cid)/members/$(request.resource.data.controllerUid)))
+             (request.resource.data.controllerUid == request.auth.uid ||
+              exists(/databases/$(database)/documents/campaigns/$(cid)/members/$(request.resource.data.controllerUid))))
           )
           && request.resource.data.name is string
           && request.resource.data.nex is int
