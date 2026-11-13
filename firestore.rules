@@ -170,7 +170,9 @@ service cloud.firestore {
           ));
         allow update: if nexInCampaign(cid)
           && (
-            nexGM(cid) || resource.data.ownerUid == request.auth.uid ||
+            nexGM(cid) ||
+            (resource.data.ownerUid == request.auth.uid &&
+             resource.data.get('controllerUid',request.auth.uid) == request.auth.uid) ||
             resource.data.get('controllerUid','') == request.auth.uid
           )
           && request.resource.data.ownerUid == resource.data.ownerUid
@@ -218,8 +220,8 @@ service cloud.firestore {
           && request.resource.data.keys().hasOnly(['ownerUid','sheetId','characterName','result','createdAt'])
           && request.resource.data.ownerUid == request.auth.uid
           && request.resource.data.sheetId is string
-          && (get(/databases/$(database)/documents/campaigns/$(cid)/sheets/$(request.resource.data.sheetId)).data.ownerUid == request.auth.uid ||
-           get(/databases/$(database)/documents/campaigns/$(cid)/sheets/$(request.resource.data.sheetId)).data.get('controllerUid','') == request.auth.uid)
+          && (get(/databases/$(database)/documents/campaigns/$(cid)/sheets/$(request.resource.data.sheetId)).data.get('controllerUid',
+             get(/databases/$(database)/documents/campaigns/$(cid)/sheets/$(request.resource.data.sheetId)).data.ownerUid) == request.auth.uid)
           && request.resource.data.characterName is string
           && request.resource.data.characterName.size() <= 100
           && request.resource.data.result is int
