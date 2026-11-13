@@ -1,5 +1,5 @@
 {
-  "version": "2026.11.13-fundos-rituais-8",
-  "build": "20261113fundosrituais8",
-  "description": "Fundos elementais ilustrados nos rituais, no Conjurar e no grimório"
+  "version": "2026.11.13-fundos-fix-9",
+  "build": "20261113fundosfix9",
+  "description": "Corrige imagem duplicada/adjacente nos fundos dos rituais por elemento"
 }
