@@ -1142,13 +1142,21 @@ if(!cfg||!cfg.projectId||!cfg.apiKey){show('setup',true);}else{
     return;
    }
   }
-  const raw=sheet.fullSheet||{};
-  const portrait=sheetPortrait(sheet);
-  const detail=Object.entries(raw).filter(([key,val])=>val!==null&&['string','number','boolean'].includes(typeof val)&&String(val).length<1500&& !/^(?:photo|portrait|image|avatar|foto)/i.test(key)).slice(0,90);
+  // Mostra o layout verdadeiro da ficha operacional NEX.
+  // O payload é apenas para exibição; alterações não são permitidas nessa visualização.
+  if(sheet.fullSheet&&typeof sheet.fullSheet==='object'&&!Array.isArray(sheet.fullSheet)){
+   if(window.parent!==window){
+    window.parent.postMessage({type:'nex-campaign-view-shared-sheet',sheet:sheet.fullSheet,name:sheet.name},location.origin);
+    return;
+   }
+   // A tela de campanhas independente exige o NEX completo para renderizar a ficha.
+   $('nexCampaignSheetTitle').textContent=sheet.name||'Personagem';
+   $('nexCampaignSheetBody').textContent='Abra esta campanha dentro do NEX para ver a ficha completa.';
+   $('nexCampaignSheetDialog').showModal();
+   return;
+  }
   $('nexCampaignSheetTitle').textContent=sheet.name||'Personagem';
-  $('nexCampaignSheetBody').innerHTML='<div class="nex-sheet-summary">'+(portrait?'<img src="'+escape(portrait)+'" alt="">':'')+'<div><h3>'+escape(sheet.name||'Personagem')+'</h3><p>'+escape(sheet.className||raw.class||'')+' · NEX '+escape(sheet.nex)+'%</p><p>PV '+escape(sheet.pv)+' · PE '+escape(sheet.pe)+' · SAN '+escape(sheet.san)+'</p></div></div>'+
-   (detail.length?'<div class="nex-sheet-fields">'+detail.map(([key,val])=>'<div><b>'+escape(key)+'</b><span>'+escape(val)+'</span></div>').join('')+'</div>':'<p>Esta ficha ainda não possui detalhes adicionais compartilhados.</p>')+
-   '<p class="room-note">Visualização da ficha compartilhada. Somente o dono pode abrir a ficha original nesta conta.</p>';
+  $('nexCampaignSheetBody').innerHTML='<p class="room-note">Esta ficha foi criada no formato simples antigo e não possui os dados da ficha completa. Adicione uma ficha NEX à campanha para ver o layout operacional.</p>';
   $('nexCampaignSheetDialog').showModal();
  });
  $('newSheet').addEventListener('click',()=>{
