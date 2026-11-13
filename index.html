@@ -1858,6 +1858,13 @@ body > #nexOriginPopup[hidden]{display:none!important;}
 #nexSharedRealSheetDialog .nex-shared-sheet-static .mini-nav{display:none}
 @media(max-width:700px){#nexSharedRealSheetDialog{width:100vw;max-width:100vw;height:100vh;max-height:100vh;padding:0 5px 14px}#nexSharedRealSheetDialog .nex-shared-head{padding:10px}}
 </style>
+
+<style id="nex-campaign-live-edit-style">
+#nexCampaignEditBanner{position:sticky;top:0;z-index:800;display:flex;flex-wrap:wrap;align-items:center;gap:12px;padding:10px 14px;margin:0 0 12px;background:#21151b;border:1px solid #a04454;border-radius:7px;color:#fff;font-size:13px}
+#nexCampaignEditBanner[hidden]{display:none!important}
+#nexCampaignEditBanner button{margin-left:auto;border:1px solid #b34b5d;background:#a43246;color:white;padding:8px 12px;border-radius:5px;cursor:pointer}
+#nexCampaignEditBanner small{color:#d1b7c0}
+</style>
 </head><body>
 <script src="nex-sobrevivendo-ao-horror.js?v=2072"></script>
 <script src="nex-arquivos-secretos.js?v=20261112descs2"></script>
@@ -2717,8 +2724,68 @@ $('nexHomebrewFilter')?.addEventListener('input',()=>nex12RenderHomebrew());
    const note=document.getElementById('nexPersistenceWarning');
    if(note){note.hidden=ok;note.textContent=ok?'':message+' Use o botão Baixar backup de todas as fichas.';}
  }
- function persist(show=false){
+ let nexCampaignLiveEdit=null;
+ let nexCampaignEditTimer=null;
+ function queueCampaignEditSave(){
+  if(!nexCampaignLiveEdit)return;
+  clearTimeout(nexCampaignEditTimer);
+  const edit=nexCampaignLiveEdit;
+  nexCampaignEditTimer=setTimeout(()=>{
+   if(nexCampaignLiveEdit!==edit)return;
+   const frame=document.getElementById('nexCampaignRoomFrame');
+   if(frame?.contentWindow){
+    frame.contentWindow.postMessage({type:'nex-campaign-save-shared-sheet',sheetId:edit.sheetId,data:JSON.parse(JSON.stringify(state))},location.origin);
+   }
+  },850);
+ }
+ function finishCampaignLiveEdit(){
+  if(!nexCampaignLiveEdit)return;
+  clearTimeout(nexCampaignEditTimer);
+  const old=nexCampaignLiveEdit;
+  queueCampaignEditSave();
+  // Envia a versão final imediatamente, antes de retornar à campanha.
+  const frame=document.getElementById('nexCampaignRoomFrame');
+  if(frame?.contentWindow)frame.contentWindow.postMessage({type:'nex-campaign-save-shared-sheet',sheetId:old.sheetId,data:JSON.parse(JSON.stringify(state))},location.origin);
+  clearTimeout(nexCampaignEditTimer);
+  nexCampaignLiveEdit=null;
+  window.NEX_CAMPAIGN_EDIT_SESSION=false;
+  state=old.previousState;
+  try{rehydrate();}catch(error){console.warn('NEX: restaurando ficha pessoal',error);}
+  const banner=document.getElementById('nexCampaignEditBanner');
+  if(banner)banner.hidden=true;
+ }
+ function openEditableCampaignSheet(data,details={}){
+  if(!data||typeof data!=='object'||Array.isArray(data)||!details.sheetId)return;
+  if(!window.NEX_ACCOUNT_USER){toast('Entre na conta NEX para editar personagens.');return;}
+  if(nexCampaignLiveEdit)finishCampaignLiveEdit();
+  const backup=JSON.parse(JSON.stringify(state));
+  const before=active;
+  const src=JSON.parse(JSON.stringify(data));
+  const live=normalize({...src,name:src.name||details.name||'Personagem'});
+  nexCampaignLiveEdit={sheetId:details.sheetId,previousState:backup,previousActive:before};
+  window.NEX_CAMPAIGN_EDIT_SESSION=true;
+  state=live;
+  try{rehydrate();}catch(error){console.error('NEX: ficha compartilhada',error);}
+  visible('sheet');
+  let banner=document.getElementById('nexCampaignEditBanner');
+  if(!banner){
+   banner=document.createElement('div');
+   banner.id='nexCampaignEditBanner';
+   banner.className='nex-campaign-live-banner';
+   banner.innerHTML='<span>Ficha atribuída pelo Mestre · alterações salvas na campanha</span><button type="button">← Voltar à campanha</button><small id="nexCampaignEditStatus" role="status"></small>';
+   $('sheetScreen').prepend(banner);
+   banner.querySelector('button').onclick=()=>{finishCampaignLiveEdit();visible('campaigns');};
+  }
+  banner.hidden=false;
+  const status=banner.querySelector('#nexCampaignEditStatus');
+  if(status)status.textContent='Edição liberada para esta campanha.';
+ }
+  function persist(show=false){
    if(window.NEX_SHARED_PREVIEW_RENDERING)return false;
+   if(nexCampaignLiveEdit){
+    queueCampaignEditSave();
+    return true;
+   }
    const entry=agents.find(x=>x.id===active);
    if(entry){
      const updated=JSON.parse(JSON.stringify(state));
@@ -2773,6 +2840,12 @@ $('nexHomebrewFilter')?.addEventListener('input',()=>nex12RenderHomebrew());
    document.querySelectorAll('#sheetScreen [data-attr]').forEach(el=>state.attributes[el.dataset.attr]=clamp(int(el.value),0,9));
  }
  save=function(show=false){
+   if(nexCampaignLiveEdit){
+    if(show)captureDisplayedFields();
+    queueCampaignEditSave();
+    if(show)toast('Enviando alterações à campanha...');
+    return true;
+   }
    if(!window.NEX_ACCOUNT_USER||!window.NEX_ACCOUNT_SYNC_READY){
     if(show)toast('Entre na conta NEX e aguarde a sincronização.');
     return false;
@@ -2781,6 +2854,7 @@ $('nexHomebrewFilter')?.addEventListener('input',()=>nex12RenderHomebrew());
    return persist(show);
  };
  function visible(which){
+  if(nexCampaignLiveEdit&&which!=='sheet')finishCampaignLiveEdit();
   $('mainMenu').classList.toggle('hide',which!=='home');
   $('agentsPanel').classList.toggle('hide',which!=='agents');
   $('campaignPanel').classList.toggle('hide',which!=='campaigns');
@@ -3028,6 +3102,7 @@ $('nexHomebrewFilter')?.addEventListener('input',()=>nex12RenderHomebrew());
   dialog.showModal();
  }
  function openAgent(id){
+  if(nexCampaignLiveEdit)finishCampaignLiveEdit();
   if(!window.NEX_ACCOUNT_USER){toast('Entre na sua conta NEX para abrir esta ficha.');return;}
   if(!window.NEX_ACCOUNT_SYNC_READY){toast('Carregando seus personagens da nuvem.');return;}
   if(!agents.some(a=>a.id===id))return;persist();active=id;state=normalize(JSON.parse(JSON.stringify(agents.find(a=>a.id===id).data)));visible('sheet');try{rehydrate();}catch(err){console.error(err);renderFields();renderStats();}save();}
@@ -3499,7 +3574,7 @@ $('nexHomebrewFilter')?.addEventListener('input',()=>nex12RenderHomebrew());
  // Preserve compatibility with V1.2's original new-sheet and JSON import controls.
  $('newChar').addEventListener('click',e=>{e.preventDefault();e.stopImmediatePropagation();createAgent();},true);
  $('fileInput').addEventListener('change',()=>{setTimeout(()=>{try{rehydrate();persist();renderAgents();toast('Ficha importada para o personagem atual.');}catch(err){console.error('Erro após importar',err);toast('Confira o arquivo importado.');}},200);});
- window.NEX17={openHome:showHome,openAgents:showAgents,openAgent,openSharedReadOnlySheet,createAgent,openSheet:()=>{rehydrate();visible('sheet');},openCampaigns:()=>{
+ window.NEX17={openHome:showHome,openAgents:showAgents,openAgent,openSharedReadOnlySheet,openEditableCampaignSheet,createAgent,openSheet:()=>{rehydrate();visible('sheet');},openCampaigns:()=>{
   renderCampaigns();
   visible('campaigns');
   // A aba superior Campanhas sempre retorna à lista, mesmo com sala aberta.
@@ -4816,7 +4891,16 @@ const PARANORMAL=[
       }
       return;
     }
+    if(msg.type==='nex-campaign-open-editable-sheet'){
+      if(msg.sheet&&typeof msg.sheet==='object'&&msg.sheetId&&typeof window.NEX17?.openEditableCampaignSheet==='function'){
+        window.NEX17.openEditableCampaignSheet(msg.sheet,{sheetId:msg.sheetId,name:msg.name});
+      }
+      return;
+    }
     if(msg.type==='nex-campaign-shared-sheet-saved'){
+      const activeStatus=document.getElementById('nexCampaignEditStatus');
+      if(activeStatus&&window.NEX_CAMPAIGN_EDIT_SESSION)activeStatus.textContent=msg.ok?'Salvo na campanha.':'Falha ao salvar: '+String(msg.error||'verifique a conexão');
+
       const dialog=document.getElementById('nexSharedRealSheetDialog');
       const status=dialog?.querySelector('#nexSharedSheetSaveStatus');
       const button=dialog?.querySelector('#nexSharedRealSheetSave');
