@@ -1,5 +1,5 @@
 {
-  "version": "2026.11.13-reference-5",
-  "build": "20261113reference5",
-  "description": "Reconstrução do layout do card de personagens conforme a referência"
+  "version": "2026.11.13-permissions-6",
+  "build": "20261113permissions6",
+  "description": "Cartões compactos e seletor de responsável recolhido no painel do mestre"
 }
