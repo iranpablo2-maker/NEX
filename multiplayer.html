@@ -285,6 +285,21 @@ html.nex-embedded main{max-width:100%;padding:10px 12px 28px}
 #room .nex-assign-label select{display:block;margin-top:3px;width:100%;font-size:12px;background:#181317;color:#fff;border:1px solid #653541;border-radius:4px;padding:6px}
 </style>
 <script src="./nex-image-crop.js?v=20261113crop1"></script>
+<style id="nex-manage-players-v1">
+#room #roomManagePanel{border-color:#723642;background:#151115}
+#room #roomManagePanel .nex-manager-group{padding:16px 0;border-top:1px solid #50303b}
+#room #roomManagePanel .nex-manager-group h3{font-size:14px;text-transform:none;color:#f6e6eb;margin:0 0 12px}
+#room #roomManagePanel .nex-manager-player,#room #roomManagePanel .nex-manager-assignment{display:flex;flex-direction:column;gap:9px}
+#room #roomManagePanel .nex-manager-player p{margin:0}
+#room #roomManagePanel .nex-manager-assignment small{color:#c3abb3}
+#room #roomManagePanel .nex-manager-assignment label{margin:0}
+#room #roomManagePanel .nex-quota-count{min-width:24px;text-align:center;font-weight:750;color:#fff}
+#room #roomManagePanel .nex-counter-btn{min-width:40px;height:38px;padding:5px 12px;border-radius:7px}
+#room #roomManagePanel .nex-remove-player{margin-top:6px;background:transparent;border-color:#663841;color:#efbdc5}
+#room #roomManagePanel .nex-remove-player:hover{background:#4a202a}
+#room .nex-character-responsible{display:block;color:#cdb5bd;margin-top:6px}
+#room #roomManageTab[aria-pressed="true"]{border-color:#df5062;background:#692736}
+</style>
 </head>
 <body>
 <script>
@@ -395,6 +410,7 @@ if(new URLSearchParams(location.search).get('integrado')==='1'){
     <button type="button" data-room-section="characters" aria-pressed="true">Personagens</button>
     <button type="button" data-room-section="players" aria-pressed="false">Jogadores</button>
     <button type="button" data-room-section="combats" aria-pressed="false">Combates</button>
+    <button type="button" data-room-section="manage" id="roomManageTab" aria-pressed="false" class="hide">Gerenciar Jogadores</button>
     <button type="button" data-room-section="master" id="roomMasterTab" aria-pressed="false" class="hide">Escudo do Mestre</button>
     <button type="button" data-room-section="invites" aria-pressed="false" class="hide">Convites</button>
    </div>
@@ -402,15 +418,19 @@ if(new URLSearchParams(location.search).get('integrado')==='1'){
      <div class="room-panel-head"><h3>Combates</h3></div>
      <div id="roomCombats" class="campaign-combats"><p>Nenhum combate cadastrado.</p></div><div id="roomCombatFeedback" role="status" class="room-note"></div>
    </section>
-   <div id="roomMasterPanel" class="room-panel hide"><h3>Painel do mestre</h3><p class="room-note">Defina o limite de fichas de cada jogador e autorize novas vagas.</p><div id="gmSlotRequests" class="grid room-members"></div><div id="gmSlotLimits" class="grid room-members"></div></div>
+   <section id="roomManagePanel" class="room-panel hide">
+ <div class="room-panel-head"><h2>Gerenciar Jogadores</h2><span class="badge">Só o mestre</span></div>
+ <p class="room-note">Controle participantes, limites, vagas, permissões e personagens nesta aba exclusiva do mestre.</p>
+ <div class="nex-manager-group"><h3>Jogadores e limites de fichas</h3><div id="gmSlotLimits" class="grid room-members"></div></div>
+ <div class="nex-manager-group"><h3>Pedidos de vagas extras</h3><div id="gmSlotRequests" class="grid room-members"></div></div>
+ <div class="nex-manager-group"><h3>Responsáveis e permissões das fichas</h3><p class="room-note">O proprietário mantém sua ficha na conta NEX. O responsável atribuído pode editar a ficha na campanha; o mestre também pode editar.</p><div id="gmSheetAssignments" class="grid room-members"></div></div>
+ <div id="gmOnly" class="nex-manager-group"><h3>Solicitações de entrada</h3><div id="joinRequests" class="grid room-members"><p>Nenhuma solicitação pendente.</p></div></div>
+ </section>
+ <div id="roomMasterPanel" class="room-panel hide"><h3>Escudo do Mestre</h3><p class="room-note">As permissões e o gerenciamento dos jogadores agora ficam na aba Gerenciar Jogadores.</p></div>
    <div class="room-invite" id="roomInvitePanel">
     <div><small>Convide seus jogadores com um link</small><span class="room-invite-label">Somente o mestre pode aprovar novos participantes.</span><code id="roomCode" class="code hide"></code></div>
     <div class="room-invite-copy"><input id="roomInviteLink" type="text" readonly aria-label="Link de convite" title="Link de convite da campanha"><button class="alt" id="copyCode" type="button">Copiar convite</button></div>
    </div>
-   <section id="gmOnly" class="room-panel hide">
-    <div class="room-panel-head"><h3>Solicitações de entrada</h3></div>
-    <div id="joinRequests" class="grid room-members"><p>Nenhuma solicitação pendente.</p></div>
-   </section>
    <section id="roomPlayersPanel" class="room-panel">
     <div class="room-panel-head"><h3>Jogadores</h3><button id="leaveCampaign" type="button" class="alt hide">Sair da campanha</button></div>
     <div id="members" class="grid room-members"></div>
@@ -518,7 +538,13 @@ if(!cfg||!cfg.projectId||!cfg.apiKey){show('setup',true);}else{
  function renderSlotManagement(){
    if(!gm)return;
    $('gmSlotRequests').innerHTML=extraSlotRequests.length?extraSlotRequests.map(req=>'<div class="card"><b>'+escape(roomMembers.find(m=>m.uid===req.uid)?.name||'Jogador')+'</b><p>Solicitou mais uma vaga para personagem.</p><button type="button" data-approve-slot="'+escape(req.uid)+'">Autorizar +1 vaga</button><button type="button" class="alt" data-deny-slot="'+escape(req.uid)+'">Recusar</button></div>').join(''):'<p class="room-note">Nenhum pedido de vaga pendente.</p>';
-   $('gmSlotLimits').innerHTML=roomMembers.filter(m=>m.uid!==roomData?.gmUid).map(m=>'<div class="card"><b>'+escape(m.name||'Jogador')+'</b><p>Personagens: '+playerCount(m.uid)+' / '+characterLimit(m.uid)+'</p><div class="row"><button type="button" data-slot-limit="'+escape(m.uid)+'" data-step="-1" '+(characterLimit(m.uid)<=Math.max(1,playerCount(m.uid))?'disabled':'')+'>−</button><button type="button" data-slot-limit="'+escape(m.uid)+'" data-step="1" '+(characterLimit(m.uid)>=20?'disabled':'')+'>+</button></div></div>').join('');
+   $('gmSlotLimits').innerHTML=roomMembers.filter(m=>m.uid!==roomData?.gmUid).map(m=>'<div class="card nex-manager-player"><b>'+escape(m.name||'Jogador')+'</b><p>Personagens: '+playerCount(m.uid)+' / '+characterLimit(m.uid)+'</p><div class="row"><button type="button" class="alt nex-counter-btn" title="Diminuir limite" data-slot-limit="'+escape(m.uid)+'" data-step="-1" '+(characterLimit(m.uid)<=Math.max(1,playerCount(m.uid))?'disabled':'')+'>−</button><span class="nex-quota-count">'+characterLimit(m.uid)+'</span><button type="button" class="nex-counter-btn" title="Aumentar limite" data-slot-limit="'+escape(m.uid)+'" data-step="1" '+(characterLimit(m.uid)>=20?'disabled':'')+'>+</button></div><button type="button" class="alt nex-remove-player" data-kick-player="'+escape(m.uid)+'">Remover da campanha</button></div>').join('')||'<p class="room-note">Nenhum jogador aprovado ainda.</p>';
+   $('gmSheetAssignments').innerHTML=roomSheets.length?roomSheets.map(s=>{
+    const assigned=String(s.controllerUid||s.ownerUid||'');
+    const ownerName=s.ownerUid===roomData?.gmUid?'Mestre':(roomMembers.find(m=>m.uid===s.ownerUid)?.name||'Proprietário');
+    const responsible=assigned===roomData?.gmUid?'Mestre':(roomMembers.find(m=>m.uid===assigned)?.name||ownerName);
+    return '<div class="card nex-manager-assignment"><b>'+escape(s.name||'Personagem sem nome')+'</b><small>Proprietário: '+escape(ownerName)+'</small><label>Jogador responsável<select data-assign-sheet="'+escape(s.id)+'"><option value="'+escape(roomData?.gmUid||'')+'" '+(assigned===roomData?.gmUid?'selected':'')+'>Mestre</option>'+roomMembers.filter(m=>m.uid!==roomData?.gmUid).map(m=>'<option value="'+escape(m.uid)+'" '+(assigned===m.uid?'selected':'')+'>'+escape(m.name||'Jogador')+'</option>').join('')+'</select></label><small>Pode editar: '+escape(responsible)+' e Mestre</small></div>';
+   }).join(''):'<p class="room-note">Nenhum personagem na campanha.</p>';
  }
  $('requestExtraSlot').onclick=()=>run(async()=>{
    if(gm||!roomId||playerCount(uid)<characterLimit(uid))return;
@@ -535,6 +561,20 @@ if(!cfg||!cfg.projectId||!cfg.apiKey){show('setup',true);}else{
     await updateDoc(doc(db,'campaigns',roomId,'members',player),{maxSheets:Math.min(20,characterLimit(player)+1)});
    }
    await deleteDoc(doc(db,'campaigns',roomId,'slotRequests',player));
+ }));
+ $('gmSlotLimits').addEventListener('click',event=>run(async()=>{
+   const button=event.target.closest('[data-kick-player]');
+   if(!button||!gm||!roomId)return;
+   const player=button.dataset.kickPlayer, member=roomMembers.find(m=>m.uid===player);
+   if(!member)return;
+   if(roomSheets.some(sheet=>sheet.ownerUid===player)){notice('Remova as fichas pertencentes ao jogador antes de retirá-lo da campanha.');return;}
+   if(!confirm('Remover '+(member.name||'este jogador')+' da campanha?'))return;
+   button.disabled=true;
+   for(const sheet of roomSheets.filter(sheet=>sheet.controllerUid===player))
+     await updateDoc(doc(db,'campaigns',roomId,'sheets',sheet.id),{controllerUid:roomData.gmUid});
+   await deleteDoc(doc(db,'campaigns',roomId,'members',player));
+   await deleteDoc(doc(db,'users',player,'joinedCampaigns',roomId)).catch(error=>console.warn('Limpeza do índice pendente',error));
+   notice('Jogador removido da campanha.');
  }));
  $('gmSlotLimits').addEventListener('click',event=>run(async()=>{
    const button=event.target.closest('[data-slot-limit]');
@@ -888,16 +928,16 @@ if(!cfg||!cfg.projectId||!cfg.apiKey){show('setup',true);}else{
   }
  });
  function roomSection(section){
-  const allowed=['characters','master','players','invites','combats'];
-  if(!allowed.includes(section)||(['master','invites'].includes(section)&&!gm))section='characters';
+  const allowed=['characters','master','manage','players','invites','combats'];
+  if(!allowed.includes(section)||(['master','manage','invites'].includes(section)&&!gm))section='characters';
   document.querySelectorAll('[data-room-section]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.roomSection===section)));
   show('roomCharactersPanel',section==='characters');
   show('roomCombatsPanel',section==='combats');
   $('roomAgentPicker').hidden=true;
   show('roomPlayersPanel',section==='players');
   show('roomInvitePanel',section==='invites'&&gm);
-  show('roomMasterPanel',section==='master');
-  show('gmOnly',section==='master'&&gm);
+  show('roomMasterPanel',section==='master'&&gm);
+  show('roomManagePanel',section==='manage'&&gm);
  }
  document.querySelectorAll('[data-room-section]').forEach(button=>button.addEventListener('click',()=>roomSection(button.dataset.roomSection)));
  function inviteView(mode,message){
@@ -1091,7 +1131,7 @@ if(!cfg||!cfg.projectId||!cfg.apiKey){show('setup',true);}else{
   for(const key of ['roomEditAction','roomCreateCombatAction','roomMasterAction','roomInviteAction'])$(key).hidden=!gm;
   show('leaveCampaign',!gm);
   updateRoomCover();
-  show('roomMasterTab',gm);roomSection('characters');refreshNexAgents();
+  show('roomMasterTab',gm);show('roomManageTab',gm);roomSection('characters');refreshNexAgents();
   // A permissão de combates é independente da das fichas; falhas ficam restritas à aba.
   unsubs.push(onSnapshot(collection(db,'campaigns',id,'combats'),snapshot=>{
     roomCombats=snapshot.docs.map(d=>({id:d.id,...d.data()}));renderCombats();
@@ -1185,18 +1225,19 @@ if(!cfg||!cfg.projectId||!cfg.apiKey){show('setup',true);}else{
     const photo=sheetPortrait(s);
     const pic=photo?'<img class="nex-character-photo" src="'+escape(photo)+'" alt="Retrato de '+escape(name)+'" loading="lazy">':'<span class="nex-character-photo nex-character-placeholder" aria-hidden="true">'+escape(name.slice(0,1).toUpperCase())+'</span>';
     const assigned=String(s.controllerUid||s.ownerUid||'');
-    const managing=gm?'<label class="nex-assign-label">Jogador responsável<select data-assign-sheet="'+escape(s.id)+'"><option value="'+escape(roomData?.gmUid||'')+'" '+(assigned===roomData?.gmUid?'selected':'')+'>Mestre</option>'+roomMembers.filter(m=>m.uid!==roomData?.gmUid).map(m=>'<option value="'+escape(m.uid)+'" '+(assigned===m.uid?'selected':'')+'>'+escape(m.name||'Jogador')+'</option>').join('')+'</select></label>':'';
+    const responsible=assigned===roomData?.gmUid?'Mestre':(roomMembers.find(m=>m.uid===assigned)?.name||'Jogador');
+    const managing='<small class="nex-character-responsible">Responsável: '+escape(responsible)+'</small>';
     return '<article class="nex-character-card">'+pic+'<div class="nex-character-info"><strong title="'+escape(name)+'">'+escape(name)+'</strong><span>'+escape(cls)+'</span><small>NEX '+escape(s.nex)+'%'+(!mine?' · Jogador da campanha':'')+'</small><button type="button" data-open-campaign-sheet="'+escape(s.id)+'">Acessar Ficha</button>'+managing+'</div>'+(editable?'<details class="nex-character-settings"><summary aria-label="Opções do personagem" title="Opções do personagem">⚙</summary><button type="button" data-remove-campaign-sheet="'+escape(s.id)+'">Remover</button></details>':'')+'</article>';
   }).join(''):'<p class="room-note">Ainda não há personagens nesta campanha. Use “Adicionar Personagens” para escolher uma ficha da sua conta NEX.</p>';
  }
- $('sheets').addEventListener('change',event=>run(async()=>{
+ $('gmSheetAssignments').addEventListener('change',event=>run(async()=>{
   const control=event.target.closest('[data-assign-sheet]');
   if(!control||!gm)return;
   const sheet=roomSheets.find(item=>item.id===control.dataset.assignSheet);
   if(!sheet)return;
   const next=control.value;
   if(next!==roomData?.gmUid&&!roomMembers.some(m=>m.uid===next))throw Error('O jogador precisa estar aprovado na campanha.');
-  if(next!==roomData?.gmUid&&playerCount(next)>=characterLimit(next))
+  if(next!==roomData?.gmUid&&next!==String(sheet.controllerUid||sheet.ownerUid||'')&&playerCount(next)>=characterLimit(next))
    throw Error('O jogador atingiu o limite de personagens. Aumente o limite dele antes de atribuir.');
   try{
    await updateDoc(doc(db,'campaigns',roomId,'sheets',sheet.id),{controllerUid:next});
