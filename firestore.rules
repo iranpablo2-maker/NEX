@@ -34,6 +34,20 @@ service cloud.firestore {
         );
       allow delete: if false;
     }
+    // Índice privado de campanhas aprovadas para cada jogador.
+    match /users/{userId}/joinedCampaigns/{cid} {
+      allow get, list: if owned(userId);
+      allow create, update: if request.auth != null
+        && request.resource.data.keys().hasOnly(['campaignId','gmUid','joinedAt'])
+        && request.resource.data.campaignId == cid
+        && request.resource.data.gmUid == request.auth.uid
+        && exists(/databases/$(database)/documents/campaigns/$(cid)/members/$(userId))
+        && get(/databases/$(database)/documents/campaigns/$(cid)).data.gmUid == request.auth.uid;
+      allow delete: if owned(userId) || (
+        request.auth != null
+        && get(/databases/$(database)/documents/campaigns/$(cid)).data.gmUid == request.auth.uid
+      );
+    }
     // Campanhas online: apenas participantes podem ler; apenas dono ou mestre editam fichas.
     function nexInCampaign(cid) {
       return request.auth != null && (
@@ -66,8 +80,10 @@ service cloud.firestore {
         && request.resource.data.updatedAt is timestamp;
       allow update: if nexGM(cid)
         && request.resource.data.gmUid == resource.data.gmUid
-        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['name','description','privateShield','updatedAt','coverUrl'])
-        && (!request.resource.data.keys().hasAny(['coverUrl']) || (request.resource.data.coverUrl is string && request.resource.data.coverUrl.size() <= 390000));
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['name','description','privateShield','updatedAt','coverUrl','gmName','gmPhoto'])
+        && (!request.resource.data.keys().hasAny(['coverUrl']) || (request.resource.data.coverUrl is string && request.resource.data.coverUrl.size() <= 390000))
+        && (!request.resource.data.keys().hasAny(['gmName']) || (request.resource.data.gmName is string && request.resource.data.gmName.size() <= 60))
+        && (!request.resource.data.keys().hasAny(['gmPhoto']) || (request.resource.data.gmPhoto is string && request.resource.data.gmPhoto.size() <= 115000));
       allow delete: if nexGM(cid);
       // Solicitações feitas por usuários autenticados que possuem um link de convite.
       // O convite não concede leitura das fichas nem entrada automática.
@@ -93,11 +109,13 @@ service cloud.firestore {
           && request.resource.data.keys().hasOnly(['uid','name','joinedAt'])
           && request.resource.data.uid == uid
           && request.resource.data.name is string;
-        allow update: if nexGM(cid)
+        allow update: if (nexGM(cid) || owned(uid))
           && request.resource.data.uid == resource.data.uid
           && resource.data.uid == uid
-          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['name']);
-        allow delete: if nexGM(cid);
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['name','photo'])
+          && (request.resource.data.name is string && request.resource.data.name.size() <= 60)
+          && (!request.resource.data.keys().hasAny(['photo']) || (request.resource.data.photo is string && request.resource.data.photo.size() <= 115000));
+        allow delete: if nexGM(cid) || owned(uid);
       }
       match /sheets/{sheetId} {
         allow get, list: if nexInCampaign(cid);
@@ -149,7 +167,21 @@ service cloud.firestore {
           && request.resource.data.createdAt is timestamp;
         allow update, delete: if nexGM(cid);
       }
-      match /masterNotes/{noteId} {
+      match /combats/{combatId}/rolls/{rollId} {
+        allow get, list: if nexInCampaign(cid);
+        allow create: if nexInCampaign(cid)
+          && request.resource.data.keys().hasOnly(['ownerUid','sheetId','characterName','result','createdAt'])
+          && request.resource.data.ownerUid == request.auth.uid
+          && request.resource.data.sheetId is string
+          && get(/databases/$(database)/documents/campaigns/$(cid)/sheets/$(request.resource.data.sheetId)).data.ownerUid == request.auth.uid
+          && request.resource.data.characterName is string
+          && request.resource.data.characterName.size() <= 100
+          && request.resource.data.result is int
+          && request.resource.data.result >= 1 && request.resource.data.result <= 20
+          && request.resource.data.createdAt is timestamp;
+        allow update, delete: if false;
+      }
+            match /masterNotes/{noteId} {
         allow read, write: if nexGM(cid);
       }
     }
