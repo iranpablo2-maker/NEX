@@ -1900,7 +1900,7 @@ body > #nexOriginPopup[hidden]{display:none!important;}
  <div class="home-section-heading"><h2>Campanhas</h2><span class="home-tag">MESAS E PERSONAGENS</span></div>
  <p class="muted" style="margin:4px 0 16px">Crie sua campanha, autorize jogadores e acompanhe as fichas na mesma sala. Todos os participantes podem visualizar; somente o dono e o mestre podem editar.</p>
  <div class="nex-campaign-integrated" aria-label="Área de campanhas online">
-  <iframe id="nexCampaignRoomFrame" title="Campanhas online do NEX" data-src="./multiplayer.html?integrado=1&v=20261113headerhide3" loading="eager" referrerpolicy="strict-origin-when-cross-origin"></iframe>
+  <iframe id="nexCampaignRoomFrame" title="Campanhas online do NEX" data-src="./multiplayer.html?integrado=1&v=20261113largercharacters4" loading="eager" referrerpolicy="strict-origin-when-cross-origin"></iframe>
  </div>
  <details class="nex-campaign-legacy">
   <summary>Campanhas salvas neste dispositivo <span class="muted">(modo local anterior)</span></summary>
@@ -4603,6 +4603,8 @@ const PARANORMAL=[
 <style id="nex-campaigns-inline-multiplayer">
 /* Campanhas online dentro da área Campanhas, sem menu ou página externa. */
 #campaignPanel .nex-campaign-integrated{margin:10px 0 18px;background:#0c0b0d;border:1px solid #65232d;border-radius:12px;overflow:hidden;box-shadow:0 12px 36px #0005}
+#campaignPanel.nex-campaign-focused{width:100%;max-width:none;padding-left:8px;padding-right:8px}
+#campaignPanel.nex-campaign-focused .nex-campaign-integrated{width:100%;max-width:none}
 #campaignPanel #nexCampaignRoomFrame{display:block;width:100%;height:460px;min-height:240px;border:0;background:#0d0c0f}
 #campaignPanel .nex-campaign-legacy{display:none!important}
 #campaignPanel.nex-campaign-focused > .home-toolbar,
