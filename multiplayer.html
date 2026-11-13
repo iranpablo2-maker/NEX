@@ -427,6 +427,8 @@ if(!cfg||!cfg.projectId||!cfg.apiKey){show('setup',true);}else{
   const app=initializeApp(cfg);auth=getAuth(app);db=getFirestore(app);
  }catch(err){show('setup',true);notice('Configuração Firebase inválida.');throw err;}
  let uid=null,roomId='',gm=false,roomData=null,roomMembers=[],roomSheets=[],roomRequests=[],unsubs=[],editing=null,campaignUnsub=null,myCampaigns=[],privateShield=true,roomCombats=[];
+ const localPortraits=new Map();
+ let portraitSyncBusy=false;
  const pendingBridge=new Map();
  let bridgeSeq=0;
  function requestNex(type,agentId){
@@ -464,7 +466,7 @@ if(!cfg||!cfg.projectId||!cfg.apiKey){show('setup',true);}else{
   grid.innerHTML=agents.length?agents.map(a=>{
    const added=roomSheets.some(sheet=>sheet.linkedAgentId===a.id&&sheet.ownerUid===uid);
    const date=a.createdAt?new Date(a.createdAt).toLocaleDateString('pt-BR'):'Data não informada';
-   return '<article class="agent-picker-card"><div class="agent-picker-info">'+(a.portrait&&a.portrait.startsWith('https://')?'<img class="agent-picker-avatar" src="'+escape(a.portrait)+'" alt="">':'')+'<div><strong>'+escape(a.name)+'</strong><small>'+escape(a.className||'Classe não informada')+' · NEX '+escape(a.nex)+'%</small><small>Registrado em '+escape(date)+'</small></div></div><button type="button" data-select-agent="'+escape(a.id)+'" '+(added?'disabled':'')+'>'+(added?'Adicionado':'Adicionar')+'</button></article>';
+   return '<article class="agent-picker-card"><div class="agent-picker-info">'+(safePortrait(a.portrait)?'<img class="agent-picker-avatar" src="'+escape(a.portrait)+'" alt="">':'')+'<div><strong>'+escape(a.name)+'</strong><small>'+escape(a.className||'Classe não informada')+' · NEX '+escape(a.nex)+'%</small><small>Registrado em '+escape(date)+'</small></div></div><button type="button" data-select-agent="'+escape(a.id)+'" '>'+(added?'Atualizar':'Adicionar')+'</button></article>';
   }).join(''):'<p>Nenhum personagem encontrado. Crie um personagem no NEX.</p>';
  }catch(err){grid.textContent='Erro ao carregar personagens: '+err.message;}
 }
@@ -615,7 +617,7 @@ if(!cfg||!cfg.projectId||!cfg.apiKey){show('setup',true);}else{
  }};
  const clearRoom=()=>{
   for(const u of unsubs){try{u()}catch(e){}}unsubs=[];
-  roomId='';gm=false;roomMembers=[];roomSheets=[];roomRequests=[];roomCombats=[];roomData=null;editing=null;
+  roomId='';gm=false;roomMembers=[];roomSheets=[];roomRequests=[];roomCombats=[];roomData=null;editing=null;localPortraits.clear();
   $('roomAgentPicker').hidden=true;$('roomEditConfiguration').hidden=true;$('nexCampaignSheetDialog').close?.();
   show('room',false);show('sheetFormPanel',false);
  };
@@ -868,7 +870,7 @@ if(!cfg||!cfg.projectId||!cfg.apiKey){show('setup',true);}else{
     roomMembers=snapshot.docs.map(d=>({id:d.id,...d.data()}));drawMembers();
   },e=>notice('Não foi possível carregar participantes: '+e.message)));
   unsubs.push(onSnapshot(collection(db,'campaigns',id,'sheets'),snapshot=>{
-    roomSheets=snapshot.docs.map(d=>({id:d.id,...d.data()}));drawSheets();
+    roomSheets=snapshot.docs.map(d=>({id:d.id,...d.data()}));drawSheets();syncOwnCharacterPhotos();
   },e=>notice('Não foi possível carregar fichas: '+e.message)));
  }
  function nexMasterProfile(){
@@ -897,8 +899,34 @@ if(!cfg||!cfg.projectId||!cfg.apiKey){show('setup',true);}else{
   return typeof v==='string'&&v.length<120000&&(/^(https:\/\/)/i.test(v)||/^data:image\/(?:png|jpeg|webp);base64,[a-z0-9+/=]+$/i.test(v))?v:'';
  }
  function sheetPortrait(s){
+  if(s.ownerUid===uid&&s.linkedAgentId){const local=localPortraits.get(s.linkedAgentId);if(local)return local;}
   const raw=s.fullSheet||{};
   return safePortrait(s.portrait)||[raw.portraitUrl,raw.imageUrl,raw.portrait,raw.image,raw.photo,raw.avatar,raw.foto].map(safePortrait).find(Boolean)||'';
+ }
+ async function syncOwnCharacterPhotos(){
+  if(portraitSyncBusy||!uid||!roomId||window.parent===window)return;
+  const owner=uid,campaign=roomId;
+  const owned=roomSheets.filter(sheet=>sheet.ownerUid===owner&&sheet.linkedAgentId&&sheet.sheetFormat==='nex-agent-v1');
+  if(!owned.length)return;
+  portraitSyncBusy=true;
+  try{
+   const response=await requestNex('nex-agent-list-request');
+   if(!response?.ready||uid!==owner||roomId!==campaign)return;
+   const photos=new Map((response.agents||[]).map(agent=>[agent.id,safePortrait(agent.portrait)]));
+   let redraw=false;
+   for(const sheet of owned){
+    if(!photos.has(sheet.linkedAgentId))continue;
+    const newPhoto=photos.get(sheet.linkedAgentId)||'';
+    if(localPortraits.get(sheet.linkedAgentId)!==newPhoto){localPortraits.set(sheet.linkedAgentId,newPhoto);redraw=true;}
+    const oldPhoto=safePortrait(sheet.fullSheet?.photo);
+    if(newPhoto===oldPhoto)continue;
+    try{
+     await updateDoc(doc(db,'campaigns',campaign,'sheets',sheet.id),{'fullSheet.photo':newPhoto,updatedAt:serverTimestamp()});
+    }catch(error){console.warn('NEX: não foi possível atualizar foto compartilhada',error);}
+   }
+   if(redraw&&uid===owner&&roomId===campaign)drawSheets();
+  }catch(error){console.warn('NEX: fotos da conta ainda não estão disponíveis',error);}
+  finally{portraitSyncBusy=false;}
  }
  function drawSheets(){
   $('sheets').classList.add('nex-character-grid');
