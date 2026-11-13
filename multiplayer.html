@@ -418,7 +418,7 @@ if(new URLSearchParams(location.search).get('integrado')==='1'){
    <section id="roomCharactersPanel" class="room-panel">
     <div class="room-panel-head"><h2>Personagens</h2><button id="newSheet">Criar ficha simples</button></div>
     <div id="nexLinkPanel" class="row" style="margin:0 0 14px"><select id="nexAgentSelect" aria-label="Escolher personagem NEX" style="flex:1;min-width:180px"><option value="">Carregando fichas do NEX…</option></select><button type="button" id="nexLinkAgent">Vincular ficha existente</button><button type="button" id="nexRefreshAgents" class="alt">Atualizar lista</button></div>
-    <p class="room-note">Todos os participantes podem visualizar. Somente o dono da ficha e o mestre podem editar.</p>
+    <p class="room-note">Todos os participantes podem visualizar. Cada jogador edita as fichas que controla. O Mestre administra as permissões e as vagas.</p>
     <section id="sheetFormPanel" class="panel hide">
      <h3 id="sheetFormTitle">Editar ficha</h3>
      <form id="sheetForm"><label>Nome do personagem<input id="sheetName" maxlength="100" required></label>
@@ -1233,7 +1233,7 @@ if(!cfg||!cfg.projectId||!cfg.apiKey){show('setup',true);}else{
   const remove=e.target.closest('[data-remove-campaign-sheet]');
   if(remove){
    const sheet=roomSheets.find(item=>item.id===remove.dataset.removeCampaignSheet);
-   if(!sheet||!(sheet.ownerUid===uid||gm))return;
+   if(!sheet||!gm)return;
    // Remove somente o vínculo da campanha, sem confirmação e sem apagar a ficha original.
    remove.disabled=true;
    run(async()=>{
@@ -1248,7 +1248,7 @@ if(!cfg||!cfg.projectId||!cfg.apiKey){show('setup',true);}else{
   const button=e.target.closest('[data-open-campaign-sheet]');if(!button)return;
   const sheet=roomSheets.find(item=>item.id===button.dataset.openCampaignSheet);
   if(!sheet)return;
-  if(sheet.ownerUid===uid&&sheet.linkedAgentId){
+  if(sheet.ownerUid===uid&&sheet.linkedAgentId&&(!sheet.controllerUid||sheet.controllerUid===uid)){
    if(window.parent!==window){
     window.parent.postMessage({type:'nex-campaign-open-agent',agentId:sheet.linkedAgentId},location.origin);
     return;
