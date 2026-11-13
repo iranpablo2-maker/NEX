@@ -1900,7 +1900,7 @@ body > #nexOriginPopup[hidden]{display:none!important;}
  <div class="home-section-heading"><h2>Campanhas</h2><span class="home-tag">MESAS E PERSONAGENS</span></div>
  <p class="muted" style="margin:4px 0 16px">Crie sua campanha, autorize jogadores e acompanhe as fichas na mesma sala. Todos os participantes podem visualizar; somente o dono e o mestre podem editar.</p>
  <div class="nex-campaign-integrated" aria-label="Área de campanhas online">
-  <iframe id="nexCampaignRoomFrame" title="Campanhas online do NEX" data-src="./multiplayer.html?integrado=1&v=20261113masterprofile1" loading="eager" referrerpolicy="strict-origin-when-cross-origin"></iframe>
+  <iframe id="nexCampaignRoomFrame" title="Campanhas online do NEX" data-src="./multiplayer.html?integrado=1&v=20261113characters2" loading="eager" referrerpolicy="strict-origin-when-cross-origin"></iframe>
  </div>
  <details class="nex-campaign-legacy">
   <summary>Campanhas salvas neste dispositivo <span class="muted">(modo local anterior)</span></summary>
@@ -3364,7 +3364,7 @@ $('nexHomebrewFilter')?.addEventListener('input',()=>nex12RenderHomebrew());
  // Preserve compatibility with V1.2's original new-sheet and JSON import controls.
  $('newChar').addEventListener('click',e=>{e.preventDefault();e.stopImmediatePropagation();createAgent();},true);
  $('fileInput').addEventListener('change',()=>{setTimeout(()=>{try{rehydrate();persist();renderAgents();toast('Ficha importada para o personagem atual.');}catch(err){console.error('Erro após importar',err);toast('Confira o arquivo importado.');}},200);});
- window.NEX17={openHome:showHome,openAgents:showAgents,createAgent,openSheet:()=>{rehydrate();visible('sheet');},openCampaigns:()=>{
+ window.NEX17={openHome:showHome,openAgents:showAgents,openAgent,createAgent,openSheet:()=>{rehydrate();visible('sheet');},openCampaigns:()=>{
   renderCampaigns();
   visible('campaigns');
   // A aba superior Campanhas sempre retorna à lista, mesmo com sala aberta.
@@ -4658,6 +4658,16 @@ const PARANORMAL=[
       area.classList.toggle('nex-campaign-focused',msg.mode==='room'||msg.mode==='create');
       return;
     }
+    if(msg.type==='nex-campaign-open-agent'){
+      const id=String(msg.agentId||'');
+      const bridge=window.NEX_AUTO_BRIDGE;
+      if(bridge?.ready?.()&&bridge.read().agents.some(a=>a.id===id)){
+        if(typeof window.NEX17?.openAgent==='function')window.NEX17.openAgent(id);
+      }else if(typeof window.NEX17?.openAgents==='function'){
+        window.NEX17.openAgents();
+      }
+      return;
+    }
     if(msg.type!=='nex-agent-list-request' && msg.type!=='nex-agent-data-request')return;
     const bridge=window.NEX_AUTO_BRIDGE;
     if(!bridge?.ready?.()){
@@ -4666,7 +4676,7 @@ const PARANORMAL=[
     }
     const agents=bridge.read().agents||[];
     if(msg.type==='nex-agent-list-request'){
-      frame.contentWindow.postMessage({type:'nex-agent-bridge-response',requestId:msg.requestId,ready:true,agents:agents.filter(a=>a?.id&&a?.data).map(a=>({id:a.id,name:String(a.data.name||'Personagem sem nome'),className:String(a.data.class||''),nex:Number(a.data.nex)||0,createdAt:a.createdAt||'',portrait:(()=>{const image=[a.data.portraitUrl,a.data.imageUrl,a.data.portrait,a.data.image].find(v=>typeof v==='string' && /^https:\/\//i.test(v));return image||'';})()}))},location.origin);
+      frame.contentWindow.postMessage({type:'nex-agent-bridge-response',requestId:msg.requestId,ready:true,agents:agents.filter(a=>a?.id&&a?.data).map(a=>({id:a.id,name:String(a.data.name||'Personagem sem nome'),className:String(a.data.class||''),nex:Number(a.data.nex)||0,createdAt:a.createdAt||'',portrait:(()=>{const image=[a.data.portraitUrl,a.data.imageUrl,a.data.portrait,a.data.image,a.data.photo,a.data.avatar,a.data.foto].find(v=>typeof v==='string'&&v.length<120000&&(/^https:\/\//i.test(v)||/^data:image\/(?:jpeg|png|webp);base64,/i.test(v)));return image||'';})()}))},location.origin);
     }else{
       const agent=agents.find(a=>a.id===msg.agentId);
       frame.contentWindow.postMessage({type:'nex-agent-bridge-response',requestId:msg.requestId,ready:true,agent:agent?JSON.parse(JSON.stringify(agent)):null},location.origin);
