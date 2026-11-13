@@ -1900,7 +1900,7 @@ body > #nexOriginPopup[hidden]{display:none!important;}
  <div class="home-section-heading"><h2>Campanhas</h2><span class="home-tag">MESAS E PERSONAGENS</span></div>
  <p class="muted" style="margin:4px 0 16px">Crie sua campanha, autorize jogadores e acompanhe as fichas na mesma sala. Todos os participantes podem visualizar; somente o dono e o mestre podem editar.</p>
  <div class="nex-campaign-integrated" aria-label="Área de campanhas online">
-  <iframe id="nexCampaignRoomFrame" title="Campanhas online do NEX" data-src="./multiplayer.html?integrado=1&v=20261112initfix5" loading="eager" referrerpolicy="strict-origin-when-cross-origin"></iframe>
+  <iframe id="nexCampaignRoomFrame" title="Campanhas online do NEX" data-src="./multiplayer.html?integrado=1&v=20261113campaignpanel1" loading="eager" referrerpolicy="strict-origin-when-cross-origin"></iframe>
  </div>
  <details class="nex-campaign-legacy">
   <summary>Campanhas salvas neste dispositivo <span class="muted">(modo local anterior)</span></summary>
@@ -4632,7 +4632,7 @@ const PARANORMAL=[
     }
     const agents=bridge.read().agents||[];
     if(msg.type==='nex-agent-list-request'){
-      frame.contentWindow.postMessage({type:'nex-agent-bridge-response',requestId:msg.requestId,ready:true,agents:agents.filter(a=>a?.id&&a?.data).map(a=>({id:a.id,name:String(a.data.name||'Personagem sem nome'),className:String(a.data.class||''),nex:Number(a.data.nex)||0}))},location.origin);
+      frame.contentWindow.postMessage({type:'nex-agent-bridge-response',requestId:msg.requestId,ready:true,agents:agents.filter(a=>a?.id&&a?.data).map(a=>({id:a.id,name:String(a.data.name||'Personagem sem nome'),className:String(a.data.class||''),nex:Number(a.data.nex)||0,createdAt:a.createdAt||'',portrait:(()=>{const image=[a.data.portraitUrl,a.data.imageUrl,a.data.portrait,a.data.image].find(v=>typeof v==='string' && /^https:\/\//i.test(v));return image||'';})()}))},location.origin);
     }else{
       const agent=agents.find(a=>a.id===msg.agentId);
       frame.contentWindow.postMessage({type:'nex-agent-bridge-response',requestId:msg.requestId,ready:true,agent:agent?JSON.parse(JSON.stringify(agent)):null},location.origin);
