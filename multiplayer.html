@@ -280,6 +280,9 @@ html.nex-embedded main{max-width:100%;padding:10px 12px 28px}
 #room #requestExtraSlot.hide{display:none!important}
 #room #gmSlotLimits .card,#room #gmSlotRequests .card{padding:12px;border:1px solid #4d2e38;border-radius:7px}
 #room #gmSlotLimits .row{display:flex;gap:10px}
+
+#room .nex-assign-label{display:block;margin:5px 0;font-size:11px;color:#c9b4ba;width:100%}
+#room .nex-assign-label select{display:block;margin-top:3px;width:100%;font-size:12px;background:#181317;color:#fff;border:1px solid #653541;border-radius:4px;padding:6px}
 </style>
 <script src="./nex-image-crop.js?v=20261113crop1"></script>
 </head>
@@ -643,7 +646,7 @@ if(!cfg||!cfg.projectId||!cfg.apiKey){show('setup',true);}else{
   updateRoomCover();$('roomEditConfiguration').hidden=true;notice('Campanha atualizada.');
  });
  function renderCombats(){
-  const mySheets=roomSheets.filter(sheet=>sheet.ownerUid===uid);
+  const mySheets=roomSheets.filter(sheet=>assignedTo(sheet,uid));
   const options=mySheets.map(sh=>'<option value="'+escape(sh.id)+'">'+escape(sh.name)+'</option>').join('');
   $('roomCombats').innerHTML=roomCombats.length?roomCombats.map(c=>{
    const canRoll=mySheets.length>0;
@@ -676,7 +679,7 @@ if(!cfg||!cfg.projectId||!cfg.apiKey){show('setup',true);}else{
   if(!button||!roomId)return;
   const id=button.dataset.combatRoll;
   const select=document.querySelector('[data-combat-character="'+CSS.escape(id)+'"]');
-  const character=roomSheets.find(sheet=>sheet.id===select?.value&&sheet.ownerUid===uid);
+  const character=roomSheets.find(sheet=>sheet.id===select?.value&&assignedTo(sheet,uid));
   if(!character)throw Error('Adicione um personagem seu à campanha para rolar.');
   const number=new Uint32Array(1);crypto.getRandomValues(number);
   const result=(number[0]%20)+1;
@@ -1174,16 +1177,32 @@ if(!cfg||!cfg.projectId||!cfg.apiKey){show('setup',true);}else{
  function drawSheets(){
   $('sheets').classList.add('nex-character-grid');
   $('sheets').innerHTML=roomSheets.length?roomSheets.map(s=>{
-    const mine=s.ownerUid===uid;
-    const editable=mine||gm;
+    const mine=assignedTo(s,uid);
+    const editable=gm;
     const name=String(s.name||'Personagem sem nome');
     const cls=String(s.className||s.fullSheet?.class||s.fullSheet?.classe||'Classe não informada');
     const photo=sheetPortrait(s);
     const pic=photo?'<img class="nex-character-photo" src="'+escape(photo)+'" alt="Retrato de '+escape(name)+'" loading="lazy">':'<span class="nex-character-photo nex-character-placeholder" aria-hidden="true">'+escape(name.slice(0,1).toUpperCase())+'</span>';
-    return '<article class="nex-character-card">'+pic+'<div class="nex-character-info"><strong title="'+escape(name)+'">'+escape(name)+'</strong><span>'+escape(cls)+'</span><small>NEX '+escape(s.nex)+'%'+(!mine?' · Jogador da campanha':'')+'</small><button type="button" data-open-campaign-sheet="'+escape(s.id)+'">Acessar Ficha</button></div>'+(editable?'<details class="nex-character-settings"><summary aria-label="Opções do personagem" title="Opções do personagem">⚙</summary><button type="button" data-remove-campaign-sheet="'+escape(s.id)+'">Remover</button></details>':'')+'</article>';
+    const assigned=String(s.controllerUid||s.ownerUid||'');
+    const managing=gm?'<label class="nex-assign-label">Jogador responsável<select data-assign-sheet="'+escape(s.id)+'"><option value="'+escape(roomData?.gmUid||'')+'" '+(assigned===roomData?.gmUid?'selected':'')+'>Mestre</option>'+roomMembers.filter(m=>m.uid!==roomData?.gmUid).map(m=>'<option value="'+escape(m.uid)+'" '+(assigned===m.uid?'selected':'')+'>'+escape(m.name||'Jogador')+'</option>').join('')+'</select></label>':'';
+    return '<article class="nex-character-card">'+pic+'<div class="nex-character-info"><strong title="'+escape(name)+'">'+escape(name)+'</strong><span>'+escape(cls)+'</span><small>NEX '+escape(s.nex)+'%'+(!mine?' · Jogador da campanha':'')+'</small><button type="button" data-open-campaign-sheet="'+escape(s.id)+'">Acessar Ficha</button>'+managing+'</div>'+(editable?'<details class="nex-character-settings"><summary aria-label="Opções do personagem" title="Opções do personagem">⚙</summary><button type="button" data-remove-campaign-sheet="'+escape(s.id)+'">Remover</button></details>':'')+'</article>';
   }).join(''):'<p class="room-note">Ainda não há personagens nesta campanha. Use “Adicionar Personagens” para escolher uma ficha da sua conta NEX.</p>';
  }
- $('nexCampaignSheetClose').onclick=()=>$('nexCampaignSheetDialog').close();
+ $('sheets').addEventListener('change',event=>run(async()=>{
+  const control=event.target.closest('[data-assign-sheet]');
+  if(!control||!gm)return;
+  const sheet=roomSheets.find(item=>item.id===control.dataset.assignSheet);
+  if(!sheet)return;
+  const next=control.value;
+  if(next!==roomData?.gmUid&&!roomMembers.some(m=>m.uid===next))throw Error('O jogador precisa estar aprovado na campanha.');
+  if(next!==roomData?.gmUid&&playerCount(next)>=characterLimit(next))
+   throw Error('O jogador atingiu o limite de personagens. Aumente o limite dele antes de atribuir.');
+  try{
+   await updateDoc(doc(db,'campaigns',roomId,'sheets',sheet.id),{controllerUid:next});
+   notice('Jogador responsável atualizado. A ficha continua na conta do proprietário.');
+  }catch(error){control.value=sheet.controllerUid||sheet.ownerUid;throw error;}
+ }));
+  $('nexCampaignSheetClose').onclick=()=>$('nexCampaignSheetDialog').close();
  $('sheets').addEventListener('click',e=>{
   const remove=e.target.closest('[data-remove-campaign-sheet]');
   if(remove){
@@ -1249,9 +1268,16 @@ if(!cfg||!cfg.projectId||!cfg.apiKey){show('setup',true);}else{
    if(!original||!(gm||original.ownerUid===uid))throw Error('Você não pode editar esta ficha.');
    await updateDoc(doc(db,'campaigns',roomId,'sheets',editing),raw);
   }else{
-   const ownerUid=gm?$('sheetOwner').value:uid;
-   if(ownerUid!==uid && !gm)throw Error('Não é permitido criar fichas de terceiros.');
-   await addDoc(collection(db,'campaigns',roomId,'sheets'),{...raw,ownerUid});
+   const target=gm?$('sheetOwner').value:uid;
+   if(!gm&&playerCount(uid)>=characterLimit(uid))throw Error('Você atingiu o limite de personagens.');
+   if(gm&&target!==uid&&playerCount(target)>=characterLimit(target))throw Error('Aumente o limite do jogador antes de atribuir outra ficha.');
+   const assigned=target!==uid;
+   if(gm)await addDoc(collection(db,'campaigns',roomId,'sheets'),{...raw,ownerUid:uid,...(assigned?{controllerUid:target}:{})});
+   else{
+    const used=new Set(roomSheets.filter(sh=>sh.ownerUid===uid&&Number.isInteger(sh.slotNumber)).map(sh=>sh.slotNumber));
+    let slot=1;while(used.has(slot))slot++;
+    await setDoc(doc(db,'campaigns',roomId,'sheets','slot-'+uid+'-'+slot),{...raw,ownerUid:uid,slotNumber:slot});
+   }
   }
   show('sheetFormPanel',false);notice('Ficha salva na campanha.');
  });});
