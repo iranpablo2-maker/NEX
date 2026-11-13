@@ -123,7 +123,7 @@ else{
  async function sync(){
   if(busy||!current)return;
   const bridge=getBridge();
-  if(!bridge){status('Carregando fichas da sua conta…');return;}
+  if(!bridge){status('Preparando acesso às fichas da conta…');setTimeout(()=>{if(current&&!busy)sync();},500);return;}
   const account=current.uid;
   busy=true;status('Sincronizando fichas com a conta NEX…');
   const versionAtStart=localVersion;
@@ -243,8 +243,11 @@ else{
     window.dispatchEvent(new CustomEvent('nex-cloud-sync-state',{detail:{state:'error',uid:current?.uid}}));
   }finally{
    busy=false;
-   if(current&&localVersion!==versionAtStart){dirty=true;schedule();}
-   else dirty=false;
+   if(current&&hydratedUid!==current.uid){
+    setTimeout(()=>{if(current&&!busy)sync();},300);
+   }else if(current&&localVersion!==versionAtStart){
+    dirty=true;schedule();
+   }else dirty=false;
   }
  }
  function schedule(){if(!current||!ready)return;clearTimeout(timer);timer=setTimeout(sync,1000);}
@@ -556,6 +559,7 @@ else{
    message('As fichas são vinculadas à conta NEX. Sem login, o salvamento na nuvem não está disponível.');
   }
  });
- // Periodic reconciliation while signed in, including changes from other devices.
+ document.addEventListener('nex51-ready',()=>{if(current&&!busy&&!ready)sync();});
+  // Periodic reconciliation while signed in, including changes from other devices.
  setInterval(()=>{if(current&&!busy)sync();},45000);
 }
