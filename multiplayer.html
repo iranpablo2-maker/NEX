@@ -430,6 +430,17 @@ html.nex-embedded main{max-width:100%;padding:10px 12px 28px}
 #room #gmSheetAssignments .nex-assignment-edit>small{font-size:11px;color:#bbaab2}
 @media(max-width:400px){#room #gmSheetAssignments{grid-template-columns:minmax(0,1fr)}}
 </style>
+<style id="nex-sheet-visibility-controls">
+#room .nex-hidden-label{display:inline-block;font-size:10px;line-height:1.3;color:#ffd3de;background:#5d2834;border:1px solid #a04455;border-radius:5px;padding:2px 6px;margin:3px 0}
+#room .nex-character-settings[open]{z-index:20}
+#room .nex-character-settings[open] button{display:block;position:relative;top:auto;right:auto;margin:0;padding:9px 12px;text-align:left;width:100%;box-shadow:none;border-radius:0}
+#room .nex-character-settings[open] button:first-of-type{color:#f6d5dd;border-radius:7px 7px 0 0}
+#room .nex-character-settings[open] button:last-of-type{color:#ff8494;border-radius:0 0 7px 7px}
+#room .nex-character-settings[open]{min-width:170px;border-radius:7px;background:#181218;border:1px solid #783b4b;box-shadow:0 10px 25px #000b}
+#room .nex-character-settings[open] summary{margin-left:auto}
+#room .nex-character-settings[open] button{background:#20181e;border:0;border-top:1px solid #57313b}
+#room .nex-manager-assignment .nex-assignment-private{font-size:11px;color:#f3b5c2;font-weight:700}
+</style>
 </head>
 <body>
 <script>
@@ -606,7 +617,7 @@ document.addEventListener('click',function(event){
 <script type="module">
 import {initializeApp} from 'https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js';
 import {getAuth,onAuthStateChanged,createUserWithEmailAndPassword,signInWithEmailAndPassword,signOut} from 'https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js';
-import {getFirestore,collection,doc,getDoc,getDocs,setDoc,addDoc,updateDoc,deleteDoc,onSnapshot,serverTimestamp,query,where} from 'https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js';
+import {getFirestore,collection,doc,getDoc,getDocs,setDoc,addDoc,updateDoc,deleteDoc,onSnapshot,serverTimestamp,query,where,writeBatch} from 'https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js';
 const $=id=>document.getElementById(id);
 const show=(id,on)=>$(id).classList.toggle('hide',!on);
 const notice=msg=>$('notice').textContent=msg||'';
@@ -621,6 +632,9 @@ if(!cfg||!cfg.projectId||!cfg.apiKey){show('setup',true);}else{
  const localPortraits=new Map();
  let portraitSyncBusy=false;
  let extraSlotRequests=[],slotPending=false;
+ let publicSheets=[],privateSheets=[];
+ function refreshRoomSheets(){roomSheets=gm?[...publicSheets,...privateSheets]:publicSheets.slice();drawSheets();drawMembers();renderQuota();renderSlotManagement();renderCombats();if(publicSheets.length)syncOwnCharacterPhotos();}
+ function campaignSheetRef(sheet){return doc(db,'campaigns',roomId,sheet.isHidden?'privateSheets':'sheets',sheet.id)}
  const pendingBridge=new Map();
  let bridgeSeq=0;
  function requestNex(type,agentId){
@@ -709,7 +723,7 @@ if(!cfg||!cfg.projectId||!cfg.apiKey){show('setup',true);}else{
    if(!confirm('Remover '+(member.name||'este jogador')+' da campanha?'))return;
    button.disabled=true;
    for(const sheet of roomSheets.filter(sheet=>sheet.controllerUid===player))
-     await updateDoc(doc(db,'campaigns',roomId,'sheets',sheet.id),{controllerUid:roomData.gmUid});
+     await updateDoc(campaignSheetRef(sheet),{controllerUid:roomData.gmUid});
    await deleteDoc(doc(db,'campaigns',roomId,'members',player));
    await deleteDoc(doc(db,'users',player,'joinedCampaigns',roomId)).catch(error=>console.warn('Limpeza do índice pendente',error));
    notice('Jogador removido da campanha.');
@@ -1295,8 +1309,11 @@ if(!cfg||!cfg.projectId||!cfg.apiKey){show('setup',true);}else{
     if(gm)for(const m of roomMembers)ensurePlayerIndex(id,m.uid).catch(error=>console.warn('Índice do jogador',error));
   },e=>notice('Não foi possível carregar participantes: '+e.message)));
   unsubs.push(onSnapshot(collection(db,'campaigns',id,'sheets'),snapshot=>{
-    roomSheets=snapshot.docs.map(d=>({id:d.id,...d.data()}));drawSheets();drawMembers();renderQuota();renderSlotManagement();renderCombats();syncOwnCharacterPhotos();
+    publicSheets=snapshot.docs.map(d=>({id:d.id,...d.data(),isHidden:false}));refreshRoomSheets();
   },e=>notice('Não foi possível carregar fichas: '+e.message)));
+  if(gm)unsubs.push(onSnapshot(collection(db,'campaigns',id,'privateSheets'),snapshot=>{
+    privateSheets=snapshot.docs.map(d=>({id:d.id,...d.data(),isHidden:true}));refreshRoomSheets();
+  },e=>notice('Não foi possível carregar fichas ocultas. Publique as regras de privacidade do Firebase: '+e.message)));
  }
  function nexMasterProfile(){
   const user=auth.currentUser;
@@ -1346,7 +1363,7 @@ if(!cfg||!cfg.projectId||!cfg.apiKey){show('setup',true);}else{
     const oldPhoto=safePortrait(sheet.fullSheet?.photo);
     if(newPhoto===oldPhoto||newPhoto.length>110000)continue;
     try{
-     await updateDoc(doc(db,'campaigns',campaign,'sheets',sheet.id),{'fullSheet.photo':newPhoto,updatedAt:serverTimestamp()});
+     await updateDoc(doc(db,'campaigns',campaign,sheet.isHidden?'privateSheets':'sheets',sheet.id),{'fullSheet.photo':newPhoto,updatedAt:serverTimestamp()});
     }catch(error){console.warn('NEX: não foi possível atualizar foto compartilhada',error);}
    }
    if(redraw&&uid===owner&&roomId===campaign)drawSheets();
@@ -1366,7 +1383,7 @@ if(!cfg||!cfg.projectId||!cfg.apiKey){show('setup',true);}else{
     const responsible=assigned===roomData?.gmUid?'Mestre':(roomMembers.find(m=>m.uid===assigned)?.name||'Jogador');
     const editors=assigned===roomData?.gmUid?'Mestre':responsible+' e Mestre';
     const managing='<div class="nex-character-responsible"><small class="nex-character-meta-label">Jogador responsável</small><strong class="nex-character-meta-value">'+escape(responsible)+'</strong><small class="nex-character-meta-editors">Pode editar: '+escape(editors)+'</small></div>';
-    return '<article class="nex-character-card" data-card-layout="referencia-20261113">'+pic+'<div class="nex-character-info"><strong title="'+escape(name)+'">'+escape(name)+'</strong><span>'+escape(cls)+'</span><small>NEX '+escape(s.nex)+'%'+(!mine?' · Jogador da campanha':'')+'</small><button type="button" data-open-campaign-sheet="'+escape(s.id)+'">Acessar Ficha</button>'+managing+'</div>'+(editable?'<details class="nex-character-settings"><summary aria-label="Opções do personagem" title="Opções do personagem">⚙</summary><button type="button" data-remove-campaign-sheet="'+escape(s.id)+'">Remover</button></details>':'')+'</article>';
+    return '<article class="nex-character-card" data-card-layout="referencia-20261113">'+pic+'<div class="nex-character-info"><strong title="'+escape(name)+'">'+escape(name)+'</strong><span>'+escape(cls)+'</span><small>NEX '+escape(s.nex)+'%'+(!mine?' · Jogador da campanha':'')+'</small>'+(s.isHidden?'<span class="nex-hidden-label">🔒 Oculta</span>':'')+'<button type="button" data-open-campaign-sheet="'+escape(s.id)+'">Acessar Ficha</button>'+managing+'</div>'+(editable?'<details class="nex-character-settings"><summary aria-label="Opções do personagem" title="Opções do personagem">⚙</summary><button type="button" data-toggle-private-sheet="'+escape(s.id)+'">'+(s.isHidden?'Mostrar ficha':'Ocultar ficha')+'</button><button type="button" data-remove-campaign-sheet="'+escape(s.id)+'">Remover da campanha</button></details>':'')+'</article>';
   }).join(''):'<p class="room-note">Ainda não há personagens nesta campanha. Use “Adicionar Personagens” para escolher uma ficha da sua conta NEX.</p>';
  }
  $('gmSheetAssignments').addEventListener('click',event=>{
@@ -1391,7 +1408,7 @@ if(!cfg||!cfg.projectId||!cfg.apiKey){show('setup',true);}else{
   if(next!==roomData?.gmUid&&next!==String(sheet.controllerUid||sheet.ownerUid||'')&&playerCount(next)>=characterLimit(next))
    throw Error('O jogador atingiu o limite de personagens. Aumente o limite dele antes de atribuir.');
   try{
-   await updateDoc(doc(db,'campaigns',roomId,'sheets',sheet.id),{controllerUid:next});
+   await updateDoc(campaignSheetRef(sheet),{controllerUid:next});
    notice('Jogador responsável atualizado. A ficha continua na conta do proprietário.');
   }catch(error){control.value=sheet.controllerUid||sheet.ownerUid;throw error;}
  }));
@@ -1408,7 +1425,7 @@ if(!cfg||!cfg.projectId||!cfg.apiKey){show('setup',true);}else{
   if(JSON.stringify(data).length>450000){answer(false,'A ficha excede o limite de compartilhamento.');return;}
   const clampStat=(value)=>Math.max(0,Math.min(9999,Math.trunc(Number(value)||0)));
   try{
-   await updateDoc(doc(db,'campaigns',roomId,'sheets',sheet.id),{
+   await updateDoc(campaignSheetRef(sheet),{
     fullSheet:data,
     ...(!sheet.fullSheet?{linkedAgentId:'shared-'+sheet.id,sheetFormat:'nex-agent-v1'}:{}),
     name:String(data.name||sheet.name).slice(0,100),
@@ -1423,6 +1440,25 @@ if(!cfg||!cfg.projectId||!cfg.apiKey){show('setup',true);}else{
  });
   $('nexCampaignSheetClose').onclick=()=>$('nexCampaignSheetDialog').close();
  $('sheets').addEventListener('click',e=>{
+  const toggle=e.target.closest('[data-toggle-private-sheet]');
+  if(toggle){
+   const sheet=roomSheets.find(item=>item.id===toggle.dataset.togglePrivateSheet);
+   if(!sheet||!gm)return;
+   toggle.disabled=true;
+   run(async()=>{
+    try{
+     const original=campaignSheetRef(sheet);
+     const destination=doc(db,'campaigns',roomId,sheet.isHidden?'sheets':'privateSheets',sheet.id);
+     const {id,isHidden,...data}=sheet;
+     const batch=writeBatch(db);
+     batch.set(destination,data);
+     batch.delete(original);
+     await batch.commit();
+     notice(sheet.isHidden?'Ficha visível novamente para os participantes.':'Ficha oculta. Somente o mestre poderá visualizá-la na campanha.');
+    }catch(error){toggle.disabled=false;throw error;}
+   });
+   return;
+  }
   const remove=e.target.closest('[data-remove-campaign-sheet]');
   if(remove){
    const sheet=roomSheets.find(item=>item.id===remove.dataset.removeCampaignSheet);
@@ -1431,7 +1467,7 @@ if(!cfg||!cfg.projectId||!cfg.apiKey){show('setup',true);}else{
    remove.disabled=true;
    run(async()=>{
     try{
-     await deleteDoc(doc(db,'campaigns',roomId,'sheets',sheet.id));
+     await deleteDoc(campaignSheetRef(sheet));
      if(sheet.ownerUid===uid&&sheet.linkedAgentId)localPortraits.delete(sheet.linkedAgentId);
      notice('Personagem removido da campanha. A ficha original continua salva na conta NEX.');
     }catch(error){remove.disabled=false;throw error;}
@@ -1509,7 +1545,7 @@ if(!cfg||!cfg.projectId||!cfg.apiKey){show('setup',true);}else{
   if(editing){
    const original=roomSheets.find(s=>s.id===editing);
    if(!original||!(gm||original.ownerUid===uid||original.controllerUid===uid))throw Error('Você não pode editar esta ficha.');
-   await updateDoc(doc(db,'campaigns',roomId,'sheets',editing),raw);
+   await updateDoc(campaignSheetRef(original),raw);
   }else{
    const target=gm?$('sheetOwner').value:uid;
    if(!gm&&playerCount(uid)>=characterLimit(uid))throw Error('Você atingiu o limite de personagens.');
