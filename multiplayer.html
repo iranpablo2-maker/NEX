@@ -226,6 +226,31 @@ html.nex-embedded main{max-width:100%;padding:10px 12px 28px}
 #room .nex-member-card b{overflow-wrap:anywhere}
 #room .nex-member-avatar{width:52px;height:52px;flex:0 0 52px;object-fit:cover;border-radius:10px;border:1px solid #783842;background:#21151b}
 #room .nex-member-placeholder{display:grid;place-items:center;background:#7e2638;color:white;font-size:22px;font-weight:700}
+
+/* Cartões de personagem na campanha */
+#room .nex-character-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(275px,360px));gap:18px;align-items:start;padding-top:12px}
+#room .nex-character-card{display:flex;min-width:0;min-height:127px;background:#1c1c1f;border:1px solid #302a30;border-radius:7px;overflow:hidden}
+#room .nex-character-photo{width:124px;flex:0 0 124px;height:127px;object-fit:cover;object-position:center;background:#292028}
+#room .nex-character-placeholder{display:grid;place-items:center;font-size:44px;font-weight:700;color:#eee}
+#room .nex-character-info{display:flex;flex-direction:column;align-items:flex-start;gap:3px;padding:14px 12px 10px;min-width:0;flex:1}
+#room .nex-character-info strong{max-width:100%;font-size:17px;font-weight:600;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#room .nex-character-info span{font-size:13px;color:#eee}
+#room .nex-character-info small{font-size:11px;color:#b5a4aa;margin-top:2px}
+#room .nex-character-info button{align-self:flex-end;margin-top:auto;font-size:12px;padding:7px 10px;min-height:30px}
+#room #roomInvitePanel:not(.hide){display:flex;gap:18px;align-items:center;justify-content:space-between;flex-wrap:wrap;background:#1c171b;border:1px solid #61323e;padding:16px;border-radius:8px}
+#room #roomInviteLink{width:min(100%,410px);min-width:210px;background:#121114;color:#fff;border:1px solid #60434b;border-radius:5px;padding:10px}
+#room .room-invite-copy{display:flex;align-items:center;gap:8px;flex-wrap:wrap;min-width:0;flex:1;justify-content:flex-end}
+#room .nex-sheet-preview{width:min(96vw,790px);max-height:85vh;overflow:auto;background:#161417;color:#f5f1f3;border:1px solid #7b3949;border-radius:10px;padding:20px}
+#room .nex-sheet-preview::backdrop{background:rgba(0,0,0,.76)}
+#room .nex-sheet-preview header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:18px}
+#room .nex-sheet-preview header button{font-size:25px;background:transparent}
+#room .nex-sheet-summary{display:flex;gap:16px;align-items:center;margin-bottom:18px}
+#room .nex-sheet-summary img{width:92px;height:108px;object-fit:cover}
+#room .nex-sheet-fields{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:8px}
+#room .nex-sheet-fields>div{background:#242025;padding:10px;border-radius:5px;min-width:0;overflow-wrap:anywhere}
+#room .nex-sheet-fields b,#room .nex-sheet-fields span{display:block}
+#room .nex-sheet-fields b{font-size:11px;color:#cdaab1;margin-bottom:5px}
+@media(max-width:480px){#room .nex-character-grid{grid-template-columns:1fr}#room .nex-character-photo{width:108px;flex-basis:108px}}
 </style>
 </head>
 <body>
@@ -339,7 +364,7 @@ if(new URLSearchParams(location.search).get('integrado')==='1'){
    <div id="roomMasterPanel" class="room-panel hide"><h3>Painel do mestre</h3><p class="room-note">Gerencie as solicitações e acompanhe os personagens da sua campanha.</p></div>
    <div class="room-invite" id="roomInvitePanel">
     <div><small>Convide seus jogadores com um link</small><span class="room-invite-label">Somente o mestre pode aprovar novos participantes.</span><code id="roomCode" class="code hide"></code></div>
-    <div class="room-invite-copy"><button class="alt" id="copyCode" type="button">Copiar convite</button></div>
+    <div class="room-invite-copy"><input id="roomInviteLink" type="text" readonly aria-label="Link de convite" title="Link de convite da campanha"><button class="alt" id="copyCode" type="button">Copiar convite</button></div>
    </div>
    <section id="gmOnly" class="room-panel hide">
     <div class="room-panel-head"><h3>Solicitações de entrada</h3></div>
@@ -366,6 +391,7 @@ if(new URLSearchParams(location.search).get('integrado')==='1'){
      </form>
     </section>
     <div id="sheets" class="grid room-sheets"></div>
+    <dialog id="nexCampaignSheetDialog" class="nex-sheet-preview"><header><h2 id="nexCampaignSheetTitle">Ficha do personagem</h2><button type="button" id="nexCampaignSheetClose" aria-label="Fechar">×</button></header><div id="nexCampaignSheetBody"></div></dialog>
    </section>
   </div>
  </section>
@@ -447,7 +473,13 @@ if(!cfg||!cfg.projectId||!cfg.apiKey){show('setup',true);}else{
  });
  $('roomAddAgentsAction').onclick=()=>{$('roomAgentPicker').hidden=false;refreshNexAgents();};
  $('roomBackFromPicker').onclick=()=>roomSection('characters');
- $('roomInviteAction').onclick=()=>roomSection('invites');
+ $('roomInviteAction').onclick=()=>{
+  roomSection('invites');
+  const link=inviteLink(roomId);
+  $('roomInviteLink').value=link;
+  $('roomInviteLink').focus();
+  $('roomInviteLink').select();
+ };
  $('roomMasterAction').onclick=()=>roomSection('master');
  function updateRoomCover(){
   const el=$('roomCoverImage'),url=roomData?.coverUrl||'';
@@ -577,9 +609,15 @@ if(!cfg||!cfg.projectId||!cfg.apiKey){show('setup',true);}else{
     fullSheet:data,linkedAgentId:agentId,sheetFormat:'nex-agent-v1',
     updatedAt:serverTimestamp()
   };
+  const sourceName=String(data.class||data.className||data.classe||'Classe não informada');
+  const photo=[data.portraitUrl,data.imageUrl,data.portrait,data.image,data.photo,data.avatar,data.foto].find(value=>typeof value==='string'&&(value.startsWith('https://')||/^data:image\/(?:jpeg|png|webp);base64,/i.test(value))&&value.length<120000)||'';
+  payload.className=sourceName.slice(0,80);
+  payload.portrait=photo;
+  payload.createdAt=existing.exists()?existing.data().createdAt||serverTimestamp():serverTimestamp();
   if(existing.exists())await updateDoc(sheetRef,payload);
   else await setDoc(sheetRef,{...payload,ownerUid:uid});
   notice('Personagem adicionado à campanha. A ficha original permanece salva na sua conta.');
+  refreshNexAgents();
   roomSection('characters');
  }));
  const inviteId=new URLSearchParams(location.search).get('invite')||'';
@@ -591,7 +629,7 @@ if(!cfg||!cfg.projectId||!cfg.apiKey){show('setup',true);}else{
  const clearRoom=()=>{
   for(const u of unsubs){try{u()}catch(e){}}unsubs=[];
   roomId='';gm=false;roomMembers=[];roomSheets=[];roomRequests=[];roomCombats=[];roomData=null;editing=null;
-  $('roomAgentPicker').hidden=true;$('roomEditConfiguration').hidden=true;
+  $('roomAgentPicker').hidden=true;$('roomEditConfiguration').hidden=true;$('nexCampaignSheetDialog').close?.();
   show('room',false);show('sheetFormPanel',false);
  };
  function libraryMode(mode){
@@ -696,10 +734,20 @@ if(!cfg||!cfg.projectId||!cfg.apiKey){show('setup',true);}else{
  $('authForm').addEventListener('submit',e=>{e.preventDefault();run(async()=>{await signInWithEmailAndPassword(auth,$('email').value.trim(),$('password').value);});});
  $('register').addEventListener('click',()=>run(async()=>{await createUserWithEmailAndPassword(auth,$('email').value.trim(),$('password').value);}));
  $('logout')?.addEventListener('click',()=>run(async()=>{await signOut(auth)}));
- const copy=s=>navigator.clipboard?.writeText(s).then(()=>notice('Copiado.')).catch(()=>notice('Selecione e copie o código mostrado.'));
-
  const inviteLink=id=>new URL('./index.html?campaignInvite='+encodeURIComponent(id),location.href).href;
- $('copyCode').addEventListener('click',()=>copy(inviteLink(roomId)));
+ $('copyCode').addEventListener('click',async()=>{
+  if(!roomId)return;
+  const link=inviteLink(roomId);
+  $('roomInviteLink').value=link;
+  try{
+   if(!navigator.clipboard?.writeText)throw Error('Clipboard indisponível');
+   await navigator.clipboard.writeText(link);
+   notice('Convite copiado! Envie o link ao jogador.');
+  }catch(error){
+   $('roomInviteLink').focus();$('roomInviteLink').select();
+   notice('Copie o link selecionado e envie ao jogador.');
+  }
+ });
  function roomSection(section){
   const allowed=['characters','master','players','invites','combats'];
   if(!allowed.includes(section)||section==='master'&&!gm)section='characters';
@@ -812,7 +860,7 @@ if(!cfg||!cfg.projectId||!cfg.apiKey){show('setup',true);}else{
   }
   $('roomTitle').textContent=roomData.name;
   $('roomDescription').textContent=roomData.description||'';
-  $('roomCode').textContent=id;$('role').textContent=gm?'Mestre':'Jogador';libraryMode('room');show('room',true);
+  $('roomCode').textContent=id;$('roomInviteLink').value=inviteLink(id);$('role').textContent=gm?'Mestre':'Jogador';libraryMode('room');show('room',true);
   for(const key of ['roomEditAction','roomCreateCombatAction','roomMasterAction'])$(key).hidden=!gm;
   updateRoomCover();
   show('roomMasterTab',gm);roomSection('characters');refreshNexAgents();
@@ -858,31 +906,44 @@ if(!cfg||!cfg.projectId||!cfg.apiKey){show('setup',true);}else{
   $('sheetOwner').innerHTML='<option value="'+escape(uid)+'">Minha conta</option>'+
     (gm?roomMembers.filter(m=>m.uid!==uid).map(m=>'<option value="'+escape(m.uid)+'">'+escape(m.name||m.uid)+'</option>').join(''):'');
  }
- function drawSheets(){
-  $('sheets').innerHTML=roomSheets.length?roomSheets.map(s=>{
-    const canEdit=gm||s.ownerUid===uid;
-    return '<div class="card"><div class="row"><h3>'+escape(s.name)+'</h3><span class="badge">'+(canEdit?'Pode editar':'Somente leitura')+'</span></div>'+
-     '<p>NEX '+escape(s.nex)+'% · PV '+escape(s.pv)+' · PE '+escape(s.pe)+' · SAN '+escape(s.san)+'</p>'+
-     (s.sheetFormat==='nex-agent-v1'&&s.fullSheet?
-       '<details><summary>Ver ficha completa</summary><div class="nex-full-sheet">'+
-       Object.entries(s.fullSheet).filter(([key,value])=>value!==null&&['string','number','boolean'].includes(typeof value)).slice(0,70).map(([key,value])=>'<p><strong>'+escape(key)+':</strong> '+escape(String(value))+'</p>').join('')+
-       '<p><small>Os demais campos estruturados da ficha continuam preservados no registro online.</small></p></div></details>'
-       :'<p>'+escape(s.notes||'Sem anotações')+'</p>')+
-     '<p><small>Dono: '+escape(s.ownerUid)+'</small></p>'+
-     (canEdit?'<button type="button" data-edit-sheet="'+escape(s.id)+'">Editar</button>':'')+'</div>';
-  }).join(''):'<p>Nenhuma ficha compartilhada ainda.</p>';
+ function safePortrait(v){
+  return typeof v==='string'&&v.length<120000&&(/^(https:\/\/)/i.test(v)||/^data:image\/(?:png|jpeg|webp);base64,[a-z0-9+/=]+$/i.test(v))?v:'';
  }
+ function sheetPortrait(s){
+  const raw=s.fullSheet||{};
+  return safePortrait(s.portrait)||[raw.portraitUrl,raw.imageUrl,raw.portrait,raw.image,raw.photo,raw.avatar,raw.foto].map(safePortrait).find(Boolean)||'';
+ }
+ function drawSheets(){
+  $('sheets').classList.add('nex-character-grid');
+  $('sheets').innerHTML=roomSheets.length?roomSheets.map(s=>{
+    const mine=s.ownerUid===uid;
+    const editable=mine||gm;
+    const name=String(s.name||'Personagem sem nome');
+    const cls=String(s.className||s.fullSheet?.class||s.fullSheet?.classe||'Classe não informada');
+    const photo=sheetPortrait(s);
+    const pic=photo?'<img class="nex-character-photo" src="'+escape(photo)+'" alt="Retrato de '+escape(name)+'" loading="lazy">':'<span class="nex-character-photo nex-character-placeholder" aria-hidden="true">'+escape(name.slice(0,1).toUpperCase())+'</span>';
+    return '<article class="nex-character-card">'+pic+'<div class="nex-character-info"><strong title="'+escape(name)+'">'+escape(name)+'</strong><span>'+escape(cls)+'</span><small>NEX '+escape(s.nex)+'%'+(!mine?' · Jogador da campanha':'')+'</small><button type="button" data-open-campaign-sheet="'+escape(s.id)+'">Acessar Ficha</button></div></article>';
+  }).join(''):'<p class="room-note">Ainda não há personagens nesta campanha. Use “Adicionar Personagens” para escolher uma ficha da sua conta NEX.</p>';
+ }
+ $('nexCampaignSheetClose').onclick=()=>$('nexCampaignSheetDialog').close();
  $('sheets').addEventListener('click',e=>{
-  const b=e.target.closest('[data-edit-sheet]');if(!b)return;
-  const sheet=roomSheets.find(s=>s.id===b.dataset.editSheet);
-  if(!sheet||!(gm||sheet.ownerUid===uid))return;
-  editing=sheet.id;
-  $('sheetFormTitle').textContent='Editar '+sheet.name;
-  $('sheetName').value=sheet.name;$('sheetNex').value=sheet.nex;$('sheetPV').value=sheet.pv;
-  $('sheetPE').value=sheet.pe;$('sheetSAN').value=sheet.san;$('sheetNotes').value=sheet.notes||'';
-  $('sheetOwnerWrap').classList.add('hide');
-  show('sheetFormPanel',true);
-  $('sheetFormPanel').scrollIntoView({behavior:'smooth',block:'start'});
+  const button=e.target.closest('[data-open-campaign-sheet]');if(!button)return;
+  const sheet=roomSheets.find(item=>item.id===button.dataset.openCampaignSheet);
+  if(!sheet)return;
+  if(sheet.ownerUid===uid&&sheet.linkedAgentId){
+   if(window.parent!==window){
+    window.parent.postMessage({type:'nex-campaign-open-agent',agentId:sheet.linkedAgentId},location.origin);
+    return;
+   }
+  }
+  const raw=sheet.fullSheet||{};
+  const portrait=sheetPortrait(sheet);
+  const detail=Object.entries(raw).filter(([key,val])=>val!==null&&['string','number','boolean'].includes(typeof val)&&String(val).length<1500&& !/^(?:photo|portrait|image|avatar|foto)/i.test(key)).slice(0,90);
+  $('nexCampaignSheetTitle').textContent=sheet.name||'Personagem';
+  $('nexCampaignSheetBody').innerHTML='<div class="nex-sheet-summary">'+(portrait?'<img src="'+escape(portrait)+'" alt="">':'')+'<div><h3>'+escape(sheet.name||'Personagem')+'</h3><p>'+escape(sheet.className||raw.class||'')+' · NEX '+escape(sheet.nex)+'%</p><p>PV '+escape(sheet.pv)+' · PE '+escape(sheet.pe)+' · SAN '+escape(sheet.san)+'</p></div></div>'+
+   (detail.length?'<div class="nex-sheet-fields">'+detail.map(([key,val])=>'<div><b>'+escape(key)+'</b><span>'+escape(val)+'</span></div>').join('')+'</div>':'<p>Esta ficha ainda não possui detalhes adicionais compartilhados.</p>')+
+   '<p class="room-note">Visualização da ficha compartilhada. Somente o dono pode abrir a ficha original nesta conta.</p>';
+  $('nexCampaignSheetDialog').showModal();
  });
  $('newSheet').addEventListener('click',()=>{
   if(!roomId)return;
