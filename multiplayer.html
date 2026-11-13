@@ -270,7 +270,7 @@ if(new URLSearchParams(location.search).get('integrado')==='1'){
   </nav>
   <div class="room-hero">
    <img class="campaign-cover" id="roomCoverImage" alt="Capa da campanha" hidden>
-   <div class="room-top"><h2 id="roomTitle">Campanha</h2><span id="role" class="badge"></span><button class="alt" id="leaveRoom">Voltar às campanhas</button></div>
+   <div class="room-top"><h2 id="roomTitle">Campanha</h2><span id="role" class="badge"></span></div>
    <p id="roomDescription" class="room-desc"></p>
   </div>
   <section id="roomEditConfiguration" class="campaign-configuration" hidden>
@@ -387,6 +387,14 @@ if(!cfg||!cfg.projectId||!cfg.apiKey){show('setup',true);}else{
    window.parent.postMessage({type,requestId,agentId},location.origin);
   });
  }
+ window.addEventListener('message',event=>{
+  if(window.parent===window||event.origin!==location.origin||event.source!==window.parent)return;
+  if(event.data?.type!=='nex-campaign-show-list')return;
+  clearRoom();
+  libraryMode('list');
+  show('joinInvite',!!inviteId);
+  notice('');
+ });
  window.addEventListener('message',event=>{
   if(event.origin!==location.origin||event.source!==window.parent)return;
   if(event.data?.type!=='nex-agent-bridge-response')return;
@@ -580,7 +588,7 @@ if(!cfg||!cfg.projectId||!cfg.apiKey){show('setup',true);}else{
    const dateText=date?date.toLocaleDateString('pt-BR'):'Data não informada';
    const image=typeof c.coverUrl==='string' && (/^data:image\/jpeg;base64,[a-z0-9+/=]+$/i.test(c.coverUrl)||/^https:\/\//i.test(c.coverUrl))?c.coverUrl:'';
    const art=image?'<img alt="" loading="lazy" src="'+escape(image)+'">':'<span>✦</span>';
-   return '<article class="library-card"><div class="library-art" aria-hidden="true">'+art+'</div><div class="library-card-body"><strong>'+escape(c.name||'Campanha')+'</strong><small>Iniciada em: '+escape(dateText)+' | DM</small><div class="library-card-actions"><span class="badge">Mestre</span><div class="row"><button type="button" class="library-delete" data-delete-campaign="'+escape(c.id)+'" aria-label="Excluir campanha '+escape(c.name||'Campanha')+'">Excluir</button><button type="button" data-open-campaign="'+escape(c.id)+'">Acessar</button></div></div></div></article>';
+   return '<article class="library-card"><div class="library-art" aria-hidden="true">'+art+'</div><div class="library-card-body"><strong>'+escape(c.name||'Campanha')+'</strong><small>Iniciada em: '+escape(dateText)+'</small><div class="library-card-actions"><span class="badge">Mestre</span><div class="row"><button type="button" class="library-delete" data-delete-campaign="'+escape(c.id)+'" aria-label="Excluir campanha '+escape(c.name||'Campanha')+'">Excluir</button><button type="button" data-open-campaign="'+escape(c.id)+'">Acessar</button></div></div></div></article>';
   }).join('');
   const full=myCampaigns.length>=10;
   $('showCreateCampaign').disabled=full;
@@ -668,7 +676,6 @@ if(!cfg||!cfg.projectId||!cfg.apiKey){show('setup',true);}else{
 
  const inviteLink=id=>new URL('./index.html?campaignInvite='+encodeURIComponent(id),location.href).href;
  $('copyCode').addEventListener('click',()=>copy(inviteLink(roomId)));
- $('leaveRoom').addEventListener('click',()=>{clearRoom();libraryMode('list');show('joinInvite',!!inviteId);});
  function roomSection(section){
   const allowed=['characters','master','players','invites','combats'];
   if(!allowed.includes(section)||section==='master'&&!gm)section='characters';
