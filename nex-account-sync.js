@@ -104,7 +104,7 @@ $('nexAccountClose').onclick=()=>panel.close();
 if(!cfg?.apiKey||!cfg?.projectId){status('Configuração do Firebase não encontrada.');message('Confira firebase-config.js.');}
 else{
  const app=getApps().find(a=>a.name==='[DEFAULT]')||initializeApp(cfg);
- const auth=getAuth(app),db=getFirestore(app);let current=null,busy=false,ready=false,dirty=false,timer=0,accountSwitchBlocked=false;
+ const auth=getAuth(app),db=getFirestore(app);let current=null,busy=false,ready=false,dirty=false,timer=0,hydratedUid=null,localVersion=0;
  const getBridge=()=>window.NEX_AUTO_BRIDGE?.ready?.()?window.NEX_AUTO_BRIDGE:null;
  const safeClone=v=>JSON.parse(JSON.stringify(v));
  const uidPath=()=>collection(db,'users',current.uid,'nex_v3');
@@ -121,14 +121,48 @@ else{
   localStorage.setItem('nex_homebrew_advanced_v2051',JSON.stringify(output));
  };
  async function sync(){
-  if(busy||!current||accountSwitchBlocked)return;
+  if(busy||!current)return;
   const bridge=getBridge();
-  if(!bridge){status('Preparando fichas locais…');return;}
-  busy=true;status('Sincronizando com segurança…');
+  if(!bridge){status('Carregando fichas da sua conta…');return;}
+  const account=current.uid;
+  busy=true;status('Sincronizando fichas com a conta NEX…');
+  const versionAtStart=localVersion;
   try{
-   const local=bridge.read();
-   const cloud=await getDocs(uidPath());
+   const priorLocal=bridge.read();
+   const cloud=await getDocs(collection(db,'users',account,'nex_v3'));
+   if(current?.uid!==account)return;
    const records=new Map(cloud.docs.map(s=>[s.id,s.data()]));
+   if(hydratedUid!==account){
+    // No primeiro carregamento, as fichas da conta são a fonte principal.
+    // Uma única migração é permitida apenas quando não há fichas salvas na conta.
+    let previous='';try{previous=localStorage.getItem('nex_account_last_uid')||'';}catch(error){}
+    const remoteAgents=[],removed=[];
+    let hasAgentRecords=false;
+    for(const [key,record] of records){
+     if(!key.startsWith('agent-'))continue;
+     hasAgentRecords=true;
+     if(record.deleted){removed.push(key.slice(6));continue;}
+     if(record.payload?.item?.data)remoteAgents.push(record.payload.item);
+    }
+    const canImportLegacy=!hasAgentRecords&&(!previous||previous===account);
+    const localOwnedByAccount=previous===account;
+    const merged=new Map(remoteAgents.map(agent=>[agent.id,agent]));
+    if(canImportLegacy||localOwnedByAccount){
+     for(const agent of priorLocal.agents||[]){
+      if(!agent?.id||removed.includes(agent.id))continue;
+      const cloudAgent=merged.get(agent.id);
+      if(!cloudAgent || Date.parse(agent.updatedAt||'')>Date.parse(cloudAgent.updatedAt||'')){
+       merged.set(agent.id,agent);
+      }
+     }
+    }
+    try{
+     localStorage.setItem('nex_account_recovery_'+(previous||account),JSON.stringify({savedAt:new Date().toISOString(),...priorLocal}));
+    }catch(error){console.warn('Backup anterior indisponível',error);}
+    bridge.replaceAccountAgents([...merged.values()],removed);
+    hydratedUid=account;
+   }
+   const local=bridge.read();
    const patches=[],uploads=[];
    // Exclusions are explicit tombstones, never inferred from a missing local sheet.
    const deletedIds=new Set((local.deletedAgentIds||[]).filter(id=>typeof id==='string'&&/^[A-Za-z0-9_-]{2,90}$/.test(id)));
@@ -191,18 +225,30 @@ else{
      bridge.apply(patches);
    }
    if(records.get('homebrew')?.payload?.advanced)mergeAdvanced(records.get('homebrew').payload.advanced);
-   for(const u of uploads)await setDoc(doc(uidPath(),u.key),{type:u.type,payload:safeClone(u.payload),deleted:!!u.deleted,updatedAt:serverTimestamp()});
-   try{localStorage.setItem('nex_account_last_uid',current.uid);}catch(e){}
-   ready=true;dirty=false;status('Conta conectada · sincronização concluída');
-   message('Dados sincronizados: '+(local.agents||[]).length+' ficha(s), campanhas e homebrews. As fichas locais foram preservadas.');
+   for(const u of uploads){
+    if(current?.uid!==account)return;
+    await setDoc(doc(db,'users',account,'nex_v3',u.key),{type:u.type,payload:safeClone(u.payload),deleted:!!u.deleted,updatedAt:serverTimestamp()});
+   }
+   if(current?.uid!==account)return;
+   try{localStorage.setItem('nex_account_last_uid',account);}catch(error){}
+   ready=true;
+   window.NEX_ACCOUNT_SYNC_READY=true;
+   status('Conta NEX · fichas sincronizadas na nuvem');
+   message('Fichas vinculadas à sua conta NEX. A cópia do navegador é apenas uma recuperação temporária.');
+   window.dispatchEvent(new CustomEvent('nex-cloud-sync-state',{detail:{state:'saved',uid:account}}));
   }catch(error){
     console.error('NEX sincronização',error);
-    status('Conta conectada · sincronização indisponível');
-    message('Não foi possível acessar a nuvem: '+(error?.code||error?.message||'erro')+'. Os dados locais permanecem salvos. Verifique autenticação, Firestore e regras publicadas.');
-  }finally{busy=false;if(dirty){dirty=false;schedule();}}
+    status('Conta NEX · não foi possível sincronizar');
+    message('Não foi possível confirmar o salvamento na conta ('+(error?.code||error?.message||'erro')+'). Uma cópia temporária foi mantida neste navegador; não a considere salva na nuvem.');
+    window.dispatchEvent(new CustomEvent('nex-cloud-sync-state',{detail:{state:'error',uid:current?.uid}}));
+  }finally{
+   busy=false;
+   if(current&&localVersion!==versionAtStart){dirty=true;schedule();}
+   else dirty=false;
+  }
  }
- function schedule(){if(!current||!ready)return;clearTimeout(timer);timer=setTimeout(sync,1800);}
- window.addEventListener('nex-auto-local-change',()=>{dirty=true;schedule();});
+ function schedule(){if(!current||!ready)return;clearTimeout(timer);timer=setTimeout(sync,1000);}
+ window.addEventListener('nex-auto-local-change',()=>{localVersion++;dirty=true;schedule();});
  $('nexAccountLogout').onclick=async()=>{try{await signOut(auth);menu.hidden=true;}catch(e){message('Falha ao sair da conta.');}};
  $('nexAccountMenuLogout').onclick=()=>$('nexAccountLogout').click();
  $('nexProfileLogout').onclick=async()=>{
@@ -469,25 +515,39 @@ else{
  };
  $('nexAccountReset').onclick=async()=>{const email=$('nexAccountEmail').value.trim();if(!email){message('Digite seu e-mail antes de recuperar a senha.');return;}try{await sendPasswordResetEmail(auth,email);message('Se a conta existir, você receberá instruções de recuperação.');}catch(error){message('Não foi possível enviar a recuperação: '+(error.code||'erro'));}};
  onAuthStateChanged(auth,user=>{
-  current=user;ready=false;clearTimeout(timer);dirty=false;
-  let previous='';try{previous=localStorage.getItem('nex_account_last_uid')||'';}catch(e){}
-  accountSwitchBlocked=!!user&&!!previous&&previous!==user.uid;
+  const previousUser=current?.uid||null;
+  current=user;ready=false;hydratedUid=null;clearTimeout(timer);dirty=false;
   window.NEX_ACCOUNT_USER=user||null;
+  window.NEX_ACCOUNT_SYNC_READY=false;
   $('nexAccountGuest').hidden=!!user;$('nexAccountConnected').hidden=!user;
   updateHeaderAvatar();
-  open.title=user?(accountSwitchBlocked?'Conta diferente detectada: sincronização pausada para proteger seus dados':(user.email||'Conta conectada')):'Entrar ou criar conta';
-  if(user) $('nexProfileEmail').value=user.email||'';
+  open.title=user?(user.email||'Conta NEX conectada'):'Entrar ou criar conta';
+  if(user)$('nexProfileEmail').value=user.email||'';
   menu.hidden=true;
   if(user){
    $('nexAccountWho').textContent=user.email||'Conta conectada';
    if(panel.open)panel.close();
-   if(accountSwitchBlocked){
-    status('Troca de conta detectada · sincronização pausada');
-    console.warn('NEX: sincronização automática impedida para não misturar dados de contas diferentes neste navegador.');
-   }else{status('Conta conectada · sincronização automática');setTimeout(sync,900);}
+   // Ao trocar contas, esconde imediatamente as fichas da sessão anterior.
+   let last='';try{last=localStorage.getItem('nex_account_last_uid')||'';}catch(error){}
+   if((previousUser&&previousUser!==user.uid)||(last&&last!==user.uid)){
+    const bridge=getBridge();
+    if(bridge){
+     try{
+      const before=bridge.read();
+      localStorage.setItem('nex_account_recovery_'+(previousUser||last),JSON.stringify({savedAt:new Date().toISOString(),...before}));
+      bridge.replaceAccountAgents([],[]);
+     }catch(error){console.warn('NEX: não foi possível isolar a troca de conta',error);}
+    }
+   }
+   status('Carregando personagens da conta NEX…');
+   setTimeout(()=>{if(current?.uid===user.uid)sync();},700);
   }else{
-   status('Entre ou crie uma conta para sincronizar suas fichas.');
-   message('O NEX continua funcionando sem login neste navegador.');
+   const bridge=getBridge();
+   if(bridge){
+    try{bridge.replaceAccountAgents([],[]);}catch(error){console.warn('NEX: limpeza da visualização ao sair',error);}
+   }
+   status('Entre na conta NEX para carregar e sincronizar personagens.');
+   message('As fichas são vinculadas à conta NEX. Sem login, o salvamento na nuvem não está disponível.');
   }
  });
  // Periodic reconciliation while signed in, including changes from other devices.
