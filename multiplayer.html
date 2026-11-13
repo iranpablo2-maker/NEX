@@ -99,6 +99,8 @@ html.nex-embedded .panel{margin:9px 0}
 #campaignLibrary .library-card{background:#171719;border:1px solid #323034;border-radius:6px;overflow:hidden;min-width:0}
 #campaignLibrary .library-art{height:130px;background:radial-gradient(ellipse at 50% 20%,#59212a 0%,#23151a 38%,#110e12 83%);position:relative;display:flex;align-items:center;justify-content:center;color:#ad4e5a;font:700 38px Georgia,serif}
 #campaignLibrary .library-art span{opacity:.85}
+#campaignLibrary .library-art img{display:block;width:100%;height:100%;object-fit:cover}
+#campaignLibrary .library-art:has(img){background:#151316}
 #campaignLibrary .library-card-body{padding:12px}
 #campaignLibrary .library-card-body strong{display:block;font-size:17px;overflow-wrap:anywhere}
 #campaignLibrary .library-card-body small{display:block;margin:6px 0 12px}
@@ -489,7 +491,15 @@ if(!cfg||!cfg.projectId||!cfg.apiKey){show('setup',true);}else{
   if(!name)throw Error('Nome obrigatório.');
   if(coverUrl && !/^data:image\/jpeg;base64,|^https:\/\//i.test(coverUrl))throw Error('Imagem inválida.');
   if(coverUrl.length>390000)throw Error('Imagem grande demais.');
-  await updateDoc(doc(db,'campaigns',roomId),{name,description,coverUrl});
+  try{
+   await updateDoc(doc(db,'campaigns',roomId),{name,description,coverUrl});
+  }catch(error){
+   if(error?.code==='permission-denied'){
+    $('roomImageSummary').textContent='A imagem foi selecionada, mas o Firebase bloqueou o salvamento. Publique as regras atualizadas do Firestore para permitir a capa.';
+    throw Error('A capa não foi salva porque o Firebase recusou a alteração. Publique as regras atuais do Firestore do NEX.');
+   }
+   throw error;
+  }
   roomData={...roomData,name,description,coverUrl};
   $('roomTitle').textContent=name;$('roomDescription').textContent=description;
   updateRoomCover();$('roomEditConfiguration').hidden=true;notice('Campanha atualizada.');
@@ -568,7 +578,9 @@ if(!cfg||!cfg.projectId||!cfg.apiKey){show('setup',true);}else{
   $('campaignCards').innerHTML=myCampaigns.map(c=>{
    const date=c.createdAt?.toDate?.();
    const dateText=date?date.toLocaleDateString('pt-BR'):'Data não informada';
-   return '<article class="library-card"><div class="library-art" aria-hidden="true"><span>✦</span></div><div class="library-card-body"><strong>'+escape(c.name||'Campanha')+'</strong><small>Iniciada em: '+escape(dateText)+' | DM</small><div class="library-card-actions"><span class="badge">Mestre</span><div class="row"><button type="button" class="library-delete" data-delete-campaign="'+escape(c.id)+'" aria-label="Excluir campanha '+escape(c.name||'Campanha')+'">Excluir</button><button type="button" data-open-campaign="'+escape(c.id)+'">Acessar</button></div></div></div></article>';
+   const image=typeof c.coverUrl==='string' && (/^data:image\/jpeg;base64,[a-z0-9+/=]+$/i.test(c.coverUrl)||/^https:\/\//i.test(c.coverUrl))?c.coverUrl:'';
+   const art=image?'<img alt="" loading="lazy" src="'+escape(image)+'">':'<span>✦</span>';
+   return '<article class="library-card"><div class="library-art" aria-hidden="true">'+art+'</div><div class="library-card-body"><strong>'+escape(c.name||'Campanha')+'</strong><small>Iniciada em: '+escape(dateText)+' | DM</small><div class="library-card-actions"><span class="badge">Mestre</span><div class="row"><button type="button" class="library-delete" data-delete-campaign="'+escape(c.id)+'" aria-label="Excluir campanha '+escape(c.name||'Campanha')+'">Excluir</button><button type="button" data-open-campaign="'+escape(c.id)+'">Acessar</button></div></div></div></article>';
   }).join('');
   const full=myCampaigns.length>=10;
   $('showCreateCampaign').disabled=full;
@@ -586,6 +598,8 @@ if(!cfg||!cfg.projectId||!cfg.apiKey){show('setup',true);}else{
     myCampaigns=snapshot.docs.map(d=>({id:d.id,...d.data()}));
     myCampaigns.sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
     renderLibrary();
+    const message=$('notice').textContent;
+    if(message.includes('Acesso negado pelo Firestore')||message.includes('Erro ao carregar campanhas'))notice('');
   },error=>{
     show('campaignLoading',false);
     show('campaignEmpty',false);
