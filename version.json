@@ -1,5 +1,5 @@
 {
-  "version": "2026.11.13-card-owner-2",
-  "build": "20261113cardowner2",
-  "description": "Cartões com responsável e quem pode editar a ficha"
+  "version": "2026.11.13-card-owner-3",
+  "build": "20261113cardowner3",
+  "description": "Corrige permissões duplicadas e atualiza cartões dos personagens"
 }
