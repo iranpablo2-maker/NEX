@@ -954,7 +954,7 @@ if(!cfg||!cfg.projectId||!cfg.apiKey){show('setup',true);}else{
   if(remove){
    const sheet=roomSheets.find(item=>item.id===remove.dataset.removeCampaignSheet);
    if(!sheet||!(sheet.ownerUid===uid||gm))return;
-   if(!confirm('Remover "'+(sheet.name||'Personagem')+'" desta campanha? A ficha original da conta NEX não será apagada.'))return;
+   // Remove somente o vínculo da campanha, sem confirmação e sem apagar a ficha original.
    remove.disabled=true;
    run(async()=>{
     try{
