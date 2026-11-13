@@ -391,6 +391,45 @@ html.nex-embedded main{max-width:100%;padding:10px 12px 28px}
 }
 
 </style>
+<style id="nex-compact-assignment-v2">
+#room #gmSheetAssignments{
+ display:grid;
+ grid-template-columns:repeat(auto-fill,minmax(min(100%,310px),350px));
+ gap:14px;
+ align-items:start;
+ justify-content:start;
+}
+#room #gmSheetAssignments .nex-manager-assignment{
+ width:100%;
+ min-width:0;
+ max-width:350px;
+ display:flex;
+ flex-direction:column;
+ gap:0;
+ padding:0;
+ background:#1b191d;
+ border:1px solid #59323d;
+ border-radius:10px;
+ overflow:hidden;
+ box-shadow:0 4px 16px #0003;
+}
+#room .nex-assignment-top{display:flex;align-items:center;gap:12px;padding:12px 13px;border-bottom:1px solid #372a31}
+#room .nex-assignment-avatar{display:grid;place-items:center;flex:0 0 52px;width:52px;height:52px;background:#2d202a;border-radius:8px;color:#fff;font-size:26px;font-weight:700}
+#room .nex-assignment-main{display:flex;flex-direction:column;gap:5px;min-width:0}
+#room .nex-assignment-main b{font-size:15px;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#room .nex-assignment-main small{font-size:11px;color:#c6b5bc}
+#room .nex-assignment-details{display:flex;flex-direction:column;align-items:flex-start;gap:4px;padding:12px 13px}
+#room .nex-assignment-details>span{font-size:11px;color:#c9b3bc}
+#room .nex-assignment-details>strong{font-size:14px;color:#fff;overflow-wrap:anywhere}
+#room .nex-assignment-details>small{font-size:11px;color:#bdaab2}
+#room #gmSheetAssignments .nex-assignment-change{align-self:flex-start;margin:0 13px 13px;padding:8px 12px;background:#382027;border-color:#8d3a49;color:#f4dce1;border-radius:7px;font-size:12px}
+#room #gmSheetAssignments .nex-assignment-edit{padding:12px 13px 14px;border-top:1px solid #49303a;background:#21181e}
+#room #gmSheetAssignments .nex-assignment-edit[hidden]{display:none!important}
+#room #gmSheetAssignments .nex-assignment-edit label{display:block;margin:0 0 6px;font-size:11px;color:#dec1c9}
+#room #gmSheetAssignments .nex-assignment-edit select{display:block;width:100%;margin-top:6px;min-height:37px;padding:8px 10px;background:#120f13;border:1px solid #87404e;border-radius:6px;color:#fff;font-size:12px}
+#room #gmSheetAssignments .nex-assignment-edit>small{font-size:11px;color:#bbaab2}
+@media(max-width:400px){#room #gmSheetAssignments{grid-template-columns:minmax(0,1fr)}}
+</style>
 </head>
 <body>
 <script>
@@ -634,7 +673,15 @@ if(!cfg||!cfg.projectId||!cfg.apiKey){show('setup',true);}else{
     const assigned=String(s.controllerUid||s.ownerUid||'');
     const ownerName=s.ownerUid===roomData?.gmUid?'Mestre':(roomMembers.find(m=>m.uid===s.ownerUid)?.name||'Proprietário');
     const responsible=assigned===roomData?.gmUid?'Mestre':(roomMembers.find(m=>m.uid===assigned)?.name||ownerName);
-    return '<div class="card nex-manager-assignment"><b>'+escape(s.name||'Personagem sem nome')+'</b><small>Proprietário: '+escape(ownerName)+'</small><label>Jogador responsável<select data-assign-sheet="'+escape(s.id)+'"><option value="'+escape(roomData?.gmUid||'')+'" '+(assigned===roomData?.gmUid?'selected':'')+'>Mestre</option>'+roomMembers.filter(m=>m.uid!==roomData?.gmUid).map(m=>'<option value="'+escape(m.uid)+'" '+(assigned===m.uid?'selected':'')+'>'+escape(m.name||'Jogador')+'</option>').join('')+'</select></label><small>Pode editar: '+escape(assigned===roomData?.gmUid?'Mestre':responsible+' e Mestre')+'</small></div>';
+    const editors=assigned===roomData?.gmUid?'Mestre':responsible+' e Mestre';
+    const name=String(s.name||'Personagem sem nome');
+    return '<article class="card nex-manager-assignment">'+
+      '<div class="nex-assignment-top"><span class="nex-assignment-avatar" aria-hidden="true">'+escape(name.slice(0,1).toUpperCase())+'</span>'+
+      '<div class="nex-assignment-main"><b title="'+escape(name)+'">'+escape(name)+'</b><small>Proprietário: '+escape(ownerName)+'</small></div></div>'+
+      '<div class="nex-assignment-details"><span>Jogador responsável</span><strong>'+escape(responsible)+'</strong><small>Pode editar: '+escape(editors)+'</small></div>'+
+      '<button type="button" class="alt nex-assignment-change" data-toggle-assignment="'+escape(s.id)+'" aria-expanded="false">Alterar responsável</button>'+
+      '<div class="nex-assignment-edit" hidden><label>Selecionar jogador<select data-assign-sheet="'+escape(s.id)+'"><option value="'+escape(roomData?.gmUid||'')+'" '+(assigned===roomData?.gmUid?'selected':'')+'>Mestre</option>'+roomMembers.filter(m=>m.uid!==roomData?.gmUid).map(m=>'<option value="'+escape(m.uid)+'" '+(assigned===m.uid?'selected':'')+'>'+escape(m.name||'Jogador')+'</option>').join('')+'</select></label><small>Escolher um responsável salva a alteração automaticamente.</small></div>'+
+    '</article>';
    }).join(''):'<p class="room-note">Nenhum personagem na campanha.</p>';
  }
  $('requestExtraSlot').onclick=()=>run(async()=>{
@@ -1322,6 +1369,18 @@ if(!cfg||!cfg.projectId||!cfg.apiKey){show('setup',true);}else{
     return '<article class="nex-character-card" data-card-layout="referencia-20261113">'+pic+'<div class="nex-character-info"><strong title="'+escape(name)+'">'+escape(name)+'</strong><span>'+escape(cls)+'</span><small>NEX '+escape(s.nex)+'%'+(!mine?' · Jogador da campanha':'')+'</small><button type="button" data-open-campaign-sheet="'+escape(s.id)+'">Acessar Ficha</button>'+managing+'</div>'+(editable?'<details class="nex-character-settings"><summary aria-label="Opções do personagem" title="Opções do personagem">⚙</summary><button type="button" data-remove-campaign-sheet="'+escape(s.id)+'">Remover</button></details>':'')+'</article>';
   }).join(''):'<p class="room-note">Ainda não há personagens nesta campanha. Use “Adicionar Personagens” para escolher uma ficha da sua conta NEX.</p>';
  }
+ $('gmSheetAssignments').addEventListener('click',event=>{
+  const button=event.target.closest('[data-toggle-assignment]');
+  if(!button||!gm)return;
+  const tile=button.closest('.nex-manager-assignment');
+  const panel=tile?.querySelector('.nex-assignment-edit');
+  if(!panel)return;
+  panel.hidden=!panel.hidden;
+  const open=!panel.hidden;
+  button.setAttribute('aria-expanded',String(open));
+  button.textContent=open?'Fechar':'Alterar responsável';
+  if(open)panel.querySelector('select')?.focus();
+ });
  $('gmSheetAssignments').addEventListener('change',event=>run(async()=>{
   const control=event.target.closest('[data-assign-sheet]');
   if(!control||!gm)return;
