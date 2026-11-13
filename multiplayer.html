@@ -319,26 +319,6 @@ if(!cfg||!cfg.projectId||!cfg.apiKey){show('setup',true);}else{
   const app=initializeApp(cfg);auth=getAuth(app);db=getFirestore(app);
  }catch(err){show('setup',true);notice('Configuração Firebase inválida.');throw err;}
  let uid=null,roomId='',gm=false,roomData=null,roomMembers=[],roomSheets=[],roomRequests=[],unsubs=[],editing=null,campaignUnsub=null,myCampaigns=[],privateShield=true,roomCombats=[];
- const NEX_CAMPAIGN_VIEW_KEY='nex-campaign-last-view-v1';
- let restoringRoom=false;
- function rememberCampaignView(mode,section){
-  try{
-   const previous=JSON.parse(sessionStorage.getItem(NEX_CAMPAIGN_VIEW_KEY)||'null')||{};
-   sessionStorage.setItem(NEX_CAMPAIGN_VIEW_KEY,JSON.stringify({
-    uid:uid||null,
-    mode,
-    roomId:mode==='room'?(roomId||previous.roomId):null,
-    section:section||previous.section||'characters'
-   }));
-  }catch(error){}
- }
- function savedCampaignView(){
-  try{
-   const state=JSON.parse(sessionStorage.getItem(NEX_CAMPAIGN_VIEW_KEY)||'null');
-   return state&&state.uid===uid?state:null;
-  }catch(error){return null;}
- }
-
  const pendingBridge=new Map();
  let bridgeSeq=0;
  function requestNex(type,agentId){
@@ -468,7 +448,6 @@ if(!cfg||!cfg.projectId||!cfg.apiKey){show('setup',true);}else{
   show('campaignLibrary',mode==='list');
   $('campaignCreateScreen').hidden=mode!=='create';
   if(!inRoom)show('room',false);
-  if(!restoringRoom)rememberCampaignView(mode);
  }
  function renderLibrary(){
   $('campaignCount').textContent='Campanhas: '+myCampaigns.length+'/10';
@@ -551,22 +530,10 @@ if(!cfg||!cfg.projectId||!cfg.apiKey){show('setup',true);}else{
  onAuthStateChanged(auth,user=>{
   clearRoom();uid=user?.uid||null;
   show('authPanel',!uid);show('dashboard',!!uid);
-  const saved=uid?savedCampaignView():null;
-  restoringRoom=true;
   libraryMode('list');
-  restoringRoom=false;
   subscribeCampaigns();
   show('joinInvite',!!uid&&!!inviteId);
   if(uid&&inviteId)$('inviteStatus').textContent='Entre na campanha ou solicite aprovação do mestre.';
-  if(!uid)return;
-  if(saved?.mode==='room' && saved.roomId && !inviteId){
-   restoringRoom=true;
-   run(async()=>{
-    try{await enterRoom(saved.roomId);roomSection(saved.section||'characters');}
-    catch(error){libraryMode('list');throw error;}
-    finally{restoringRoom=false;}
-   });
-  }else if(saved?.mode==='create')libraryMode('create');
  });
  $('authForm').addEventListener('submit',e=>{e.preventDefault();run(async()=>{await signInWithEmailAndPassword(auth,$('email').value.trim(),$('password').value);});});
  $('register').addEventListener('click',()=>run(async()=>{await createUserWithEmailAndPassword(auth,$('email').value.trim(),$('password').value);}));
@@ -587,7 +554,6 @@ if(!cfg||!cfg.projectId||!cfg.apiKey){show('setup',true);}else{
   show('roomInvitePanel',section==='invites');
   show('roomMasterPanel',section==='master');
   show('gmOnly',section==='master'&&gm);
-  if(roomId && !restoringRoom)rememberCampaignView('room',section);
  }
  document.querySelectorAll('[data-room-section]').forEach(button=>button.addEventListener('click',()=>roomSection(button.dataset.roomSection)));
  $('requestEntry').onclick=()=>run(async()=>{
