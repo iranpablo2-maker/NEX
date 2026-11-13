@@ -1208,7 +1208,7 @@ if(!cfg||!cfg.projectId||!cfg.apiKey){show('setup',true);}else{
   const answer=(ok,error='')=>window.parent.postMessage({type:'nex-campaign-shared-sheet-saved',ok,error},location.origin);
   const sheet=roomSheets.find(item=>item.id===msg.sheetId);
   if(!sheet||!(gm||sheet.controllerUid===uid)){answer(false,'Sem permissão de edição.');return;}
-  if(!sheet.fullSheet||!msg.data||typeof msg.data!=='object'||Array.isArray(msg.data)){
+  if(!msg.data||typeof msg.data!=='object'||Array.isArray(msg.data)){
    answer(false,'Esta ficha não possui dados operacionais.');return;
   }
   const data=msg.data;
@@ -1217,6 +1217,7 @@ if(!cfg||!cfg.projectId||!cfg.apiKey){show('setup',true);}else{
   try{
    await updateDoc(doc(db,'campaigns',roomId,'sheets',sheet.id),{
     fullSheet:data,
+    ...(!sheet.fullSheet?{linkedAgentId:'shared-'+sheet.id,sheetFormat:'nex-agent-v1'}:{}),
     name:String(data.name||sheet.name).slice(0,100),
     nex:Math.max(0,Math.min(99,Math.trunc(Number(data.nex)||0))),
     pv:clampStat(data.pvCurrent??sheet.pv),
@@ -1253,7 +1254,18 @@ if(!cfg||!cfg.projectId||!cfg.apiKey){show('setup',true);}else{
     return;
    }
   }
-  // Mostra o layout verdadeiro da ficha operacional NEX.
+  // Quem recebeu a ficha do Mestre abre o editor operacional completo.
+  // A ficha pessoal do Mestre não é substituída: somente a cópia da campanha muda.
+  if((gm||sheet.controllerUid===uid)&&window.parent!==window){
+   const source=sheet.fullSheet&&typeof sheet.fullSheet==='object'?sheet.fullSheet:{
+    name:sheet.name||'Personagem',nex:Number(sheet.nex)||0,
+    pvCurrent:Number(sheet.pv)||0,peCurrent:Number(sheet.pe)||0,
+    sanCurrent:Number(sheet.san)||0,notes:sheet.notes||''
+   };
+   window.parent.postMessage({type:'nex-campaign-open-editable-sheet',sheet:source,sheetId:sheet.id,name:sheet.name},location.origin);
+   return;
+  }
+    // Mostra o layout verdadeiro da ficha operacional NEX.
   // O payload é apenas para exibição; alterações não são permitidas nessa visualização.
   if(sheet.fullSheet&&typeof sheet.fullSheet==='object'&&!Array.isArray(sheet.fullSheet)){
    if(window.parent!==window){
