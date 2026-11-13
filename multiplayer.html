@@ -415,7 +415,7 @@ if(!cfg||!cfg.projectId||!cfg.apiKey){show('setup',true);}else{
  });
  $('authForm').addEventListener('submit',e=>{e.preventDefault();run(async()=>{await signInWithEmailAndPassword(auth,$('email').value.trim(),$('password').value);});});
  $('register').addEventListener('click',()=>run(async()=>{await createUserWithEmailAndPassword(auth,$('email').value.trim(),$('password').value);}));
- $('logout').addEventListener('click',()=>run(async()=>{await signOut(auth)}));
+ $('logout')?.addEventListener('click',()=>run(async()=>{await signOut(auth)}));
  const copy=s=>navigator.clipboard?.writeText(s).then(()=>notice('Copiado.')).catch(()=>notice('Selecione e copie o código mostrado.'));
 
  const inviteLink=id=>new URL('./index.html?campaignInvite='+encodeURIComponent(id),location.href).href;
