@@ -448,6 +448,9 @@ if(!cfg||!cfg.projectId||!cfg.apiKey){show('setup',true);}else{
   show('campaignLibrary',mode==='list');
   $('campaignCreateScreen').hidden=mode!=='create';
   if(!inRoom)show('room',false);
+  if(window.parent!==window){
+   try{window.parent.postMessage({type:'nex-campaign-view',mode},location.origin);}catch(error){}
+  }
  }
  function renderLibrary(){
   $('campaignCount').textContent='Campanhas: '+myCampaigns.length+'/10';
