@@ -334,7 +334,7 @@ if(!cfg||!cfg.projectId||!cfg.apiKey){show('setup',true);}else{
   show('campaignLoading',!!uid);
   show('campaignEmpty',false);
   $('campaignCount').textContent='Campanhas: 0/10';
-  if(!uid)return;
+  if(!uid){show('campaignLoading',false);return;}
   campaignUnsub=onSnapshot(query(collection(db,'campaigns'),where('gmUid','==',uid)),snapshot=>{
     myCampaigns=snapshot.docs.map(d=>({id:d.id,...d.data()}));
     myCampaigns.sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
@@ -342,7 +342,7 @@ if(!cfg||!cfg.projectId||!cfg.apiKey){show('setup',true);}else{
   },error=>{
     show('campaignLoading',false);
     show('campaignEmpty',false);
-    notice('Não foi possível carregar suas campanhas: '+(error?.message||'erro de acesso')+'. Confira as permissões de listagem no Firestore.');
+    notice('Erro ao carregar campanhas ('+(error?.code||'sem-codigo')+'): '+(error?.message||'erro de acesso')+'. Confira as regras publicadas no Firestore.');
   });
  }
  function openCreate(){
@@ -449,7 +449,11 @@ if(!cfg||!cfg.projectId||!cfg.apiKey){show('setup',true);}else{
   if(!name){message.textContent='Informe um nome para a campanha.';return;}
   if(myCampaigns.length>=10){message.textContent='Limite de 10 campanhas por conta.';return;}
   submit.disabled=true;submit.textContent='Criando…';
+  message.textContent='Verificando sua conta e salvando a campanha no Firebase…';
   try{
+   await auth.authStateReady();
+   const activeUser=auth.currentUser;
+   if(!activeUser || activeUser.uid!==uid)throw Error('Sua sessão não está autenticada. Entre novamente na conta NEX.');
    const alphabet='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
    const bytes=new Uint8Array(8);crypto.getRandomValues(bytes);
    const code='NEX-'+Array.from(bytes,b=>alphabet[b%alphabet.length]).join('');
@@ -460,6 +464,8 @@ if(!cfg||!cfg.projectId||!cfg.apiKey){show('setup',true);}else{
     await setDoc(ref,{...core,privateShield,updatedAt:serverTimestamp()});
    }catch(error){
     if(error?.code!=='permission-denied')throw error;
+    // Compatibilidade com regras antigas já instaladas no Firestore.
+    message.textContent='Tentando o formato de campanha compatível com as regras anteriores…';
     await setDoc(ref,core);
    }
    $('campaignCode').value=ref.id;
@@ -471,9 +477,10 @@ if(!cfg||!cfg.projectId||!cfg.apiKey){show('setup',true);}else{
    }
   }catch(error){
    console.error('Falha ao criar campanha',error);
-   message.textContent=error?.code==='permission-denied'?
-    'O Firebase recusou a criação. É necessário publicar as regras de campanhas no Firestore.':
-    'Não foi possível criar: '+(error?.message||'erro desconhecido');
+   const code=error?.code||'sem-codigo';
+   message.textContent=code==='permission-denied'?
+    'Erro Firebase (permission-denied): sua conta não tem permissão para criar em campaigns. Verifique as regras publicadas no projeto nex-rpg (não apenas o arquivo GitHub).':
+    'Erro Firebase ('+code+'): '+(error?.message||'Falha desconhecida');
    notice(message.textContent);
   }finally{submit.disabled=false;submit.textContent='Criar';}
  });
