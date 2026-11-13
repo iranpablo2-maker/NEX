@@ -609,13 +609,15 @@ if(!cfg||!cfg.projectId||!cfg.apiKey){show('setup',true);}else{
     fullSheet:data,linkedAgentId:agentId,sheetFormat:'nex-agent-v1',
     updatedAt:serverTimestamp()
   };
-  const sourceName=String(data.class||data.className||data.classe||'Classe não informada');
-  const photo=[data.portraitUrl,data.imageUrl,data.portrait,data.image,data.photo,data.avatar,data.foto].find(value=>typeof value==='string'&&(value.startsWith('https://')||/^data:image\/(?:jpeg|png|webp);base64,/i.test(value))&&value.length<120000)||'';
-  payload.className=sourceName.slice(0,80);
-  payload.portrait=photo;
-  payload.createdAt=existing.exists()?existing.data().createdAt||serverTimestamp():serverTimestamp();
-  if(existing.exists())await updateDoc(sheetRef,payload);
-  else await setDoc(sheetRef,{...payload,ownerUid:uid});
+  // Dados visuais permanecem dentro de fullSheet, como permitido pelas regras do Firestore.
+  // Não acrescentar className, portrait ou createdAt diretamente ao documento da campanha.
+  try{
+   if(existing.exists())await updateDoc(sheetRef,payload);
+   else await setDoc(sheetRef,{...payload,ownerUid:uid});
+  }catch(error){
+   if(error?.code==='permission-denied')throw Error('O Firebase recusou a inclusão da ficha. Verifique se você é participante aprovado e se as regras de campanhas do Firestore estão publicadas.');
+   throw error;
+  }
   notice('Personagem adicionado à campanha. A ficha original permanece salva na sua conta.');
   refreshNexAgents();
   roomSection('characters');
