@@ -129,7 +129,7 @@ function render(){
  list.innerHTML=(state.rituals||[]).length?state.rituals.map(r=>{
   const d=metadata(r),cost=(costByCircle[Number(r.circle)]||1)+Math.max(0,Number(r.extra)||0);
   const blocked=state.class==='Ocultista'&&Number(r.circle)>circleAccess();
-  return '<article class="nex-ritual-card"><details><summary><span class="nex-ritual-arrow">⌃</span><strong>'+esc(r.name)+'</strong></summary>'+
+  return '<article class="nex-ritual-card" data-ritual-element="'+esc(String(r.element||'Conhecimento').trim())+'"><details><summary><span class="nex-ritual-arrow">⌃</span><strong>'+esc(r.name)+'</strong></summary>'+
    '<div class="nex-ritual-detail"><div class="nex-ritual-pill nex-ritual-'+esc(r.element)+'">'+esc(r.element).toUpperCase()+' '+esc(r.circle)+'</div>'+
    '<p class="nex-ritual-summary">'+esc(shortRitualEffect(d.guide||d.note||d.description))+'</p>'+
    '<p class="nex-ritual-params">'+ritualParamLine(d)+'</p>'+
