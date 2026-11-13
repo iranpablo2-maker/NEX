@@ -270,6 +270,11 @@ html.nex-embedded main{max-width:100%;padding:10px 12px 28px}
 #room .combat-roller select{flex:1;min-width:120px}
 #room .nex-combat-rolls{margin-top:10px;font-size:12px;color:#d6c9ce}
 #room .combat-roll-entry{padding:6px;border-top:1px solid #493239}
+
+#joinInvite h3{font-size:17px;color:#fff;margin:0 0 12px}
+#joinInvite .row{margin-top:14px}
+#joinInvite #requestEntry.hide,#joinInvite #openApproved.hide{display:none!important}
+#joinInvite #inviteStatus{display:block;color:#bfb2bb}
 </style>
 <script src="./nex-image-crop.js?v=20261113crop1"></script>
 </head>
@@ -313,7 +318,15 @@ if(new URLSearchParams(location.search).get('integrado')==='1'){
   <div id="campaignLoading" class="info">Carregando suas campanhas...</div>
   <div id="campaignEmpty" class="library-empty hide"><strong>Nenhuma campanha encontrada. Crie uma ou entre por convite!</strong><button type="button" id="emptyCreateCampaign">Nova Campanha</button></div>
   <div id="campaignCards" class="library-cards"></div><p class="room-note" id="playerCampaignHelp">Campanhas nas quais você foi aprovado aparecem aqui automaticamente.</p>
-  <section id="joinInvite" class="panel hide"><p>Você recebeu um convite para uma campanha.</p><button type="button" id="requestEntry">Solicitar entrada</button> <button type="button" class="alt" id="openApproved">Abrir campanha</button><small id="inviteStatus"></small></section>
+  <section id="joinInvite" class="panel hide" aria-label="Convite de campanha">
+   <h3>Convite para campanha</h3>
+   <p id="inviteExplanation">Verificando seu convite e sua participação...</p>
+   <div class="row">
+    <button type="button" id="requestEntry" class="hide">Solicitar entrada</button>
+    <button type="button" class="alt hide" id="openApproved">Entrar na campanha</button>
+   </div>
+   <p><small id="inviteStatus" role="status" aria-live="polite"></small></p>
+  </section>
  </div>
  <section id="campaignCreateScreen" hidden>
   <h2>Criar Campanha</h2>
@@ -445,7 +458,7 @@ if(!cfg||!cfg.projectId||!cfg.apiKey){show('setup',true);}else{
  try{
   const app=initializeApp(cfg);auth=getAuth(app);db=getFirestore(app);
  }catch(err){show('setup',true);notice('Configuração Firebase inválida.');throw err;}
- let uid=null,roomId='',gm=false,roomData=null,roomMembers=[],roomSheets=[],roomRequests=[],unsubs=[],editing=null,campaignUnsub=null,myCampaigns=[],privateShield=true,roomCombats=[],playerCampaigns=[],joinedUnsub=null,combatRollUnsubs=[];
+ let uid=null,roomId='',gm=false,roomData=null,roomMembers=[],roomSheets=[],roomRequests=[],unsubs=[],editing=null,campaignUnsub=null,myCampaigns=[],privateShield=true,roomCombats=[],playerCampaigns=[],joinedUnsub=null,combatRollUnsubs=[],inviteUnsub=null,inviteState='checking';
  const localPortraits=new Map();
  let portraitSyncBusy=false;
  const pendingBridge=new Map();
@@ -786,12 +799,13 @@ if(!cfg||!cfg.projectId||!cfg.apiKey){show('setup',true);}else{
   if(id)run(()=>enterRoom(id));
  });
  onAuthStateChanged(auth,user=>{
+  if(inviteUnsub){inviteUnsub();inviteUnsub=null;}
   clearRoom();uid=user?.uid||null;
   show('authPanel',!uid);show('dashboard',!!uid);
   libraryMode('list');
   subscribeCampaigns();
   show('joinInvite',!!uid&&!!inviteId);
-  if(uid&&inviteId)$('inviteStatus').textContent='Entre na campanha ou solicite aprovação do mestre.';
+  if(uid&&inviteId)watchCampaignInvite();
  });
  $('authForm').addEventListener('submit',e=>{e.preventDefault();run(async()=>{await signInWithEmailAndPassword(auth,$('email').value.trim(),$('password').value);});});
  $('register').addEventListener('click',()=>run(async()=>{await createUserWithEmailAndPassword(auth,$('email').value.trim(),$('password').value);}));
@@ -823,15 +837,74 @@ if(!cfg||!cfg.projectId||!cfg.apiKey){show('setup',true);}else{
   show('gmOnly',section==='master'&&gm);
  }
  document.querySelectorAll('[data-room-section]').forEach(button=>button.addEventListener('click',()=>roomSection(button.dataset.roomSection)));
+ function inviteView(mode,message){
+  inviteState=mode;
+  const explanation=$('inviteExplanation'),request=$('requestEntry'),open=$('openApproved');
+  show('requestEntry',mode==='request');
+  show('openApproved',mode==='approved');
+  request.disabled=mode!=='request';
+  explanation.textContent={
+   checking:'Verificando o convite e sua participação...',
+   request:'Você recebeu um convite. Solicite a entrada para participar desta campanha.',
+   pending:'Sua solicitação foi enviada. O Mestre precisa aprovar sua entrada.',
+   approved:'Sua entrada foi aprovada! Você já pode acessar a campanha.',
+   invalid:'Este convite não é válido.'
+  }[mode]||'';
+  $('inviteStatus').textContent=message||'';
+ }
+ async function checkInvitePermission(account,campaign){
+  try{
+   const snap=await getDoc(doc(db,'campaigns',campaign));
+   return snap.exists();
+  }catch(error){
+   // Sem participação, o próprio Firestore bloqueia a leitura da campanha.
+   if(error?.code==='permission-denied')return false;
+   throw error;
+  }
+ }
+ function watchCampaignInvite(){
+  if(inviteUnsub){inviteUnsub();inviteUnsub=null;}
+  if(!uid||!inviteId)return;
+  if(!/^(?:NEX-[A-HJ-NP-Z2-9]{8}|[A-Za-z0-9]{15,40})$/.test(inviteId)){
+   inviteView('invalid','Peça um novo link ao Mestre.');return;
+  }
+  const account=uid,campaign=inviteId;
+  inviteView('checking');
+  let counter=0;
+  inviteUnsub=onSnapshot(doc(db,'campaigns',campaign,'joinRequests',account),async snapshot=>{
+   const seq=++counter;
+   try{
+    const approved=await checkInvitePermission(account,campaign);
+    if(uid!==account||seq!==counter)return;
+    if(approved){
+     inviteView('approved','A campanha também poderá aparecer na sua lista quando as regras de participação estiverem publicadas.');
+    }else if(snapshot.exists()){
+     inviteView('pending','Você pode acompanhar esta tela; ela será atualizada após a aprovação.');
+    }else{
+     inviteView('request','Somente o Mestre pode autorizar a entrada.');
+    }
+   }catch(error){
+    if(uid===account&&seq===counter)inviteView('request','Não foi possível confirmar o status: '+(error.message||'verifique sua conexão'));
+   }
+  },error=>{
+   inviteView('request','Não foi possível acompanhar o convite: '+(error.message||'verifique as regras do Firestore'));
+  });
+ }
  $('requestEntry').onclick=()=>run(async()=>{
-   if(!uid||!inviteId||!/[A-Za-z0-9-]{8,40}/.test(inviteId))throw Error('Link inválido ou conta desconectada.');
-   let profile={};try{profile=JSON.parse(localStorage.getItem('nex_account_profile_'+uid)||'{}')||{}}catch(error){}
-   const display=profile.name||auth.currentUser?.displayName||auth.currentUser?.email?.split('@')[0]||'Jogador';
-   await setDoc(doc(db,'campaigns',inviteId,'joinRequests',uid),{uid,name:display.slice(0,60),requestedAt:serverTimestamp()});
-   $('inviteStatus').textContent='Solicitação enviada. O mestre precisa aprovar seu acesso.';
-   $('requestEntry').disabled=true;
+   if(!uid||!inviteId||inviteState!=='request')return;
+   const button=$('requestEntry');button.disabled=true;
+   try{
+    let profile={};
+    try{profile=JSON.parse(localStorage.getItem('nex_account_profile_'+uid)||'{}')||{}}catch(error){}
+    const display=profile.name||auth.currentUser?.displayName||auth.currentUser?.email?.split('@')[0]||'Jogador';
+    await setDoc(doc(db,'campaigns',inviteId,'joinRequests',uid),{uid,name:String(display).slice(0,60),requestedAt:serverTimestamp()});
+    inviteView('pending','Solicitação enviada com sucesso.');
+   }finally{if(inviteState==='request')button.disabled=false;}
  });
- $('openApproved').onclick=()=>run(()=>enterRoom(inviteId));
+ $('openApproved').onclick=()=>run(async()=>{
+  if(inviteState!=='approved')return;
+  await enterRoom(inviteId);
+ });
  async function ensurePlayerIndex(campaignId,memberUid){
   if(!gm||!campaignId||!memberUid)return;
   await setDoc(doc(db,'users',memberUid,'joinedCampaigns',campaignId),{campaignId,gmUid:uid,joinedAt:serverTimestamp()},{merge:true});
