@@ -145,6 +145,9 @@ html.nex-embedded #room{border:none;background:transparent;box-shadow:none}
 #room .agent-picker-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(255px,1fr));gap:18px}
 #room .agent-picker-card{min-height:124px;background:#1d1d20;border:1px solid #353039;border-radius:6px;padding:15px;display:flex;flex-direction:column;justify-content:space-between;gap:12px}
 #room .agent-picker-card strong{font-size:17px;color:white;overflow-wrap:anywhere}
+#room .agent-picker-info{display:flex;gap:12px;align-items:center}
+#room .agent-picker-avatar{width:70px;height:80px;object-fit:cover;border-radius:5px;background:#34252c}
+#room .agent-picker-info>div{min-width:0}
 #room .agent-picker-card small{display:block;margin-top:5px}
 #room .agent-picker-card button{align-self:flex-end;padding:7px 13px;min-height:32px}
 #room .agent-picker-back{background:none;border:1px solid #60323b;margin-bottom:12px}
@@ -345,7 +348,7 @@ if(!cfg||!cfg.projectId||!cfg.apiKey){show('setup',true);}else{
   grid.innerHTML=agents.length?agents.map(a=>{
    const added=roomSheets.some(sheet=>sheet.linkedAgentId===a.id&&sheet.ownerUid===uid);
    const date=a.createdAt?new Date(a.createdAt).toLocaleDateString('pt-BR'):'Data não informada';
-   return '<article class="agent-picker-card"><div><strong>'+escape(a.name)+'</strong><small>'+escape(a.className||'Classe não informada')+' · NEX '+escape(a.nex)+'%</small><small>Registrado em '+escape(date)+'</small></div><button type="button" data-select-agent="'+escape(a.id)+'" '+(added?'disabled':'')+'>'+(added?'Adicionado':'Adicionar')+'</button></article>';
+   return '<article class="agent-picker-card"><div class="agent-picker-info">'+(a.portrait&&a.portrait.startsWith('https://')?'<img class="agent-picker-avatar" src="'+escape(a.portrait)+'" alt="">':'')+'<div><strong>'+escape(a.name)+'</strong><small>'+escape(a.className||'Classe não informada')+' · NEX '+escape(a.nex)+'%</small><small>Registrado em '+escape(date)+'</small></div></div><button type="button" data-select-agent="'+escape(a.id)+'" '+(added?'disabled':'')+'>'+(added?'Adicionado':'Adicionar')+'</button></article>';
   }).join(''):'<p>Nenhum personagem encontrado. Crie um personagem no NEX.</p>';
  }catch(err){grid.textContent='Erro ao carregar personagens: '+err.message;}
 }
