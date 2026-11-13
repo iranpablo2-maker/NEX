@@ -2963,9 +2963,13 @@ $('nexHomebrewFilter')?.addEventListener('input',()=>nex12RenderHomebrew());
    rehydrate();
    clone=original.cloneNode(true);
    clone.classList.remove('hide');
-   clone.setAttribute('aria-label','Ficha NEX compartilhada — somente leitura');
+   clone.setAttribute('aria-label',description.canEdit?'Ficha de campanha — edição autorizada':'Ficha NEX compartilhada — somente leitura');
    clone.classList.add('nex-shared-sheet-static');
-   clone.querySelectorAll('input,select,textarea').forEach(el=>{el.disabled=true;el.tabIndex=-1;});
+   clone.querySelectorAll('input,select,textarea').forEach(el=>{
+    const allowed=description.canEdit&&(el.hasAttribute('data-field')||el.hasAttribute('data-attr'));
+    el.disabled=!allowed;
+    el.tabIndex=allowed?0:-1;
+   });
    clone.querySelectorAll('button,a,[role="button"],[tabindex],summary').forEach(el=>{el.tabIndex=-1;el.setAttribute('aria-disabled','true');});
   }catch(error){
    console.error('NEX: erro ao renderizar ficha compartilhada',error);
@@ -2982,7 +2986,7 @@ $('nexHomebrewFilter')?.addEventListener('input',()=>nex12RenderHomebrew());
    dialog=document.createElement('dialog');
    dialog.id='nexSharedRealSheetDialog';
    dialog.className='nex-shared-real-sheet';
-   dialog.innerHTML='<header class="nex-shared-head"><div><strong id="nexSharedRealSheetTitle">Ficha do personagem</strong><small>Ficha NEX original · visualização somente leitura</small></div><button type="button" id="nexSharedRealSheetClose" aria-label="Fechar ficha">Fechar ×</button></header><div id="nexSharedRealSheetMount"></div>';
+   dialog.innerHTML='<header class="nex-shared-head"><div><strong id="nexSharedRealSheetTitle">Ficha do personagem</strong><small id="nexSharedSheetAccessLabel">Ficha NEX original · visualização somente leitura</small></div><div><button type="button" id="nexSharedRealSheetSave" hidden>Salvar ficha da campanha</button> <button type="button" id="nexSharedRealSheetClose" aria-label="Fechar ficha">Fechar ×</button></div></header><p id="nexSharedSheetSaveStatus" role="status"></p><div id="nexSharedRealSheetMount"></div>';
    document.body.appendChild(dialog);
    dialog.querySelector('#nexSharedRealSheetClose').onclick=()=>dialog.close();
    dialog.addEventListener('close',()=>{dialog.querySelector('#nexSharedRealSheetMount').replaceChildren();});
@@ -2990,8 +2994,37 @@ $('nexHomebrewFilter')?.addEventListener('input',()=>nex12RenderHomebrew());
   dialog.querySelector('#nexSharedRealSheetTitle').textContent=String(description.name||data.name||'Personagem');
   const mount=dialog.querySelector('#nexSharedRealSheetMount');
   mount.replaceChildren(clone);
-  // A cópia é estática: os comandos de edição e rolagem não podem modificar a conta.
-  clone.inert=true;
+  const editable=!!description.canEdit&&!!description.sheetId;
+  dialog.querySelector('#nexSharedSheetAccessLabel').textContent=editable?'Ficha da campanha · edição autorizada pelo Mestre':'Ficha NEX · somente leitura';
+  dialog.querySelector('#nexSharedSheetSaveStatus').textContent='';
+  const saveButton=dialog.querySelector('#nexSharedRealSheetSave');
+  saveButton.hidden=!editable;
+  if(editable){
+   clone.inert=false;
+   // A cópia recebe apenas edição de campos; os comandos complexos permanecem bloqueados.
+   clone.querySelectorAll('button,a,[role="button"],summary').forEach(el=>{el.setAttribute('aria-disabled','true');el.tabIndex=-1;});
+   saveButton.onclick=()=>{
+    const updated=JSON.parse(JSON.stringify(data));
+    for(const el of clone.querySelectorAll('[data-field]:not(:disabled)')){
+     const key=el.dataset.field;
+     if(!Object.prototype.hasOwnProperty.call(updated,key))continue;
+     if(el.type==='number'){
+      const value=Number(el.value);
+      if(Number.isFinite(value))updated[key]=value;
+     }else if(el.tagName==='SELECT'||el.tagName==='INPUT'||el.tagName==='TEXTAREA')updated[key]=el.value;
+    }
+    for(const el of clone.querySelectorAll('[data-attr]:not(:disabled)')){
+     const key=el.dataset.attr;
+     if(updated.attributes&&Object.prototype.hasOwnProperty.call(updated.attributes,key))
+      updated.attributes[key]=Math.max(0,Math.min(9,Number(el.value)||0));
+    }
+    saveButton.disabled=true;
+    const status=dialog.querySelector('#nexSharedSheetSaveStatus');
+    status.textContent='Salvando na campanha...';
+    const frame=document.getElementById('nexCampaignRoomFrame');
+    frame?.contentWindow?.postMessage({type:'nex-campaign-save-shared-sheet',sheetId:description.sheetId,data:updated},location.origin);
+   };
+  }else clone.inert=true;
   dialog.showModal();
  }
  function openAgent(id){
@@ -4783,10 +4816,18 @@ const PARANORMAL=[
       }
       return;
     }
+    if(msg.type==='nex-campaign-shared-sheet-saved'){
+      const dialog=document.getElementById('nexSharedRealSheetDialog');
+      const status=dialog?.querySelector('#nexSharedSheetSaveStatus');
+      const button=dialog?.querySelector('#nexSharedRealSheetSave');
+      if(button)button.disabled=false;
+      if(status)status.textContent=msg.ok?'Alterações salvas na campanha.':('Não foi possível salvar: '+String(msg.error||'verifique a permissão.'));
+      return;
+    }
     if(msg.type==='nex-campaign-view-shared-sheet'){
       const sheet=msg.sheet;
       if(sheet&&typeof sheet==='object'&&typeof window.NEX17?.openSharedReadOnlySheet==='function'){
-       window.NEX17.openSharedReadOnlySheet(sheet,{name:String(msg.name||sheet.name||'Personagem').slice(0,100)});
+       window.NEX17.openSharedReadOnlySheet(sheet,{name:String(msg.name||sheet.name||'Personagem').slice(0,100),canEdit:msg.canEdit===true,sheetId:String(msg.sheetId||'')});
       }
       return;
     }
