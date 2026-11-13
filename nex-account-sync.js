@@ -542,9 +542,15 @@ else{
    status('Carregando personagens da conta NEX…');
    setTimeout(()=>{if(current?.uid===user.uid)sync();},700);
   }else{
+   // Na primeira visita sem login, preserve as fichas antigas para migrá-las
+   // quando a conta correta entrar. Ao sair de uma conta, limpe só a visualização.
    const bridge=getBridge();
-   if(bridge){
-    try{bridge.replaceAccountAgents([],[]);}catch(error){console.warn('NEX: limpeza da visualização ao sair',error);}
+   if(previousUser&&bridge){
+    try{
+     const previousData=bridge.read();
+     localStorage.setItem('nex_account_recovery_'+previousUser,JSON.stringify({savedAt:new Date().toISOString(),...previousData}));
+     bridge.replaceAccountAgents([],[]);
+    }catch(error){console.warn('NEX: limpeza da visualização ao sair',error);}
    }
    status('Entre na conta NEX para carregar e sincronizar personagens.');
    message('As fichas são vinculadas à conta NEX. Sem login, o salvamento na nuvem não está disponível.');
