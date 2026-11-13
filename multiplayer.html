@@ -1455,7 +1455,11 @@ if(!cfg||!cfg.projectId||!cfg.apiKey){show('setup',true);}else{
      batch.delete(original);
      await batch.commit();
      notice(sheet.isHidden?'Ficha visível novamente para os participantes.':'Ficha oculta. Somente o mestre poderá visualizá-la na campanha.');
-    }catch(error){toggle.disabled=false;throw error;}
+    }catch(error){
+     toggle.disabled=false;
+     if(error?.code==='permission-denied')throw Error('O Firebase ainda não autorizou fichas privadas. Publique as regras atualizadas de firestore.rules no projeto nex-rpg antes de ocultar personagens.');
+     throw error;
+    }
    });
    return;
   }
