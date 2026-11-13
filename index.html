@@ -1865,30 +1865,29 @@ body > #nexOriginPopup[hidden]{display:none!important;}
 #nexCampaignEditBanner button{margin-left:auto;border:1px solid #b34b5d;background:#a43246;color:white;padding:8px 12px;border-radius:5px;cursor:pointer}
 #nexCampaignEditBanner small{color:#d1b7c0}
 </style>
-<style id="nex-ritual-fundos-elementais-v1">
-/* Cinco fundos recebidos do usuário: Energia, Medo, Morte, Sangue e Conhecimento.
-   Um atlas SVG autocontido evita carregar cinco imagens pesadas no celular. */
+<style id="nex-ritual-fundos-elementais-v2">
+/* Um arquivo recortado por elemento: nenhuma imagem vizinha pode aparecer. */
 #sheetScreen .nex-ritual-card[data-ritual-element],
 #sheetScreen #nexTkPanel .tk-dmg-card[data-ritual-element],
 #sheetScreen #nexTkPanel .tk-card[data-ritual-element]{
- --nex-ritual-pos:100%;
+ --nex-element-image:none;
  background-color:#161218!important;
- background-image:linear-gradient(180deg,rgba(10,8,14,.44),rgba(10,8,14,.78)),url("./assets/rituais/fundos.svg?v=20261113fundos1")!important;
+ background-image:linear-gradient(180deg,rgba(10,8,14,.48),rgba(10,8,14,.70)),var(--nex-element-image)!important;
+ background-size:100% 100%,cover!important;
+ background-position:center center,center center!important;
  background-repeat:no-repeat,no-repeat!important;
- background-size:100% 100%,500% 100%!important;
- background-position:center center,var(--nex-ritual-pos) center!important;
  border-color:rgba(180,101,113,.48)!important;
  color:#f7f2f4;
 }
-#sheetScreen :is(.nex-ritual-card,.tk-dmg-card,.tk-card)[data-ritual-element="Energia"]{--nex-ritual-pos:0%!important}
-#sheetScreen :is(.nex-ritual-card,.tk-dmg-card,.tk-card)[data-ritual-element="Medo"]{--nex-ritual-pos:25%!important}
-#sheetScreen :is(.nex-ritual-card,.tk-dmg-card,.tk-card)[data-ritual-element="Morte"]{--nex-ritual-pos:50%!important}
-#sheetScreen :is(.nex-ritual-card,.tk-dmg-card,.tk-card)[data-ritual-element="Sangue"]{--nex-ritual-pos:75%!important}
-#sheetScreen :is(.nex-ritual-card,.tk-dmg-card,.tk-card)[data-ritual-element="Conhecimento"]{--nex-ritual-pos:100%!important}
+#sheetScreen :is(.nex-ritual-card,.tk-dmg-card,.tk-card)[data-ritual-element="Energia"]{--nex-element-image:url("./assets/rituais/energia-fundo.svg?v=20261113fundosfix9")!important}
+#sheetScreen :is(.nex-ritual-card,.tk-dmg-card,.tk-card)[data-ritual-element="Medo"]{--nex-element-image:url("./assets/rituais/medo-fundo.svg?v=20261113fundosfix9")!important}
+#sheetScreen :is(.nex-ritual-card,.tk-dmg-card,.tk-card)[data-ritual-element="Morte"]{--nex-element-image:url("./assets/rituais/morte-fundo.svg?v=20261113fundosfix9")!important}
+#sheetScreen :is(.nex-ritual-card,.tk-dmg-card,.tk-card)[data-ritual-element="Sangue"]{--nex-element-image:url("./assets/rituais/sangue-fundo.svg?v=20261113fundosfix9")!important}
+#sheetScreen :is(.nex-ritual-card,.tk-dmg-card,.tk-card)[data-ritual-element="Conhecimento"]{--nex-element-image:url("./assets/rituais/conhecimento-fundo.svg?v=20261113fundosfix9")!important}
 #sheetScreen .nex-ritual-card[data-ritual-element] summary,
 #sheetScreen #nexTkPanel .tk-dmg-card[data-ritual-element]>summary,
 #sheetScreen #nexTkPanel .tk-card[data-ritual-element] .tk-row{
- background:rgba(9,8,12,.22);
+ background:rgba(9,8,12,.28);
  color:#fff;
  text-shadow:0 1px 3px rgba(0,0,0,.82);
 }
@@ -1900,11 +1899,6 @@ body > #nexOriginPopup[hidden]{display:none!important;}
  background:rgba(8,7,10,.48);
  border-radius:5px;
  padding:8px 11px;
-}
-@media(max-width:650px){
- #sheetScreen :is(.nex-ritual-card,.tk-dmg-card,.tk-card)[data-ritual-element]{
-  background-size:100% 100%,500% 100%!important;
- }
 }
 </style>
 </head><body>
