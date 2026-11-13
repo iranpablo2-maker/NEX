@@ -259,6 +259,12 @@ html.nex-embedded main{max-width:100%;padding:10px 12px 28px}
 #room .nex-character-settings summary::-webkit-details-marker{display:none}
 #room .nex-character-settings button{position:absolute;top:28px;right:0;white-space:nowrap;background:#131114;color:#ff7486;border:1px solid #61343e;border-radius:5px;padding:10px 16px;box-shadow:0 5px 20px #000a}
 #room .nex-character-info{padding-right:34px}
+
+/* Interface exclusiva de jogador */
+#room .campaign-actions button[hidden],#room #leaveCampaign.hide{display:none!important}
+#room .room-member-profile{display:flex;gap:10px;align-items:center}
+#room .room-member-profile .member-characters{display:block;font-size:11px;color:#bbacb2;margin-top:4px}
+#room .room-panel-head{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
 </style>
 <script src="./nex-image-crop.js?v=20261113crop1"></script>
 </head>
@@ -300,8 +306,8 @@ if(new URLSearchParams(location.search).get('integrado')==='1'){
  <div id="campaignLibrary">
   <div class="library-bar"><h2 id="campaignCount">Campanhas: 0/10</h2><button id="showCreateCampaign" type="button">Nova Campanha</button></div>
   <div id="campaignLoading" class="info">Carregando suas campanhas...</div>
-  <div id="campaignEmpty" class="library-empty hide"><strong>Você ainda não criou nenhuma campanha!</strong><button type="button" id="emptyCreateCampaign">Nova Campanha</button></div>
-  <div id="campaignCards" class="library-cards"></div>
+  <div id="campaignEmpty" class="library-empty hide"><strong>Nenhuma campanha encontrada. Crie uma ou entre por convite!</strong><button type="button" id="emptyCreateCampaign">Nova Campanha</button></div>
+  <div id="campaignCards" class="library-cards"></div><p class="room-note" id="playerCampaignHelp">Campanhas nas quais você foi aprovado aparecem aqui automaticamente.</p>
   <section id="joinInvite" class="panel hide"><p>Você recebeu um convite para uma campanha.</p><button type="button" id="requestEntry">Solicitar entrada</button> <button type="button" class="alt" id="openApproved">Abrir campanha</button><small id="inviteStatus"></small></section>
  </div>
  <section id="campaignCreateScreen" hidden>
@@ -368,7 +374,7 @@ if(new URLSearchParams(location.search).get('integrado')==='1'){
    </div>
    <section id="roomCombatsPanel" class="room-panel hide">
      <div class="room-panel-head"><h3>Combates</h3></div>
-     <div id="roomCombats" class="campaign-combats"><p>Nenhum combate cadastrado.</p></div>
+     <div id="roomCombats" class="campaign-combats"><p>Nenhum combate cadastrado.</p></div><div id="roomCombatFeedback" role="status" class="room-note"></div>
    </section>
    <div id="roomMasterPanel" class="room-panel hide"><h3>Painel do mestre</h3><p class="room-note">Gerencie as solicitações e acompanhe os personagens da sua campanha.</p></div>
    <div class="room-invite" id="roomInvitePanel">
@@ -380,7 +386,7 @@ if(new URLSearchParams(location.search).get('integrado')==='1'){
     <div id="joinRequests" class="grid room-members"><p>Nenhuma solicitação pendente.</p></div>
    </section>
    <section id="roomPlayersPanel" class="room-panel">
-    <div class="room-panel-head"><h3>Jogadores</h3></div>
+    <div class="room-panel-head"><h3>Jogadores</h3><button id="leaveCampaign" type="button" class="alt hide">Sair da campanha</button></div>
     <div id="members" class="grid room-members"></div>
    </section>
    <section id="roomCharactersPanel" class="room-panel">
@@ -434,7 +440,7 @@ if(!cfg||!cfg.projectId||!cfg.apiKey){show('setup',true);}else{
  try{
   const app=initializeApp(cfg);auth=getAuth(app);db=getFirestore(app);
  }catch(err){show('setup',true);notice('Configuração Firebase inválida.');throw err;}
- let uid=null,roomId='',gm=false,roomData=null,roomMembers=[],roomSheets=[],roomRequests=[],unsubs=[],editing=null,campaignUnsub=null,myCampaigns=[],privateShield=true,roomCombats=[];
+ let uid=null,roomId='',gm=false,roomData=null,roomMembers=[],roomSheets=[],roomRequests=[],unsubs=[],editing=null,campaignUnsub=null,myCampaigns=[],privateShield=true,roomCombats=[],playerCampaigns=[],joinedUnsub=null,combatRollUnsubs=[];
  const localPortraits=new Map();
  let portraitSyncBusy=false;
  const pendingBridge=new Map();
@@ -624,7 +630,7 @@ if(!cfg||!cfg.projectId||!cfg.apiKey){show('setup',true);}else{
   notice('Falha: '+explanation);console.error(err);
  }};
  const clearRoom=()=>{
-  for(const u of unsubs){try{u()}catch(e){}}unsubs=[];
+  for(const u of [...unsubs,...combatRollUnsubs]){try{u()}catch(e){}}unsubs=[];combatRollUnsubs=[];
   roomId='';gm=false;roomMembers=[];roomSheets=[];roomRequests=[];roomCombats=[];roomData=null;editing=null;localPortraits.clear();
   $('roomAgentPicker').hidden=true;$('roomEditConfiguration').hidden=true;$('nexCampaignSheetDialog').close?.();
   show('room',false);show('sheetFormPanel',false);
@@ -639,38 +645,51 @@ if(!cfg||!cfg.projectId||!cfg.apiKey){show('setup',true);}else{
   }
  }
  function renderLibrary(){
-  $('campaignCount').textContent='Campanhas: '+myCampaigns.length+'/10';
-  show('campaignLoading',false);
-  show('campaignEmpty',myCampaigns.length===0);
-  $('campaignCards').innerHTML=myCampaigns.map(c=>{
+  const all=new Map();
+  for(const c of [...playerCampaigns,...myCampaigns])all.set(c.id,{...all.get(c.id),...c,role:c.gmUid===uid?'Mestre':'Jogador'});
+  const entries=[...all.values()].sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
+  $('campaignCount').textContent='Campanhas: '+entries.length;
+  show('campaignLoading',false);show('campaignEmpty',entries.length===0);
+  $('campaignCards').innerHTML=entries.map(c=>{
    const date=c.createdAt?.toDate?.();
    const dateText=date?date.toLocaleDateString('pt-BR'):'Data não informada';
-   const image=typeof c.coverUrl==='string' && (/^data:image\/jpeg;base64,[a-z0-9+/=]+$/i.test(c.coverUrl)||/^https:\/\//i.test(c.coverUrl))?c.coverUrl:'';
+   const image=typeof c.coverUrl==='string'&&(/^data:image\/jpeg;base64,[a-z0-9+/=]+$/i.test(c.coverUrl)||/^https:\/\//i.test(c.coverUrl))?c.coverUrl:'';
    const art=image?'<img alt="" loading="lazy" src="'+escape(image)+'">':'<span>✦</span>';
-   return '<article class="library-card"><div class="library-art" aria-hidden="true">'+art+'</div><div class="library-card-body"><strong>'+escape(c.name||'Campanha')+'</strong><small>Iniciada em: '+escape(dateText)+'</small><div class="library-card-actions"><span class="badge">Mestre</span><div class="row"><button type="button" class="library-delete" data-delete-campaign="'+escape(c.id)+'" aria-label="Excluir campanha '+escape(c.name||'Campanha')+'">Excluir</button><button type="button" data-open-campaign="'+escape(c.id)+'">Acessar</button></div></div></div></article>';
+   const isMaster=c.gmUid===uid;
+   return '<article class="library-card"><div class="library-art" aria-hidden="true">'+art+'</div><div class="library-card-body"><strong>'+escape(c.name||'Campanha')+'</strong><small>Iniciada em: '+escape(dateText)+'</small><div class="library-card-actions"><span class="badge">'+(isMaster?'Mestre':'Jogador')+'</span><div class="row">'+(isMaster?'<button type="button" class="library-delete" data-delete-campaign="'+escape(c.id)+'">Excluir</button>':'')+'<button type="button" data-open-campaign="'+escape(c.id)+'">Acessar</button></div></div></div></article>';
   }).join('');
   const full=myCampaigns.length>=10;
-  $('showCreateCampaign').disabled=full;
-  $('emptyCreateCampaign').disabled=full;
+  $('showCreateCampaign').disabled=full;$('emptyCreateCampaign').disabled=full;
  }
  function subscribeCampaigns(){
   if(campaignUnsub){campaignUnsub();campaignUnsub=null;}
-  myCampaigns=[];
+  if(joinedUnsub){joinedUnsub();joinedUnsub=null;}
+  myCampaigns=[];playerCampaigns=[];
   $('campaignCards').innerHTML='';
-  show('campaignLoading',!!uid);
-  show('campaignEmpty',false);
-  $('campaignCount').textContent='Campanhas: 0/10';
+  show('campaignLoading',!!uid);show('campaignEmpty',false);
+  $('campaignCount').textContent='Campanhas: 0';
   if(!uid){show('campaignLoading',false);return;}
-  campaignUnsub=onSnapshot(query(collection(db,'campaigns'),where('gmUid','==',uid)),snapshot=>{
-    myCampaigns=snapshot.docs.map(d=>({id:d.id,...d.data()}));
-    myCampaigns.sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
-    renderLibrary();
-    const message=$('notice').textContent;
-    if(message.includes('Acesso negado pelo Firestore')||message.includes('Erro ao carregar campanhas'))notice('');
+  const account=uid;
+  campaignUnsub=onSnapshot(query(collection(db,'campaigns'),where('gmUid','==',account)),snapshot=>{
+   if(uid!==account)return;
+   myCampaigns=snapshot.docs.map(d=>({id:d.id,...d.data()}));renderLibrary();
   },error=>{
-    show('campaignLoading',false);
-    show('campaignEmpty',false);
-    notice('Erro ao carregar campanhas ('+(error?.code||'sem-codigo')+'): '+(error?.message||'erro de acesso')+'. Confira as regras publicadas no Firestore.');
+   show('campaignLoading',false);
+   notice('Não foi possível carregar suas campanhas de mestre: '+error.message);
+  });
+  joinedUnsub=onSnapshot(collection(db,'users',account,'joinedCampaigns'),async snapshot=>{
+   const records=snapshot.docs.map(d=>({id:d.id,...d.data()}));
+   const items=await Promise.all(records.map(async m=>{
+    try{
+     const docSnap=await getDoc(doc(db,'campaigns',m.id));
+     return docSnap.exists()?{id:m.id,...docSnap.data()}:null;
+    }catch(error){return null;}
+   }));
+   if(uid!==account)return;
+   playerCampaigns=items.filter(Boolean);renderLibrary();
+  },error=>{
+   console.warn('NEX: índice de campanhas do jogador indisponível',error);
+   renderLibrary();
   });
  }
  function openCreate(){
@@ -747,13 +766,13 @@ if(!cfg||!cfg.projectId||!cfg.apiKey){show('setup',true);}else{
  });
  function roomSection(section){
   const allowed=['characters','master','players','invites','combats'];
-  if(!allowed.includes(section)||section==='master'&&!gm)section='characters';
+  if(!allowed.includes(section)||(['master','invites'].includes(section)&&!gm))section='characters';
   document.querySelectorAll('[data-room-section]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.roomSection===section)));
   show('roomCharactersPanel',section==='characters');
   show('roomCombatsPanel',section==='combats');
   $('roomAgentPicker').hidden=true;
   show('roomPlayersPanel',section==='players');
-  show('roomInvitePanel',section==='invites');
+  show('roomInvitePanel',section==='invites'&&gm);
   show('roomMasterPanel',section==='master');
   show('gmOnly',section==='master'&&gm);
  }
@@ -766,7 +785,18 @@ if(!cfg||!cfg.projectId||!cfg.apiKey){show('setup',true);}else{
    $('requestEntry').disabled=true;
  });
  $('openApproved').onclick=()=>run(()=>enterRoom(inviteId));
- $('joinRequests').addEventListener('click',event=>run(async()=>{
+ async function ensurePlayerIndex(campaignId,memberUid){
+  if(!gm||!campaignId||!memberUid)return;
+  await setDoc(doc(db,'users',memberUid,'joinedCampaigns',campaignId),{campaignId,gmUid:uid,joinedAt:serverTimestamp()},{merge:true});
+ }
+ $('leaveCampaign').onclick=()=>run(async()=>{
+  if(!roomId||gm)return;
+  const campaign=roomId,account=uid;
+  await deleteDoc(doc(db,'campaigns',campaign,'members',account));
+  await deleteDoc(doc(db,'users',account,'joinedCampaigns',campaign)).catch(error=>console.warn(error));
+  clearRoom();libraryMode('list');subscribeCampaigns();notice('Você saiu da campanha. Suas fichas pessoais não foram apagadas.');
+ });
+  $('joinRequests').addEventListener('click',event=>run(async()=>{
    const button=event.target.closest('[data-approve-request],[data-deny-request]');
    if(!button||!gm||!roomId)return;
    const memberUid=button.dataset.approveRequest||button.dataset.denyRequest;
@@ -775,6 +805,7 @@ if(!cfg||!cfg.projectId||!cfg.apiKey){show('setup',true);}else{
    button.disabled=true;
    if(button.dataset.approveRequest){
      await setDoc(doc(db,'campaigns',roomId,'members',memberUid),{uid:memberUid,name:String(entry.name||'Jogador').slice(0,60),joinedAt:serverTimestamp()});
+     await ensurePlayerIndex(roomId,memberUid).catch(error=>console.warn('Não foi possível registrar campanha na conta do jogador',error));
    }
    await deleteDoc(doc(db,'campaigns',roomId,'joinRequests',memberUid));
  }));
@@ -858,7 +889,8 @@ if(!cfg||!cfg.projectId||!cfg.apiKey){show('setup',true);}else{
   $('roomTitle').textContent=roomData.name;
   $('roomDescription').textContent=roomData.description||'';
   $('roomCode').textContent=id;$('roomInviteLink').value=inviteLink(id);$('role').textContent=gm?'Mestre':'Jogador';libraryMode('room');show('room',true);
-  for(const key of ['roomEditAction','roomCreateCombatAction','roomMasterAction'])$(key).hidden=!gm;
+  for(const key of ['roomEditAction','roomCreateCombatAction','roomMasterAction','roomInviteAction'])$(key).hidden=!gm;
+  show('leaveCampaign',!gm);
   updateRoomCover();
   show('roomMasterTab',gm);roomSection('characters');refreshNexAgents();
   // A permissão de combates é independente da das fichas; falhas ficam restritas à aba.
@@ -876,6 +908,7 @@ if(!cfg||!cfg.projectId||!cfg.apiKey){show('setup',true);}else{
   },error=>notice('Falha ao carregar solicitações: '+error.message)));
   unsubs.push(onSnapshot(collection(db,'campaigns',id,'members'),snapshot=>{
     roomMembers=snapshot.docs.map(d=>({id:d.id,...d.data()}));drawMembers();
+    if(gm)for(const m of roomMembers)ensurePlayerIndex(id,m.uid).catch(error=>console.warn('Índice do jogador',error));
   },e=>notice('Não foi possível carregar participantes: '+e.message)));
   unsubs.push(onSnapshot(collection(db,'campaigns',id,'sheets'),snapshot=>{
     roomSheets=snapshot.docs.map(d=>({id:d.id,...d.data()}));drawSheets();syncOwnCharacterPhotos();
