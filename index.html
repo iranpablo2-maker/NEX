@@ -2747,10 +2747,38 @@ $('nexHomebrewFilter')?.addEventListener('input',()=>nex12RenderHomebrew());
    document.querySelectorAll('#sheetScreen [data-attr]').forEach(el=>state.attributes[el.dataset.attr]=clamp(int(el.value),0,9));
  }
  save=function(show=false){if(show)captureDisplayedFields();persist(show);};
- const NEX_LAST_PAGE_KEY='nex-last-page-v1';
+ const NEX_LAST_PAGE_KEY='nex-last-page-v2';
+ const NEX_PAGE_NAMES=['home','agents','campaigns','sheet','wizard','homebrew'];
+ function readRememberedPage(){
+  let saved=null;
+  // URL is authoritative on refresh; storage is fallback for older bookmarks.
+  try{
+   const hash=new URLSearchParams(location.hash.replace(/^#/,'')); 
+   const page=hash.get('nexPage');
+   if(NEX_PAGE_NAMES.includes(page))saved={page,agentId:hash.get('agent')||null};
+  }catch(e){}
+  if(!saved){
+   for(const store of [sessionStorage,localStorage]){
+    try{
+     const candidate=JSON.parse(store.getItem(NEX_LAST_PAGE_KEY)||'null');
+     if(candidate&&NEX_PAGE_NAMES.includes(candidate.page)){saved=candidate;break;}
+    }catch(e){}
+   }
+  }
+  return saved;
+ }
  function rememberPage(which){
-  if(!['home','agents','campaigns','sheet','wizard','homebrew'].includes(which))return;
-  try{sessionStorage.setItem(NEX_LAST_PAGE_KEY,JSON.stringify({page:which,agentId:which==='sheet'?active:null}));}catch(e){}
+  if(!NEX_PAGE_NAMES.includes(which))return;
+  const saved={page:which,agentId:which==='sheet'?active:null};
+  try{sessionStorage.setItem(NEX_LAST_PAGE_KEY,JSON.stringify(saved));}catch(e){}
+  try{localStorage.setItem(NEX_LAST_PAGE_KEY,JSON.stringify(saved));}catch(e){}
+  try{
+   const params=new URLSearchParams(location.hash.replace(/^#/,''));
+   params.set('nexPage',which);
+   if(saved.agentId)params.set('agent',saved.agentId);
+   else params.delete('agent');
+   history.replaceState(history.state,'',location.pathname+location.search+'#'+params.toString());
+  }catch(e){}
  }
  function visible(which,restore=false){
   $('mainMenu').classList.toggle('hide',which!=='home');
@@ -2763,16 +2791,17 @@ $('nexHomebrewFilter')?.addEventListener('input',()=>nex12RenderHomebrew());
   if(!restore)window.scrollTo(0,0);
  }
  function restorePage(){
-  let saved=null;
-  try{saved=JSON.parse(sessionStorage.getItem(NEX_LAST_PAGE_KEY)||'null');}catch(e){}
-  if(!saved || !['home','agents','campaigns','sheet','homebrew'].includes(saved.page)){visible('home');return;}
+  const saved=readRememberedPage();
+  if(!saved){visible('home');return;}
   if(saved.page==='sheet'){
-   const id=saved.agentId;
+   const id=saved.agentId||active;
    if(id && agents.some(a=>a.id===id)){openAgent(id);return;}
    renderAgents();visible('agents');return;
   }
-  if(saved.page==='homebrew'){
-   showHomebrew();return;
+  if(saved.page==='homebrew'){showHomebrew();return;}
+  if(saved.page==='wizard'){
+   // A wizard draft is not guaranteed to be saved: don't silently recreate it.
+   renderAgents();visible('agents');return;
   }
   if(saved.page==='agents')renderAgents();
   if(saved.page==='campaigns')renderCampaigns();
@@ -3466,7 +3495,14 @@ $('nexHomebrewFilter')?.addEventListener('input',()=>nex12RenderHomebrew());
  };
 
  document.addEventListener('nex-homebrew-changed',()=>{try{const lib=state.homebrew||[];localStorage.setItem(HB_KEY,JSON.stringify(lib));for(const a of agents){a.data.homebrew=structuredClone(lib);}persist();}catch(e){console.error('Falha ao salvar biblioteca Homebrew',e);}});
- window.addEventListener('pagehide',()=>{try{persist();}catch(err){console.error(err);}});
+ window.addEventListener('pagehide',()=>{try{
+  const current=['home','agents','campaigns','sheet','wizard','homebrew'].find(section=>{
+   const id={home:'mainMenu',agents:'agentsPanel',campaigns:'campaignPanel',sheet:'sheetScreen',wizard:'wizardScreen',homebrew:'homebrewScreen'}[section];
+   return !$(id).classList.contains('hide');
+  });
+  if(current)rememberPage(current);
+  persist();
+ }catch(err){console.error(err);}});
  // Loading from the second store must finish BEFORE the first write.
  void initializePersistentStorage();
 })();
