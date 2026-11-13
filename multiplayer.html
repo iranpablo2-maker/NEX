@@ -174,7 +174,7 @@ if(new URLSearchParams(location.search).get('integrado')==='1'){
    <div class="private-toggle" role="group" aria-label="Escudo do Mestre Privado"><button type="button" id="privateOff" aria-pressed="false">DESLIGADO</button><button type="button" id="privateOn" aria-pressed="true">LIGADO</button></div>
    <label for="campaignDescriptionOnline">Descrição</label><textarea id="campaignDescriptionOnline" maxlength="3000" placeholder="Conte um pouco sobre sua campanha..."></textarea>
    <p id="campaignCreateMessage" role="alert" style="color:#ffb3bb;margin:10px 0 0"></p>
-   <div class="create-actions"><button type="button" id="cancelCreateCampaign" class="alt">Cancelar</button><button type="submit">Criar</button></div>
+   <div class="create-actions"><button type="button" id="cancelCreateCampaign" class="alt">Cancelar</button><button type="button" id="campaignCreateSubmit">Criar</button></div>
   </form>
  </section>
  <form id="openCampaign" class="hide"><input id="campaignCode"><button>Abrir sala</button></form>
@@ -226,6 +226,19 @@ if(new URLSearchParams(location.search).get('integrado')==='1'){
 </section>
 </main>
 <script src="./firebase-config.js?v=20261112"></script>
+<script>
+window.addEventListener('error',function(event){
+ const text=document.getElementById('campaignCreateMessage');
+ if(text && !document.getElementById('campaignCreateScreen')?.hidden && !window.NEX_CAMPAIGN_READY){
+  text.textContent='Erro ao iniciar Campanhas: '+(event.message||'não foi possível carregar o aplicativo.');
+ }
+},true);
+document.addEventListener('click',function(event){
+ if(event.target.closest('#campaignCreateSubmit') && !window.NEX_CAMPAIGN_READY){
+  document.getElementById('campaignCreateMessage').textContent='A área de campanhas não iniciou corretamente. Atualize a página e verifique sua conexão com o Firebase.';
+ }
+},true);
+</script>
 <script type="module">
 import {initializeApp} from 'https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js';
 import {getAuth,onAuthStateChanged,createUserWithEmailAndPassword,signInWithEmailAndPassword,signOut} from 'https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js';
@@ -439,51 +452,66 @@ if(!cfg||!cfg.projectId||!cfg.apiKey){show('setup',true);}else{
    }
    await deleteDoc(doc(db,'campaigns',roomId,'joinRequests',memberUid));
  }));
- $('createCampaign').addEventListener('submit',async e=>{
-  e.preventDefault();
-  const form=$('createCampaign'),submit=form.querySelector('button[type="submit"]'),message=$('campaignCreateMessage');
+ async function handleCreateCampaign(){
+  const form=$('createCampaign'),submit=$('campaignCreateSubmit'),message=$('campaignCreateMessage');
   if(submit.disabled)return;
-  const name=$('campaignNameOnline').value.trim(),description=$('campaignDescriptionOnline').value.trim();
+  const name=$('campaignNameOnline').value.trim();
+  const description=$('campaignDescriptionOnline').value.trim();
   message.textContent='';
-  if(!uid){message.textContent='Entre na sua conta NEX antes de criar uma campanha.';return;}
-  if(!name){message.textContent='Informe um nome para a campanha.';return;}
+  if(!uid){message.textContent='Você precisa entrar na conta NEX para criar a campanha.';return;}
+  if(!name){message.textContent='Preencha o nome da campanha para continuar.';$('campaignNameOnline').focus();return;}
   if(myCampaigns.length>=10){message.textContent='Limite de 10 campanhas por conta.';return;}
   submit.disabled=true;submit.textContent='Criando…';
-  message.textContent='Verificando sua conta e salvando a campanha no Firebase…';
+  let slowTimer=setTimeout(()=>{
+    message.textContent='O Firebase está demorando a responder. A criação ainda não foi confirmada; verifique sua conexão.';
+  },7000);
   try{
+   message.textContent='Criando a campanha na conta NEX…';
    await auth.authStateReady();
    const activeUser=auth.currentUser;
-   if(!activeUser || activeUser.uid!==uid)throw Error('Sua sessão não está autenticada. Entre novamente na conta NEX.');
+   if(!activeUser||activeUser.uid!==uid)throw Error('Sessão NEX desconectada. Entre novamente na sua conta.');
    const alphabet='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
    const bytes=new Uint8Array(8);crypto.getRandomValues(bytes);
    const code='NEX-'+Array.from(bytes,b=>alphabet[b%alphabet.length]).join('');
    const ref=doc(db,'campaigns',code);
-   const core={name,description,gmUid:uid,createdAt:serverTimestamp()};
-   // Regras já atualizadas aceitam os campos extras. Regras anteriores aceitavam apenas core.
+   const core={name,description,gmUid:activeUser.uid,createdAt:serverTimestamp()};
+   let saved=false;
    try{
     await setDoc(ref,{...core,privateShield,updatedAt:serverTimestamp()});
+    saved=true;
    }catch(error){
     if(error?.code!=='permission-denied')throw error;
-    // Compatibilidade com regras antigas já instaladas no Firestore.
-    message.textContent='Tentando o formato de campanha compatível com as regras anteriores…';
+    message.textContent='Tentando formato compatível com as regras antigas do Firebase…';
     await setDoc(ref,core);
+    saved=true;
    }
+   if(!saved)throw Error('Não houve confirmação de gravação.');
    $('campaignCode').value=ref.id;
-   form.reset();libraryMode('list');
-   notice('Campanha criada e salva na conta. Código: '+ref.id);
+   form.reset();
+   libraryMode('list');
+   notice('Campanha criada na conta NEX! Código: '+ref.id);
    try{await enterRoom(ref.id);}catch(openError){
     libraryMode('list');
     notice('Campanha salva, mas a sala não abriu. Código: '+ref.id+'. '+(openError?.message||'Erro de leitura.'));
    }
   }catch(error){
-   console.error('Falha ao criar campanha',error);
+   console.error('NEX: erro ao criar campanha',error);
    const code=error?.code||'sem-codigo';
    message.textContent=code==='permission-denied'?
-    'Erro Firebase (permission-denied): sua conta não tem permissão para criar em campaigns. Verifique as regras publicadas no projeto nex-rpg (não apenas o arquivo GitHub).':
-    'Erro Firebase ('+code+'): '+(error?.message||'Falha desconhecida');
+    'Firebase recusou a criação (permission-denied). É necessário publicar as regras de campanhas no projeto nex-rpg.':
+    'Falha ao criar campanha ('+code+'): '+(error?.message||'Erro desconhecido');
    notice(message.textContent);
-  }finally{submit.disabled=false;submit.textContent='Criar';}
+  }finally{
+   clearTimeout(slowTimer);submit.disabled=false;submit.textContent='Criar';
+  }
+ }
+ // Botão executa a criação diretamente; não depende da validação HTML silenciosa.
+ $('campaignCreateSubmit').addEventListener('click',handleCreateCampaign);
+ $('createCampaign').addEventListener('submit',event=>{event.preventDefault();handleCreateCampaign();});
+ $('campaignNameOnline').addEventListener('keydown',event=>{
+  if(event.key==='Enter'){event.preventDefault();handleCreateCampaign();}
  });
+ window.NEX_CAMPAIGN_READY=true;
  $('openCampaign').addEventListener('submit',e=>{e.preventDefault();run(()=>{const entered=$('campaignCode').value.trim();return enterRoom(/^nex-/i.test(entered)?entered.toUpperCase():entered);})});
  async function enterRoom(id){
   clearRoom();if(!/^(?:NEX-[A-HJ-NP-Z2-9]{8}|[A-Za-z0-9]{15,40})$/.test(id)){notice('Código de campanha inválido.');return;}
