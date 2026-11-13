@@ -265,6 +265,11 @@ html.nex-embedded main{max-width:100%;padding:10px 12px 28px}
 #room .room-member-profile{display:flex;gap:10px;align-items:center}
 #room .room-member-profile .member-characters{display:block;font-size:11px;color:#bbacb2;margin-top:4px}
 #room .room-panel-head{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+
+#room .combat-roller{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+#room .combat-roller select{flex:1;min-width:120px}
+#room .nex-combat-rolls{margin-top:10px;font-size:12px;color:#d6c9ce}
+#room .combat-roll-entry{padding:6px;border-top:1px solid #493239}
 </style>
 <script src="./nex-image-crop.js?v=20261113crop1"></script>
 </head>
@@ -570,8 +575,49 @@ if(!cfg||!cfg.projectId||!cfg.apiKey){show('setup',true);}else{
   updateRoomCover();$('roomEditConfiguration').hidden=true;notice('Campanha atualizada.');
  });
  function renderCombats(){
-  $('roomCombats').innerHTML=roomCombats.length?roomCombats.map(c=>'<article class="campaign-combat"><strong>'+escape(c.name)+'</strong><p><small>'+escape(c.status||'Preparação')+'</small></p></article>').join(''):'<p>Nenhum combate cadastrado.</p>';
+  const mySheets=roomSheets.filter(sheet=>sheet.ownerUid===uid);
+  const options=mySheets.map(sh=>'<option value="'+escape(sh.id)+'">'+escape(sh.name)+'</option>').join('');
+  $('roomCombats').innerHTML=roomCombats.length?roomCombats.map(c=>{
+   const canRoll=mySheets.length>0;
+   return '<article class="campaign-combat"><strong>'+escape(c.name)+'</strong><p><small>'+escape(c.status||'Preparação')+'</small></p><p class="room-note">Personagens participantes: '+escape(roomSheets.map(sh=>sh.name).join(', ')||'Nenhum personagem')+'</p>'+
+    '<div class="combat-roller"><select aria-label="Meu personagem" data-combat-character="'+escape(c.id)+'">'+options+'</select><button type="button" data-combat-roll="'+escape(c.id)+'" '+(canRoll?'':'disabled')+'>Rolar d20</button></div><div class="nex-combat-rolls" data-combat-rolls="'+escape(c.id)+'"><small>Aguardando rolagens...</small></div></article>';
+  }).join(''):'<p>Nenhum combate cadastrado.</p>';
+  subscribeCombatRolls();
  }
+ function subscribeCombatRolls(){
+  for(const unsub of combatRollUnsubs){try{unsub()}catch(error){}}
+  combatRollUnsubs=[];
+  const currentRoom=roomId;
+  for(const combat of roomCombats){
+   const combatId=combat.id;
+   const unsub=onSnapshot(collection(db,'campaigns',currentRoom,'combats',combatId,'rolls'),snapshot=>{
+    if(roomId!==currentRoom)return;
+    const target=document.querySelector('[data-combat-rolls="'+CSS.escape(combatId)+'"]');
+    if(!target)return;
+    const rolls=snapshot.docs.map(d=>d.data()).sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0)).slice(0,8);
+    target.innerHTML=rolls.length?rolls.map(r=>'<div class="combat-roll-entry">'+escape(r.characterName||'Personagem')+' rolou <strong>'+escape(r.result)+'</strong> no d20</div>').join(''):'<small>Nenhuma rolagem ainda.</small>';
+   },error=>{
+    const target=document.querySelector('[data-combat-rolls="'+CSS.escape(combatId)+'"]');
+    if(target)target.textContent='Rolagens online indisponíveis. Confira as regras do Firebase.';
+   });
+   combatRollUnsubs.push(unsub);
+  }
+ }
+ $('roomCombats').addEventListener('click',event=>run(async()=>{
+  const button=event.target.closest('[data-combat-roll]');
+  if(!button||!roomId)return;
+  const id=button.dataset.combatRoll;
+  const select=document.querySelector('[data-combat-character="'+CSS.escape(id)+'"]');
+  const character=roomSheets.find(sheet=>sheet.id===select?.value&&sheet.ownerUid===uid);
+  if(!character)throw Error('Adicione um personagem seu à campanha para rolar.');
+  const number=new Uint32Array(1);crypto.getRandomValues(number);
+  const result=(number[0]%20)+1;
+  button.disabled=true;
+  try{
+   await addDoc(collection(db,'campaigns',roomId,'combats',id,'rolls'),{ownerUid:uid,sheetId:character.id,characterName:String(character.name).slice(0,100),result,createdAt:serverTimestamp()});
+   $('roomCombatFeedback').textContent=character.name+' rolou '+result+' no d20.';
+  }finally{button.disabled=false;}
+ }));
  $('roomCreateCombatAction').onclick=()=>run(async()=>{
   if(!gm||!roomId)throw Error('Apenas o mestre pode criar combate.');
   const name=prompt('Nome do combate:','Novo combate');
@@ -779,7 +825,8 @@ if(!cfg||!cfg.projectId||!cfg.apiKey){show('setup',true);}else{
  document.querySelectorAll('[data-room-section]').forEach(button=>button.addEventListener('click',()=>roomSection(button.dataset.roomSection)));
  $('requestEntry').onclick=()=>run(async()=>{
    if(!uid||!inviteId||!/[A-Za-z0-9-]{8,40}/.test(inviteId))throw Error('Link inválido ou conta desconectada.');
-   const display=auth.currentUser?.displayName||auth.currentUser?.email?.split('@')[0]||'Jogador';
+   let profile={};try{profile=JSON.parse(localStorage.getItem('nex_account_profile_'+uid)||'{}')||{}}catch(error){}
+   const display=profile.name||auth.currentUser?.displayName||auth.currentUser?.email?.split('@')[0]||'Jogador';
    await setDoc(doc(db,'campaigns',inviteId,'joinRequests',uid),{uid,name:display.slice(0,60),requestedAt:serverTimestamp()});
    $('inviteStatus').textContent='Solicitação enviada. O mestre precisa aprovar seu acesso.';
    $('requestEntry').disabled=true;
@@ -870,12 +917,28 @@ if(!cfg||!cfg.projectId||!cfg.apiKey){show('setup',true);}else{
  });
  window.NEX_CAMPAIGN_READY=true;
  $('openCampaign').addEventListener('submit',e=>{e.preventDefault();run(()=>{const entered=$('campaignCode').value.trim();return enterRoom(/^nex-/i.test(entered)?entered.toUpperCase():entered);})});
- async function enterRoom(id){
+ async function syncOwnMemberProfile(id){
+  const user=auth.currentUser;
+  if(!user||user.uid!==uid)return;
+  let stored={};
+  try{stored=JSON.parse(localStorage.getItem('nex_account_profile_'+user.uid)||'{}')||{};}catch(error){}
+  const name=String(stored.name||user.displayName||user.email?.split('@')[0]||'Jogador').slice(0,60);
+  const photo=typeof stored.photo==='string'&&stored.photo.length<115000&&/^data:image\/jpeg;base64,/i.test(stored.photo)?stored.photo:'';
+  const member=doc(db,'campaigns',id,'members',uid);
+  const currentDoc=await getDoc(member);
+  if(!currentDoc.exists())return;
+  const updates={};
+  if(currentDoc.data().name!==name)updates.name=name;
+  if(photo&&currentDoc.data().photo!==photo)updates.photo=photo;
+  if(Object.keys(updates).length)await updateDoc(member,updates);
+ }
+  async function enterRoom(id){
   clearRoom();if(!/^(?:NEX-[A-HJ-NP-Z2-9]{8}|[A-Za-z0-9]{15,40})$/.test(id)){notice('Código de campanha inválido.');return;}
   const ref=doc(db,'campaigns',id);
   const snap=await getDoc(ref);
   if(!snap.exists()){notice('Campanha não encontrada.');return;}
   roomId=id;roomData=snap.data();gm=roomData.gmUid===uid;
+  if(!gm)syncOwnMemberProfile(id).catch(error=>console.warn('Perfil do jogador indisponível',error));
   if(gm){
    const profile=nexMasterProfile();
    if(profile){
@@ -911,7 +974,7 @@ if(!cfg||!cfg.projectId||!cfg.apiKey){show('setup',true);}else{
     if(gm)for(const m of roomMembers)ensurePlayerIndex(id,m.uid).catch(error=>console.warn('Índice do jogador',error));
   },e=>notice('Não foi possível carregar participantes: '+e.message)));
   unsubs.push(onSnapshot(collection(db,'campaigns',id,'sheets'),snapshot=>{
-    roomSheets=snapshot.docs.map(d=>({id:d.id,...d.data()}));drawSheets();syncOwnCharacterPhotos();
+    roomSheets=snapshot.docs.map(d=>({id:d.id,...d.data()}));drawSheets();drawMembers();renderCombats();syncOwnCharacterPhotos();
   },e=>notice('Não foi possível carregar fichas: '+e.message)));
  }
  function nexMasterProfile(){
@@ -928,13 +991,12 @@ if(!cfg||!cfg.projectId||!cfg.apiKey){show('setup',true);}else{
   const own=gm?nexMasterProfile():null;
   const masterName=own?.name||roomData?.gmName||'Mestre';
   const masterPhoto=own?.photo||roomData?.gmPhoto||'';
-  const safePhoto=typeof masterPhoto==='string'&&(/^data:image\/jpeg;base64,[a-z0-9+/=]+$/i.test(masterPhoto)||/^https:\/\//i.test(masterPhoto))?masterPhoto:'';
-  const portrait=safePhoto?'<img class="nex-member-avatar" alt="" src="'+escape(safePhoto)+'">':
-   '<span class="nex-member-avatar nex-member-placeholder" aria-hidden="true">'+escape(masterName.charAt(0).toUpperCase())+'</span>';
-  $('members').innerHTML='<div class="card nex-member-card">'+portrait+'<b>Mestre | '+escape(masterName)+'</b></div>'+
-    roomMembers.map(m=>'<div class="card"><b>'+escape(m.name||'Jogador')+'</b></div>').join('');
+  const avatar=photo=>safePortrait(photo)?'<img class="nex-member-avatar" src="'+escape(photo)+'" alt="">':'<span class="nex-member-avatar nex-member-placeholder">♟</span>';
+  const characters=memberUid=>roomSheets.filter(item=>item.ownerUid===memberUid).map(item=>item.name).join(', ')||'Nenhum personagem adicionado';
+  $('members').innerHTML='<div class="card room-member-profile">'+avatar(masterPhoto)+'<div><b>Mestre | '+escape(masterName)+'</b><small class="member-characters">'+escape(characters(roomData?.gmUid))+'</small></div></div>'+
+  roomMembers.map(m=>'<div class="card room-member-profile">'+avatar(m.photo||'')+'<div><b>Jogador | '+escape(m.name||'Jogador')+'</b><small class="member-characters">'+escape(characters(m.uid))+'</small></div></div>').join('');
   $('sheetOwner').innerHTML='<option value="'+escape(uid)+'">Minha conta</option>'+
-    (gm?roomMembers.filter(m=>m.uid!==uid).map(m=>'<option value="'+escape(m.uid)+'">'+escape(m.name||m.uid)+'</option>').join(''):'');
+   (gm?roomMembers.filter(m=>m.uid!==uid).map(m=>'<option value="'+escape(m.uid)+'">'+escape(m.name||'Jogador')+'</option>').join(''):'');
  }
  function safePortrait(v){
   return typeof v==='string'&&v.length<600000&&(/^(https:\/\/)/i.test(v)||/^data:image\/(?:png|jpeg|webp);base64,[a-z0-9+/=]+$/i.test(v))?v:'';
