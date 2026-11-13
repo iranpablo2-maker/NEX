@@ -1202,6 +1202,31 @@ if(!cfg||!cfg.projectId||!cfg.apiKey){show('setup',true);}else{
    notice('Jogador responsável atualizado. A ficha continua na conta do proprietário.');
   }catch(error){control.value=sheet.controllerUid||sheet.ownerUid;throw error;}
  }));
+  window.addEventListener('message',async event=>{
+  if(event.origin!==location.origin||event.source!==window.parent||event.data?.type!=='nex-campaign-save-shared-sheet')return;
+  const msg=event.data||{};
+  const answer=(ok,error='')=>window.parent.postMessage({type:'nex-campaign-shared-sheet-saved',ok,error},location.origin);
+  const sheet=roomSheets.find(item=>item.id===msg.sheetId);
+  if(!sheet||!(gm||sheet.controllerUid===uid)){answer(false,'Sem permissão de edição.');return;}
+  if(!sheet.fullSheet||!msg.data||typeof msg.data!=='object'||Array.isArray(msg.data)){
+   answer(false,'Esta ficha não possui dados operacionais.');return;
+  }
+  const data=msg.data;
+  if(JSON.stringify(data).length>450000){answer(false,'A ficha excede o limite de compartilhamento.');return;}
+  const clampStat=(value)=>Math.max(0,Math.min(9999,Math.trunc(Number(value)||0)));
+  try{
+   await updateDoc(doc(db,'campaigns',roomId,'sheets',sheet.id),{
+    fullSheet:data,
+    name:String(data.name||sheet.name).slice(0,100),
+    nex:Math.max(0,Math.min(99,Math.trunc(Number(data.nex)||0))),
+    pv:clampStat(data.pvCurrent??sheet.pv),
+    pe:clampStat(data.peCurrent??sheet.pe),
+    san:clampStat(data.sanCurrent??sheet.san),
+    updatedAt:serverTimestamp()
+   });
+   answer(true);
+  }catch(error){answer(false,error?.code||error?.message||'Falha na gravação');}
+ });
   $('nexCampaignSheetClose').onclick=()=>$('nexCampaignSheetDialog').close();
  $('sheets').addEventListener('click',e=>{
   const remove=e.target.closest('[data-remove-campaign-sheet]');
@@ -1232,13 +1257,26 @@ if(!cfg||!cfg.projectId||!cfg.apiKey){show('setup',true);}else{
   // O payload é apenas para exibição; alterações não são permitidas nessa visualização.
   if(sheet.fullSheet&&typeof sheet.fullSheet==='object'&&!Array.isArray(sheet.fullSheet)){
    if(window.parent!==window){
-    window.parent.postMessage({type:'nex-campaign-view-shared-sheet',sheet:sheet.fullSheet,name:sheet.name},location.origin);
+    window.parent.postMessage({type:'nex-campaign-view-shared-sheet',sheet:sheet.fullSheet,name:sheet.name,sheetId:sheet.id,canEdit:gm||sheet.controllerUid===uid},location.origin);
     return;
    }
    // A tela de campanhas independente exige o NEX completo para renderizar a ficha.
    $('nexCampaignSheetTitle').textContent=sheet.name||'Personagem';
    $('nexCampaignSheetBody').textContent='Abra esta campanha dentro do NEX para ver a ficha completa.';
    $('nexCampaignSheetDialog').showModal();
+   return;
+  }
+  if(gm||sheet.controllerUid===uid){
+   editing=sheet.id;
+   $('sheetName').value=sheet.name||'';
+   $('sheetNex').value=sheet.nex||0;
+   $('sheetPV').value=sheet.pv||0;
+   $('sheetPE').value=sheet.pe||0;
+   $('sheetSAN').value=sheet.san||0;
+   $('sheetNotes').value=sheet.notes||'';
+   $('sheetFormTitle').textContent='Editar personagem da campanha';
+   show('sheetOwnerWrap',false);
+   show('sheetFormPanel',true);
    return;
   }
   $('nexCampaignSheetTitle').textContent=sheet.name||'Personagem';
@@ -1265,7 +1303,7 @@ if(!cfg||!cfg.projectId||!cfg.apiKey){show('setup',true);}else{
     throw Error('Preencha os campos com valores válidos.');
   if(editing){
    const original=roomSheets.find(s=>s.id===editing);
-   if(!original||!(gm||original.ownerUid===uid))throw Error('Você não pode editar esta ficha.');
+   if(!original||!(gm||original.ownerUid===uid||original.controllerUid===uid))throw Error('Você não pode editar esta ficha.');
    await updateDoc(doc(db,'campaigns',roomId,'sheets',editing),raw);
   }else{
    const target=gm?$('sheetOwner').value:uid;
