@@ -187,6 +187,21 @@ html.nex-embedded main{max-width:100%;padding:10px 12px 28px}
  #room .room-content{padding:0 3px 25px}
  #room .room-panel p{font-size:14px}
 }
+
+/* Seletor de imagem da campanha */
+#roomImageDialog{width:min(520px,calc(100vw - 24px));min-height:400px;max-height:90vh;overflow:auto;border:1px solid #4a3037;border-radius:10px;background:#202022;color:white;padding:18px;box-shadow:0 24px 65px #000c}
+#roomImageDialog::backdrop{background:#000b}
+#roomImageDialog .image-dialog-header{display:flex;justify-content:space-between;align-items:center;gap:10px}
+#roomImageDialog .image-dialog-header h2{font-size:23px;margin:0}
+#roomImageDialog .image-dialog-header button{min-width:36px;font-size:26px;border:none;background:transparent;color:white}
+#roomImageDialog .image-dialog-center{min-height:295px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;text-align:center}
+#roomImageDialog .image-dialog-center img{display:block;width:100%;max-height:240px;object-fit:contain;border-radius:6px}
+#roomImageDialog .image-dialog-center img[hidden]{display:none}
+#roomImageDialog .image-dialog-center button,#roomImageDialog .image-dialog-actions button:last-child{background:#bc3646;border:1px solid #cd4856;color:white}
+#roomImageDialog .image-dialog-center p{max-width:380px;font-size:12px}
+#roomImageDialog .image-dialog-actions{display:flex;justify-content:flex-end;gap:10px;flex-wrap:wrap}
+#roomImageDialog button{padding:10px 13px}
+#roomImageSummary{display:block;margin:8px 0}
 </style>
 </head>
 <body>
@@ -260,9 +275,24 @@ if(new URLSearchParams(location.search).get('integrado')==='1'){
    <h3>Editar campanha</h3>
    <label>Nome da campanha<input id="roomEditName" maxlength="100"></label>
    <label>Descrição<textarea id="roomEditDescription" maxlength="3000"></textarea></label>
-   <label>Imagem de capa (URL HTTPS)<input id="roomEditCover" type="url" placeholder="https://..."></label>
+   <label>Imagem da campanha</label>
+   <button type="button" id="roomChooseImage" class="alt">Selecionar Imagem</button>
+   <small id="roomImageSummary">Nenhuma imagem selecionada.</small>
    <div class="row"><button id="roomSaveConfiguration" type="button">Salvar alterações</button><button id="roomCancelConfiguration" class="alt" type="button">Cancelar</button></div>
   </section>
+  <dialog id="roomImageDialog" class="campaign-image-dialog" aria-labelledby="roomImageTitle">
+   <div class="image-dialog-header"><h2 id="roomImageTitle">Imagem</h2><button id="roomImageClose" type="button" aria-label="Fechar">×</button></div>
+   <div class="image-dialog-center">
+    <img id="roomImagePreview" alt="Pré-visualização da capa" hidden>
+    <button type="button" id="roomImageBrowse">Selecionar Imagem</button>
+    <input type="file" id="roomImageFile" accept="image/png,image/jpeg,image/webp" hidden>
+    <p id="roomImageStatus" role="status">Escolha uma foto do dispositivo para a campanha.</p>
+   </div>
+   <div class="image-dialog-actions">
+    <button type="button" id="roomImageRemove" class="alt">Remover imagem</button>
+    <button type="button" id="roomImageApply">Usar imagem</button>
+   </div>
+  </dialog>
   <section id="roomAgentPicker" class="agent-picker" hidden>
    <button type="button" id="roomBackFromPicker" class="agent-picker-back">← Voltar à campanha</button>
    <h3>Escolha um personagem para adicionar à campanha!</h3>
@@ -389,21 +419,76 @@ if(!cfg||!cfg.projectId||!cfg.apiKey){show('setup',true);}else{
   const el=$('roomCoverImage'),url=roomData?.coverUrl||'';
   el.hidden=!url;if(url)el.src=url;else el.removeAttribute('src');
  }
- function showRoomEditor(cover=false){
+ let pendingCoverImage=null;
+ function showRoomEditor(){
   if(!gm)return;
   $('roomEditName').value=roomData.name||'';
   $('roomEditDescription').value=roomData.description||'';
-  $('roomEditCover').value=roomData.coverUrl||'';
+  pendingCoverImage=roomData.coverUrl||'';
+  $('roomImageSummary').textContent=pendingCoverImage?'Imagem da campanha selecionada.':'Nenhuma imagem selecionada.';
   $('roomEditConfiguration').hidden=false;
-  if(cover)$('roomEditCover').focus();
  }
- $('roomEditAction').onclick=()=>showRoomEditor(false);
+ function setImagePreview(value){
+  const img=$('roomImagePreview');
+  img.hidden=!value;
+  if(value)img.src=value;else img.removeAttribute('src');
+ }
+ $('roomEditAction').onclick=showRoomEditor;
  $('roomCancelConfiguration').onclick=()=>{$('roomEditConfiguration').hidden=true;};
+ $('roomChooseImage').onclick=()=>{
+  setImagePreview(pendingCoverImage);
+  $('roomImageStatus').textContent='Selecione uma imagem JPG, PNG ou WebP do dispositivo.';
+  $('roomImageDialog').showModal();
+ };
+ $('roomImageClose').onclick=()=>$('roomImageDialog').close();
+ $('roomImageBrowse').onclick=()=>$('roomImageFile').click();
+ $('roomImageDialog').addEventListener('close',()=>{$('roomImageFile').value='';});
+ async function compressCover(file){
+  if(!['image/jpeg','image/png','image/webp'].includes(file.type))throw Error('Escolha uma imagem JPG, PNG ou WebP.');
+  if(file.size>12*1024*1024)throw Error('Escolha uma imagem de até 12 MB.');
+  const url=URL.createObjectURL(file);
+  let image;
+  try{image=await new Promise((resolve,reject)=>{
+   const img=new Image();img.onload=()=>resolve(img);img.onerror=()=>reject(Error('Não foi possível abrir a imagem.'));img.src=url;
+  });}finally{URL.revokeObjectURL(url);}
+  const canvas=document.createElement('canvas');
+  const maxSize=1200,ratio=Math.min(1,maxSize/Math.max(image.naturalWidth,image.naturalHeight));
+  canvas.width=Math.max(1,Math.round(image.naturalWidth*ratio));
+  canvas.height=Math.max(1,Math.round(image.naturalHeight*ratio));
+  const ctx=canvas.getContext('2d');if(!ctx)throw Error('Não foi possível processar a imagem.');
+  ctx.drawImage(image,0,0,canvas.width,canvas.height);
+  for(const quality of [0.8,0.66,0.5,0.36]){
+   const encoded=canvas.toDataURL('image/jpeg',quality);
+   if(encoded.length<=390000)return encoded;
+  }
+  throw Error('A imagem ficou muito grande. Escolha uma foto menor.');
+ }
+ $('roomImageFile').addEventListener('change',async event=>{
+  const file=event.target.files?.[0];if(!file)return;
+  $('roomImageStatus').textContent='Preparando imagem...';
+  $('roomImageApply').disabled=true;
+  try{
+   pendingCoverImage=await compressCover(file);
+   setImagePreview(pendingCoverImage);
+   $('roomImageStatus').textContent='Imagem pronta. Clique em Usar imagem.';
+  }catch(err){$('roomImageStatus').textContent=err.message;}
+  finally{$('roomImageApply').disabled=false;}
+ });
+ $('roomImageApply').onclick=()=>{
+  $('roomImageSummary').textContent=pendingCoverImage?'Imagem selecionada. Salve as alterações da campanha.':'Nenhuma imagem selecionada.';
+  $('roomImageDialog').close();
+ };
+ $('roomImageRemove').onclick=()=>{
+  pendingCoverImage='';setImagePreview('');
+  $('roomImageSummary').textContent='Imagem removida. Salve as alterações.';
+  $('roomImageDialog').close();
+ };
  $('roomSaveConfiguration').onclick=()=>run(async()=>{
   if(!gm||!roomId)throw Error('Apenas o mestre pode editar.');
-  const name=$('roomEditName').value.trim(),description=$('roomEditDescription').value.trim(),coverUrl=$('roomEditCover').value.trim();
+  const name=$('roomEditName').value.trim(),description=$('roomEditDescription').value.trim(),coverUrl=pendingCoverImage||'';
   if(!name)throw Error('Nome obrigatório.');
-  if(coverUrl&&!coverUrl.startsWith('https://'))throw Error('A capa precisa ser um link HTTPS.');
+  if(coverUrl && !/^data:image\/jpeg;base64,|^https:\/\//i.test(coverUrl))throw Error('Imagem inválida.');
+  if(coverUrl.length>390000)throw Error('Imagem grande demais.');
   await updateDoc(doc(db,'campaigns',roomId),{name,description,coverUrl});
   roomData={...roomData,name,description,coverUrl};
   $('roomTitle').textContent=name;$('roomDescription').textContent=description;
