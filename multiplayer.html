@@ -252,6 +252,7 @@ html.nex-embedded main{max-width:100%;padding:10px 12px 28px}
 #room .nex-sheet-fields b{font-size:11px;color:#cdaab1;margin-bottom:5px}
 @media(max-width:480px){#room .nex-character-grid{grid-template-columns:1fr}#room .nex-character-photo{width:108px;flex-basis:108px}}
 </style>
+<script src="./nex-image-crop.js?v=20261113crop1"></script>
 </head>
 <body>
 <script>
@@ -509,35 +510,19 @@ if(!cfg||!cfg.projectId||!cfg.apiKey){show('setup',true);}else{
  $('roomImageClose').onclick=()=>$('roomImageDialog').close();
  $('roomImageBrowse').onclick=()=>$('roomImageFile').click();
  $('roomImageDialog').addEventListener('close',()=>{$('roomImageFile').value='';});
- async function compressCover(file){
-  if(!['image/jpeg','image/png','image/webp'].includes(file.type))throw Error('Escolha uma imagem JPG, PNG ou WebP.');
-  if(file.size>12*1024*1024)throw Error('Escolha uma imagem de até 12 MB.');
-  const url=URL.createObjectURL(file);
-  let image;
-  try{image=await new Promise((resolve,reject)=>{
-   const img=new Image();img.onload=()=>resolve(img);img.onerror=()=>reject(Error('Não foi possível abrir a imagem.'));img.src=url;
-  });}finally{URL.revokeObjectURL(url);}
-  const canvas=document.createElement('canvas');
-  const maxSize=1200,ratio=Math.min(1,maxSize/Math.max(image.naturalWidth,image.naturalHeight));
-  canvas.width=Math.max(1,Math.round(image.naturalWidth*ratio));
-  canvas.height=Math.max(1,Math.round(image.naturalHeight*ratio));
-  const ctx=canvas.getContext('2d');if(!ctx)throw Error('Não foi possível processar a imagem.');
-  ctx.drawImage(image,0,0,canvas.width,canvas.height);
-  for(const quality of [0.8,0.66,0.5,0.36]){
-   const encoded=canvas.toDataURL('image/jpeg',quality);
-   if(encoded.length<=390000)return encoded;
-  }
-  throw Error('A imagem ficou muito grande. Escolha uma foto menor.');
- }
  $('roomImageFile').addEventListener('change',async event=>{
-  const file=event.target.files?.[0];if(!file)return;
-  $('roomImageStatus').textContent='Preparando imagem...';
+  const file=event.target.files?.[0];event.target.value='';
+  if(!file)return;
+  $('roomImageStatus').textContent='Ajuste a posição e o zoom antes de salvar.';
   $('roomImageApply').disabled=true;
   try{
-   pendingCoverImage=await compressCover(file);
-   setImagePreview(pendingCoverImage);
-   $('roomImageStatus').textContent='Imagem pronta. Clique em Usar imagem.';
-  }catch(err){$('roomImageStatus').textContent=err.message;}
+   const cropped=await window.NEX_IMAGE_CROP.edit(file,{aspectRatio:16/9,width:960,maxLength:380000,label:'campanha'});
+   if(cropped){
+    pendingCoverImage=cropped;
+    setImagePreview(pendingCoverImage);
+    $('roomImageStatus').textContent='Enquadramento salvo. Clique em Usar imagem e depois salve a campanha.';
+   }else $('roomImageStatus').textContent='Edição cancelada.';
+  }catch(error){$('roomImageStatus').textContent=error.message||'Não foi possível editar a imagem.';}
   finally{$('roomImageApply').disabled=false;}
  });
  $('roomImageApply').onclick=()=>{
