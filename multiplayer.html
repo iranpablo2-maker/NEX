@@ -302,22 +302,92 @@ html.nex-embedded main{max-width:100%;padding:10px 12px 28px}
 #room .nex-character-meta-value{color:#fff;font-size:13px;font-weight:700;line-height:1.3;overflow-wrap:anywhere}
 #room .nex-character-meta-editors{color:#d2bcc2;font-size:11px;line-height:1.35;overflow-wrap:anywhere}
 #room #roomManageTab[aria-pressed="true"]{border-color:#df5062;background:#692736}
-/* Cartões de personagens: proporções da referência (aprox. 354 × 198 px). */
-#room .nex-character-grid{grid-template-columns:repeat(auto-fill,minmax(min(100%,354px),354px));gap:18px}
-#room .nex-character-card{width:100%;min-height:196px;align-items:flex-start}
-#room .nex-character-photo{width:118px;flex:0 0 118px;height:128px}
-#room .nex-character-info{min-height:194px;padding:16px 33px 10px 12px;gap:3px}
-#room .nex-character-info>strong{font-size:16px;line-height:1.25}
-#room .nex-character-info>span{font-size:13px;line-height:1.4}
-#room .nex-character-info>button[data-open-campaign-sheet]{margin-top:4px;align-self:flex-end;min-height:32px;padding:7px 12px}
-#room .nex-character-responsible{margin-top:auto;padding-top:10px;gap:3px}
-#room .nex-character-meta-label{font-size:11px}
-#room .nex-character-meta-value{font-size:13px}
-#room .nex-character-meta-editors{font-size:11px}
-@media(max-width:390px){
+/* Layout de referência: cartão 354 x 196, foto superior esquerda e dados alinhados. */
+#room .nex-character-grid{
+ display:grid;
+ grid-template-columns:repeat(auto-fill,354px);
+ gap:18px;
+ justify-content:start;
+ align-items:start;
+ padding-top:12px;
+}
+#room .nex-character-grid .nex-character-card{
+ display:block;
+ position:relative;
+ width:354px;
+ max-width:100%;
+ height:196px;
+ min-height:196px;
+ padding:0;
+ background:#1c1c1f;
+ border:1px solid #302a30;
+ border-radius:7px;
+ overflow:hidden;
+}
+#room .nex-character-card>.nex-character-photo{
+ position:absolute;
+ top:0;
+ left:0;
+ display:block;
+ width:118px;
+ height:128px;
+ object-fit:cover;
+}
+#room .nex-character-card>.nex-character-placeholder{display:grid;place-items:center;font-size:44px}
+#room .nex-character-card>.nex-character-info{
+ position:absolute;
+ inset:0 0 0 118px;
+ display:flex;
+ flex-direction:column;
+ align-items:flex-start;
+ gap:3px;
+ min-width:0;
+ height:100%;
+ min-height:0;
+ padding:16px 33px 10px 12px;
+}
+#room .nex-character-info>strong{font-size:16px;line-height:1.2;margin:0}
+#room .nex-character-info>span{font-size:13px;line-height:1.25}
+#room .nex-character-info>small{font-size:11px;line-height:1.3}
+#room .nex-character-info>button[data-open-campaign-sheet]{
+ align-self:flex-end;
+ margin:4px 0 0;
+ min-height:32px;
+ padding:7px 12px;
+ font-size:12px;
+ line-height:1.2;
+ border-radius:5px;
+ white-space:nowrap;
+}
+#room .nex-character-card .nex-character-responsible{
+ position:absolute;
+ bottom:10px;
+ left:12px;
+ right:10px;
+ display:flex;
+ flex-direction:column;
+ gap:3px;
+ min-width:0;
+ margin:0;
+ padding:0;
+}
+#room .nex-character-card .nex-character-info .nex-character-meta-label{
+ color:#c7b1b7;font-size:11px;font-weight:400;line-height:1.2;margin:0;
+}
+#room .nex-character-card .nex-character-info strong.nex-character-meta-value{
+ display:block;color:#fff;font-size:13px;font-weight:700;line-height:1.25;margin:0;
+ white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;
+}
+#room .nex-character-card .nex-character-info .nex-character-meta-editors{
+ color:#d2bcc2;font-size:11px;font-weight:400;line-height:1.2;margin:0;
+ white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;
+}
+@media(max-width:415px){
  #room .nex-character-grid{grid-template-columns:minmax(0,1fr)}
- #room .nex-character-photo{width:108px;flex-basis:108px}
- #room .nex-character-info{padding-right:30px}
+ #room .nex-character-grid .nex-character-card{width:100%}
+ #room .nex-character-card>.nex-character-photo{width:105px}
+ #room .nex-character-card>.nex-character-info{left:105px;padding-right:28px}
+ #room .nex-character-info>button[data-open-campaign-sheet]{font-size:11px;padding:7px 9px}
 }
 
 </style>
@@ -1249,7 +1319,7 @@ if(!cfg||!cfg.projectId||!cfg.apiKey){show('setup',true);}else{
     const responsible=assigned===roomData?.gmUid?'Mestre':(roomMembers.find(m=>m.uid===assigned)?.name||'Jogador');
     const editors=assigned===roomData?.gmUid?'Mestre':responsible+' e Mestre';
     const managing='<div class="nex-character-responsible"><small class="nex-character-meta-label">Jogador responsável</small><strong class="nex-character-meta-value">'+escape(responsible)+'</strong><small class="nex-character-meta-editors">Pode editar: '+escape(editors)+'</small></div>';
-    return '<article class="nex-character-card">'+pic+'<div class="nex-character-info"><strong title="'+escape(name)+'">'+escape(name)+'</strong><span>'+escape(cls)+'</span><small>NEX '+escape(s.nex)+'%'+(!mine?' · Jogador da campanha':'')+'</small><button type="button" data-open-campaign-sheet="'+escape(s.id)+'">Acessar Ficha</button>'+managing+'</div>'+(editable?'<details class="nex-character-settings"><summary aria-label="Opções do personagem" title="Opções do personagem">⚙</summary><button type="button" data-remove-campaign-sheet="'+escape(s.id)+'">Remover</button></details>':'')+'</article>';
+    return '<article class="nex-character-card" data-card-layout="referencia-20261113">'+pic+'<div class="nex-character-info"><strong title="'+escape(name)+'">'+escape(name)+'</strong><span>'+escape(cls)+'</span><small>NEX '+escape(s.nex)+'%'+(!mine?' · Jogador da campanha':'')+'</small><button type="button" data-open-campaign-sheet="'+escape(s.id)+'">Acessar Ficha</button>'+managing+'</div>'+(editable?'<details class="nex-character-settings"><summary aria-label="Opções do personagem" title="Opções do personagem">⚙</summary><button type="button" data-remove-campaign-sheet="'+escape(s.id)+'">Remover</button></details>':'')+'</article>';
   }).join(''):'<p class="room-note">Ainda não há personagens nesta campanha. Use “Adicionar Personagens” para escolher uma ficha da sua conta NEX.</p>';
  }
  $('gmSheetAssignments').addEventListener('change',event=>run(async()=>{
