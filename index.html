@@ -1930,7 +1930,7 @@ body > #nexOriginPopup[hidden]{display:none!important;}
  <div class="home-section-heading"><h2>Campanhas</h2><span class="home-tag">MESAS E PERSONAGENS</span></div>
  <p class="muted" style="margin:4px 0 16px">Crie sua campanha, autorize jogadores e acompanhe as fichas na mesma sala. Todos os participantes podem visualizar; somente o dono e o mestre podem editar.</p>
  <div class="nex-campaign-integrated" aria-label="Área de campanhas online">
-  <iframe id="nexCampaignRoomFrame" title="Campanhas online do NEX" data-src="./multiplayer.html?integrado=1&v=20261113realsheet9" loading="eager" referrerpolicy="strict-origin-when-cross-origin"></iframe>
+  <iframe id="nexCampaignRoomFrame" title="Campanhas online do NEX" data-src="./multiplayer.html?integrado=1&v=20261113realsheet10" loading="eager" referrerpolicy="strict-origin-when-cross-origin"></iframe>
  </div>
  <details class="nex-campaign-legacy">
   <summary>Campanhas salvas neste dispositivo <span class="muted">(modo local anterior)</span></summary>
@@ -4743,6 +4743,8 @@ const PARANORMAL=[
     const link=new URL(frame.dataset.src,location.href);
     const invite=new URLSearchParams(location.search).get('campaignInvite');
     if(invite&&/^[A-Za-z0-9-]{8,40}$/.test(invite))link.searchParams.set('invite',invite);
+    // Uma versão nova deve ser buscada, sem reutilizar a tela antiga guardada pelo navegador.
+    link.searchParams.set('cacheVersion','20261113realsheet10');
     frame.src=link.href;
   }
   if(new URLSearchParams(location.search).has('campaignInvite')){
@@ -4751,7 +4753,18 @@ const PARANORMAL=[
   const observer=new MutationObserver(loadWhenVisible);
   observer.observe(area,{attributes:true,attributeFilter:['class']});
   loadWhenVisible();
-  // Ponte restrita ao iframe de campanhas da mesma origem.
+  frame.addEventListener('load',()=>{
+   try{
+    if(frame.contentWindow?.NEX_CAMPAIGN_UI_VERSION==='20261113-real-sheet-10')return;
+    if(frame.dataset.nexRefreshAttempt==='1')return;
+    frame.dataset.nexRefreshAttempt='1';
+    const latest=new URL(frame.src,location.href);
+    latest.searchParams.set('cacheVersion','20261113realsheet10');
+    latest.searchParams.set('fresh',String(Date.now()));
+    frame.src=latest.href;
+   }catch(error){console.warn('NEX: verificação de versão de campanhas indisponível',error);}
+  });
+    // Ponte restrita ao iframe de campanhas da mesma origem.
   // Nunca altera nem remove a ficha original ao compartilhá-la.
   window.addEventListener('message',event=>{
     if(event.origin!==location.origin || event.source!==frame.contentWindow)return;
