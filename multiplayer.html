@@ -122,6 +122,39 @@ html.nex-embedded .panel{margin:9px 0}
 #campaignLibrary[hidden],#campaignCreateScreen[hidden]{display:none!important}
 html.nex-embedded #campaignLibrary{padding:0 4px}
 @media(max-width:600px){#campaignLibrary .library-cards{grid-template-columns:1fr}#campaignCreateScreen{padding:14px}#campaignCreateScreen .private-toggle button{width:50%}}
+
+/* Sala NEX — navegação inspirada no fluxo de campanhas, identidade própria */
+html.nex-embedded #room{border:none;background:transparent;box-shadow:none}
+#room .room-hero{background:transparent;border:0;padding:12px 4px 20px}
+#room .room-top h2{font-size:30px;font-weight:500}
+#room .room-content{padding:0 4px 24px}
+#room .campaign-actions{display:flex;gap:10px;flex-wrap:wrap;margin:4px 0 18px}
+#room .campaign-actions button{background:#141115;border:1px solid #9d3b48;border-radius:3px;color:#f0dadd;font-size:12px;min-height:42px;padding:9px 13px}
+#room .campaign-actions button:hover{background:#3a1a22}
+#room .campaign-actions button[hidden]{display:none}
+#room .room-navigation{display:flex;gap:22px;border-bottom:1px solid #383038;overflow:auto}
+#room .room-navigation button{border:0;border-bottom:2px solid transparent;border-radius:0;background:none!important;box-shadow:none;color:#a7a0a7;font-size:17px;font-weight:500;padding:10px 4px;white-space:nowrap}
+#room .room-navigation button[aria-pressed="true"]{color:#fff;border-color:#e64a58}
+#room .room-navigation button small{display:none}
+#room .room-panel{border:0;background:transparent;padding:14px 0}
+#room .room-invite{margin-top:16px}
+#room .room-panel-head h2{font-size:17px}
+#room #roomCharactersPanel .room-panel-head,#room #roomCharactersPanel #nexLinkPanel{display:none}
+#room .agent-picker{padding:15px 0}
+#room .agent-picker h3{font-size:20px;margin:8px 0 25px;color:#fff;text-align:center}
+#room .agent-picker-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(255px,1fr));gap:18px}
+#room .agent-picker-card{min-height:124px;background:#1d1d20;border:1px solid #353039;border-radius:6px;padding:15px;display:flex;flex-direction:column;justify-content:space-between;gap:12px}
+#room .agent-picker-card strong{font-size:17px;color:white;overflow-wrap:anywhere}
+#room .agent-picker-card small{display:block;margin-top:5px}
+#room .agent-picker-card button{align-self:flex-end;padding:7px 13px;min-height:32px}
+#room .agent-picker-back{background:none;border:1px solid #60323b;margin-bottom:12px}
+#room .campaign-combats{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px}
+#room .campaign-combat{padding:15px;background:#1c171a;border:1px solid #50333b;border-radius:8px}
+#room .campaign-configuration{padding:16px;background:#171317;border:1px solid #50323c;border-radius:9px;margin:12px 0}
+#room .campaign-configuration label{font-size:13px}
+#room .campaign-configuration textarea{min-height:90px}
+#room .agent-picker[hidden],#room .campaign-configuration[hidden]{display:none!important}
+@media(max-width:620px){#room .campaign-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}#room .campaign-actions button{padding:9px 5px}#room .room-navigation{gap:14px}#room .room-top h2{font-size:23px}}
 </style>
 </head>
 <body>
@@ -179,17 +212,42 @@ if(new URLSearchParams(location.search).get('integrado')==='1'){
  </section>
  <form id="openCampaign" class="hide"><input id="campaignCode"><button>Abrir sala</button></form>
  <section id="room" class="panel hide">
+  <nav class="campaign-actions" aria-label="Ações da campanha">
+   <button type="button" id="roomCoverAction">Foto de Capa</button>
+   <button type="button" id="roomAddAgentsAction">Adicionar Personagens</button>
+   <button type="button" id="roomInviteAction">Convidar Jogadores</button>
+   <button type="button" id="roomEditAction">Editar Campanha</button>
+   <button type="button" id="roomCreateCombatAction">Criar Combate</button>
+   <button type="button" id="roomMasterAction">Escudo do Mestre</button>
+  </nav>
   <div class="room-hero">
-   <div class="room-top"><h2 id="roomTitle">Campanha</h2><span id="role" class="badge"></span><button class="alt" id="leaveRoom">Fechar sala</button></div>
+   <div class="room-top"><h2 id="roomTitle">Campanha</h2><span id="role" class="badge"></span><button class="alt" id="leaveRoom">Voltar às campanhas</button></div>
    <p id="roomDescription" class="room-desc"></p>
   </div>
+  <section id="roomEditConfiguration" class="campaign-configuration" hidden>
+   <h3>Editar campanha</h3>
+   <label>Nome da campanha<input id="roomEditName" maxlength="100"></label>
+   <label>Descrição<textarea id="roomEditDescription" maxlength="3000"></textarea></label>
+   <label>Imagem de capa (URL HTTPS)<input id="roomEditCover" type="url" placeholder="https://..."></label>
+   <div class="row"><button id="roomSaveConfiguration" type="button">Salvar alterações</button><button id="roomCancelConfiguration" class="alt" type="button">Cancelar</button></div>
+  </section>
+  <section id="roomAgentPicker" class="agent-picker" hidden>
+   <button type="button" id="roomBackFromPicker" class="agent-picker-back">← Voltar à campanha</button>
+   <h3>Escolha um personagem para adicionar à campanha!</h3>
+   <div id="roomAgentPickerCards" class="agent-picker-grid"><p>Carregando personagens da sua conta...</p></div>
+  </section>
   <div class="room-content">
    <div id="roomNavigation" class="room-navigation" role="group" aria-label="Seções da campanha">
-    <button type="button" data-room-section="characters" aria-pressed="true">Personagens<small>Fichas compartilhadas</small></button>
-    <button type="button" data-room-section="master" id="roomMasterTab" aria-pressed="false">Painel do mestre<small>Gerenciar campanha</small></button>
-    <button type="button" data-room-section="players" aria-pressed="false">Jogadores<small>Participantes</small></button>
-    <button type="button" data-room-section="invites" aria-pressed="false">Convites<small>Compartilhar link</small></button>
+    <button type="button" data-room-section="characters" aria-pressed="true">Agentes</button>
+    <button type="button" data-room-section="players" aria-pressed="false">Jogadores</button>
+    <button type="button" data-room-section="combats" aria-pressed="false">Combates</button>
+    <button type="button" data-room-section="master" id="roomMasterTab" aria-pressed="false" class="hide">Escudo do Mestre</button>
+    <button type="button" data-room-section="invites" aria-pressed="false" class="hide">Convites</button>
    </div>
+   <section id="roomCombatsPanel" class="room-panel hide">
+     <div class="room-panel-head"><h3>Combates</h3></div>
+     <div id="roomCombats" class="campaign-combats"><p>Nenhum combate cadastrado.</p></div>
+   </section>
    <div id="roomMasterPanel" class="room-panel hide"><h3>Painel do mestre</h3><p class="room-note">Gerencie as solicitações e acompanhe os personagens da sua campanha.</p></div>
    <div class="room-invite" id="roomInvitePanel">
     <div><small>Convide seus jogadores com um link</small><span class="room-invite-label">Somente o mestre pode aprovar novos participantes.</span><code id="roomCode" class="code hide"></code></div>
@@ -422,10 +480,12 @@ if(!cfg||!cfg.projectId||!cfg.apiKey){show('setup',true);}else{
  $('copyCode').addEventListener('click',()=>copy(inviteLink(roomId)));
  $('leaveRoom').addEventListener('click',()=>{clearRoom();libraryMode('list');show('joinInvite',!!inviteId);});
  function roomSection(section){
-  const allowed=['characters','master','players','invites'];
+  const allowed=['characters','master','players','invites','combats'];
   if(!allowed.includes(section)||section==='master'&&!gm)section='characters';
   document.querySelectorAll('[data-room-section]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.roomSection===section)));
   show('roomCharactersPanel',section==='characters');
+  show('roomCombatsPanel',section==='combats');
+  $('roomAgentPicker').hidden=true;
   show('roomPlayersPanel',section==='players');
   show('roomInvitePanel',section==='invites');
   show('roomMasterPanel',section==='master');
