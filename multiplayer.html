@@ -546,7 +546,7 @@ if(!cfg||!cfg.projectId||!cfg.apiKey){show('setup',true);}else{
     const assigned=String(s.controllerUid||s.ownerUid||'');
     const ownerName=s.ownerUid===roomData?.gmUid?'Mestre':(roomMembers.find(m=>m.uid===s.ownerUid)?.name||'Proprietário');
     const responsible=assigned===roomData?.gmUid?'Mestre':(roomMembers.find(m=>m.uid===assigned)?.name||ownerName);
-    return '<div class="card nex-manager-assignment"><b>'+escape(s.name||'Personagem sem nome')+'</b><small>Proprietário: '+escape(ownerName)+'</small><label>Jogador responsável<select data-assign-sheet="'+escape(s.id)+'"><option value="'+escape(roomData?.gmUid||'')+'" '+(assigned===roomData?.gmUid?'selected':'')+'>Mestre</option>'+roomMembers.filter(m=>m.uid!==roomData?.gmUid).map(m=>'<option value="'+escape(m.uid)+'" '+(assigned===m.uid?'selected':'')+'>'+escape(m.name||'Jogador')+'</option>').join('')+'</select></label><small>Pode editar: '+escape(responsible)+' e Mestre</small></div>';
+    return '<div class="card nex-manager-assignment"><b>'+escape(s.name||'Personagem sem nome')+'</b><small>Proprietário: '+escape(ownerName)+'</small><label>Jogador responsável<select data-assign-sheet="'+escape(s.id)+'"><option value="'+escape(roomData?.gmUid||'')+'" '+(assigned===roomData?.gmUid?'selected':'')+'>Mestre</option>'+roomMembers.filter(m=>m.uid!==roomData?.gmUid).map(m=>'<option value="'+escape(m.uid)+'" '+(assigned===m.uid?'selected':'')+'>'+escape(m.name||'Jogador')+'</option>').join('')+'</select></label><small>Pode editar: '+escape(assigned===roomData?.gmUid?'Mestre':responsible+' e Mestre')+'</small></div>';
    }).join(''):'<p class="room-note">Nenhum personagem na campanha.</p>';
  }
  $('requestExtraSlot').onclick=()=>run(async()=>{
