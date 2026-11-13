@@ -145,7 +145,10 @@ service cloud.firestore {
           && request.resource.data.keys().hasOnly(['ownerUid','controllerUid','slotNumber','name','nex','pv','pe','san','notes','updatedAt','fullSheet','linkedAgentId','sheetFormat'])
           && request.resource.data.ownerUid is string
           && (
-            nexGM(cid) ||
+            (nexGM(cid) && (
+              request.resource.data.ownerUid == request.auth.uid ||
+              exists(/databases/$(database)/documents/campaigns/$(cid)/members/$(request.resource.data.ownerUid))
+            )) ||
             (request.resource.data.ownerUid == request.auth.uid && allowedSlot(request.auth.uid,sheetId))
           )
           && (
@@ -181,6 +184,7 @@ service cloud.firestore {
           && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['name','nex','pv','pe','san','notes','updatedAt','fullSheet','linkedAgentId','sheetFormat','controllerUid'])
           && (!request.resource.data.keys().hasAny(['controllerUid']) ||
               request.resource.data.controllerUid == request.resource.data.ownerUid ||
+              request.resource.data.controllerUid == get(/databases/$(database)/documents/campaigns/$(cid)).data.gmUid ||
               exists(/databases/$(database)/documents/campaigns/$(cid)/members/$(request.resource.data.controllerUid)))
           && request.resource.data.name is string
           && request.resource.data.nex is int
