@@ -1842,6 +1842,22 @@ body > #nexOriginPopup[hidden]{display:none!important;}
 @media(max-width:540px){#sheetScreen .nex216-identity{grid-template-columns:78px minmax(0,1fr);column-gap:7px}#sheetScreen .nex216-portrait-block{width:78px}#sheetScreen .nex216-portrait-block #portraitPreview{width:75px;height:80px}}
 </style>
 <script src="./nex-image-crop.js?v=20261113crop1"></script>
+
+<style id="nex-real-shared-sheet-style">
+#nexSharedRealSheetDialog{width:min(99vw,1600px);max-width:99vw;max-height:95vh;height:95vh;overflow:auto;padding:0 12px 22px;border:1px solid #883542;border-radius:9px;background:#0b0b0e;color:#fff}
+#nexSharedRealSheetDialog::backdrop{background:rgba(0,0,0,.88)}
+#nexSharedRealSheetDialog .nex-shared-head{position:sticky;top:0;z-index:1000;display:flex;align-items:center;justify-content:space-between;gap:12px;background:#141014;border-bottom:1px solid #883542;padding:14px 16px}
+#nexSharedRealSheetDialog .nex-shared-head strong{display:block;font-size:17px}
+#nexSharedRealSheetDialog .nex-shared-head small{display:block;font-size:12px;color:#c9b6be;margin-top:4px}
+#nexSharedRealSheetDialog .nex-shared-head button{border:1px solid #a64453;color:#fff;background:#30171e;padding:10px 15px;border-radius:5px;cursor:pointer}
+#nexSharedRealSheetDialog .nex-shared-sheet-static{display:block!important;width:100%;height:auto;overflow:visible;pointer-events:none}
+#nexSharedRealSheetDialog .nex-shared-sheet-static .shell{max-width:100%;margin:0 auto}
+#nexSharedRealSheetDialog .nex-shared-sheet-static input:disabled,
+#nexSharedRealSheetDialog .nex-shared-sheet-static select:disabled,
+#nexSharedRealSheetDialog .nex-shared-sheet-static textarea:disabled{opacity:1;color:inherit;-webkit-text-fill-color:currentColor}
+#nexSharedRealSheetDialog .nex-shared-sheet-static .mini-nav{display:none}
+@media(max-width:700px){#nexSharedRealSheetDialog{width:100vw;max-width:100vw;height:100vh;max-height:100vh;padding:0 5px 14px}#nexSharedRealSheetDialog .nex-shared-head{padding:10px}}
+</style>
 </head><body>
 <script src="nex-sobrevivendo-ao-horror.js?v=2072"></script>
 <script src="nex-arquivos-secretos.js?v=20261112descs2"></script>
@@ -2702,6 +2718,7 @@ $('nexHomebrewFilter')?.addEventListener('input',()=>nex12RenderHomebrew());
    if(note){note.hidden=ok;note.textContent=ok?'':message+' Use o botão Baixar backup de todas as fichas.';}
  }
  function persist(show=false){
+   if(window.NEX_SHARED_PREVIEW_RENDERING)return false;
    const entry=agents.find(x=>x.id===active);
    if(entry){
      const updated=JSON.parse(JSON.stringify(state));
@@ -2933,6 +2950,50 @@ $('nexHomebrewFilter')?.addEventListener('input',()=>nex12RenderHomebrew());
   if(count)count.textContent=`Agentes: ${agents.length} fichas · ${roster.hidden} cópia(s) agrupada(s)`;
  }
  function rehydrate(){state.homebrew=globalHomebrew();if(typeof nex12Ensure==='function')nex12Ensure();renderFields();if(typeof nex12PopulateOrigins==='function')nex12PopulateOrigins();if(typeof nex12RenderHomebrew==='function')nex12RenderHomebrew();if(typeof nex12RenderTrail==='function')nex12RenderTrail();if(typeof nex12RenderPowerList==='function')nex12RenderPowerList();if(typeof nex12RenderRitualList==='function')nex12RenderRitualList();if(typeof nex12UpdateTabVisibility==='function')nex12UpdateTabVisibility();renderAttacks();renderInventory();renderStats();if(window.NEX51)window.NEX51.renderSheet();}
+ function openSharedReadOnlySheet(data,description={}){
+  if(!data||typeof data!=='object'||Array.isArray(data)){toast('Esta campanha não possui uma ficha completa compartilhada.');return;}
+  const original=$('sheetScreen');
+  const oldState=state;
+  const oldScroll=window.scrollY;
+  let clone=null;
+  try{
+   // Usa o mesmo motor da ficha operacional, sem criar ou editar fichas da conta.
+   window.NEX_SHARED_PREVIEW_RENDERING=true;
+   state=normalize(JSON.parse(JSON.stringify(data)));
+   rehydrate();
+   clone=original.cloneNode(true);
+   clone.classList.remove('hide');
+   clone.setAttribute('aria-label','Ficha NEX compartilhada — somente leitura');
+   clone.classList.add('nex-shared-sheet-static');
+   clone.querySelectorAll('input,select,textarea').forEach(el=>{el.disabled=true;el.tabIndex=-1;});
+   clone.querySelectorAll('button,a,[role="button"],[tabindex],summary').forEach(el=>{el.tabIndex=-1;el.setAttribute('aria-disabled','true');});
+  }catch(error){
+   console.error('NEX: erro ao renderizar ficha compartilhada',error);
+   toast('Não foi possível mostrar a ficha compartilhada.');
+   return;
+  }finally{
+   state=oldState;
+   try{rehydrate();}catch(error){console.warn('NEX: restauração da ficha local',error);}
+   window.NEX_SHARED_PREVIEW_RENDERING=false;
+   window.scrollTo(0,oldScroll);
+  }
+  let dialog=document.getElementById('nexSharedRealSheetDialog');
+  if(!dialog){
+   dialog=document.createElement('dialog');
+   dialog.id='nexSharedRealSheetDialog';
+   dialog.className='nex-shared-real-sheet';
+   dialog.innerHTML='<header class="nex-shared-head"><div><strong id="nexSharedRealSheetTitle">Ficha do personagem</strong><small>Ficha NEX original · visualização somente leitura</small></div><button type="button" id="nexSharedRealSheetClose" aria-label="Fechar ficha">Fechar ×</button></header><div id="nexSharedRealSheetMount"></div>';
+   document.body.appendChild(dialog);
+   dialog.querySelector('#nexSharedRealSheetClose').onclick=()=>dialog.close();
+   dialog.addEventListener('close',()=>{dialog.querySelector('#nexSharedRealSheetMount').replaceChildren();});
+  }
+  dialog.querySelector('#nexSharedRealSheetTitle').textContent=String(description.name||data.name||'Personagem');
+  const mount=dialog.querySelector('#nexSharedRealSheetMount');
+  mount.replaceChildren(clone);
+  // A cópia é estática: os comandos de edição e rolagem não podem modificar a conta.
+  clone.inert=true;
+  dialog.showModal();
+ }
  function openAgent(id){
   if(!window.NEX_ACCOUNT_USER){toast('Entre na sua conta NEX para abrir esta ficha.');return;}
   if(!window.NEX_ACCOUNT_SYNC_READY){toast('Carregando seus personagens da nuvem.');return;}
@@ -3405,7 +3466,7 @@ $('nexHomebrewFilter')?.addEventListener('input',()=>nex12RenderHomebrew());
  // Preserve compatibility with V1.2's original new-sheet and JSON import controls.
  $('newChar').addEventListener('click',e=>{e.preventDefault();e.stopImmediatePropagation();createAgent();},true);
  $('fileInput').addEventListener('change',()=>{setTimeout(()=>{try{rehydrate();persist();renderAgents();toast('Ficha importada para o personagem atual.');}catch(err){console.error('Erro após importar',err);toast('Confira o arquivo importado.');}},200);});
- window.NEX17={openHome:showHome,openAgents:showAgents,openAgent,createAgent,openSheet:()=>{rehydrate();visible('sheet');},openCampaigns:()=>{
+ window.NEX17={openHome:showHome,openAgents:showAgents,openAgent,openSharedReadOnlySheet,createAgent,openSheet:()=>{rehydrate();visible('sheet');},openCampaigns:()=>{
   renderCampaigns();
   visible('campaigns');
   // A aba superior Campanhas sempre retorna à lista, mesmo com sala aberta.
@@ -4706,6 +4767,13 @@ const PARANORMAL=[
         if(typeof window.NEX17?.openAgent==='function')window.NEX17.openAgent(id);
       }else if(typeof window.NEX17?.openAgents==='function'){
         window.NEX17.openAgents();
+      }
+      return;
+    }
+    if(msg.type==='nex-campaign-view-shared-sheet'){
+      const sheet=msg.sheet;
+      if(sheet&&typeof sheet==='object'&&typeof window.NEX17?.openSharedReadOnlySheet==='function'){
+       window.NEX17.openSharedReadOnlySheet(sheet,{name:String(msg.name||sheet.name||'Personagem').slice(0,100)});
       }
       return;
     }
