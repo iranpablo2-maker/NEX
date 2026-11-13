@@ -154,6 +154,9 @@ html.nex-embedded #room{border:none;background:transparent;box-shadow:none}
 #room .campaign-configuration label{font-size:13px}
 #room .campaign-configuration textarea{min-height:90px}
 #room .agent-picker[hidden],#room .campaign-configuration[hidden]{display:none!important}
+#room:has(#roomAgentPicker:not([hidden])) .room-hero,#room:has(#roomAgentPicker:not([hidden])) .room-content,#room:has(#roomAgentPicker:not([hidden])) .campaign-actions{display:none!important}
+#room .campaign-cover{width:100%;max-height:210px;object-fit:cover;border-radius:8px}
+#room .campaign-cover[hidden]{display:none!important}
 @media(max-width:620px){#room .campaign-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}#room .campaign-actions button{padding:9px 5px}#room .room-navigation{gap:14px}#room .room-top h2{font-size:23px}}
 </style>
 </head>
@@ -221,6 +224,7 @@ if(new URLSearchParams(location.search).get('integrado')==='1'){
    <button type="button" id="roomMasterAction">Escudo do Mestre</button>
   </nav>
   <div class="room-hero">
+   <img class="campaign-cover" id="roomCoverImage" alt="Capa da campanha" hidden>
    <div class="room-top"><h2 id="roomTitle">Campanha</h2><span id="role" class="badge"></span><button class="alt" id="leaveRoom">Voltar às campanhas</button></div>
    <p id="roomDescription" class="room-desc"></p>
   </div>
@@ -311,7 +315,7 @@ if(!cfg||!cfg.projectId||!cfg.apiKey){show('setup',true);}else{
  try{
   const app=initializeApp(cfg);auth=getAuth(app);db=getFirestore(app);
  }catch(err){show('setup',true);notice('Configuração Firebase inválida.');throw err;}
- let uid=null,roomId='',gm=false,roomData=null,roomMembers=[],roomSheets=[],roomRequests=[],unsubs=[],editing=null,campaignUnsub=null,myCampaigns=[],privateShield=true;
+ let uid=null,roomId='',gm=false,roomData=null,roomMembers=[],roomSheets=[],roomRequests=[],unsubs=[],editing=null,campaignUnsub=null,myCampaigns=[],privateShield=true,roomCombats=[];
  const pendingBridge=new Map();
  let bridgeSeq=0;
  function requestNex(type,agentId){
@@ -332,13 +336,63 @@ if(!cfg||!cfg.projectId||!cfg.apiKey){show('setup',true);}else{
   pending.resolve(event.data);
  });
  async function refreshNexAgents(){
-  const select=$('nexAgentSelect');
-  try{
-   const response=await requestNex('nex-agent-list-request');
-   if(!response.ready){select.innerHTML='<option value="">As fichas ainda estão carregando</option>';return;}
-   select.innerHTML='<option value="">Selecione um personagem</option>'+response.agents.map(a=>'<option value="'+escape(a.id)+'">'+escape(a.name)+' · '+escape(a.className)+' · NEX '+escape(a.nex)+'%</option>').join('');
-  }catch(error){select.innerHTML='<option value="">Abra Campanhas pelo menu NEX</option>';}
+ const select=$('nexAgentSelect'),grid=$('roomAgentPickerCards');
+ try{
+  const response=await requestNex('nex-agent-list-request');
+  if(!response.ready){grid.textContent='As fichas ainda estão carregando.';return;}
+  const agents=response.agents||[];
+  select.innerHTML='<option value="">Escolha um personagem</option>'+agents.map(a=>'<option value="'+escape(a.id)+'">'+escape(a.name)+'</option>').join('');
+  grid.innerHTML=agents.length?agents.map(a=>{
+   const added=roomSheets.some(sheet=>sheet.linkedAgentId===a.id&&sheet.ownerUid===uid);
+   const date=a.createdAt?new Date(a.createdAt).toLocaleDateString('pt-BR'):'Data não informada';
+   return '<article class="agent-picker-card"><div><strong>'+escape(a.name)+'</strong><small>'+escape(a.className||'Classe não informada')+' · NEX '+escape(a.nex)+'%</small><small>Registrado em '+escape(date)+'</small></div><button type="button" data-select-agent="'+escape(a.id)+'" '+(added?'disabled':'')+'>'+(added?'Adicionado':'Adicionar')+'</button></article>';
+  }).join(''):'<p>Nenhum personagem encontrado. Crie um personagem no NEX.</p>';
+ }catch(err){grid.textContent='Erro ao carregar personagens: '+err.message;}
+}
+ $('roomAgentPickerCards').addEventListener('click',e=>{
+  const b=e.target.closest('[data-select-agent]');if(!b)return;
+  $('nexAgentSelect').value=b.dataset.selectAgent;$('nexLinkAgent').click();
+ });
+ $('roomAddAgentsAction').onclick=()=>{$('roomAgentPicker').hidden=false;refreshNexAgents();};
+ $('roomBackFromPicker').onclick=()=>roomSection('characters');
+ $('roomInviteAction').onclick=()=>roomSection('invites');
+ $('roomMasterAction').onclick=()=>roomSection('master');
+ function updateRoomCover(){
+  const el=$('roomCoverImage'),url=roomData?.coverUrl||'';
+  el.hidden=!url;if(url)el.src=url;else el.removeAttribute('src');
  }
+ function showRoomEditor(cover=false){
+  if(!gm)return;
+  $('roomEditName').value=roomData.name||'';
+  $('roomEditDescription').value=roomData.description||'';
+  $('roomEditCover').value=roomData.coverUrl||'';
+  $('roomEditConfiguration').hidden=false;
+  if(cover)$('roomEditCover').focus();
+ }
+ $('roomCoverAction').onclick=()=>showRoomEditor(true);
+ $('roomEditAction').onclick=()=>showRoomEditor(false);
+ $('roomCancelConfiguration').onclick=()=>{$('roomEditConfiguration').hidden=true;};
+ $('roomSaveConfiguration').onclick=()=>run(async()=>{
+  if(!gm||!roomId)throw Error('Apenas o mestre pode editar.');
+  const name=$('roomEditName').value.trim(),description=$('roomEditDescription').value.trim(),coverUrl=$('roomEditCover').value.trim();
+  if(!name)throw Error('Nome obrigatório.');
+  if(coverUrl&&!coverUrl.startsWith('https://'))throw Error('A capa precisa ser um link HTTPS.');
+  await updateDoc(doc(db,'campaigns',roomId),{name,description,coverUrl});
+  roomData={...roomData,name,description,coverUrl};
+  $('roomTitle').textContent=name;$('roomDescription').textContent=description;
+  updateRoomCover();$('roomEditConfiguration').hidden=true;notice('Campanha atualizada.');
+ });
+ function renderCombats(){
+  $('roomCombats').innerHTML=roomCombats.length?roomCombats.map(c=>'<article class="campaign-combat"><strong>'+escape(c.name)+'</strong><p><small>'+escape(c.status||'Preparação')+'</small></p></article>').join(''):'<p>Nenhum combate cadastrado.</p>';
+ }
+ $('roomCreateCombatAction').onclick=()=>run(async()=>{
+  if(!gm||!roomId)throw Error('Apenas o mestre pode criar combate.');
+  const name=prompt('Nome do combate:','Novo combate');
+  if(name===null)return;
+  if(!name.trim())throw Error('Informe o nome do combate.');
+  await addDoc(collection(db,'campaigns',roomId,'combats'),{name:name.trim().slice(0,100),status:'Preparação',createdAt:serverTimestamp()});
+  roomSection('combats');notice('Combate criado.');
+ });
  $('nexRefreshAgents').addEventListener('click',()=>refreshNexAgents());
  $('nexLinkAgent').addEventListener('click',()=>run(async()=>{
   if(!uid||!roomId)throw Error('Entre em uma campanha antes de vincular a ficha.');
@@ -366,7 +420,8 @@ if(!cfg||!cfg.projectId||!cfg.apiKey){show('setup',true);}else{
   };
   if(existing.exists())await updateDoc(sheetRef,payload);
   else await setDoc(sheetRef,{...payload,ownerUid:uid});
-  notice('Ficha vinculada à campanha. A ficha original permanece salva na sua conta.');
+  notice('Personagem adicionado à campanha. A ficha original permanece salva na sua conta.');
+  roomSection('characters');
  }));
  const inviteId=new URLSearchParams(location.search).get('invite')||'';
  const run=async fn=>{try{notice('');await fn();}catch(err){
@@ -376,7 +431,8 @@ if(!cfg||!cfg.projectId||!cfg.apiKey){show('setup',true);}else{
  }};
  const clearRoom=()=>{
   for(const u of unsubs){try{u()}catch(e){}}unsubs=[];
-  roomId='';gm=false;roomMembers=[];roomSheets=[];roomRequests=[];roomData=null;editing=null;
+  roomId='';gm=false;roomMembers=[];roomSheets=[];roomRequests=[];roomCombats=[];roomData=null;editing=null;
+  $('roomAgentPicker').hidden=true;$('roomEditConfiguration').hidden=true;
   show('room',false);show('sheetFormPanel',false);
  };
  function libraryMode(mode){
@@ -582,7 +638,10 @@ if(!cfg||!cfg.projectId||!cfg.apiKey){show('setup',true);}else{
   $('roomTitle').textContent=roomData.name;
   $('roomDescription').textContent=roomData.description||'';
   $('roomCode').textContent=id;$('role').textContent=gm?'Mestre':'Jogador';libraryMode('room');show('room',true);
+  for(const key of ['roomCoverAction','roomEditAction','roomCreateCombatAction','roomMasterAction'])$(key).hidden=!gm;
+  updateRoomCover();
   show('roomMasterTab',gm);roomSection('characters');refreshNexAgents();
+  unsubs.push(onSnapshot(collection(db,'campaigns',id,'combats'),snapshot=>{roomCombats=snapshot.docs.map(d=>({id:d.id,...d.data()}));renderCombats();},error=>notice('Falha ao carregar combates: '+error.message)));
   if(gm)unsubs.push(onSnapshot(collection(db,'campaigns',id,'joinRequests'),snapshot=>{
     roomRequests=snapshot.docs.map(d=>({id:d.id,...d.data()}));
     $('joinRequests').innerHTML=roomRequests.length?roomRequests.map(item=>
