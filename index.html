@@ -2764,6 +2764,24 @@ $('nexHomebrewFilter')?.addEventListener('input',()=>nex12RenderHomebrew());
  }
  window.NEX_AUTO_BRIDGE={
    ready:()=>storageReady,
+   // Ao entrar, a conta decide quais fichas ficam visíveis. Não misturar personagens entre contas.
+   replaceAccountAgents:(records,removed=[])=>{
+     if(!storageReady)throw new Error('Armazenamento ainda não carregado');
+     const accepted=Array.isArray(records)?records.filter(item=>item&&typeof item.id==='string'&&item.data&&typeof item.data==='object'):[];
+     const deleted=new Set(Array.isArray(removed)?removed.filter(id=>typeof id==='string'):[]);
+     const unique=new Map();
+     for(const item of accepted){
+       if(deleted.has(item.id))continue;
+       const clone={id:item.id,data:normalize(JSON.parse(JSON.stringify(item.data))),createdAt:item.createdAt,updatedAt:item.updatedAt};
+       ensureAgentMeta(clone);unique.set(item.id,clone);
+     }
+     agents=[...unique.values()];
+     writeRemovedIds(deleted);
+     if(!agents.some(item=>item.id===active))active=agents[0]?.id||null;
+     state=active?normalize(JSON.parse(JSON.stringify(agents.find(item=>item.id===active).data))):normalize(defaults());
+     if(active){try{rehydrate();}catch(error){console.warn('NEX: carregamento da ficha',error);}}
+     persist();renderAgents();renderCampaigns();
+   },
    read:()=>({
      agents:JSON.parse(JSON.stringify(agents)),
      campaigns:JSON.parse(JSON.stringify(campaigns)),
