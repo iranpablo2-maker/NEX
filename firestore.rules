@@ -166,7 +166,7 @@ service cloud.firestore {
              request.resource.data.fullSheet is map
              && request.resource.data.linkedAgentId is string
              && request.resource.data.sheetFormat == 'nex-agent-v1'
-             && request.resource.data.ownerUid == request.auth.uid
+             && (request.resource.data.ownerUid == request.auth.uid || nexGM(cid))
           ));
         allow update: if nexInCampaign(cid)
           && (
@@ -202,6 +202,11 @@ service cloud.firestore {
                  resource.data.get('controllerUid','') == request.auth.uid || nexGM(cid))
           ));
         allow delete: if nexGM(cid);
+      }
+      // Fichas ocultas ficam em uma coleção separada e nunca são legíveis
+      // pelos jogadores, mesmo com o ID ou a URL direta da ficha.
+      match /privateSheets/{sheetId} {
+        allow get, list, create, update, delete: if nexGM(cid);
       }
       match /combats/{combatId} {
         allow get, list: if nexInCampaign(cid);
