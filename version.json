@@ -1,5 +1,5 @@
 {
-  "version": "2026.11.12-mobile-refresh-1",
-  "build": "20261112mobile1",
-  "description": "Atualização de cache e carregamento para celular"
+  "version": "2026.11.13-manage-players-1",
+  "build": "20261113manage1",
+  "description": "Gerenciar Jogadores e permissões em aba exclusiva do Mestre"
 }
