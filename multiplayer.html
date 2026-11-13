@@ -297,7 +297,10 @@ html.nex-embedded main{max-width:100%;padding:10px 12px 28px}
 #room #roomManagePanel .nex-counter-btn{min-width:40px;height:38px;padding:5px 12px;border-radius:7px}
 #room #roomManagePanel .nex-remove-player{margin-top:6px;background:transparent;border-color:#663841;color:#efbdc5}
 #room #roomManagePanel .nex-remove-player:hover{background:#4a202a}
-#room .nex-character-responsible{display:block;color:#cdb5bd;margin-top:6px}
+#room .nex-character-responsible{display:flex;flex-direction:column;gap:3px;margin-top:9px;min-width:0}
+#room .nex-character-meta-label{color:#c7b1b7;font-size:11px;line-height:1.25}
+#room .nex-character-meta-value{color:#fff;font-size:13px;font-weight:700;line-height:1.3;overflow-wrap:anywhere}
+#room .nex-character-meta-editors{color:#d2bcc2;font-size:11px;line-height:1.35;overflow-wrap:anywhere}
 #room #roomManageTab[aria-pressed="true"]{border-color:#df5062;background:#692736}
 </style>
 </head>
@@ -1226,7 +1229,8 @@ if(!cfg||!cfg.projectId||!cfg.apiKey){show('setup',true);}else{
     const pic=photo?'<img class="nex-character-photo" src="'+escape(photo)+'" alt="Retrato de '+escape(name)+'" loading="lazy">':'<span class="nex-character-photo nex-character-placeholder" aria-hidden="true">'+escape(name.slice(0,1).toUpperCase())+'</span>';
     const assigned=String(s.controllerUid||s.ownerUid||'');
     const responsible=assigned===roomData?.gmUid?'Mestre':(roomMembers.find(m=>m.uid===assigned)?.name||'Jogador');
-    const managing='<small class="nex-character-responsible">Responsável: '+escape(responsible)+'</small>';
+    const editors=assigned===roomData?.gmUid?'Mestre':responsible+' e Mestre';
+    const managing='<div class="nex-character-responsible"><small class="nex-character-meta-label">Jogador responsável</small><strong class="nex-character-meta-value">'+escape(responsible)+'</strong><small class="nex-character-meta-editors">Pode editar: '+escape(editors)+'</small></div>';
     return '<article class="nex-character-card">'+pic+'<div class="nex-character-info"><strong title="'+escape(name)+'">'+escape(name)+'</strong><span>'+escape(cls)+'</span><small>NEX '+escape(s.nex)+'%'+(!mine?' · Jogador da campanha':'')+'</small><button type="button" data-open-campaign-sheet="'+escape(s.id)+'">Acessar Ficha</button>'+managing+'</div>'+(editable?'<details class="nex-character-settings"><summary aria-label="Opções do personagem" title="Opções do personagem">⚙</summary><button type="button" data-remove-campaign-sheet="'+escape(s.id)+'">Remover</button></details>':'')+'</article>';
   }).join(''):'<p class="room-note">Ainda não há personagens nesta campanha. Use “Adicionar Personagens” para escolher uma ficha da sua conta NEX.</p>';
  }
