@@ -1,4 +1,4 @@
-/* Catálogo de opções e resumos originais, com mecânicas verificadas nas fontes quando disponíveis; não substitui os livros. */
+/* Opções dos Arquivos Secretos em descrições originais, com referências por suplemento. */
 window.NEX_ARQUIVOS={
   "origins": [
     {
@@ -1116,23 +1116,23 @@ window.NEX_ARQUIVOS={
       "month": "Julho",
       "page": 81,
       "source": "Arquivos Secretos · Julho/2026 · p. 81",
-      "description": "Variante da trilha Monstruoso para Especialista, com progressão própria ligada ao elemento escolhido. Requer as regras opcionais e restrições indicadas no suplemento.",
+      "description": "Variante da trilha Monstruoso para Especialista, com progressão própria ligada ao elemento escolhido. Requer as regras opcionais e restrições indicadas no suplemento. Consulte as habilidades por NEX, pois os custos, os benefícios e as penalidades dependem do elemento escolhido.",
       "stages": [
         [
           "Ser Experimentado",
-          "No primeiro estágio, passa a usar benefícios situacionais relacionados a um elemento."
+          "NEX 10% — O personagem recebe treinamento em Ocultismo; se já era treinado, recebe +2 nessa perícia. Escolhe um elemento entre Sangue, Morte, Conhecimento e Energia e passa a sofrer –2 em Diplomacia, Enganação e Intuição. Sua transformação paranormal concede benefícios particulares do elemento escolhido, mas exige a manutenção diária de uma condição narrativa descrita nas regras. Quando essa condição é cumprida, recupera 1d8+1 PV e mantém os efeitos do elemento até o final do dia. Sem a manutenção, sofre penalidades semelhantes às de privação. A habilidade também interage com a afinidade paranormal do personagem; consulte o suplemento para a tabela completa de benefícios elementais."
         ],
         [
           "Ser Testado",
-          "Amplia os recursos e efeitos de sua transformação paranormal."
+          "NEX 40% — A manifestação escolhida é aprimorada e modifica as características sobrenaturais já adquiridas no primeiro estágio. Os efeitos se distinguem conforme Sangue, Morte, Conhecimento ou Energia; a escolha do primeiro estágio continua definindo a especialização. Consulte a tabela da trilha para conferir os valores exatos de cada elemento, as condições e os limites, pois não há um bônus universal aplicável a todos."
         ],
         [
           "Ser Expurgado",
-          "Desenvolve novas opções de combate conforme o elemento escolhido."
+          "NEX 65% — O personagem passa a expressar habilidades de sua transformação de maneira mais intensa. A habilidade concede uma nova opção de atuação ligada ao elemento escolhido e inclui uma limitação em combate quando a manifestação é prejudicada. O benefício específico depende da variante elemental, por isso não deve ser convertido em um bônus genérico."
         ],
         [
           "Ser Apavorante",
-          "Aprofunda os benefícios e as limitações da transformação."
+          "NEX 99% — A transformação atinge seu estágio final e reforça seus recursos elementais, mas também aprofunda consequências da aparência e da interação social. O suplemento corrigiu uma penalidade social que passa de –5 para –10 em circunstâncias pertinentes. Demais efeitos variam por elemento e exigem consulta à tabela completa da trilha."
         ]
       ]
     },
@@ -1142,23 +1142,23 @@ window.NEX_ARQUIVOS={
       "month": "Julho",
       "page": 85,
       "source": "Arquivos Secretos · Julho/2026 · p. 85",
-      "description": "Variante da trilha Monstruoso para Ocultista, baseada em marcas e conexão elemental, com progressão e custos próprios do suplemento.",
+      "description": "Variante da trilha Monstruoso para Ocultista, baseada em marcas e conexão elemental, com progressão e custos próprios do suplemento. Consulte as habilidades por NEX, pois os custos, os benefícios e as penalidades dependem do elemento escolhido.",
       "stages": [
         [
           "Ser Escarificado",
-          "Ganha relação ampliada com Ocultismo e escolhe um elemento."
+          "NEX 10% — Escolha Sangue, Morte, Conhecimento ou Energia para definir a forma de sua conexão ritualística. Recebe benefícios ligados ao elemento, com exigências próprias da transformação descrita no suplemento. A progressão da variante de Ocultista é independente da versão de Especialista e não permite aplicar automaticamente os bônus da outra trilha."
         ],
         [
           "Ser Perfurado",
-          "Aprimora a conexão elemental e os recursos de conjuração."
+          "NEX 40% — A conexão com o elemento escolhido permite aprimorar manifestações e ampliar opções de conjuração. As vantagens mudam conforme o elemento e respeitam os limites normais de custo, círculo e pré-requisitos dos rituais, além das alterações expressas pela trilha."
         ],
         [
           "Ser Rasgado",
-          "Expande os benefícios de rituais conforme o elemento."
+          "NEX 65% — A especialização afeta sua relação com rituais e habilidades paranormais do elemento escolhido. Algumas opções podem ser substituídas de acordo com o suplemento e com os poderes disponíveis. Verifique o custo e os limites próprios de Sangue, Morte, Conhecimento ou Energia antes de aplicar o efeito."
         ],
         [
           "Ser Mutilado",
-          "Etapa final, com efeitos de duração e restrições especiais."
+          "NEX 99% — Último estágio da especialização do Ocultista Monstruoso. A transformação alcança efeitos avançados ligados à duração e ao uso dos poderes e rituais do elemento escolhido. A aplicação depende das regras específicas dessa variante e não concede os efeitos das trilhas Monstruoso de outras classes."
         ]
       ]
     }
