@@ -112,6 +112,11 @@ const $=id=>document.getElementById(id),escape=s=>String(s??"").replace(/[&<>"']
 const sourceEl=$("sources"),elementsEl=$("elements"),list=$("list");
 function art(e){const path=images[e]||images.Medo;return "linear-gradient(90deg,rgba(6,5,8,.3),rgba(8,6,8,.15)),url('"+path+"')"}
 function drawTabs(node,options,current,attribute){node.innerHTML=options.map(x=>'<button type="button" data-'+attribute+'="'+escape(x)+'" aria-pressed="'+(x===current)+'">'+escape(x)+'</button>').join("")}
+function threatIllustration(x){
+ if(!x||!["Livro Básico","Sobrevivendo ao Horror"].includes(x.source))return "";
+ const slug=x.name.normalize("NFKD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");
+ return "./assets/ameacas/"+(x.source==="Livro Básico"?"livro-basico":"sobrevivendo-ao-horror")+"/"+slug+".jpg";
+}
 function legacyThreatPhoto(x){
  try{
   const saved=JSON.parse(localStorage.getItem("nex_ameacas_personalizadas_v1")||"{}");
@@ -131,8 +136,10 @@ function draw(){
  $("total").textContent=reviewed+" com dados de ficha · "+(records.length-reviewed)+" ainda incompletas";
  $("count").textContent=items.length+" ameaça(s)";
  list.innerHTML=items.length?items.map(x=>{
- const photo=legacyThreatPhoto(x);
- return '<article class="monster" style="--art:'+art(x.element)+'"><div class="emblem'+(photo?' has-photo':'')+'"'+(photo?' style="background-image:url('+photo+')"':'')+' aria-hidden="true">'+(photo?'':escape(x.name[0]))+'</div><div class="details"><strong>'+escape(x.name)+'</strong><small>'+escape(x.element)+' · '+escape(x.category||"Criatura")+'</small><span class="source">'+escape(x.source)+'</span><small class="source">'+(((window.NEX_THREAT_DETAILS||{})[threatKey(x)]?.variant?"Variação · bônus aplicáveis":hasCoreStats(x)?"Dados básicos disponíveis":"Ficha em conferência"))+'</small></div><button type="button" class="threat-link" data-show-threat="'+encodeURIComponent(threatKey(x))+'" title="Abrir ficha dentro do NEX">Ficha</button></article>';
+ const official=threatIllustration(x),photo=official||legacyThreatPhoto(x);
+ const visual=photo?'<img src="'+escape(photo)+'" alt="" loading="lazy" onerror="this.remove()" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover">':"";
+ return '<article class="monster" style="--art:'+art(x.element)+'"><div class="emblem" style="position:relative;overflow:hidden">'+escape(x.name[0])+visual+'</div><div class="details"><strong>'+escape(x.name)+'</strong><small>'+escape(x.element)+' · '+escape(x.category||"Criatura")+'</small><span class="source">'+escape(x.source)+'</span><small class="source">'+(((window.NEX_THREAT_DETAILS||{})[threatKey(x)]?.variant?"Variação · bônus aplicáveis":hasCoreStats(x)?"Dados básicos disponíveis":"Ficha em conferência"))+'</small></div><button type="button" class="threat-link" data-show-threat="'+encodeURIComponent(threatKey(x))+'" title="Abrir ficha dentro do NEX">Ficha</button></article>';
+
  }).join(""):'<div class="empty">Nenhuma ameaça encontrada nesta combinação. Algumas fontes ainda estão em revisão.</div>';
 }
 sourceEl.addEventListener("click",e=>{const b=e.target.closest("[data-source]");if(!b)return;source=b.dataset.source;draw()});
@@ -148,7 +155,7 @@ function openThreatDetail(key){
  if(!records.some(x=>threatKey(x)===key))return;
  document.body.classList.add("detail-open");
  threatDetailView.hidden=false;
- threatDetailFrame.src="./ameaca-ficha.html?id="+encodeURIComponent(key)+"&embedded=1&v=20261114ameacas17";
+ threatDetailFrame.src="./ameaca-ficha.html?id="+encodeURIComponent(key)+"&embedded=1&v=20261114ameacas18";
  window.scrollTo(0,0);
 }
 function closeThreatDetail(){
