@@ -8,6 +8,7 @@ window.NEX_ARQUIVOS_FOTOS_CONFIRMADAS={
 "Arquivos Secretos — Fevereiro::Jaguatirica":3,
 "Arquivos Secretos — Fevereiro::Felino-devorado":4,
 "Arquivos Secretos — Fevereiro::Felino-infernal":6,
+"Arquivos Secretos — Março::Argano":7,
 "Arquivos Secretos — Maio::Hospedeiro Parasitado":8,
 "Arquivos Secretos — Maio::Hospedeiro Aflorado":9,
 "Arquivos Secretos — Maio::Interflorado":10,
