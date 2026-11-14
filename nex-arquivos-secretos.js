@@ -1,4 +1,4 @@
-/* Catálogo de opções e resumos originais, com mecânicas detalhadas verificadas nos PDFs quando disponíveis; não substitui os livros. */
+/* Catálogo de opções e resumos originais, com mecânicas verificadas nas fontes quando disponíveis; não substitui os livros. */
 window.NEX_ARQUIVOS={
   "origins": [
     {
@@ -72,7 +72,7 @@ window.NEX_ARQUIVOS={
         "Intuição"
       ],
       "ability": "Turno Invertido",
-      "description": "Melhora o descanso em interlúdios e a resistência contra perda de consciência.",
+      "description": "Treina Fortitude e Intuição. Uma vez por missão, pode receber os benefícios de dormir durante um interlúdio, sem precisar usar sua ação de interlúdio para dormir. Também recebe +2 em testes destinados a evitar a condição inconsciente.",
       "source": "Arquivos Secretos · Maio/2026 · p. 54",
       "month": "Maio",
       "page": 54,
@@ -124,7 +124,7 @@ window.NEX_ARQUIVOS={
         "Ocultismo"
       ],
       "ability": "O Que Restou",
-      "description": "Escolhe uma afinidade elemental não relacionada a Medo e recebe resistência associada, com um custo de Sanidade quando se depara com esse elemento.",
+      "description": "Treina Fortitude e Ocultismo. Escolhe Sangue, Morte, Conhecimento ou Energia e recebe resistência a dano 10 contra esse elemento. Na primeira exposição a uma manifestação desse elemento em cada cena, perde 3 pontos de Sanidade.",
       "month": "Julho",
       "page": 80,
       "source": "Arquivos Secretos · Julho/2026 · p. 80",
@@ -137,7 +137,7 @@ window.NEX_ARQUIVOS={
         "Vontade"
       ],
       "ability": "Sussurros e Vultos",
-      "description": "Pode gastar Sanidade para receber bônus em testes de interação social ou Intuição.",
+      "description": "Treina Intuição e Vontade. Ao fazer Diplomacia, Enganação, Intimidação ou Intuição, pode perder 2 pontos de Sanidade para somar +5 ao teste escolhido.",
       "month": "Julho",
       "page": 80,
       "source": "Arquivos Secretos · Julho/2026 · p. 80",
@@ -230,7 +230,7 @@ window.NEX_ARQUIVOS={
       "category": "Geral",
       "month": "Fevereiro",
       "page": 82,
-      "description": "Concede efeitos temporários de suporte por meio de música.",
+      "description": "Com uma ação padrão e 2 PE, usa música para beneficiar um ser no alcance curto que possa ouvi-lo. Escolhe uma vantagem para a próxima ação do alvo: +5 no dano, +2 na margem de ameaça de um ataque, +5 no teste de ataque ou +9 metros no alcance de uma ação ofensiva ou habilidade.",
       "source": "Arquivos Secretos · Fevereiro/2026 · p. 82"
     },
     {
@@ -454,7 +454,7 @@ window.NEX_ARQUIVOS={
       "category": "Ocultista",
       "month": "Junho",
       "page": 69,
-      "description": "Proteção que depende do elemento de rituais conjurados.",
+      "description": "Escolha um elemento. Ao conjurar ritual dele, pode gastar PE para ganhar +2 em Defesa por ponto gasto; o bônus dura uma rodada e o gasto respeita seu limite de PE. Requisitos: Especialista em Elemento do tipo escolhido e NEX 30%.",
       "source": "Arquivos Secretos · Junho/2026 · p. 69"
     },
     {
@@ -606,7 +606,7 @@ window.NEX_ARQUIVOS={
       "category": "Ocultista",
       "month": "Junho",
       "page": 69,
-      "description": "Concede efeitos adicionais ao conjurar rituais elementais.",
+      "description": "Escolha um elemento. Sempre que conjura ritual desse elemento, pode gastar 1 PE para conferir um benefício a um aliado ou impor condição a um inimigo. Os efeitos variam por Sangue, Morte, Conhecimento e Energia e atingem um alvo, com duração definida pela opção.",
       "source": "Arquivos Secretos · Junho/2026 · p. 69"
     },
     {
@@ -1170,7 +1170,7 @@ window.NEX_ARQUIVOS={
       "element": "Energia",
       "month": "Abril",
       "page": 68,
-      "description": "Cria uma cópia de Energia e permite trocar de posição sob condições.",
+      "description": "Ritual de Energia de 2º círculo. Execução padrão; alcance curto e duração de 24 horas. Cria uma réplica que permanece ligada ao conjurador em um raio de 50 km. Dentro desse limite, é possível trocar de lugar com a cópia usando uma reação, com custo de Sanidade; o efeito termina caso ela sofra dano. Discente (+2 PE) permite duração permanente e observar pelos sentidos da cópia. Verdadeiro (+5 PE) permite falar por ela, mudar sua aparência e usar uma opção ofensiva ao dissipar o ritual. Consulte a fonte para os efeitos e resistências exatos.",
       "ritualType": "Suporte"
     },
     {
