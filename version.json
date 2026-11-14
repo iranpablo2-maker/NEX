@@ -1,5 +1,5 @@
 {
-  "version": "2026.11.14-ameacas-21",
-  "build": "20261114ameacas21",
-  "description": "44 retratos PNG principais da Wiki confirmados no GitHub, fotos antigas removidas e cache de Ameaças atualizado."
+  "version": "2026.11.14-ameacas-22",
+  "build": "20261114ameacas22",
+  "description": "Remover letras sobre retratos de ameaças na lista e dentro das fichas; imagens principais continuam somente para visualização."
 }
