@@ -152,7 +152,7 @@ function render(){
  const portrait=$("portrait"), official=threatIllustration(threat);
  portrait.style.backgroundImage="";
  portrait.replaceChildren();
- portrait.textContent=threat.name.slice(0,1);
+ portrait.textContent="";
  if(official){
   const tag=document.createElement("img");
   tag.src=official;
