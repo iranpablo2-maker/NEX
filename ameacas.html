@@ -101,6 +101,7 @@ body.detail-open main{width:min(1250px,100%);padding:8px 10px 28px}
 <script src="./nex-ameacas-livro-basico.js?v=20261114basic2"></script>
 <script src="./nex-ameacas-basico-completo.js?v=20261114base2"></script>
 <script src="./nex-ameacas-imagens-principais.js?v=20261114sah1"></script>
+<script src="./nex-ameacas-imagens-arquivos.js?v=nov14links1"></script>
 <script src="./nex-ameacas-julho.js?v=20261114jul1"></script>
 <script src="./nex-arquivos-atlas-uploads.js?v=nov14fotos2"></script>
 <script src="./nex-arquivos-atlas-lote2.js?v=nov14lote2a"></script>
@@ -119,7 +120,7 @@ const $=id=>document.getElementById(id),escape=s=>String(s??"").replace(/[&<>"']
 const sourceEl=$("sources"),elementsEl=$("elements"),list=$("list");
 function art(e){const path=images[e]||images.Medo;return "linear-gradient(90deg,rgba(6,5,8,.3),rgba(8,6,8,.15)),url('"+path+"')"}
 function drawTabs(node,options,current,attribute){node.innerHTML=options.map(x=>'<button type="button" data-'+attribute+'="'+escape(x)+'" aria-pressed="'+(x===current)+'">'+escape(x)+'</button>').join("")}
-function threatIllustration(x){return (window.NEX_THREAT_PRIMARY_IMAGES||{})[x.source+"::"+x.name]||"";}
+function threatIllustration(x){const k=x.source+"::"+x.name;return (window.NEX_ARQUIVOS_IMAGES||{})[k]||(window.NEX_THREAT_PRIMARY_IMAGES||{})[k]||"";}
 function nexArchiveAtlasPortrait(x){
  const key=x.source+"::"+x.name;
  const first=window.NEX_ARQUIVOS_FOTOS_CONFIRMADAS||{};
@@ -145,9 +146,9 @@ function draw(){
  $("count").textContent=items.length+" ameaça(s)";
  list.innerHTML=items.length?items.map(x=>{
  const photo=threatIllustration(x),atlasPortrait=nexArchiveAtlasPortrait(x);
- const visual=atlasPortrait?
-  '<div aria-hidden="true" style="position:absolute;inset:0;'+nexArchiveAtlasStyle(atlasPortrait)+'"></div>':
-  photo?'<img src="'+escape(photo)+'" alt="" loading="lazy" onerror="this.remove()" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover">':"";
+ const fallback=atlasPortrait?'<div aria-hidden="true" style="position:absolute;inset:0;'+nexArchiveAtlasStyle(atlasPortrait)+'"></div>':'';
+ const img=photo?'<img src="'+escape(photo)+'" alt="" loading="lazy" onerror="this.remove()" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover">':'';
+ const visual=fallback+img;
  return '<article class="monster" style="--art:'+art(x.element)+'"><div class="emblem" style="position:relative;overflow:hidden">'+visual+'</div><div class="details"><strong>'+escape(x.name)+'</strong><small>'+escape(x.element)+' · '+escape(x.category||"Criatura")+'</small><span class="source">'+escape(x.source)+'</span><small class="source">'+(((window.NEX_THREAT_DETAILS||{})[threatKey(x)]?.variant?"Variação · bônus aplicáveis":hasCoreStats(x)?"Dados básicos disponíveis":"Ficha em conferência"))+'</small></div><button type="button" class="threat-link" data-show-threat="'+encodeURIComponent(threatKey(x))+'" title="Abrir ficha dentro do NEX">Ficha</button></article>';
 
  }).join(""):'<div class="empty">Nenhuma ameaça encontrada nesta combinação. Algumas fontes ainda estão em revisão.</div>';
