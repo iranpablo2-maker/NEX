@@ -50,10 +50,8 @@ h2{font-size:18px;font-weight:600;margin:22px 0 9px}.skills{display:grid;gap:6px
 <nav><a id="back" href="./ameacas.html">‹ Voltar às Ameaças</a><span class="brand">N E X</span></nav>
 <div class="card" id="screen" hidden>
 <header class="hero" id="hero"><div class="portrait" id="portrait" aria-label="Retrato"></div><div><div class="eyebrow" id="source"></div><h1 id="name"></h1><div id="kind" class="muted"></div><div class="tags"><span id="element"></span><span id="vdBadge"></span></div></div></header>
-<div class="hp" id="hpBar" hidden><button type="button" data-change="-10" aria-label="Diminuir dez pontos">«</button><button type="button" data-change="-1" aria-label="Diminuir um ponto">‹</button><strong id="hpLabel"></strong><button type="button" data-change="1" aria-label="Aumentar um ponto">›</button><button type="button" data-change="10" aria-label="Aumentar dez pontos">»</button></div>
+<div class="hp" id="hpBar" hidden><strong id="hpLabel"></strong></div>
 <div class="hp-track" id="hpTrack" hidden><div class="hp-fill" id="hpFill"></div></div>
-<div class="hp-controls" id="hpControls" hidden><label for="hpAmount">PV</label><input id="hpAmount" type="number" min="1" value="1" step="1"><button type="button" data-hp-action="damage">Aplicar dano</button><button type="button" data-hp-action="heal">Curar</button><button type="button" data-hp-action="reset">Restaurar tudo</button></div>
-<div class="dice-output" id="diceOutput" role="status" aria-live="polite" hidden></div>
 <div class="tabs" role="tablist" aria-label="Seções da ficha">
 <button type="button" data-tab="status" aria-selected="true">Status</button><button type="button" data-tab="combat" aria-selected="false">Combate</button><button type="button" data-tab="description" aria-selected="false">Descrição</button>
 </div>
@@ -94,21 +92,7 @@ const images={Sangue:"./assets/rituais/sangue-fundo.svg",Morte:"./assets/rituais
 const $=id=>document.getElementById(id), esc=value=>String(value??"").replace(/[&<>"']/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));
 const key=new URLSearchParams(location.search).get("id");
 const threat=records.find(x=>threatKey(x)===key);
-let hpNow=null,hpMax=null,activeTab="status",hpReady=false;
-const combatHpKey="nex_ameaca_pv_sessao::"+key;
-function savedHp(max){try{const v=sessionStorage.getItem(combatHpKey);return v===null?max:Math.max(0,Math.min(max,Number(v)||0))}catch(e){return max}}
-function rollDice(label,expression,kind){
- const exp=String(expression||"").trim().replaceAll("O","d20").replaceAll("–","-").replaceAll("−","-").replaceAll(" ","");
- const m=exp.match(/^(-)?(\d*)d(\d+)([+-]\d+)?$/i);
- const out=$("diceOutput");out.hidden=false;
- if(!m){out.textContent=label+": dado indisponível ("+exp+")";return}
- const count=Number(m[2]||1),sides=Number(m[3]),bonus=Number(m[4]||0);
- if(count>100||count<1||sides>1000||sides<2)return;
- const values=Array.from({length:count},()=>Math.floor(Math.random()*sides)+1);
- const value=kind==="test"&&sides===20?(m[1]?Math.min(...values):Math.max(...values))+bonus:values.reduce((a,b)=>a+b,0)+bonus;
- out.innerHTML="<div>"+esc(label)+" · "+esc(exp)+"</div><strong>"+esc(value)+"</strong><div class='muted'>Dados: "+esc(values.join(", "))+(bonus?" | Bônus: "+bonus:"")+"</div>";
-}
-
+let activeTab="status";
 function n(v){return v===null||v===undefined||v===""?"—":v;}
 function hasValue(value){
  if(value===undefined||value===null)return false;
@@ -127,21 +111,19 @@ function render(){
  $("name").textContent=threat.name;$("source").textContent=threat.source;$("element").textContent=threat.element;
  $("kind").textContent=[d.variant?"Variação de criatura":threat.category||"Criatura",d.size].filter(Boolean).join(" · ");$("vdBadge").textContent="VD "+n(d.vd);
  $("portrait").style.backgroundImage=img?"url("+img+")":"";$("portrait").textContent=img?"":threat.name.slice(0,1);
- const rollRows=items=>Array.isArray(items)?items.filter(v=>Array.isArray(v)&&hasValue(v[0])&&hasValue(v[1])).map(v=>'<div class="skill"><span>'+esc(v[0])+'</span><button type="button" data-roll="'+esc(v[1])+'" aria-label="Rolar '+esc(v[0])+'">'+esc(v[1])+' ⚄</button></div>').join(""):"";
+ const rollRows=items=>Array.isArray(items)?items.filter(v=>Array.isArray(v)&&hasValue(v[0])&&hasValue(v[1])).map(v=>'<div class="skill"><span>'+esc(v[0])+'</span><strong>'+esc(v[1])+'</strong></div>').join(""):"";
 
  const actionRows=Array.isArray(d.actions)&&d.actions.length?d.actions.map(a=>{
  const name=a.name||"Ação",test=String(a.test||""),dmg=String(a.damage||"");
- const diceMatch=dmg.match(/\d+d\d+(?:\s*[+-]\s*\d+)?/i);
  return '<div class="action"><small class="muted">'+esc(a.type||"Ação")+'</small><strong style="display:block;margin:3px 0 5px">'+esc(name)+'</strong>'+
- (test?'<div>Teste: '+esc(test)+'</div><button type="button" class="dice-button" data-action-roll="test" data-dice="'+esc(test)+'" data-label="'+esc(name)+'">⚄ Rolar ataque</button>':'')+
- (dmg?'<div>Dano: '+esc(dmg)+'</div>':'')+
- (diceMatch?'<button type="button" class="dice-button" data-action-roll="damage" data-dice="'+esc(diceMatch[0])+'" data-label="'+esc(name)+'">⚄ Rolar dano</button>':'')+'</div>';
+ (test?'<div>Teste: '+esc(test)+'</div>':'')+
+ (dmg?'<div>Dano: '+esc(dmg)+'</div>':'')+'</div>';
  }).join(""):'';
  const statItems=[["Defesa",d.defense],["Deslocamento",d.movement],["PV máximos",d.pv]].filter(([name,value])=>hasValue(value));
  const stats=statItems.length?'<div class="stats">'+statItems.map(([name,value])=>'<div class="stat"><small>'+esc(name)+'</small><strong>'+esc(value)+'</strong></div>').join("")+'</div>':"";
  const attrs=["AGI","FOR","INT","PRE","VIG"].filter(x=>hasValue(d.attributes?.[x]));
  const skills=rollRows(d.skills),saves=rollRows(d.saves);
- $("status").innerHTML=(attrs.length?'<div class="attributes">'+attrs.map(x=>'<div><small>'+x+'</small><button type="button" data-attr="'+x+'"><strong>'+esc(d.attributes[x])+'</strong><small>⚄ Rolar</small></button></div>').join("")+'</div>':"")+
+ $("status").innerHTML=(attrs.length?'<div class="attributes">'+attrs.map(x=>'<div><small>'+x+'</small><strong>'+esc(d.attributes[x])+'</strong></div>').join("")+'</div>':"")+
  stats+(hasValue(d.presence)?'<div class="note"><strong>Presença perturbadora:</strong> '+esc(d.presence)+'</div>':'')+
  section("Outros deslocamentos",d.extraMovement)+
  (saves?'<h2>Testes de resistência</h2><div class="skills">'+saves+'</div>':"")+
@@ -151,38 +133,18 @@ function render(){
  const abilities=Array.isArray(d.abilities)?d.abilities.filter(a=>a&&hasValue(a.name)):[];
  const abilityRows=abilities.length?'<h2>Habilidades especiais</h2>'+abilities.map(a=>'<div class="action"><strong style="display:block">'+esc(a.name)+'</strong>'+(hasValue(a.effect)?'<p class="lines">'+esc(a.effect)+'</p>':"")+'</div>').join(""):"";
  $("combat").innerHTML=(actionRows||hasValue(d.attacks)?'<h2>Ataques e habilidades</h2>':"")+actionRows+abilityRows+(hasValue(d.attacks)?'<div class="action"><p class="lines">'+esc(d.attacks)+'</p></div>':'')+
- '<div class="note">Os valores disponíveis são referências para a mesa. Para condições, gatilhos e efeitos completos, consulte a fonte indicada na aba Descrição. A barra de PV é temporária e não altera a ficha oficial.</div>';
+ '<div class="note">Os valores disponíveis são referências para a mesa. Para condições, gatilhos e efeitos completos, consulte a fonte indicada na aba Descrição. A ficha é somente para consulta e seus valores não podem ser alterados aqui.</div>';
  $("description").innerHTML='<h2>'+esc(threat.name)+'</h2><p class="muted">'+esc(threat.source)+(d.pdfPage?' · PDF, página '+d.pdfPage:threat.page?' · livro, página '+threat.page:'')+'</p>'+
  '<p class="lines">'+esc(d.description||"Ficha de consulta com dados do catálogo. As descrições narrativas e os efeitos completos das habilidades estão no livro indicado.")+'</p>'+
  (d.pdfPage?'<p class="note">Dados numéricos e nomes de ações conferidos na página informada do PDF fornecido.</p>':'<p class="note">Os valores ausentes não foram preenchidos sem conferência da fonte original.</p>');
- hpMax=Number(d.pv)>0?Number(d.pv):null;if(!hpReady){hpNow=hpMax===null?null:savedHp(hpMax);hpReady=true}
- $("hpBar").hidden=hpMax===null;$("hpTrack").hidden=hpMax===null;$("hpControls").hidden=hpMax===null;updateHP();
+ const visiblePV=Number(d.pv);
+ $("hpBar").hidden=!(Number.isFinite(visiblePV)&&visiblePV>0);
+ $("hpTrack").hidden=!(Number.isFinite(visiblePV)&&visiblePV>0);
+ if(!$("hpBar").hidden){$("hpLabel").textContent=visiblePV+" PV";$("hpFill").style.width="100%";}
+
  activate(activeTab);
 }
-function updateHP(){
- if(hpMax===null)return;
- $("hpLabel").textContent=hpNow+" / "+hpMax+" PV";
- $("hpFill").style.width=Math.max(0,Math.min(100,100*hpNow/hpMax))+"%";
- try{sessionStorage.setItem(combatHpKey,String(hpNow))}catch(e){}
-}
 document.querySelector(".tabs").addEventListener("click",e=>{const b=e.target.closest("[data-tab]");if(b)activate(b.dataset.tab)});
-$("hpBar").addEventListener("click",e=>{const b=e.target.closest("[data-change]");if(!b||hpMax===null)return;hpNow=Math.max(0,Math.min(hpMax,hpNow+Number(b.dataset.change)));updateHP()});
-$("hpControls").addEventListener("click",e=>{
- const b=e.target.closest("[data-hp-action]");if(!b||hpMax===null)return;
- const amount=Math.max(1,Math.min(100000,Math.floor(Number($("hpAmount").value)||1)));
- if(b.dataset.hpAction==="damage")hpNow=Math.max(0,hpNow-amount);
- if(b.dataset.hpAction==="heal")hpNow=Math.min(hpMax,hpNow+amount);
- if(b.dataset.hpAction==="reset")hpNow=hpMax;updateHP();
-});
-$("status").addEventListener("click",e=>{
- const attr=e.target.closest("[data-attr]");
- if(attr){const value=getData().attributes?.[attr.dataset.attr];if(value===undefined||value===null||value==="—"||!Number.isFinite(Number(value)))return;const n=Number(value);rollDice("Atributo "+attr.dataset.attr,n>0?n+"d20":"-"+(2-n)+"d20","test");return}
- const b=e.target.closest("[data-roll]");if(b)rollDice("Perícia ou resistência",b.dataset.roll,"test");
-});
-$("combat").addEventListener("click",e=>{
- const b=e.target.closest("[data-action-roll]");if(!b)return;
- rollDice(b.dataset.label,b.dataset.dice,b.dataset.actionRoll);
-});
 
 const embedded=new URLSearchParams(location.search).get("embedded")==="1";
 if(embedded){
