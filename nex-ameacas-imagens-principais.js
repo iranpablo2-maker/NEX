@@ -1,4 +1,4 @@
-/* Imagens principais das ameaças: retratos WebP do pacote CRIS onde disponíveis, mantendo os demais PNGs. Sem imagens de reserva. */
+/* Imagens principais: atualizadas por fonte, sem substituir imagens de outros livros. */
 window.NEX_THREAT_PRIMARY_IMAGES={
   "Livro Básico::Aberração de Carne": "./assets/ameacas/livro-basico/aberracao-de-carne.webp",
   "Livro Básico::Aniquilação": "./assets/ameacas/livro-basico/aniquilacao.webp",
@@ -49,5 +49,16 @@ window.NEX_THREAT_PRIMARY_IMAGES={
   "Livro Básico::Anjo": "./assets/ameacas/livro-basico/anjo.webp",
   "Livro Básico::Bicho-Papão": "./assets/ameacas/livro-basico/bicho-papao.webp",
   "Livro Básico::Existido": "./assets/ameacas/livro-basico/existido.webp",
-  "Livro Básico::Vulto": "./assets/ameacas/livro-basico/vulto.webp"
+  "Livro Básico::Vulto": "./assets/ameacas/livro-basico/vulto.webp",
+  "Sobrevivendo ao Horror::Mescla": "./assets/ameacas/sobrevivendo-ao-horror/mescla.png",
+  "Sobrevivendo ao Horror::Sepultado": "./assets/ameacas/sobrevivendo-ao-horror/sepultado.png",
+  "Sobrevivendo ao Horror::Espectro Inesquecido": "./assets/ameacas/sobrevivendo-ao-horror/espectro-inesquecido.png",
+  "Sobrevivendo ao Horror::Derretido": "./assets/ameacas/sobrevivendo-ao-horror/derretido.png",
+  "Sobrevivendo ao Horror::O Uivar": "./assets/ameacas/sobrevivendo-ao-horror/o-uivar.png",
+  "Sobrevivendo ao Horror::Melancolia": "./assets/ameacas/sobrevivendo-ao-horror/melancolia.png",
+  "Sobrevivendo ao Horror::Quibungo": "./assets/ameacas/sobrevivendo-ao-horror/quibungo.png",
+  "Sobrevivendo ao Horror::Profundo": "./assets/ameacas/sobrevivendo-ao-horror/profundo.png",
+  "Sobrevivendo ao Horror::Memento Mori": "./assets/ameacas/sobrevivendo-ao-horror/memento-mori.png",
+  "Sobrevivendo ao Horror::Rascunho": "./assets/ameacas/sobrevivendo-ao-horror/rascunho.png",
+  "Sobrevivendo ao Horror::Medusa": "./assets/ameacas/sobrevivendo-ao-horror/medusa.png"
 };
