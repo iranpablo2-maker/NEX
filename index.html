@@ -1901,7 +1901,11 @@ body > #nexOriginPopup[hidden]{display:none!important;}
  padding:8px 11px;
 }
 </style>
-</head><body>
+<style id="nex-threats-page-style">
+#threatsPanel{max-width:1250px;margin:0 auto;padding:0 10px 38px;min-height:calc(100vh - 120px)}
+#threatsPanel #nexThreatLibrary{display:block;width:100%;height:calc(100vh - 128px);min-height:670px;border:0;background:#0b0b0e}
+@media(max-width:700px){#threatsPanel{padding:0 2px 25px}#threatsPanel #nexThreatLibrary{height:calc(100vh - 120px);min-height:600px}}
+</style></head><body>
 <script src="nex-sobrevivendo-ao-horror.js?v=2072"></script>
 <script src="nex-arquivos-secretos.js?v=20261112descs2"></script>
 <header class="topbar"><div class="topinner"><button type="button" id="n17MenuToggle" class="n17-menu-button" aria-expanded="false" aria-controls="n17Drawer" aria-label="Abrir menu">☰</button><button type="button" class="brand" id="nexBrandHome" aria-label="Voltar ao menu principal" title="Voltar ao menu principal"><span class="brand-mark" aria-hidden="true">◈</span><span><h1>NEX</h1><span class="subtitle">SISTEMA DE FICHAS · ORDEM PARANORMAL</span></span></button><div class="actions"><button type="button" id="nexAccountOpen" class="btn sm" style="display:inline-flex!important;align-items:center;justify-content:center;background:#8c2534;color:white;border:1px solid #c64657;border-radius:7px;min-height:36px;padding:6px 12px;font-weight:750;white-space:nowrap">Conta NEX</button><button class="btn sm" id="menuHeaderButton" type="button" style="display:none!important" hidden tabindex="-1" aria-hidden="true">⌂ Menu principal</button><button class="btn sm" id="newChar" type="button" style="display:none!important" hidden tabindex="-1" aria-hidden="true">＋ Nova ficha</button><button class="btn sm" id="importBtn" style="display:none!important" aria-hidden="true" tabindex="-1">Importar</button><button class="btn sm" id="exportBtn" style="display:none!important" aria-hidden="true" tabindex="-1">↓ Exportar</button><input type="file" id="fileInput" accept="application/json,.json" hidden><span id="n17SaveIndicator" hidden aria-hidden="true"></span></div></div></header>
@@ -1909,6 +1913,7 @@ body > #nexOriginPopup[hidden]{display:none!important;}
  <div class="nex-ref-nav-inner">
   <button type="button" data-nexnav="agents">Personagens</button>
   <button type="button" data-nexnav="campaigns">Campanhas</button>
+  <button type="button" data-nexnav="threats">Ameaças</button>
   <button type="button" data-nexnav="homebrew">Homebrew</button>
   
     
@@ -1922,6 +1927,7 @@ body > #nexOriginPopup[hidden]{display:none!important;}
 <button type="button" data-n17-action="agents">♙ &nbsp; Meus personagens</button>
 <button type="button" data-n17-action="new">＋ &nbsp; Criar personagem</button>
 <button type="button" data-n17-action="campaigns">◎ &nbsp; Campanhas</button>
+<button type="button" data-n17-action="threats">◈ &nbsp; Ameaças</button>
 <button type="button" data-n17-action="homebrew">✧ &nbsp; Homebrew</button>
 <button type="button" data-n17-action="account">◈ &nbsp; Conta NEX</button>
 
@@ -1930,7 +1936,7 @@ body > #nexOriginPopup[hidden]{display:none!important;}
 <section id="mainMenu" aria-label="Menu principal NEX">
  <div class="home-hero"><div class="home-eyebrow">PLATAFORMA DE PERSONAGENS</div><h2>NEX</h2><p>O paranormal não espera. Organize seus personagens, consulte suas fichas e prepare sua próxima investigação em um único lugar. </p><div class="actions"><button class="home-action" type="button" id="menuNew">＋ Criar personagem</button><button class="home-action secondary" type="button" id="menuContinue" style="display:none!important" hidden tabindex="-1" aria-hidden="true">Abrir ficha atual →</button></div></div>
  <div class="home-section-heading"><h2>Central de operações</h2></div>
- <div class="home-grid"><button class="home-tile" data-home="agents"><span class="symbol">♙</span><strong>Meus personagens</strong><small>Visualize, abra e gerencie fichas de personagens.</small></button><button class="home-tile" data-home="new"><span class="symbol">＋</span><strong>Criar personagem</strong><small>Inicie uma nova ficha com as regras do NEX.</small></button><button class="home-tile" data-home="campaigns"><span class="symbol">◎</span><strong>Campanhas</strong><small>Crie mesas, convide amigos e acompanhe as fichas na mesma campanha.</small></button><button class="home-tile" data-home="homebrew"><span class="symbol">✧</span><strong>Homebrew</strong><small>Crie e edite origens personalizadas na biblioteca independente.</small></button></div>
+ <div class="home-grid"><button class="home-tile" data-home="agents"><span class="symbol">♙</span><strong>Meus personagens</strong><small>Visualize, abra e gerencie fichas de personagens.</small></button><button class="home-tile" data-home="new"><span class="symbol">＋</span><strong>Criar personagem</strong><small>Inicie uma nova ficha com as regras do NEX.</small></button><button class="home-tile" data-home="campaigns"><span class="symbol">◎</span><strong>Campanhas</strong><small>Crie mesas, convide amigos e acompanhe as fichas na mesma campanha.</small></button><button class="home-tile" data-home="threats"><span class="symbol">◈</span><strong>Ameaças</strong><small>Consulte criaturas por livro e elemento.</small></button><button class="home-tile" data-home="homebrew"><span class="symbol">✧</span><strong>Homebrew</strong><small>Crie e edite origens personalizadas na biblioteca independente.</small></button></div>
  <div class="home-section-heading" id="agentsHeading"><h2>Personagens registrados</h2><div class="home-toolbar"><button class="btn sm" id="menuBackup" style="display:none!important" aria-hidden="true" tabindex="-1">↓ Exportar ficha atual</button><button class="btn sm" id="menuImport" style="display:none!important" aria-hidden="true" tabindex="-1">↑ Importar ficha</button></div></div>
  <div id="menuAgents" class="home-card-list"></div><p class="hint" style="margin-top:15px">As fichas são vinculadas à sua conta NEX e sincronizadas com o Firebase. A cópia deste navegador serve apenas para recuperação se a conexão falhar.</p>
 </section>
@@ -1967,6 +1973,9 @@ body > #nexOriginPopup[hidden]{display:none!important;}
   </div>
   <section id="nexDuplicateReview" hidden style="margin:18px 0;padding:16px;border:1px solid #4b383b;border-radius:12px;background:#15171b" aria-label="Revisão de fichas repetidas"></section>
 </details>
+</section>
+<section id="threatsPanel" class="hide" aria-label="Biblioteca de Ameaças">
+ <iframe id="nexThreatLibrary" title="Biblioteca de Ameaças NEX" src="./ameacas.html?v=20261114ameacas1" loading="lazy"></iframe>
 </section>
 <section id="campaignPanel" class="hide" aria-label="Campanhas">
  <div class="home-toolbar"><button class="btn" id="campaignBack">← Menu principal</button></div>
@@ -2894,6 +2903,7 @@ $('nexHomebrewFilter')?.addEventListener('input',()=>nex12RenderHomebrew());
   $('mainMenu').classList.toggle('hide',which!=='home');
   $('agentsPanel').classList.toggle('hide',which!=='agents');
   $('campaignPanel').classList.toggle('hide',which!=='campaigns');
+  $('threatsPanel').classList.toggle('hide',which!=='threats');
   $('sheetScreen').classList.toggle('hide',which!=='sheet');
   $('wizardScreen').classList.toggle('hide',which!=='wizard');
   $('homebrewScreen').classList.toggle('hide',which!=='homebrew');
@@ -3594,7 +3604,7 @@ $('nexHomebrewFilter')?.addEventListener('input',()=>nex12RenderHomebrew());
  $('campaignAdd').onclick=()=>{const name=$('campaignName').value.trim();if(!name){toast('Escreva o nome da campanha.');return;}campaigns.unshift({id:createId(),name, note:$('campaignNote').value.trim()});localStorage.setItem(CAMP_KEY,JSON.stringify(campaigns));$('campaignName').value='';$('campaignNote').value='';persist();renderCampaigns();toast('Campanha registrada.');};
  document.addEventListener('click',e=>{
    const b=e.target.closest('button');if(!b)return;
-   if(b.dataset.home){const key=b.dataset.home;if(key==='agents'){showAgents();return;}if(key==='new')createAgent();if(key==='campaigns'){renderCampaigns();visible('campaigns');}if(key==='homebrew'){showHomebrew();return;}return;}
+   if(b.dataset.home){const key=b.dataset.home;if(key==='agents'){showAgents();return;}if(key==='new')createAgent();if(key==='campaigns'){renderCampaigns();visible('campaigns');}if(key==='homebrew'){showHomebrew();return;}if(key==='threats'){visible('threats');return;}return;}
    if(b.dataset.openAgent){openAgent(b.dataset.openAgent);return;}
    if(b.dataset.copyAgent){const a=agents.find(x=>x.id===b.dataset.copyAgent);if(!a)return;const now=new Date().toISOString();const copy={id:createId(),createdAt:now,updatedAt:now,data:JSON.parse(JSON.stringify(a.data))};copy.data.name=(copy.data.name||'Agente')+' (cópia)';agents.unshift(copy);persist();renderAgents();return;}
    if(b.dataset.deleteAgent){
@@ -3618,7 +3628,7 @@ $('nexHomebrewFilter')?.addEventListener('input',()=>nex12RenderHomebrew());
   if(frame?.contentWindow && frame.src && frame.src!=='about:blank'){
    try{frame.contentWindow.postMessage({type:'nex-campaign-show-list'},location.origin);}catch(error){console.warn(error);}
   }
- },openHomebrew:showHomebrew,backupAll:()=>{try{if(!persist())throw new Error('Armazenamento local indisponível');const data={format:'nex-backup-all',version:'1.8',exportedAt:new Date().toISOString(),agents,campaigns,homebrew:globalHomebrew(),active,
+ },openThreats:()=>visible('threats'),openHomebrew:showHomebrew,backupAll:()=>{try{if(!persist())throw new Error('Armazenamento local indisponível');const data={format:'nex-backup-all',version:'1.8',exportedAt:new Date().toISOString(),agents,campaigns,homebrew:globalHomebrew(),active,
    advancedHomebrew:(()=>{try{return JSON.parse(localStorage.getItem('nex_homebrew_advanced_v2051')||'[]')}catch{return [];}})(),
    syncRecovery:(()=>{try{const uid=localStorage.getItem('nex_sync_v3_account');return uid?JSON.parse(localStorage.getItem('nex_sync_v3_recovery_'+uid)||'[]'):[];}catch{return [];}})()};const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});const link=document.createElement('a');link.href=URL.createObjectURL(blob);link.download='nex-backup-todas-fichas-'+new Date().toISOString().slice(0,10)+'.json';link.click();setTimeout(()=>URL.revokeObjectURL(link.href),1000);toast('Backup completo exportado.');return true;}catch(err){console.error(err);toast('Falha ao exportar backup completo.');return false;}}};
  // Homebrew 2.0.55: dados da biblioteca são locais e as fichas têm cópias independentes.
@@ -4002,6 +4012,7 @@ $('nexHomebrewFilter')?.addEventListener('input',()=>nex12RenderHomebrew());
    else if(action==='new')window.NEX17.createAgent();
    else if(action==='sheet')window.NEX17.openSheet();
    else if(action==='campaigns')window.NEX17.openCampaigns();
+   else if(action==='threats')window.NEX17.openThreats();
    else if(action==='homebrew')window.NEX17.openHomebrew();
    else if(action==='backup')window.NEX17.backupAll();
  });
@@ -4276,6 +4287,7 @@ update();
   if(!app)return;
   if(action==='agents'){app.openAgents();}
   if(action==='campaigns')app.openCampaigns();
+  if(action==='threats')app.openThreats();
   if(action==='homebrew')app.openHomebrew();
   if(action==='sheet')app.openSheet();
  });
@@ -5123,7 +5135,7 @@ window.addEventListener('nex-cloud-sync-state',event=>{
 </script>
 <script id="nex-mobile-version-check">
 (()=>{
- const currentVersion='2026.11.13-fundos-fix-9';
+ const currentVersion='2026.11.14-ameacas-1';
  let lastCheck=0,shown=false;
  async function checkForUpdate(){
   if(shown||Date.now()-lastCheck<15000)return;
