@@ -34,6 +34,45 @@ dialog{width:min(95vw,680px);max-height:89vh;overflow:auto;background:#151114;co
 .sheet-body{padding:21px}.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin-bottom:14px}
 .stat{border:1px solid #55313f;border-radius:7px;padding:10px;background:#24191f}.stat label{display:block;font-size:10px;color:#c8aeb8}.stat strong{font-size:14px}
 @media(max-width:560px){main{padding:15px 11px 40px}.emblem{width:75px;min-width:75px}.details{padding:12px 9px}.monster button{margin:0 9px 10px 0;padding:7px 12px}.stats{grid-template-columns:repeat(2,1fr)}}
+</style><style id="nex-threat-sheet-ref-v2">
+.threat-sheet{width:min(94vw,560px);max-height:92vh;background:#0d0d10;border:1px solid #672936;border-radius:8px}
+.threat-sheet .sheet-top{min-height:133px;display:flex;gap:15px;align-items:stretch;padding:0;background:var(--art);background-size:cover;background-position:center}
+.threat-sheet .sheet-top:before{background:linear-gradient(90deg,#0807099e,#10070ddc 58%,#10070d65)}
+.threat-sheet .threat-avatar{position:relative;flex:0 0 133px;display:grid;place-items:center;background:#220f1d83;border-right:1px solid #75343b;font:700 66px Georgia,serif;color:#f9dfdf}
+.threat-sheet .threat-heading{position:relative;min-width:0;display:flex;flex-direction:column;justify-content:center;padding:19px 33px 15px 0;gap:3px}
+.threat-sheet .threat-heading small{color:#e7b2b8;font-size:10px}
+.threat-sheet .threat-heading h2{font:700 22px/1.2 "Segoe UI",sans-serif;margin:0;overflow-wrap:anywhere}
+.threat-sheet .threat-subline{display:flex;flex-direction:column;line-height:1.3;font-weight:700;font-size:12px}
+.threat-sheet #sheetElement{font-size:11px;color:#e9b4bd}
+.threat-sheet .close{z-index:10}
+.threat-sheet .threat-vital{margin:15px 16px 8px;display:flex;background:#b12633;border:1px solid #e15d65;min-height:40px;align-items:center}
+.threat-sheet .threat-vital[hidden]{display:none}
+.threat-sheet .threat-vital button{border:0;background:transparent;color:#f0ced1;font-size:26px;min-width:38px;padding:0 4px;line-height:1}
+.threat-sheet .threat-vital button:hover{background:#ffffff1a}
+.threat-sheet .threat-vital strong{flex:1;text-align:center;font-size:16px}
+.threat-sheet .threat-tabs{display:flex;justify-content:center;gap:12px;padding:9px 12px 0}
+.threat-sheet .threat-tabs button{padding:10px 11px;border:0;border-bottom:2px solid transparent;background:transparent;color:#a59da6;text-transform:uppercase;font-size:12px}
+.threat-sheet .threat-tabs button[aria-selected="true"]{border-color:#e8364b;color:white}
+.threat-sheet .sheet-body{padding:15px 17px 24px;min-height:240px}
+.threat-sheet .threat-attributes{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:9px;margin:5px 0 20px;text-align:center}
+.threat-sheet .threat-attributes .attr-name{color:#b8a3b2;font-size:13px}
+.threat-sheet .threat-attributes strong{display:block;font:600 24px/1.4 Georgia,serif;color:#fff}
+.threat-sheet .threat-defenses{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;text-align:center;margin:14px 0 20px}
+.threat-sheet .threat-defenses small{display:block;color:#b5a0ae;text-transform:uppercase;font-size:12px}
+.threat-sheet .threat-defenses strong{font-size:22px;font-weight:500}
+.threat-sheet h3{font:500 20px/1.3 "Segoe UI",sans-serif;margin:18px 0 7px}
+.threat-sheet .threat-status-title{text-align:center}
+.threat-sheet .threat-skills{display:grid;gap:3px}
+.threat-sheet .threat-skill{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 12px;border:1px solid #29252a;text-transform:uppercase;font-size:12px;background:#101013}
+.threat-sheet .threat-skill button{border:0;background:none;color:#f5eaf2;font-weight:600;white-space:nowrap}
+.threat-sheet .threat-skill button:hover{color:#ec6879}
+.threat-sheet .threat-section{margin:19px 0}
+.threat-sheet .threat-section h3{margin:0 0 5px}
+.threat-sheet .threat-line{font-size:12px;color:#fff;margin:4px 0;white-space:pre-wrap}
+.threat-sheet .threat-muted{color:#ad9ca6;font-size:12px}
+.threat-sheet .threat-action{padding:13px;margin:9px 0;border:1px solid #46323a;border-radius:7px;background:#20181d}
+.threat-sheet .threat-action strong{display:block;margin-bottom:5px}
+@media(max-width:470px){.threat-sheet .threat-avatar{flex-basis:106px;font-size:51px}.threat-sheet .threat-heading h2{font-size:18px}.threat-sheet .threat-tabs{gap:4px}.threat-sheet .threat-vital button{min-width:30px}.threat-sheet .sheet-body{padding:12px}}
 </style></head><body>
 <main><div class="heading"><div><div class="eyebrow">Biblioteca paranormal</div><h1>Ameaças</h1></div><span id="total" class="hint"></span></div>
 <p class="hint">Catálogo de referência por obra e elemento. As fichas completas dos livros não são reproduzidas; consulte o material de origem para as regras e valores oficiais.</p>
@@ -43,8 +82,30 @@ dialog{width:min(95vw,680px);max-height:89vh;overflow:auto;background:#151114;co
 <div class="meta"><span id="count"></span><span>Fichas por fonte</span></div>
 <div id="list" aria-live="polite"></div>
 <p class="note" style="margin-top:18px">Os nomes estão organizados por fonte. Alguns suplementos ainda precisam de conferência página a página para completar o índice. VD, atributos e habilidades não verificados não são inventados.</p></main>
-<dialog id="sheet"><div class="sheet-top" id="sheetTop"><button class="close" id="close" aria-label="Fechar ficha">×</button><small id="sheetSource"></small><h2 id="sheetName"></h2><span id="sheetElement"></span></div>
-<div class="sheet-body"><div class="stats"><div class="stat"><label>VD</label><strong>Consultar livro</strong></div><div class="stat"><label>Defesa</label><strong>Consultar livro</strong></div><div class="stat"><label>PV</label><strong>Consultar livro</strong></div><div class="stat"><label>Atributos</label><strong>Consultar livro</strong></div><div class="stat"><label>Resistências</label><strong>Consultar livro</strong></div><div class="stat"><label>Ações</label><strong>Consultar livro</strong></div></div><p class="hint" id="sheetInfo"></p><p class="note">Esta visualização é um índice para consulta durante a campanha, não uma reprodução da ficha oficial.</p></div></dialog>
+<dialog id="sheet" class="threat-sheet" aria-label="Ficha da ameaça">
+ <div class="sheet-top" id="sheetTop">
+  <button class="close" id="close" type="button" aria-label="Fechar ficha">×</button>
+  <div class="threat-avatar" id="threatAvatar" aria-hidden="true">?</div>
+  <div class="threat-heading"><small id="sheetSource"></small><h2 id="sheetName"></h2><div class="threat-subline"><span id="sheetVD"></span><span id="sheetCategory"></span></div><span id="sheetElement"></span></div>
+ </div>
+ <div class="threat-vital" id="threatVital" hidden>
+  <button type="button" data-pv-change="-10" aria-label="Reduzir 10 PV">«</button>
+  <button type="button" data-pv-change="-1" aria-label="Reduzir 1 PV">‹</button>
+  <strong id="threatHP" aria-live="polite"></strong>
+  <button type="button" data-pv-change="1" aria-label="Recuperar 1 PV">›</button>
+  <button type="button" data-pv-change="10" aria-label="Recuperar 10 PV">»</button>
+ </div>
+ <div class="threat-tabs" role="tablist" aria-label="Seções da ameaça">
+  <button type="button" id="tabStatus" role="tab" data-threat-tab="status" aria-controls="panelStatus" aria-selected="true">Status</button>
+  <button type="button" id="tabCombat" role="tab" data-threat-tab="combat" aria-controls="panelCombat" aria-selected="false">Combate</button>
+  <button type="button" id="tabDescription" role="tab" data-threat-tab="description" aria-controls="panelDescription" aria-selected="false">Descrição</button>
+ </div>
+ <div class="sheet-body">
+  <section role="tabpanel" id="panelStatus" aria-labelledby="tabStatus"></section>
+  <section role="tabpanel" id="panelCombat" aria-labelledby="tabCombat" hidden></section>
+  <section role="tabpanel" id="panelDescription" aria-labelledby="tabDescription" hidden></section>
+ </div>
+</dialog>
 <script>
 const records=[{"name":"Aberração de Carne","element":"Sangue","source":"Livro Básico","category":"Criatura"},{"name":"Aniquilação","element":"Sangue","source":"Livro Básico","category":"Criatura"},{"name":"Dama de Sangue","element":"Sangue","source":"Livro Básico","category":"Criatura"},{"name":"Enpap-X","element":"Sangue","source":"Livro Básico","category":"Criatura"},{"name":"Kerberos","element":"Sangue","source":"Livro Básico","category":"Criatura"},{"name":"Minotauro","element":"Sangue","source":"Livro Básico","category":"Criatura"},{"name":"Mulher Afogada","element":"Sangue","source":"Livro Básico","category":"Criatura"},{"name":"O Carente","element":"Sangue","source":"Livro Básico","category":"Criatura"},{"name":"O Diabo","element":"Sangue","source":"Livro Básico","category":"Criatura"},{"name":"Titã de Sangue","element":"Sangue","source":"Livro Básico","category":"Criatura"},{"name":"Zumbi de Sangue","element":"Sangue","source":"Livro Básico","category":"Criatura"},{"name":"Zumbi de Sangue Bestial","element":"Sangue","source":"Livro Básico","category":"Criatura"},{"name":"A Marionete","element":"Morte","source":"Livro Básico","category":"Criatura"},{"name":"Aracnasita","element":"Morte","source":"Livro Básico","category":"Criatura"},{"name":"Carniçal","element":"Morte","source":"Livro Básico","category":"Criatura"},{"name":"Ceifador Espiral","element":"Morte","source":"Livro Básico","category":"Criatura"},{"name":"Enraizado","element":"Morte","source":"Livro Básico","category":"Criatura"},{"name":"Escutado","element":"Morte","source":"Livro Básico","category":"Criatura"},{"name":"Esqueleto de Lodo","element":"Morte","source":"Livro Básico","category":"Criatura"},{"name":"Múmia Xipófaga","element":"Morte","source":"Livro Básico","category":"Criatura"},{"name":"Nidere","element":"Morte","source":"Livro Básico","category":"Criatura"},{"name":"O Deus da Morte","element":"Morte","source":"Livro Básico","category":"Criatura"},{"name":"Sempiternal","element":"Morte","source":"Livro Básico","category":"Criatura"},{"name":"Succ","element":"Morte","source":"Livro Básico","category":"Criatura"},{"name":"Anjo","element":"Conhecimento","source":"Livro Básico","category":"Criatura"},{"name":"Bicho-Papão","element":"Conhecimento","source":"Livro Básico","category":"Criatura"},{"name":"Estrangeiro","element":"Conhecimento","source":"Livro Básico","category":"Criatura"},{"name":"Existido","element":"Conhecimento","source":"Livro Básico","category":"Criatura"},{"name":"Lembrado","element":"Conhecimento","source":"Livro Básico","category":"Criatura"},{"name":"Máscara do Desespero","element":"Conhecimento","source":"Livro Básico","category":"Criatura"},{"name":"O Espreitador","element":"Conhecimento","source":"Livro Básico","category":"Criatura"},{"name":"Ocioso","element":"Conhecimento","source":"Livro Básico","category":"Criatura"},{"name":"Parasita de Culpa","element":"Conhecimento","source":"Livro Básico","category":"Criatura"},{"name":"Rastejador Sombrio","element":"Conhecimento","source":"Livro Básico","category":"Criatura"},{"name":"Silhueta","element":"Conhecimento","source":"Livro Básico","category":"Criatura"},{"name":"Vulto","element":"Conhecimento","source":"Livro Básico","category":"Criatura"},{"name":"Anárquico","element":"Energia","source":"Livro Básico","category":"Criatura"},{"name":"Anárquico Descontrolado","element":"Energia","source":"Livro Básico","category":"Criatura"},{"name":"Anomalia","element":"Energia","source":"Livro Básico","category":"Criatura"},{"name":"Anomiático","element":"Energia","source":"Livro Básico","category":"Criatura"},{"name":"Ciborgue","element":"Energia","source":"Livro Básico","category":"Criatura"},{"name":"Infecticídio","element":"Energia","source":"Livro Básico","category":"Criatura"},{"name":"O Anfitrião","element":"Energia","source":"Livro Básico","category":"Criatura"},{"name":"Perturbado de Energia","element":"Energia","source":"Livro Básico","category":"Criatura"},{"name":"Sukkalgir","element":"Energia","source":"Livro Básico","category":"Criatura"},{"name":"Tempestuoso","element":"Energia","source":"Livro Básico","category":"Criatura"},{"name":"Telopsia","element":"Energia","source":"Livro Básico","category":"Criatura"},{"name":"Viajante","element":"Energia","source":"Livro Básico","category":"Criatura"},{"name":"Degolificada","element":"Medo","source":"Livro Básico","category":"Criatura"},{"name":"Sepultado","element":"Morte","source":"Sobrevivendo ao Horror","page":126,"category":"Criatura"},{"name":"Mescla","element":"Sangue","source":"Sobrevivendo ao Horror","page":128,"category":"Criatura"},{"name":"Espectro Inesquecido","element":"Energia","source":"Sobrevivendo ao Horror","page":130,"category":"Criatura"},{"name":"Derretido","element":"Sangue","source":"Sobrevivendo ao Horror","page":134,"category":"Criatura"},{"name":"O Uivar","element":"Energia","source":"Sobrevivendo ao Horror","page":136,"category":"Criatura"},{"name":"Melancolia","element":"Conhecimento","source":"Sobrevivendo ao Horror","page":138,"category":"Criatura"},{"name":"Quibungo","element":"Sangue","source":"Sobrevivendo ao Horror","page":142,"category":"Criatura"},{"name":"Profundo","element":"Energia","source":"Sobrevivendo ao Horror","page":144,"category":"Criatura"},{"name":"Memento Mori","element":"Morte","source":"Sobrevivendo ao Horror","page":148,"category":"Criatura"},{"name":"Rascunho","element":"Conhecimento","source":"Sobrevivendo ao Horror","page":150,"category":"Criatura"},{"name":"Medusa","element":"Conhecimento","source":"Sobrevivendo ao Horror","page":152,"category":"Criatura"},{"name":"Amigo Imaginário","element":"Morte","source":"Sobrevivendo ao Horror","page":154,"category":"Criatura"},{"name":"Arara-vermelha","element":"Realidade","source":"Arquivos Secretos — Fevereiro","category":"Ameaça da Realidade"},{"name":"Arara-devorada","element":"Sangue","source":"Arquivos Secretos — Fevereiro","category":"Ameaça"},{"name":"Penas Afiadas","element":"Sangue","source":"Arquivos Secretos — Fevereiro","category":"Ameaça"},{"name":"Jaguatirica","element":"Realidade","source":"Arquivos Secretos — Fevereiro","category":"Ameaça da Realidade"},{"name":"Felino-devorado","element":"Sangue","source":"Arquivos Secretos — Fevereiro","category":"Ameaça"},{"name":"Felino-infernal","element":"Sangue","source":"Arquivos Secretos — Fevereiro","category":"Ameaça"},{"name":"Argano","element":"Realidade","source":"Arquivos Secretos — Março","category":"Ameaça da Realidade"},{"name":"O Anfitrião","element":"Energia","source":"Arquivos Secretos — Abril","category":"Ameaça"},{"name":"Hospedeiro Parasitado","element":"Transmissão","source":"Arquivos Secretos — Maio","category":"Ameaça"},{"name":"Hospedeiro Aflorado","element":"Transmissão","source":"Arquivos Secretos — Maio","category":"Ameaça"},{"name":"Interflorado","element":"Transmissão","source":"Arquivos Secretos — Maio","category":"Ameaça"},{"name":"Fummu","element":"Transmissão","source":"Arquivos Secretos — Maio","category":"Ameaça"},{"name":"Doppelganger Civil","element":"Transmissão","source":"Arquivos Secretos — Maio","category":"Ameaça"},{"name":"Doppelganger Combatente","element":"Transmissão","source":"Arquivos Secretos — Maio","category":"Ameaça"},{"name":"Doppelganger Cultista","element":"Transmissão","source":"Arquivos Secretos — Maio","category":"Ameaça"},{"name":"Doppelganger Monstruoso","element":"Transmissão","source":"Arquivos Secretos — Maio","category":"Ameaça"},{"name":"Rastropoda","element":"Transmissão","source":"Arquivos Secretos — Maio","category":"Ameaça"},{"name":"Memoflígico","element":"Transmissão","source":"Arquivos Secretos — Maio","category":"Ameaça"},{"name":"Cientista da Panacea","element":"Realidade","source":"Arquivos Secretos — Junho","category":"Ameaça da Realidade"},{"name":"Manda-Chuva da Panacea","element":"Realidade","source":"Arquivos Secretos — Junho","category":"Ameaça da Realidade"},{"name":"Segurança da Panacea","element":"Realidade","source":"Arquivos Secretos — Junho","category":"Ameaça da Realidade"},{"name":"Hikikomori","element":"Energia","source":"Arquivos Secretos — Junho","category":"Ameaça"},{"name":"Marca-Passo","element":"Energia","source":"Arquivos Secretos — Junho","category":"Ameaça"},{"name":"Estímulo","element":"Energia","source":"Arquivos Secretos — Junho","category":"Ameaça"},{"name":"Experimento Ssabáka","element":"Morte","source":"Arquivos Secretos — Junho","category":"Ameaça"}];
 records.push(...[{"name":"Assecla Wip","element":"Realidade","source":"Arquivos Secretos — Janeiro","category":"Ameaça da Realidade"},{"name":"Investido","element":"Sangue","source":"Arquivos Secretos — Janeiro","category":"Ameaça"},{"name":"Apóstolo do Sangue","element":"Sangue","source":"Arquivos Secretos — Janeiro","category":"Ameaça"},{"name":"Giovanni Opspor","element":"Realidade","source":"Arquivos Secretos — Janeiro","category":"Ameaça da Realidade"},{"name":"Mosto","element":"Realidade","source":"Arquivos Secretos — Janeiro","category":"Ameaça da Realidade"},{"name":"Tarrafa","element":"Realidade","source":"Arquivos Secretos — Janeiro","category":"Ameaça da Realidade"},{"name":"Nando Salles","element":"Realidade","source":"Arquivos Secretos — Janeiro","category":"Ameaça da Realidade"},{"name":"Anulado","element":"Sangue","source":"Arquivos Secretos — Janeiro","category":"Ameaça"},{"name":"Jonas Aguiar","element":"Realidade","source":"Arquivos Secretos — Fevereiro","category":"Ameaça da Realidade"},{"name":"Colosso","element":"Realidade","source":"Arquivos Secretos — Fevereiro","category":"Ameaça da Realidade"},{"name":"Jae","element":"Realidade","source":"Arquivos Secretos — Fevereiro","category":"Ameaça da Realidade"},{"name":"Labirinto","element":"Realidade","source":"Arquivos Secretos — Fevereiro","category":"Ameaça da Realidade"},{"name":"Fíbula","element":"Realidade","source":"Arquivos Secretos — Março","category":"Ameaça da Realidade"},{"name":"Chispa","element":"Realidade","source":"Arquivos Secretos — Março","category":"Ameaça da Realidade"},{"name":"Assistente de Produção","element":"Realidade","source":"Arquivos Secretos — Abril","category":"Ameaça da Realidade"},{"name":"Produtor","element":"Realidade","source":"Arquivos Secretos — Abril","category":"Ameaça da Realidade"},{"name":"Diretor","element":"Realidade","source":"Arquivos Secretos — Abril","category":"Ameaça da Realidade"},{"name":"Simulacro","element":"Energia","source":"Arquivos Secretos — Abril","category":"Ameaça"},{"name":"Alice Cruzes","element":"Realidade","source":"Arquivos Secretos — Junho","category":"Ameaça da Realidade"},{"name":"Ketan Arjuna","element":"Realidade","source":"Arquivos Secretos — Junho","category":"Ameaça da Realidade"},{"name":"Laila Verdante","element":"Realidade","source":"Arquivos Secretos — Junho","category":"Ameaça da Realidade"},{"name":"Dr. Neruda","element":"Realidade","source":"Arquivos Secretos — Junho","category":"Ameaça da Realidade"}]);
@@ -69,7 +130,71 @@ function draw(){
 sourceEl.addEventListener("click",e=>{const b=e.target.closest("[data-source]");if(!b)return;source=b.dataset.source;draw()});
 elementsEl.addEventListener("click",e=>{const b=e.target.closest("[data-element]");if(!b)return;element=b.dataset.element;draw()});
 $("search").addEventListener("input",e=>{search=e.target.value.trim().toLocaleLowerCase("pt-BR");draw()});
-list.addEventListener("click",e=>{const b=e.target.closest("[data-open]");if(!b)return;const x=records[Number(b.dataset.open)];if(!x)return;$("sheetTop").style.setProperty("--art",art(x.element));$("sheetSource").textContent=x.source;$("sheetName").textContent=x.name;$("sheetElement").textContent=x.element;$("sheetInfo").textContent="Fonte: "+x.source+(x.page?", página "+x.page:"")+". Para utilizar ações e atributos oficiais, consulte o livro correspondente.";$("sheet").showModal()});
+
+const screenshotExample={
+ name:"O Diabo",source:"Livro Básico",vd:400,pv:1666,size:"Médio",defense:66,movement:"18m / 12q",
+ attributes:{AGI:6,FOR:6,INT:6,PRE:6,VIG:6},
+ skills:[["Percepção","6d20+25"],["Iniciativa","6d20+35"],["Fortitude","6d20+35"],["Reflexos","6d20+35"],["Vontade","6d20+35"]],
+ senses:["Percepção às cegas"],secondary:["Conhecimento","Medo"],immunities:["Dano de Sangue","Condições de atordoamento e paralisia"],
+ resistances:["Balístico: 20","Impacto: 20","Perfuração: 20"],weaknesses:["Morte"]
+};
+let currentThreat=null,currentPV=null;
+function sectionBlock(title,values){return '<div class="threat-section"><h3>'+escape(title)+'</h3>'+ (values&&values.length?values.map(v=>'<div class="threat-line">'+escape(v)+'</div>').join(""):'<div class="threat-muted">Consultar livro de origem</div>')+'</div>'}
+function renderThreatSections(){
+ const x=currentThreat,example=x.name===screenshotExample.name&&x.source===screenshotExample.source?screenshotExample:null;
+ const names=["AGI","FOR","INT","PRE","VIG"];
+ $("panelStatus").innerHTML='<div class="threat-attributes">'+names.map(n=>'<div><span class="attr-name">'+n+'</span><strong>'+(example?example.attributes[n]:"—")+'</strong></div>').join("")+'</div>'+
+ '<div class="threat-defenses"><div><small>Defesa</small><strong>'+(example?example.defense:"—")+'</strong></div><div><small>Deslocamento</small><strong>'+(example?example.movement:"—")+'</strong></div></div>'+
+ '<h3 class="threat-status-title">Perícias</h3><div class="threat-skills">'+(example?example.skills.map(([name,roll])=>'<div class="threat-skill"><span>'+escape(name)+'</span><button type="button" data-roll="'+escape(roll)+'" title="Rolar teste">'+escape(roll)+' ⚄</button></div>').join(""):'<div class="threat-muted">Perícias ainda não cadastradas nesta ameaça.</div>')+'</div>'+
+ sectionBlock("Sentidos",example?.senses)+sectionBlock("Elementos secundários",example?.secondary)+sectionBlock("Imunidades",example?.immunities)+sectionBlock("Resistências",example?.resistances)+sectionBlock("Vulnerabilidades",example?.weaknesses);
+ $("panelCombat").innerHTML='<div class="threat-action"><strong>Ataques e habilidades</strong><p class="threat-muted">As ações desta ameaça ainda não foram cadastradas. Consulte as regras do livro correspondente para os efeitos e testes.</p></div><div class="threat-action"><strong>Controle de combate</strong><p class="threat-muted">'+(example?"Use a barra vermelha acima para controlar os PV nesta sessão. O valor não é salvo nem compartilhado.":"Quando os valores forem verificados, será possível ativar o controle de PV e as rolagens.")+'</p></div>';
+ $("panelDescription").innerHTML='<h3>'+escape(x.name)+'</h3><p class="threat-muted">Elemento: '+escape(x.element)+'<br>Tipo: '+escape(x.category||"Ameaça")+'<br>Fonte: '+escape(x.source)+(x.page?" · página "+escape(x.page):"")+'</p><p class="threat-muted">Para a descrição oficial e os detalhes de jogo, consulte o material de origem.</p>';
+ $("sheetVD").textContent=example?"VD: "+example.vd:"VD: —";
+ $("sheetCategory").textContent=escape(x.category||"Ameaça")+(example?" · "+example.size:"");
+ $("threatAvatar").textContent=String(x.name||"?").slice(0,1).toUpperCase();
+ $("threatVital").hidden=!example;
+ currentPV=example?example.pv:null;
+ renderPV();
+}
+function renderPV(){if(currentPV===null)return;$("threatHP").textContent=currentPV+" / "+screenshotExample.pv}
+function threatTab(tab){
+ for(const name of ["status","combat","description"]){
+  const selected=name===tab;
+  const button=document.querySelector('[data-threat-tab="'+name+'"]');
+  button.setAttribute("aria-selected",String(selected));
+  $("panel"+name.charAt(0).toUpperCase()+name.slice(1)).hidden=!selected;
+ }
+}
+list.addEventListener("click",e=>{
+ const b=e.target.closest("[data-open]");if(!b)return;
+ const x=records[Number(b.dataset.open)];if(!x)return;
+ currentThreat=x;
+ $("sheetTop").style.setProperty("--art",art(x.element));
+ $("sheetName").textContent=x.name;
+ $("sheetSource").textContent=x.source;
+ $("sheetElement").textContent=x.element;
+ renderThreatSections();threatTab("status");$("sheet").showModal();
+});
+document.querySelector(".threat-tabs").addEventListener("click",e=>{
+ const b=e.target.closest("[data-threat-tab]");if(b)threatTab(b.dataset.threatTab);
+});
+$("threatVital").addEventListener("click",e=>{
+ const b=e.target.closest("[data-pv-change]");if(!b||currentPV===null)return;
+ currentPV=Math.max(0,Math.min(screenshotExample.pv,currentPV+Number(b.dataset.pvChange)));
+ renderPV();
+});
+$("panelStatus").addEventListener("click",e=>{
+ const b=e.target.closest("[data-roll]");if(!b)return;
+ const match=b.dataset.roll.match(/^(\d+)d20\+(\d+)$/);
+ if(!match)return;
+ const dice=Number(match[1]),bonus=Number(match[2]);
+ const rolls=Array.from({length:dice},()=>Math.floor(Math.random()*20)+1);
+ const total=Math.max(...rolls)+bonus;
+ b.title="Rolagens: "+rolls.join(", ")+" · Maior dado + "+bonus+" = "+total;
+ b.textContent=total+" ✓";
+ setTimeout(()=>{if(b.isConnected){b.textContent=match[0]+" ⚄"}},2500);
+});
+
 $("close").onclick=()=>$("sheet").close();
 draw();
 </script></body></html>
