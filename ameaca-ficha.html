@@ -176,22 +176,58 @@ function renderSenses(data){
 }
 
 function actionSummary(a){
- if(a&&typeof a.effect==="string"&&a.effect.trim())return a.effect.trim();
- const name=String(a?.name||"").toLocaleLowerCase("pt-BR");
- const type=String(a?.type||"").toLocaleLowerCase("pt-BR");
- if(/\bagredir\b|mordida|garra|golpe|investida|disparo|ataque|lança|arremess/.test(name)){
-  return "Manobra ofensiva cadastrada na ficha."+(a?.test?" O teste de ataque está indicado acima.":"")+(a?.damage?" O dano está indicado acima.":"");
+ const name=String(a?.name||'Ação').trim();
+ const lower=name.toLocaleLowerCase('pt-BR');
+ const type=String(a?.type||'Ação').trim();
+ const use=type.toLocaleLowerCase('pt-BR');
+ const test=String(a?.test||'').trim();
+ const damage=String(a?.damage||'').trim();
+ const effect=String(a?.effect||a?.description||'').trim();
+ const pieces=[];
+ const begin=(text)=>{if(text)pieces.push(text);};
+ let intro='';
+ if(/agarr|prend|constri|imobil|aprision|captur/.test(lower)){
+  intro='Esta ação está associada a controlar fisicamente um alvo e restringir suas opções durante o encontro. O teste e as condições cadastradas devem determinar se a tentativa produz o efeito pretendido; não se presume, apenas pelo nome, que haja dano contínuo ou uma condição adicional.';
+ }else if(/abocanh|mord/.test(lower)){
+  intro='A criatura utiliza um ataque de mordida ou uma ação relacionada à sua boca. É importante distinguir o ataque inicial das consequências que possam depender de um alvo já estar agarrado. Se houver uma resistência ou condição particular, ela deve ser resolvida conforme o efeito registrado, sem transformar a ação em um segundo ataque automático.';
+ }else if(/agredir|pancad|golpe|soco|garra|ataque|investida|disparo|lança|arremess|corte|esmag/.test(lower)){
+  intro='Esta é uma opção ofensiva utilizada pela ameaça durante o combate. Resolva a tentativa com o teste de ataque indicado na ficha e, quando houver acerto, aplique o dano registrado. Eventuais efeitos adicionais, como deslocar, derrubar, agarrar ou atingir outros alvos, só se aplicam quando estiverem descritos expressamente para esta ação.';
+ }else if(/cura|regenera|restaur|recuper|cicatriz/.test(lower)){
+  intro='A ação envolve recuperação ou manutenção de recursos da ameaça. A quantidade recuperada, a frequência e a condição necessária devem vir do efeito cadastrado; a descrição não concede cura ilimitada nem permite superar os PV máximos. Registre qualquer recuperação no momento definido pela habilidade.';
+ }else if(/fuga|esquiv|evas|escond|furtiv|camuf|invis/.test(lower)){
+  intro='A ameaça utiliza esta ação para dificultar ser percebida, alcançada ou atingida. Aplique somente o tipo de ocultação, movimentação ou defesa que estiver especificado. Estar escondido, estar invisível e receber bônus defensivo são situações diferentes e não devem ser tratadas como equivalentes.';
+ }else if(/invoca|convoca|cham|cria|surge|transform|metamorf/.test(lower)){
+  intro='Esta ação altera a situação do encontro por manifestação, convocação ou transformação. Determine primeiro qual mudança está indicada no efeito e depois registre suas consequências. Não introduza automaticamente novas criaturas, recursos ou fases quando quantidades e condições não estiverem cadastradas.';
+ }else if(/medo|aterror|pavor|horror|mental|perturb|grito|uivo/.test(lower)){
+  intro='A ação exerce pressão sobre os personagens e pode envolver efeitos mentais ou paranormais. Se o efeito determinar uma DT, teste de resistência ou condição, resolva cada parte conforme está registrada. A presença de uma manifestação assustadora não significa, por si só, dano mental ou perda de Sanidade.';
+ }else if(/teletrans|moviment|desloc|saltar|correr|rastejar|voar/.test(lower)){
+  intro='Esta ação altera o posicionamento da ameaça no cenário. Observe o tipo de movimento e as distâncias que a ficha realmente fornece, especialmente ao decidir se a criatura consegue alcançar um alvo ou atravessar um obstáculo. Não presuma alcance ilimitado ou deslocamentos extras.';
+ }else{
+  intro='Esta ação integra as opções especiais da ameaça. Para utilizá-la, identifique o tipo de ação e aplique o efeito cadastrado, distinguindo a descrição narrativa dos resultados que possuem regras ou valores. Um nome sugestivo não autoriza acrescentar dano, condições ou testes que não estejam descritos.';
  }
- if(/cura|regenera|restaur|recuper|cicatriz/.test(name))return "Habilidade de recuperação ou sustentação. Valores, alvos e limites devem ser consultados na fonte.";
- if(/fuga|esquiv|evas|escond|furtiv|camuf/.test(name))return "Ação de evasão, ocultação ou defesa. Consulte a fonte para condições de ativação.";
- if(/invoca|cham|cria|surge|transform/.test(name))return "Habilidade de manifestação ou transformação. As condições específicas constam no suplemento.";
- if(/medo|aterror|pavor|horror|ment/.test(name))return "Efeito de pressão psicológica ou paranormal; confira o teste e a duração na fonte.";
- if(/agarr|prend|constri|imobili/.test(name))return "Efeito de contenção ou controle físico. Confirme a resistência e o alcance na fonte.";
- if(type.includes("reação"))return "Reação especial usada quando seu gatilho ocorre. A condição específica deve ser consultada na fonte.";
- if(type.includes("livre"))return "Habilidade ativada como ação livre, sujeita aos limites indicados na fonte.";
- if(type.includes("completa"))return "Exige uma ação completa, com efeitos definidos pela fonte.";
- if(type.includes("movimento"))return "É executada com uma ação de movimento; confira suas condições na fonte.";
- return "Ação especial registrada na ficha. Efeito detalhado ainda não verificado nesta versão; consulte o suplemento.";
+ begin(intro);
+ if(effect){
+   begin('Efeito registrado: '+effect);
+ }else{
+   begin('O cadastro ainda não traz um efeito específico além do nome e dos campos apresentados. Portanto, não há uma condição adicional confirmada para aplicar automaticamente nesta ação.');
+ }
+ let execution='';
+ if(use.includes('reação'))execution='Uso em combate: esta opção é uma reação. Seu uso depende de uma oportunidade ou gatilho válido; não constitui, por si só, uma ação padrão adicional. Sem gatilho explicitamente cadastrado, a ficha não determina quando a reação pode acontecer.';
+ else if(use.includes('movimento'))execution='Uso em combate: a ficha classifica esta opção como ação de movimento. Ela deve ser considerada dentro das ações disponíveis da criatura na rodada, sem assumir que substitui um ataque ou que concede outro deslocamento gratuito.';
+ else if(use.includes('completa'))execution='Uso em combate: esta opção está classificada como ação completa. Considere o custo correspondente no turno da ameaça e não adicione ações simultâneas que não estejam expressamente permitidas.';
+ else if(use.includes('livre'))execution='Uso em combate: esta opção foi classificada como ação livre. O nome da categoria não elimina eventuais condições, custos ou restrições específicos, caso estejam cadastrados.';
+ else if(use.includes('padrão'))execution='Uso em combate: esta opção é uma ação padrão. Resolva-a dentro das ações disponíveis no turno da ameaça e não a interprete como um ataque adicional gratuito.';
+ else execution='Uso em combate: o tipo registrado para esta ação é '+type+'. Sua execução deve respeitar o turno e as condições descritas na ficha.';
+ begin(execution);
+ if(test){
+  begin('Teste registrado: '+test+'. Essa expressão identifica a rolagem cadastrada para a ação. Ela não representa automaticamente uma DT de resistência; quando a habilidade exigir outro teste, ele deverá estar descrito de maneira independente.');
+ }
+ if(damage){
+  begin('Dano registrado: '+damage+'. Aplique esse valor apenas quando a ação efetivamente causar dano segundo seu teste e efeito. O campo de dano não cria, sozinho, acertos adicionais, dano por turno ou uma condição especial.');
+ }else if(test){
+  begin('Não há valor de dano próprio cadastrado nesta ação. O teste indicado acima não significa necessariamente que o alvo receba dano; a consequência depende do efeito identificado.');
+ }
+ return pieces.join('\n\n');
 }
 
 function getData(){return threatFacts(threat)}
@@ -221,7 +257,7 @@ function render(){
  const name=a.name||"Ação",test=String(a.test||""),dmg=String(a.damage||"");
  return '<div class="action"><small class="muted">'+esc(a.type||"Ação")+'</small><strong style="display:block;margin:3px 0 5px">'+esc(name)+'</strong>'+
  (test?'<div>Teste: '+esc(test)+'</div>':'')+
- (dmg?'<div>Dano: '+esc(dmg)+'</div>':'')+'<p class="lines" style="margin:8px 0 0;color:#d9cfd4">'+esc(actionSummary(a))+'</p></div>';
+ (dmg?'<div>Dano: '+esc(dmg)+'</div>':'')+'<p class="lines" style="margin:10px 0 0;color:#e5d8dd;line-height:1.7;font-size:13px">'+esc(actionSummary(a))+'</p></div>';
  }).join(""):'';
  const statItems=[["Defesa",d.defense],["Deslocamento",d.movement],["PV máximos",d.pv]].filter(([name,value])=>hasValue(value));
  const stats=statItems.length?'<div class="stats">'+statItems.map(([name,value])=>'<div class="stat"><small>'+esc(name)+'</small><strong>'+esc(value)+'</strong></div>').join("")+'</div>':"";
