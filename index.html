@@ -3775,6 +3775,7 @@ const NEX_POWER_DETAILS={
  'Resistir a Elemento':'Poder paranormal de resistência que exige a escolha de um elemento. A proteção é específica para o elemento selecionado e deve ser aplicada somente às fontes de dano ou aos efeitos abrangidos pela habilidade. Ter resistência não significa ser imune, e danos de outros elementos não são reduzidos por essa escolha. A ficha deve registrar qual elemento foi escolhido para que o cálculo de resistência não dependa da memória do jogador. Eventuais melhorias por afinidade permanecem vinculadas ao mesmo elemento e às regras da habilidade.',
  'Sangue de Ferro':'Poder paranormal de Sangue relacionado à resistência física. Sua função é tornar o personagem mais difícil de derrubar ao ampliar sua capacidade de suportar ferimentos. O benefício deve afetar os valores de PV previstos pela habilidade e ser recalculado quando necessário, sem retirar PV atuais indevidamente. Ele não concede, por si só, imunidade, armadura ou redução contra todos os tipos de dano. Caso o personagem obtenha afinidade, o benefício adicional deve aparecer de forma separada.'
 };
+window.NEX_POWER_DETAILS=NEX_POWER_DETAILS;
 const nexPowerDescription=(name,original='')=>{
  const key=String(name||'').trim();
  const known=NEX_POWER_DETAILS[key]||'';
@@ -4617,7 +4618,7 @@ const PARANORMAL=[
     const detail=x.description+(x.attr?(x.attr.startsWith('trained')?' Requer treinamento.':' Requer atributo '+x.attr.toUpperCase()+' '+x.threshold+'.'):'');
     data.push(item('general:'+x.name,'Poderes Gerais','Todos os poderes gerais',x.name,detail,Math.max(15,x.minNex||0),'Poder Geral · Sobrevivendo ao Horror',{general:true,attr:x.attr,threshold:x.threshold,minNex:x.minNex||0}));
   }
-  for(const [name,desc] of PARANORMAL)data.push(item('paranormal:'+name,'Poderes Paranormais','Todos os poderes',name,nexPowerDescription(name,desc)||desc,15));
+  for(const [name,desc] of PARANORMAL)data.push(item('paranormal:'+name,'Poderes Paranormais','Todos os poderes',name,window.NEX_POWER_DETAILS?.[name]||desc,15));
   for(const p of window.NEX_ARQUIVOS?.powers||[]){const cat=p.category==='Geral'?'Poderes Gerais':p.category==='Paranormal'?'Poderes Paranormais':p.category;const branch=['Combatente','Especialista','Ocultista'].includes(cat)?'Poderes de '+cat:cat==='Poderes Gerais'?'Todos os poderes gerais':'Todos os poderes';data.push(item('arquivos:'+p.month+':'+p.name,cat,branch,p.name,p.description,15,p.source||'Arquivos Secretos'));}
   return data;
  }
