@@ -1,5 +1,5 @@
 {
-  "version": "2026.11.14-ameacas-6",
-  "build": "20261114ameacas6",
-  "description": "Ficha das ameaças em página independente, fora do modal da biblioteca"
+  "version": "2026.11.14-ameacas-7",
+  "build": "20261114ameacas7",
+  "description": "Fichas separadas com 43 registros de dados numéricos conferidos, mantendo valores não verificáveis em aberto"
 }
