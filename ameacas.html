@@ -73,6 +73,19 @@ dialog{width:min(95vw,680px);max-height:89vh;overflow:auto;background:#151114;co
 .threat-sheet .threat-action{padding:13px;margin:9px 0;border:1px solid #46323a;border-radius:7px;background:#20181d}
 .threat-sheet .threat-action strong{display:block;margin-bottom:5px}
 @media(max-width:470px){.threat-sheet .threat-avatar{flex-basis:106px;font-size:51px}.threat-sheet .threat-heading h2{font-size:18px}.threat-sheet .threat-tabs{gap:4px}.threat-sheet .threat-vital button{min-width:30px}.threat-sheet .sheet-body{padding:12px}}
+</style><style id="nex-threat-personalization">
+.threat-personal-tools{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+.threat-personal-tools button,#threatEditForm button[type="submit"]{background:#a92c3e;border:1px solid #cc5163;color:white;border-radius:6px;padding:9px 12px;font-weight:650}
+.threat-personal-tools span{color:#ae9da6;font-size:10px}
+#threatEditForm{display:grid;gap:10px;padding:15px;margin-bottom:15px;background:#21151c;border:1px solid #693443;border-radius:8px}
+#threatEditForm[hidden]{display:none}
+#threatEditForm label{display:flex;flex-direction:column;gap:5px;font-size:11px;color:#dcc1ca}
+#threatEditForm input,#threatEditForm textarea{width:100%;min-width:0;background:#0d0b10;border:1px solid #784853;color:white;padding:8px;border-radius:5px;font:13px/1.4 system-ui,sans-serif}
+.threat-editor-cols{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.threat-editor-cols.five{grid-template-columns:repeat(5,minmax(0,1fr))}
+#threatEditForm button[type="submit"]{justify-self:start}
+.monster .emblem.has-photo{background-position:center;background-size:cover;color:transparent}
+@media(max-width:480px){.threat-editor-cols{grid-template-columns:repeat(2,minmax(0,1fr))}.threat-editor-cols.five{grid-template-columns:repeat(5,minmax(0,1fr))}}
 </style></head><body>
 <main><div class="heading"><div><div class="eyebrow">Biblioteca paranormal</div><h1>Ameaças</h1></div><span id="total" class="hint"></span></div>
 <p class="hint">Catálogo de referência por obra e elemento. As fichas completas dos livros não são reproduzidas; consulte o material de origem para as regras e valores oficiais.</p>
@@ -100,7 +113,32 @@ dialog{width:min(95vw,680px);max-height:89vh;overflow:auto;background:#151114;co
   <button type="button" id="tabCombat" role="tab" data-threat-tab="combat" aria-controls="panelCombat" aria-selected="false">Combate</button>
   <button type="button" id="tabDescription" role="tab" data-threat-tab="description" aria-controls="panelDescription" aria-selected="false">Descrição</button>
  </div>
- <div class="sheet-body">
+ <div class="sheet-body"><div class="threat-personal-tools"><button id="threatEditButton" type="button">Editar informações e retrato</button><span>Personalizações apenas neste navegador</span></div>
+ <form id="threatEditForm" hidden>
+  <div class="threat-editor-cols">
+   <label>VD<input id="te-vd" type="number" min="0"></label>
+   <label>PV<input id="te-pv" type="number" min="0"></label>
+   <label>Defesa<input id="te-defense" type="number" min="0"></label>
+   <label>Deslocamento<input id="te-movement" maxlength="30"></label>
+  </div>
+  <div class="threat-editor-cols five">
+   <label>AGI<input id="te-AGI" type="number"></label>
+   <label>FOR<input id="te-FOR" type="number"></label>
+   <label>INT<input id="te-INT" type="number"></label>
+   <label>PRE<input id="te-PRE" type="number"></label>
+   <label>VIG<input id="te-VIG" type="number"></label>
+  </div>
+  <label>Retrato (imagem autorizada ou de sua autoria)<input id="te-photo" type="file" accept="image/png,image/jpeg,image/webp"></label>
+  <label>Perícias (uma por linha: Nome | 3d20+10)<textarea id="te-skills" rows="3"></textarea></label>
+  <label>Sentidos<textarea id="te-senses" rows="2"></textarea></label>
+  <label>Elementos secundários<textarea id="te-secondary" rows="2"></textarea></label>
+  <label>Imunidades<textarea id="te-immunities" rows="2"></textarea></label>
+  <label>Resistências<textarea id="te-resistances" rows="2"></textarea></label>
+  <label>Vulnerabilidades<textarea id="te-weaknesses" rows="2"></textarea></label>
+  <label>Ataques e habilidades (anotações próprias)<textarea id="te-attacks" rows="4"></textarea></label>
+  <label>Descrição (anotações próprias)<textarea id="te-description" rows="4"></textarea></label>
+  <button type="submit">Salvar informações</button>
+ </form>
   <section role="tabpanel" id="panelStatus" aria-labelledby="tabStatus"></section>
   <section role="tabpanel" id="panelCombat" aria-labelledby="tabCombat" hidden></section>
   <section role="tabpanel" id="panelDescription" aria-labelledby="tabDescription" hidden></section>
@@ -124,7 +162,7 @@ function draw(){
  $("total").textContent=records.length+" registros de referência";
  $("count").textContent=items.length+" ameaça(s)";
  list.innerHTML=items.length?items.map(x=>{
- const index=records.indexOf(x);return '<article class="monster" style="--art:'+art(x.element)+'"><div class="emblem" aria-hidden="true">'+escape(x.name[0])+'</div><div class="details"><strong>'+escape(x.name)+'</strong><small>'+escape(x.element)+' · '+escape(x.category||"Criatura")+'</small><span class="source">'+escape(x.source)+'</span></div><button type="button" data-open="'+index+'">Ficha</button></article>';
+ const index=records.indexOf(x),photo=userThreatChanges[threatKey(x)]?.photo;return '<article class="monster" style="--art:'+art(x.element)+'"><div class="emblem'+(photo?' has-photo':'')+'" '+(photo?'style="background-image:url('+photo+')"':'')+' aria-hidden="true">'+escape(x.name[0])+'</div><div class="details"><strong>'+escape(x.name)+'</strong><small>'+escape(x.element)+' · '+escape(x.category||"Criatura")+'</small><span class="source">'+escape(x.source)+'</span></div><button type="button" data-open="'+index+'">Ficha</button></article>';
  }).join(""):'<div class="empty">Nenhuma ameaça encontrada nesta combinação. Algumas fontes ainda estão em revisão.</div>';
 }
 sourceEl.addEventListener("click",e=>{const b=e.target.closest("[data-source]");if(!b)return;source=b.dataset.source;draw()});
@@ -152,11 +190,16 @@ function renderThreatSections(){
  '<div class="threat-defenses"><div><small>Defesa</small><strong>'+(example?.defense??"—")+'</strong></div><div><small>Deslocamento</small><strong>'+(example?.movement||"—")+'</strong></div></div>'+
  '<h3 class="threat-status-title">Perícias</h3><div class="threat-skills">'+(example?.skills?.length?example.skills.map(([name,roll])=>'<div class="threat-skill"><span>'+escape(name)+'</span><button type="button" data-roll="'+escape(roll)+'" title="Rolar teste">'+escape(roll)+' ⚄</button></div>').join(""):'<div class="threat-muted">Perícias ainda não cadastradas nesta ameaça.</div>')+'</div>'+
  sectionBlock("Sentidos",example?.senses)+sectionBlock("Elementos secundários",example?.secondary)+sectionBlock("Imunidades",example?.immunities)+sectionBlock("Resistências",example?.resistances)+sectionBlock("Vulnerabilidades",example?.weaknesses);
- $("panelCombat").innerHTML='<div class="threat-action"><strong>Ataques e habilidades</strong><p class="threat-muted">As ações desta ameaça ainda não foram cadastradas. Consulte as regras do livro correspondente para os efeitos e testes.</p></div><div class="threat-action"><strong>Controle de combate</strong><p class="threat-muted">'+(example?"Use a barra vermelha acima para controlar os PV nesta sessão. O valor não é salvo nem compartilhado.":"Quando os valores forem verificados, será possível ativar o controle de PV e as rolagens.")+'</p></div>';
- $("panelDescription").innerHTML='<h3>'+escape(x.name)+'</h3><p class="threat-muted">Elemento: '+escape(x.element)+'<br>Tipo: '+escape(x.category||"Ameaça")+'<br>Fonte: '+escape(x.source)+(x.page?" · página "+escape(x.page):"")+'</p><p class="threat-muted">Para a descrição oficial e os detalhes de jogo, consulte o material de origem.</p>';
+ $("panelCombat").innerHTML='<div class="threat-action"><strong>Ataques e habilidades</strong><p class="threat-muted">'+escape(example?.attacks||"As ações desta ameaça ainda não foram cadastradas. Consulte as regras do livro correspondente para os efeitos e testes.")+'</p></div><div class="threat-action"><strong>Controle de combate</strong><p class="threat-muted">'+(example?"Use a barra vermelha acima para controlar os PV nesta sessão. O valor não é salvo nem compartilhado.":"Quando os valores forem verificados, será possível ativar o controle de PV e as rolagens.")+'</p></div>';
+ $("panelDescription").innerHTML='<h3>'+escape(x.name)+'</h3><p class="threat-muted">Elemento: '+escape(x.element)+'<br>Tipo: '+escape(x.category||"Ameaça")+'<br>Fonte: '+escape(x.source)+(x.page?" · página "+escape(x.page):"")+'</p><p class="threat-muted">'+escape(example?.description||"Para a descrição oficial e os detalhes de jogo, consulte o material de origem.")+'</p>';
  $("sheetVD").textContent=example?.vd!=null?"VD: "+example.vd:"VD: —";
  $("sheetCategory").textContent=escape(x.category||"Ameaça")+(example?.size?" · "+example.size:"");
- $("threatAvatar").textContent=String(x.name||"?").slice(0,1).toUpperCase();
+ const photo=example?.photo;
+ $("threatAvatar").style.backgroundImage=photo?'url('+photo+')':'';
+ $("threatAvatar").style.backgroundSize="cover";
+ $("threatAvatar").style.backgroundPosition="center";
+ $("threatAvatar").textContent=photo?'':String(x.name||"?").slice(0,1).toUpperCase();
+ $("threatEditForm").hidden=true;
  currentMaxPV=Number(example?.pv)>0?Number(example.pv):null;
  $("threatVital").hidden=currentMaxPV===null;
  currentPV=currentMaxPV;
