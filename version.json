@@ -1,5 +1,5 @@
 {
-  "version": "2026.11.14-ameacas-26",
-  "build": "20261114ameacas26",
-  "description": "Arquivos Secretos janeiro-julho: 8 ameaças de julho, novas opções de personagem e resumos operacionais para ações nas fichas de ameaças."
+  "version": "2026.11.14-ameacas-27",
+  "build": "20261114ameacas27",
+  "description": "Corrigido filtro de livros da janela Adicionar Ritual, agora Arquivos Secretos agrupa rituais de janeiro a julho."
 }
