@@ -42,7 +42,7 @@ h2{font-size:18px;font-weight:600;margin:22px 0 9px}.skills{display:grid;gap:6px
 #missing{padding:40px;text-align:center}
 @media(max-width:620px){.shell{padding:12px 9px 36px}.hero{padding:12px;gap:11px;min-height:122px}.portrait{flex-basis:96px;height:96px;font-size:40px}.hero h1{font-size:19px}.page{padding:16px 12px}.hp{margin:12px 12px 5px}.stats{grid-template-columns:repeat(2,minmax(0,1fr))}.tabs{gap:2px}.tabs button{padding:10px 8px}.form-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 </style>
-</head>
+<style id="threat-embedded-ui">body:has(.shell) .shell{width:100%}body:has(.shell) nav{padding-top:3px}body:has(.shell) .card{box-shadow:none}@media(max-width:650px){.brand{font-size:16px}}</style></head>
 <body>
 <div class="shell">
 <nav><a id="back" href="./ameacas.html">‹ Voltar às Ameaças</a><span class="brand">N E X</span></nav>
@@ -135,6 +135,14 @@ $("editor").addEventListener("submit",async e=>{e.preventDefault();if(!threat)re
  $("f-photo").value="";$("editor").hidden=true;render();
  }catch(error){alert(error.message||"Erro ao salvar ficha")}finally{save.disabled=false}
 });
+
+const embedded=new URLSearchParams(location.search).get("embedded")==="1";
+if(embedded){
+ $("back").addEventListener("click",event=>{
+  event.preventDefault();window.parent.postMessage({type:"nex-threat-back"},location.origin);
+ });
+ document.querySelector(".brand").textContent="NEX | Ficha de Ameaça";
+}
 if(threat){$("screen").hidden=false;render()}else{$("missing").hidden=false}
 </script>
 </body></html>
