@@ -1,5 +1,5 @@
 {
-  "version": "2026.11.14-ameacas-27",
-  "build": "20261114ameacas27",
-  "description": "Corrigido filtro de livros da janela Adicionar Ritual, agora Arquivos Secretos agrupa rituais de janeiro a julho."
+  "version": "2026.11.14-arquivos-28",
+  "build": "20261114arquivos28",
+  "description": "Ampliadas descrições verificadas de origens, poderes, itens, trilha e rituais dos Arquivos Secretos, inclusive custos, duração e pré-requisitos quando conferidos; integração parcial, demais registros mantidos."
 }
