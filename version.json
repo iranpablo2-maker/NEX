@@ -1,5 +1,5 @@
 {
-  "version": "2026.11.14-ameacas-20",
-  "build": "20261114ameacas20",
-  "description": "Catálogo e fichas preparados para 44 imagens principais PNG da Wiki, sem fallback para fotos anteriores. Aguardando publicar o pacote nex_wiki_main_images.zip no GitHub."
+  "version": "2026.11.14-ameacas-21",
+  "build": "20261114ameacas21",
+  "description": "44 retratos PNG principais da Wiki confirmados no GitHub, fotos antigas removidas e cache de Ameaças atualizado."
 }
