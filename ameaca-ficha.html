@@ -110,8 +110,14 @@ function rollDice(label,expression,kind){
 }
 
 function n(v){return v===null||v===undefined||v===""?"—":v;}
-function lines(arr){return Array.isArray(arr)&&arr.length?arr.map(v=>esc(v)).join("<br>"):'<span class="muted">Não cadastrado</span>'}
-function section(title,data){return '<h2>'+esc(title)+'</h2><div class="lines">'+lines(data)+'</div>'}
+function hasValue(value){
+ if(value===undefined||value===null)return false;
+ if(typeof value==="string")return !!value.trim()&&!["—","-","não cadastrado","não informado"].includes(value.trim().toLocaleLowerCase("pt-BR"));
+ if(Array.isArray(value))return value.some(hasValue);
+ return true;
+}
+function lines(arr){return Array.isArray(arr)?arr.filter(hasValue).map(v=>esc(v)).join("<br>"):hasValue(arr)?esc(arr):""}
+function section(title,data){const content=lines(data);return content?'<h2>'+esc(title)+'</h2><div class="lines">'+content+'</div>':""}
 function getData(){return threatFacts(threat)}
 function activate(tab){activeTab=tab;for(const x of ["status","combat","description"]){$(x).hidden=x!==tab;document.querySelector('[data-tab="'+x+'"]').setAttribute("aria-selected",String(x===tab))}}
 function render(){
@@ -121,7 +127,8 @@ function render(){
  $("name").textContent=threat.name;$("source").textContent=threat.source;$("element").textContent=threat.element;
  $("kind").textContent=[d.variant?"Variação de criatura":threat.category||"Criatura",d.size].filter(Boolean).join(" · ");$("vdBadge").textContent="VD "+n(d.vd);
  $("portrait").style.backgroundImage=img?"url("+img+")":"";$("portrait").textContent=img?"":threat.name.slice(0,1);
- const rollRows=items=>Array.isArray(items)&&items.length?items.map(v=>'<div class="skill"><span>'+esc(v[0])+'</span><button type="button" data-roll="'+esc(v[1])+'" aria-label="Rolar '+esc(v[0])+'">'+esc(v[1])+' ⚄</button></div>').join(""):'<p class="muted">Não informado no material consultado.</p>';
+ const rollRows=items=>Array.isArray(items)?items.filter(v=>Array.isArray(v)&&hasValue(v[0])&&hasValue(v[1])).map(v=>'<div class="skill"><span>'+esc(v[0])+'</span><button type="button" data-roll="'+esc(v[1])+'" aria-label="Rolar '+esc(v[0])+'">'+esc(v[1])+' ⚄</button></div>').join(""):"";
+
  const actionRows=Array.isArray(d.actions)&&d.actions.length?d.actions.map(a=>{
  const name=a.name||"Ação",test=String(a.test||""),dmg=String(a.damage||"");
  const diceMatch=dmg.match(/\d+d\d+(?:\s*[+-]\s*\d+)?/i);
@@ -130,15 +137,20 @@ function render(){
  (dmg?'<div>Dano: '+esc(dmg)+'</div>':'')+
  (diceMatch?'<button type="button" class="dice-button" data-action-roll="damage" data-dice="'+esc(diceMatch[0])+'" data-label="'+esc(name)+'">⚄ Rolar dano</button>':'')+'</div>';
  }).join(""):'';
- const stats='<div class="stats"><div class="stat"><small>Defesa</small><strong>'+esc(n(d.defense))+'</strong></div><div class="stat"><small>Deslocamento</small><strong>'+esc(n(d.movement))+'</strong></div><div class="stat"><small>PV máximos</small><strong>'+esc(n(d.pv))+'</strong></div></div>';
- $("status").innerHTML='<div class="attributes">'+["AGI","FOR","INT","PRE","VIG"].map(x=>'<div><small>'+x+'</small><button type="button" data-attr="'+x+'"><strong>'+esc(n(d.attributes?.[x]))+'</strong><small>⚄ Rolar</small></button></div>').join("")+'</div>'+
- stats+(d.presence?'<div class="note"><strong>Presença perturbadora:</strong> '+esc(d.presence)+'</div>':'')+
- (d.extraMovement?.length?section("Outros deslocamentos",d.extraMovement):"")+
- '<h2>Testes de resistência</h2><div class="skills">'+rollRows(d.saves)+'</div>'+
- '<h2>Perícias</h2><div class="skills">'+rollRows(d.skills)+'</div>'+
+ const statItems=[["Defesa",d.defense],["Deslocamento",d.movement],["PV máximos",d.pv]].filter(([name,value])=>hasValue(value));
+ const stats=statItems.length?'<div class="stats">'+statItems.map(([name,value])=>'<div class="stat"><small>'+esc(name)+'</small><strong>'+esc(value)+'</strong></div>').join("")+'</div>':"";
+ const attrs=["AGI","FOR","INT","PRE","VIG"].filter(x=>hasValue(d.attributes?.[x]));
+ const skills=rollRows(d.skills),saves=rollRows(d.saves);
+ $("status").innerHTML=(attrs.length?'<div class="attributes">'+attrs.map(x=>'<div><small>'+x+'</small><button type="button" data-attr="'+x+'"><strong>'+esc(d.attributes[x])+'</strong><small>⚄ Rolar</small></button></div>').join("")+'</div>':"")+
+ stats+(hasValue(d.presence)?'<div class="note"><strong>Presença perturbadora:</strong> '+esc(d.presence)+'</div>':'')+
+ section("Outros deslocamentos",d.extraMovement)+
+ (saves?'<h2>Testes de resistência</h2><div class="skills">'+saves+'</div>':"")+
+ (skills?'<h2>Perícias</h2><div class="skills">'+skills+'</div>':"")+
  section("Sentidos",d.senses)+section("Elementos secundários",d.secondary)+section("Imunidades",d.immunities)+section("Resistências",d.resistances)+section("Vulnerabilidades",d.weaknesses);
- const abilityRows=Array.isArray(d.abilities)&&d.abilities.length?'<h2>Habilidades especiais</h2>'+d.abilities.map(a=>'<div class="action"><strong style="display:block">'+esc(a.name)+'</strong><p class="lines">'+esc(a.effect||"Consulte o livro para o efeito completo.")+'</p></div>').join(""):"";
- $("combat").innerHTML='<h2>Ataques e habilidades</h2>'+(actionRows||'<p class="muted">Ainda não há ações verificadas nesta ficha.</p>')+abilityRows+(d.attacks?'<div class="action"><p class="lines">'+esc(d.attacks)+'</p></div>':'')+
+
+ const abilities=Array.isArray(d.abilities)?d.abilities.filter(a=>a&&hasValue(a.name)):[];
+ const abilityRows=abilities.length?'<h2>Habilidades especiais</h2>'+abilities.map(a=>'<div class="action"><strong style="display:block">'+esc(a.name)+'</strong>'+(hasValue(a.effect)?'<p class="lines">'+esc(a.effect)+'</p>':"")+'</div>').join(""):"";
+ $("combat").innerHTML=(actionRows||hasValue(d.attacks)?'<h2>Ataques e habilidades</h2>':"")+actionRows+abilityRows+(hasValue(d.attacks)?'<div class="action"><p class="lines">'+esc(d.attacks)+'</p></div>':'')+
  '<div class="note">Os valores disponíveis são referências para a mesa. Para condições, gatilhos e efeitos completos, consulte a fonte indicada na aba Descrição. A barra de PV é temporária e não altera a ficha oficial.</div>';
  $("description").innerHTML='<h2>'+esc(threat.name)+'</h2><p class="muted">'+esc(threat.source)+(d.pdfPage?' · PDF, página '+d.pdfPage:threat.page?' · livro, página '+threat.page:'')+'</p>'+
  '<p class="lines">'+esc(d.description||"Ficha de consulta com dados do catálogo. As descrições narrativas e os efeitos completos das habilidades estão no livro indicado.")+'</p>'+
