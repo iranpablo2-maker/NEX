@@ -1,5 +1,5 @@
 {
-  "version": "2026.11.14-ameacas-15",
-  "build": "20261114ameacas15",
-  "description": "Ameaças: ocultar campos sem informação, mantendo dados verificados de status, ataques e habilidades e fichas somente leitura."
+  "version": "2026.11.14-ameacas-16",
+  "build": "20261114ameacas16",
+  "description": "Ameaças agora são fichas de visualização: sem alteração de PV, edição ou rolagens; abas de consulta mantidas."
 }
