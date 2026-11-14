@@ -129,7 +129,7 @@ function nexArchiveAtlasPortrait(x){
 }
 function nexArchiveAtlasStyle(portrait){
  const n=Number(portrait.index),col=n%4,row=Math.floor(n/4);
- return 'background-image:url("'+portrait.src+'");background-size:400% 500%;background-position:'+(col*100/3)+'% '+(row*25)+'%;';
+ return 'background-image:url('+portrait.src+');background-size:400% 500%;background-position:'+(col*100/3)+'% '+(row*25)+'%;';
 }
 function hasCoreStats(x){
  const key=threatKey(x);
