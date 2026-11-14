@@ -112,7 +112,7 @@ $("hpBar").addEventListener("click",e=>{const b=e.target.closest("[data-change]"
 $("status").addEventListener("click",e=>{
  const b=e.target.closest("[data-roll]");if(!b)return;
  const expr=b.dataset.roll.trim().replace(/–/g,"-");
- const m=expr.match(/^(-)?(\\d+)d20(?:\\+(\\d+))?$/i);
+ const m=expr.match(/^(-)?(\d+)d20(?:\+(\d+))?$/i);
  if(!m)return;
  const dice=Math.max(1,Math.min(20,Number(m[2]))),bonus=Number(m[3]||0);
  const rolls=Array.from({length:dice},()=>1+Math.floor(Math.random()*20));
