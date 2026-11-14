@@ -138,25 +138,31 @@ const screenshotExample={
  senses:["Percepção às cegas"],secondary:["Conhecimento","Medo"],immunities:["Dano de Sangue","Condições de atordoamento e paralisia"],
  resistances:["Balístico: 20","Impacto: 20","Perfuração: 20"],weaknesses:["Morte"]
 };
-let currentThreat=null,currentPV=null;
+const verifiedThreats={"Sepultado":{"vd":20,"pv":50,"defense":16,"movement":"9m","attributes":{"AGI":1,"FOR":3,"INT":0,"PRE":1,"VIG":3}},"Mescla":{"vd":60,"pv":100,"defense":21,"movement":"12m","attributes":{"AGI":3,"FOR":3,"INT":1,"PRE":1,"VIG":2}},"Espectro Inesquecido":{"vd":220,"pv":340,"defense":27,"movement":"9m","attributes":{"AGI":2,"FOR":1,"INT":3,"PRE":3,"VIG":2}},"Derretido":{"vd":80,"pv":140,"defense":23,"movement":"9m","attributes":{"AGI":1,"FOR":4,"INT":0,"PRE":1,"VIG":4}},"O Uivar":{"vd":100,"pv":100,"defense":20,"movement":"","attributes":{"AGI":3,"FOR":null,"INT":3,"PRE":3,"VIG":1}},"Melancolia":{"vd":140,"pv":200,"defense":29,"movement":"9m","attributes":{"AGI":4,"FOR":null,"INT":4,"PRE":3,"VIG":1}},"Quibungo":{"vd":160,"pv":320,"defense":34,"movement":"15m","attributes":{"AGI":4,"FOR":4,"INT":1,"PRE":3,"VIG":4}},"Profundo":{"vd":200,"pv":380,"defense":34,"movement":"6m","attributes":{"AGI":4,"FOR":4,"INT":2,"PRE":2,"VIG":2}},"Memento Mori":{"vd":260,"pv":650,"defense":44,"movement":"9m","attributes":{"AGI":1,"FOR":1,"INT":3,"PRE":3,"VIG":3}},"Rascunho":{"vd":300,"pv":750,"defense":48,"movement":"15m","attributes":{"AGI":2,"FOR":2,"INT":5,"PRE":5,"VIG":2}},"Medusa":{"vd":320,"pv":380,"defense":50,"movement":"12m","attributes":{"AGI":5,"FOR":5,"INT":4,"PRE":5,"VIG":3}},"Amigo Imaginário":{"vd":360,"pv":1000,"defense":56,"movement":"12m","attributes":{"AGI":5,"FOR":5,"INT":3,"PRE":5,"VIG":4}}};
+let userThreatChanges={};
+try{userThreatChanges=JSON.parse(localStorage.getItem("nex_ameacas_personalizadas_v1")||"{}")||{}}catch(e){console.warn(e);}
+function threatKey(x){return x.source+"::"+x.name;}
+function threatFacts(x){const v=x.source==="Sobrevivendo ao Horror"?(verifiedThreats[x.name]||{}):x.name===screenshotExample.name&&x.source===screenshotExample.source?screenshotExample:{};const extra=userThreatChanges[threatKey(x)]||{};return {...v,...extra,attributes:{...(v.attributes||{}),...(extra.attributes||{})}}}
+let currentThreat=null,currentPV=null,currentMaxPV=null;
 function sectionBlock(title,values){return '<div class="threat-section"><h3>'+escape(title)+'</h3>'+ (values&&values.length?values.map(v=>'<div class="threat-line">'+escape(v)+'</div>').join(""):'<div class="threat-muted">Consultar livro de origem</div>')+'</div>'}
 function renderThreatSections(){
- const x=currentThreat,example=x.name===screenshotExample.name&&x.source===screenshotExample.source?screenshotExample:null;
+ const x=currentThreat,example=threatFacts(x);
  const names=["AGI","FOR","INT","PRE","VIG"];
- $("panelStatus").innerHTML='<div class="threat-attributes">'+names.map(n=>'<div><span class="attr-name">'+n+'</span><strong>'+(example?example.attributes[n]:"—")+'</strong></div>').join("")+'</div>'+
- '<div class="threat-defenses"><div><small>Defesa</small><strong>'+(example?example.defense:"—")+'</strong></div><div><small>Deslocamento</small><strong>'+(example?example.movement:"—")+'</strong></div></div>'+
- '<h3 class="threat-status-title">Perícias</h3><div class="threat-skills">'+(example?example.skills.map(([name,roll])=>'<div class="threat-skill"><span>'+escape(name)+'</span><button type="button" data-roll="'+escape(roll)+'" title="Rolar teste">'+escape(roll)+' ⚄</button></div>').join(""):'<div class="threat-muted">Perícias ainda não cadastradas nesta ameaça.</div>')+'</div>'+
+ $("panelStatus").innerHTML='<div class="threat-attributes">'+names.map(n=>'<div><span class="attr-name">'+n+'</span><strong>'+(example?.attributes?.[n]??"—")+'</strong></div>').join("")+'</div>'+
+ '<div class="threat-defenses"><div><small>Defesa</small><strong>'+(example?.defense??"—")+'</strong></div><div><small>Deslocamento</small><strong>'+(example?.movement||"—")+'</strong></div></div>'+
+ '<h3 class="threat-status-title">Perícias</h3><div class="threat-skills">'+(example?.skills?.length?example.skills.map(([name,roll])=>'<div class="threat-skill"><span>'+escape(name)+'</span><button type="button" data-roll="'+escape(roll)+'" title="Rolar teste">'+escape(roll)+' ⚄</button></div>').join(""):'<div class="threat-muted">Perícias ainda não cadastradas nesta ameaça.</div>')+'</div>'+
  sectionBlock("Sentidos",example?.senses)+sectionBlock("Elementos secundários",example?.secondary)+sectionBlock("Imunidades",example?.immunities)+sectionBlock("Resistências",example?.resistances)+sectionBlock("Vulnerabilidades",example?.weaknesses);
  $("panelCombat").innerHTML='<div class="threat-action"><strong>Ataques e habilidades</strong><p class="threat-muted">As ações desta ameaça ainda não foram cadastradas. Consulte as regras do livro correspondente para os efeitos e testes.</p></div><div class="threat-action"><strong>Controle de combate</strong><p class="threat-muted">'+(example?"Use a barra vermelha acima para controlar os PV nesta sessão. O valor não é salvo nem compartilhado.":"Quando os valores forem verificados, será possível ativar o controle de PV e as rolagens.")+'</p></div>';
  $("panelDescription").innerHTML='<h3>'+escape(x.name)+'</h3><p class="threat-muted">Elemento: '+escape(x.element)+'<br>Tipo: '+escape(x.category||"Ameaça")+'<br>Fonte: '+escape(x.source)+(x.page?" · página "+escape(x.page):"")+'</p><p class="threat-muted">Para a descrição oficial e os detalhes de jogo, consulte o material de origem.</p>';
- $("sheetVD").textContent=example?"VD: "+example.vd:"VD: —";
- $("sheetCategory").textContent=escape(x.category||"Ameaça")+(example?" · "+example.size:"");
+ $("sheetVD").textContent=example?.vd!=null?"VD: "+example.vd:"VD: —";
+ $("sheetCategory").textContent=escape(x.category||"Ameaça")+(example?.size?" · "+example.size:"");
  $("threatAvatar").textContent=String(x.name||"?").slice(0,1).toUpperCase();
- $("threatVital").hidden=!example;
- currentPV=example?example.pv:null;
+ currentMaxPV=Number(example?.pv)>0?Number(example.pv):null;
+ $("threatVital").hidden=currentMaxPV===null;
+ currentPV=currentMaxPV;
  renderPV();
 }
-function renderPV(){if(currentPV===null)return;$("threatHP").textContent=currentPV+" / "+screenshotExample.pv}
+function renderPV(){if(currentPV===null)return;$("threatHP").textContent=currentPV+" / "+currentMaxPV}
 function threatTab(tab){
  for(const name of ["status","combat","description"]){
   const selected=name===tab;
@@ -180,7 +186,7 @@ document.querySelector(".threat-tabs").addEventListener("click",e=>{
 });
 $("threatVital").addEventListener("click",e=>{
  const b=e.target.closest("[data-pv-change]");if(!b||currentPV===null)return;
- currentPV=Math.max(0,Math.min(screenshotExample.pv,currentPV+Number(b.dataset.pvChange)));
+ currentPV=Math.max(0,Math.min(currentMaxPV,currentPV+Number(b.dataset.pvChange)));
  renderPV();
 });
 $("panelStatus").addEventListener("click",e=>{
