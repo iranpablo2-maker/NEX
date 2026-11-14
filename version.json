@@ -1,5 +1,5 @@
 {
-  "version": "2026.11.13-fundos-fix-9",
-  "build": "20261113fundosfix9",
-  "description": "Corrige imagem duplicada/adjacente nos fundos dos rituais por elemento"
+  "version": "2026.11.14-ameacas-1",
+  "build": "20261114ameacas1",
+  "description": "Biblioteca de 86 registros de ameaças filtrados por livro, elemento e fundo temático"
 }
