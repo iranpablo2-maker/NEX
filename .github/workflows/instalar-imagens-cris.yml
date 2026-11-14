@@ -1,0 +1,78 @@
+name: Instalar retratos do CRIS no NEX
+on:
+  push:
+    paths:
+      - 'NEX_cris_ameacas_assets*.zip'
+      - '.github/workflows/instalar-imagens-cris.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  instalar-retratos-cris:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Obter arquivos do NEX
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - name: Preparar retratos WebP
+        shell: bash
+        run: |
+          set -euo pipefail
+          archive="$(find . -maxdepth 1 -type f -name 'NEX_cris_ameacas_assets*.zip' | sort | head -1)"
+          if [ -z "$archive" ]; then
+            echo "Pacote ainda não enviado. Sem alterações."
+            exit 0
+          fi
+          echo "Instalando: $archive"
+          count="$(unzip -Z1 "$archive" | grep -Ec '^assets/ameacas/livro-basico/[^/]+\.webp$')"
+          echo "Retratos encontrados: $count"
+          test "$count" -eq 49
+          unzip -o -q "$archive" 'assets/ameacas/livro-basico/*.webp' 'nex-ameacas-imagens-cris.js' -d .
+          node <<'NODE'
+          const fs=require('fs');
+          const current='nex-ameacas-imagens-principais.js';
+          const newer='nex-ameacas-imagens-cris.js';
+          const read=obj=>{
+            const s=fs.readFileSync(obj,'utf8');
+            const a=s.indexOf('{'),b=s.lastIndexOf('}');
+            if(a<0||b<a)throw Error('Arquivo de imagens sem mapa válido: '+obj);
+            return JSON.parse(s.slice(a,b+1));
+          };
+          const before=read(current), incoming=read(newer);
+          let added=0;
+          for (const [key,value] of Object.entries(incoming)){
+            if(!value||typeof value.path!=='string'||!value.path.endsWith('.webp'))throw Error('Entrada inválida '+key);
+            before[key]=value.path;
+            added++;
+          }
+          if(added!==49)throw Error('Esperados 49 retratos. Recebidos: '+added);
+          fs.writeFileSync(current,
+            '/* Imagens principais das ameaças: retratos WebP do pacote CRIS onde disponíveis, mantendo os demais PNGs. Sem imagens de reserva. */\n'+
+            'window.NEX_THREAT_PRIMARY_IMAGES='+JSON.stringify(before,null,2)+';\n');
+          for(const html of ['ameacas.html','ameaca-ficha.html']){
+            const s=fs.readFileSync(html,'utf8');
+            const next=s.replace(/nex-ameacas-imagens-principais\.js\?v=[^"']+/g,'nex-ameacas-imagens-principais.js?v=20261114cris1');
+            fs.writeFileSync(html,next);
+          }
+          const versionFile='version.json';
+          const version=JSON.parse(fs.readFileSync(versionFile,'utf8'));
+          version.version='2026.11.14-ameacas-23';
+          version.build='20261114ameacas23';
+          version.description='49 retratos WebP do CRIS instalados como imagens principais, preservando PNGs para outras ameaças; sem letras ou fallback.';
+          fs.writeFileSync(versionFile,JSON.stringify(version,null,2)+'\n');
+          console.log('Retratos principais atualizados:',added);
+          NODE
+      - name: Publicar imagens e atualizar fichas
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add assets/ameacas/livro-basico/*.webp nex-ameacas-imagens-principais.js nex-ameacas-imagens-cris.js ameacas.html ameaca-ficha.html version.json
+          if ! git diff --cached --quiet; then
+            git commit -m "Instalar 49 fotos WebP principais do CRIS no NEX"
+            git push
+          else
+            echo "As imagens já estão instaladas"
+          fi
