@@ -1,0 +1,36 @@
+name: Instalar imagens de ameaças
+on:
+  push:
+    paths:
+      - 'nex-ameacas-fotos.zip'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  instalar-imagens:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Obter repositório
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - name: Instalar e conferir as imagens
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f nex-ameacas-fotos.zip
+          count="$(unzip -Z1 nex-ameacas-fotos.zip | grep -Ec '^assets/ameacas/.+\.jpg$')"
+          test "$count" -eq 61
+          unzip -o -q nex-ameacas-fotos.zip 'assets/ameacas/*' -d .
+          test "$(find assets/ameacas -type f -name '*.jpg' | wc -l)" -ge 61
+          rm nex-ameacas-fotos.zip
+      - name: Publicar imagens no repositório
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add assets/ameacas nex-ameacas-fotos.zip
+          if ! git diff --cached --quiet; then
+            git commit -m "Instalar 61 retratos das ameaças dos livros"
+            git push
+          fi
