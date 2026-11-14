@@ -1188,9 +1188,10 @@ window.NEX_ARQUIVOS={
       "element": "Conhecimento",
       "otherElement": "Sangue",
       "month": "Janeiro",
-      "page": 49,
-      "description": "Ritual de múltiplos elementos com efeito relacionado à transferência de consciência.",
-      "ritualType": "Suporte"
+      "page": 48,
+      "description": "Ritual de Sangue e Conhecimento, 2º círculo. Execução completa, alcance toque, alvo uma pessoa, duração de uma cena e resistência de Vontade para evitar. Permite projetar sua consciência para controlar o corpo do alvo ou trocar as consciências entre os dois corpos. Os atributos físicos acompanham o corpo ocupado; o controle e as possibilidades de resistência dependem da modalidade. Discente (+3 PE) amplia alcance e duração para curto e um dia, exigindo 2º círculo. Verdadeiro (+7 PE) aumenta o alcance para médio e torna a troca permanente, exigindo 4º círculo e afinidade. Consulte a ficha oficial para restrições específicas e interações com cada corpo.",
+      "ritualType": "Suporte",
+      "source": "Arquivos Secretos · Janeiro/2026 · p. 48"
     },
     {
       "name": "Vampirismo",
