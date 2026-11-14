@@ -1,5 +1,5 @@
 {
-  "version": "2026.11.14-ameacas-9",
-  "build": "20261114ameacas9",
-  "description": "Ameaças abrem na própria tela do NEX como fichas de personagens; dados verificados preservados"
+  "version": "2026.11.14-ameacas-10",
+  "build": "20261114ameacas10",
+  "description": "Fichas de ameaças somente leitura; 58 registros complementados com dados quantitativos dos PDFs e ações disponíveis"
 }
