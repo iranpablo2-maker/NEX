@@ -1,8 +1,10 @@
-name: Instalar imagens de ameaças
+name: Instalar fotos das ameaças do NEX
 on:
   push:
     paths:
       - 'nex-ameacas-fotos.zip'
+      - 'NEX_imagens_61_corrigidas.zip'
+      - '.github/workflows/instalar-imagens-ameacas.yml'
   workflow_dispatch:
 permissions:
   contents: write
@@ -10,27 +12,38 @@ jobs:
   instalar-imagens:
     runs-on: ubuntu-latest
     steps:
-      - name: Obter repositório
+      - name: Obter o projeto
         uses: actions/checkout@v4
         with:
           persist-credentials: true
-      - name: Instalar e conferir as imagens
+      - name: Verificar e extrair JPG das ameaças
         shell: bash
         run: |
           set -euo pipefail
-          test -f nex-ameacas-fotos.zip
-          count="$(unzip -Z1 nex-ameacas-fotos.zip | grep -Ec '^assets/ameacas/.+\.jpg$')"
+          if test -f nex-ameacas-fotos.zip; then
+            archive=nex-ameacas-fotos.zip
+          elif test -f NEX_imagens_61_corrigidas.zip; then
+            archive=NEX_imagens_61_corrigidas.zip
+          else
+            echo "Nenhum dos dois ZIPs foi encontrado" >&2
+            exit 1
+          fi
+          echo "Pacote encontrado: $archive"
+          count="$(unzip -Z1 "$archive" | grep -Ec '^assets/ameacas/(livro-basico|sobrevivendo-ao-horror)/[^/]+\.jpg$')"
+          echo "Fotos JPG encontradas: $count"
           test "$count" -eq 61
-          unzip -o -q nex-ameacas-fotos.zip 'assets/ameacas/*' -d .
+          unzip -o -q "$archive" 'assets/ameacas/*/*.jpg' -d .
           test "$(find assets/ameacas -type f -name '*.jpg' | wc -l)" -ge 61
-          rm nex-ameacas-fotos.zip
-      - name: Publicar imagens no repositório
+      - name: Publicar as 61 imagens
         shell: bash
         run: |
+          set -euo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add assets/ameacas nex-ameacas-fotos.zip
+          git add assets/ameacas
           if ! git diff --cached --quiet; then
-            git commit -m "Instalar 61 retratos das ameaças dos livros"
+            git commit -m "Instalar 61 fotos das ameaças do Livro Básico e Sobrevivendo ao Horror"
             git push
+          else
+            echo "61 imagens já estavam instaladas."
           fi
