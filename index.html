@@ -3764,7 +3764,26 @@ $('nexHomebrewFilter')?.addEventListener('input',()=>nex12RenderHomebrew());
    </div>`;
   }).join('');
  }
- function abilityRecords(){
+ // Descrições editoriais do NEX: texto autoral em vez de recados para consultar o livro.
+// Efeitos numéricos só são apresentados quando já estão registrados no catálogo.
+const NEX_POWER_DETAILS={
+ 'Visão do Oculto':'Elemento: Conhecimento. Efeito: você recebe +5 em testes de Percepção e consegue enxergar na escuridão, inclusive em ambientes sem iluminação. Na prática, esse benefício auxilia a procurar pistas, observar ambientes escuros e perceber detalhes que passariam despercebidos. Afinidade com Conhecimento: você também ignora efeitos de camuflagem ao localizar alvos. A habilidade melhora a percepção do personagem, mas não revela automaticamente a identidade, os atributos ou os poderes de uma criatura. O bônus é aplicado aos testes de Percepção, e não a todas as perícias.',
+ 'Aprender Ritual':'Poder paranormal que permite ampliar o repertório do personagem com um ritual. O ritual aprendido passa a integrar suas opções de conjuração, mas precisa seguir os requisitos do círculo, os gastos de PE e as demais condições indicadas na sua própria ficha de ritual. Aprender um ritual não o conjura imediatamente e não elimina seus custos. Selecione o ritual adquirido e registre-o na aba Rituais para que os efeitos e as opções de conjuração possam ser consultados separadamente.',
+ 'Afortunado':'Poder paranormal associado à sorte e à interferência do acaso. Sua finalidade é permitir que o personagem se beneficie de uma rolagem favorável em situações nas quais a sorte pode mudar o resultado. A aplicação deve considerar o tipo de dado e as condições do poder; ele não garante sucesso automático, não transforma qualquer teste em acerto crítico e não concede bônus permanente a todas as perícias. A ficha deve manter separados os efeitos comuns e os benefícios adicionais de afinidade.',
+ 'Encarar a Morte':'Poder paranormal ligado à Morte, voltado a ampliar a capacidade do personagem de lidar com situações extremas e esforços que dependem de energia. Seus benefícios devem ser tratados como um efeito específico do poder, e não como imunidade a dano, medo ou condições. O personagem ainda precisa cumprir os requisitos e limites normais das habilidades que utilizar. Se houver afinidade, a melhoria correspondente deve ser mostrada separadamente do efeito básico.',
+ 'Potencial Aprimorado':'Poder paranormal associado à Morte e à ampliação da reserva de esforço do personagem. Seu papel é aumentar os recursos disponíveis para usar habilidades que consomem PE. Esse benefício atua na reserva de pontos e não reduz automaticamente o custo de cada habilidade. Ao registrar o poder, a ficha deve refletir o acréscimo de recursos de acordo com a regra aplicável e conservar os valores atuais do personagem. Os eventuais efeitos de afinidade são adicionais ao benefício inicial.',
+ 'Resistir a Elemento':'Poder paranormal de resistência que exige a escolha de um elemento. A proteção é específica para o elemento selecionado e deve ser aplicada somente às fontes de dano ou aos efeitos abrangidos pela habilidade. Ter resistência não significa ser imune, e danos de outros elementos não são reduzidos por essa escolha. A ficha deve registrar qual elemento foi escolhido para que o cálculo de resistência não dependa da memória do jogador. Eventuais melhorias por afinidade permanecem vinculadas ao mesmo elemento e às regras da habilidade.',
+ 'Sangue de Ferro':'Poder paranormal de Sangue relacionado à resistência física. Sua função é tornar o personagem mais difícil de derrubar ao ampliar sua capacidade de suportar ferimentos. O benefício deve afetar os valores de PV previstos pela habilidade e ser recalculado quando necessário, sem retirar PV atuais indevidamente. Ele não concede, por si só, imunidade, armadura ou redução contra todos os tipos de dano. Caso o personagem obtenha afinidade, o benefício adicional deve aparecer de forma separada.'
+};
+const nexPowerDescription=(name,original='')=>{
+ const key=String(name||'').trim();
+ const known=NEX_POWER_DETAILS[key]||'';
+ if(known)return known;
+ const txt=String(original||'').trim();
+ if(/consulte (o|a|as|os) livro|descri[cç][aã]o (ainda )?n[aã]o cadastrada|poder paranormal escolhido pela origem/i.test(txt))return '';
+ return txt;
+};
+function abilityRecords(){
    const entries=[];
    const origin=typeof nex12Orig==='function'?nex12Orig():null;
    if(origin)entries.push({name:origin.ability||origin.name,source:`Origem: ${origin.name}`,detail:origin.description||'Consulte o livro para os efeitos.',id:null});
@@ -3786,7 +3805,7 @@ $('nexHomebrewFilter')?.addEventListener('input',()=>nex12RenderHomebrew());
        ...(window.NEX_ARQUIVOS?.powers||[])
      ];
      const match=sourceRecords.find(x=>String(x?.name||'').trim().toLocaleLowerCase('pt-BR')===key);
-     return match?.description||'';
+     return nexPowerDescription(name,match?.description||window.NEX_POWER_DESCRIPTION_BY_NAME?.[key]||'');
    };
    for(const p of state.powers||[]){
      if(!p)continue;
@@ -3794,7 +3813,7 @@ $('nexHomebrewFilter')?.addEventListener('input',()=>nex12RenderHomebrew());
      entries.push({
        name:p.name||'Poder',
        source:paranormal?'Origem: Cultista Arrependido · Poder Paranormal':`Poder — NEX ${int(p.nex)}%`,
-       detail:p.note||findPowerDescription(p.name)||(paranormal?'Poder escolhido pela origem Cultista Arrependido. Consulte as regras de origem para confirmar os efeitos.':'Descrição ainda não cadastrada para este poder.'),
+       detail:findPowerDescription(p.name)||nexPowerDescription(p.name,p.note)||'Este poder está registrado na ficha, mas ainda não há um efeito mecânico verificado no catálogo do NEX.',
        id:null
      });
    }
@@ -4565,6 +4584,12 @@ const PARANORMAL=[
   ['Visão do Oculto','Poder paranormal de Conhecimento. Seus sentidos passam a interpretar o ambiente por meio do conhecimento paranormal: recebe +5 em testes de Percepção e consegue enxergar na escuridão. Quando conquista afinidade com Conhecimento, passa também a ignorar os efeitos de camuflagem, tornando mais fácil localizar o que está oculto. O benefício afeta sua percepção; não concede, por si só, conhecimento automático sobre a identidade de todas as ameaças ou seus poderes.']
  ];
  PARANORMAL.push(...(window.NEX_SAH?.paranormal||[]).map(x=>[x.name,x.description+(x.prerequisite?' Pré-requisito: '+x.prerequisite+'.':'')]));
+ // Disponibiliza a descrição do catálogo para as fichas que usam outro script.
+ window.NEX_POWER_DESCRIPTION_BY_NAME=Object.fromEntries([
+   ...Object.values(BASE_POWERS).flat(),...PARANORMAL,
+   ...(window.NEX_SAH?.generalPowers||[]).map(x=>[x.name,x.description]),
+   ...(window.NEX_ARQUIVOS?.powers||[]).map(x=>[x.name,x.description])
+ ].filter(x=>x&&x[0]).map(x=>[String(x[0]).trim().toLocaleLowerCase('pt-BR'),String(x[1]||'')]));
  let mode='all',category='Combatente',sub='',filter='',homebrewCategory='Combatente',homebrewFilter='',lastFocus=null;
  function ensure(){if(!state.n16||typeof state.n16!=='object')state.n16={};if(!Array.isArray(state.n16.abilities))state.n16.abilities=[];if(!Array.isArray(state.powers))state.powers=[];}
  function item(k,cat,branch,name,detail,req=0,source='',extra={}){
@@ -4592,7 +4617,7 @@ const PARANORMAL=[
     const detail=x.description+(x.attr?(x.attr.startsWith('trained')?' Requer treinamento.':' Requer atributo '+x.attr.toUpperCase()+' '+x.threshold+'.'):'');
     data.push(item('general:'+x.name,'Poderes Gerais','Todos os poderes gerais',x.name,detail,Math.max(15,x.minNex||0),'Poder Geral · Sobrevivendo ao Horror',{general:true,attr:x.attr,threshold:x.threshold,minNex:x.minNex||0}));
   }
-  for(const [name,desc] of PARANORMAL)data.push(item('paranormal:'+name,'Poderes Paranormais','Todos os poderes',name,desc,15));
+  for(const [name,desc] of PARANORMAL)data.push(item('paranormal:'+name,'Poderes Paranormais','Todos os poderes',name,nexPowerDescription(name,desc)||desc,15));
   for(const p of window.NEX_ARQUIVOS?.powers||[]){const cat=p.category==='Geral'?'Poderes Gerais':p.category==='Paranormal'?'Poderes Paranormais':p.category;const branch=['Combatente','Especialista','Ocultista'].includes(cat)?'Poderes de '+cat:cat==='Poderes Gerais'?'Todos os poderes gerais':'Todos os poderes';data.push(item('arquivos:'+p.month+':'+p.name,cat,branch,p.name,p.description,15,p.source||'Arquivos Secretos'));}
   return data;
  }
