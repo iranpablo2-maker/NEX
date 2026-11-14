@@ -1,5 +1,5 @@
 {
-  "version": "2026.11.14-ameacas-14",
-  "build": "20261114ameacas14",
-  "description": "Integradas as 34 criaturas restantes do livro básico v1.3, referências de 108 ameaças e a variante Doppelganger Monstruoso; fichas somente leitura."
+  "version": "2026.11.14-ameacas-15",
+  "build": "20261114ameacas15",
+  "description": "Ameaças: ocultar campos sem informação, mantendo dados verificados de status, ataques e habilidades e fichas somente leitura."
 }
