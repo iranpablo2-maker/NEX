@@ -69,7 +69,8 @@ const verifiedAdditionalThreats={"Arquivos Secretos — Fevereiro::Arara-vermelh
 function threatKey(x){return x.source+"::"+x.name;}
 function threatFacts(x){
  const original=x.source==="Sobrevivendo ao Horror"?(verifiedThreats[x.name]||{}):verifiedAdditionalThreats[threatKey(x)]||verifiedNewThreats[threatKey(x)]||verifiedFollowupThreats[threatKey(x)]||verifiedRemainingThreats[threatKey(x)]||(x.name===screenshotExample.name&&x.source===screenshotExample.source?screenshotExample:{});
- const extra={...((window.NEX_BASIC_THREATS||{})[threatKey(x)]||{}),...((window.NEX_BASIC_THREATS_EXTRA||{})[threatKey(x)]||{}),...((window.NEX_THREAT_DETAILS||{})[threatKey(x)]||{})};
+ const baseKey=(x.name==="O Anfitrião"&&x.source==="Arquivos Secretos — Abril")?"Livro Básico::O Anfitrião":threatKey(x);
+ const extra={...((window.NEX_BASIC_THREATS||{})[baseKey]||{}),...((window.NEX_BASIC_THREATS_EXTRA||{})[baseKey]||{}),...((window.NEX_THREAT_DETAILS||{})[threatKey(x)]||{})};
  let photo="";
  try{const saved=JSON.parse(localStorage.getItem("nex_ameacas_personalizadas_v1")||"{}");const prior=saved?.[threatKey(x)]?.photo;if(typeof prior==="string"&&/^data:image\/(?:png|jpeg|webp);base64,/i.test(prior))photo=prior;}catch(error){}
  if(photo)extra.photo=photo;
