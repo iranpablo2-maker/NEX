@@ -172,21 +172,12 @@ function senseEntries(data){
  const other=source.replace(re,"").replace(/^[\s|;·,:-]+|[\s|;·,:-]+$/g,"").replace(/^[\s|;·,:-]+|[\s|;·,:-]+$/g,"");
  return {rolls:output,other};
 }
-function rollSense(expression,label){
- const match=String(expression).replace(/[−–]/g,"-").match(/^(-)?(\d+)d20([+-]\d+)?$/i);
- if(!match)return;
- const count=Math.max(1,Math.min(30,Number(match[2]))),bonus=Number(match[3]||0);
- const rolls=Array.from({length:count},()=>1+Math.floor(Math.random()*20));
- const result=(match[1]?Math.min(...rolls):Math.max(...rolls))+bonus;
- const output=$("senseRollResult");
- if(output){output.hidden=false;output.textContent=label+": "+result+" · dados: "+rolls.join(", ")+(bonus?" · bônus: "+bonus:"");}
-}
 function renderSenses(data){
  if(!hasValue(data))return "";
  const parts=senseEntries(data);
- const rolls=parts.rolls.map(s=>'<div class="skill"><span>'+esc(s.label)+'</span><button type="button" class="sense-roll" data-sense-roll="'+esc(s.expression)+'" data-sense-label="'+esc(s.label)+'" aria-label="Rolar '+esc(s.label)+'">'+esc(s.expression)+' ⚄</button></div>').join("");
+ const rolls=parts.rolls.map(s=>'<div class="skill"><span>'+esc(s.label)+'</span><strong>'+esc(s.expression)+'</strong></div>').join("");
  const other=parts.other?'<div class="lines">'+esc(parts.other)+'</div>':"";
- return '<section class="sense-section"><h2>Sentidos</h2>'+rolls+other+'<div id="senseRollResult" class="sense-roll-result" role="status" aria-live="polite" hidden></div></section>';
+ return '<section class="sense-section"><h2>Sentidos</h2>'+rolls+other+'</section>';
 }
 
 function actionSummary(a){
@@ -369,11 +360,7 @@ function explainThreatAbility(ability,threatData){
  activate(activeTab);
 }
 document.querySelector(".tabs").addEventListener("click",e=>{const b=e.target.closest("[data-tab]");if(b)activate(b.dataset.tab)});
-$("status").addEventListener("click",e=>{
- const button=e.target.closest("[data-sense-roll]");
- if(!button)return;
- rollSense(button.dataset.senseRoll,button.dataset.senseLabel);
-});
+
 
 
 const embedded=new URLSearchParams(location.search).get("embedded")==="1";
