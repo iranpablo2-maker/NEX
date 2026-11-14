@@ -182,7 +182,24 @@ function render(){
  const profile=[characteristics.length?"Condições e características verificadas: "+characteristics.join(". ")+".":"",
  maneuvers.length?"Ações registradas para consulta: "+maneuvers.join("; ")+".":"",
  specials.length?"Habilidades próprias identificadas: "+specials.join("; ")+".":""].filter(Boolean);
- const descriptionText=narrative||("Registro de ameaça da fonte "+threat.source+". A apresentação narrativa do material original deve ser consultada na página identificada nesta ficha.");
+ const expandedSourceProfile=()=>{
+  const parts=[];
+  parts.push(threat.name+" integra o catálogo de "+threat.source+" e é classificada como "+(threat.category||"ameaça")+". O elemento associado à ficha é "+threat.element+".");
+  if(d.variant)parts.push("Este registro apresenta uma transformação ou variação aplicável a outras fichas, e não necessariamente uma criatura independente com todos os atributos.");
+  else {
+   const basics=[hasValue(d.vd)?"VD "+d.vd:"",hasValue(d.pv)?"PV "+d.pv:"",hasValue(d.defense)?"Defesa "+d.defense:""].filter(Boolean);
+   if(basics.length)parts.push("Os parâmetros de confronto identificados na fonte são "+basics.join(", ")+".");
+   if(hasValue(d.movement))parts.push("O deslocamento informado é "+d.movement+", relevante para planejar posicionamento, aproximação e retirada durante o encontro.");
+  }
+  const actionList=(d.actions||[]).filter(a=>hasValue(a.name)).slice(0,8).map(a=>a.name);
+  if(actionList.length)parts.push("A ficha registra ações como "+actionList.join(", ")+". Consulte os testes e dados específicos na aba Combate, quando disponíveis.");
+  const abilityList=(d.abilities||[]).filter(a=>hasValue(a.name)).map(a=>a.name);
+  if(abilityList.length)parts.push("As habilidades especiais identificadas incluem "+abilityList.join(", ")+", com detalhes de ativação apresentados nas informações de combate.");
+  const vulnerabilities=(d.weaknesses||[]).filter(hasValue);
+  if(vulnerabilities.length)parts.push("As vulnerabilidades informadas são "+vulnerabilities.join("; ")+".");
+  return parts.join("\\n\\n");
+ };
+ const descriptionText=narrative||expandedSourceProfile();
  $("description").innerHTML='<h2>'+esc(threat.name)+'</h2><p class="muted">'+esc(threat.source)+(d.pdfPage?' · PDF, página '+d.pdfPage:threat.page?' · livro, página '+threat.page:'')+'</p>'+
  '<p class="lines">'+esc(descriptionText)+'</p>'+
  (profile.length?'<h2>Características e comportamento em jogo</h2><p class="lines">'+esc(profile.join("\n\n"))+'</p>':"")+
