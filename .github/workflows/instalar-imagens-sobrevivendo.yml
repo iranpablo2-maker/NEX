@@ -1,0 +1,79 @@
+name: Instalar 12 imagens de Sobrevivendo ao Horror
+on:
+  push:
+    paths:
+      - 'NEX_sobrevivendo_ao_horror_assets*.zip'
+      - '.github/workflows/instalar-imagens-sobrevivendo.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  instalar-sobrevivendo:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Obter NEX
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - name: Instalar somente imagens de Sobrevivendo ao Horror
+        shell: bash
+        run: |
+          set -euo pipefail
+          archive="$(find . -maxdepth 1 -type f -name 'NEX_sobrevivendo_ao_horror_assets*.zip' | sort | head -1)"
+          if [ -z "$archive" ]; then
+            echo "Pacote ZIP nao encontrado"; exit 0
+          fi
+          echo "Arquivo: $archive"
+          count="$(unzip -Z1 "$archive" | grep -Ec '^assets/ameacas/sobrevivendo-ao-horror/[^/]+\.png$')"
+          echo "Fotos encontradas: $count"
+          test "$count" -eq 12
+          unzip -o -q "$archive" 'assets/ameacas/sobrevivendo-ao-horror/*.png' 'nex-ameacas-imagens-sah.js' -d .
+          node <<'NODE'
+          const fs = require('fs');
+          const currentFile='nex-ameacas-imagens-principais.js';
+          const newFile='nex-ameacas-imagens-sah.js';
+          function readMap(filename){
+            const s=fs.readFileSync(filename,'utf8');
+            const start=s.indexOf('{'), end=s.lastIndexOf('}');
+            if(start<0 || end<start) throw new Error('Mapa de imagens invalido: '+filename);
+            return JSON.parse(s.slice(start,end+1));
+          }
+          const original=readMap(currentFile), additions=readMap(newFile);
+          const entries=Object.entries(additions);
+          if(entries.length!==12) throw new Error('Esperadas exatamente 12 imagens');
+          for(const [key, info] of entries){
+            if(!key.startsWith('Sobrevivendo ao Horror::')) throw new Error('Fonte incorreta: '+key);
+            if(typeof info?.path!=='string' || !/^\.\/assets\/ameacas\/sobrevivendo-ao-horror\/[a-z0-9-]+\.png$/.test(info.path))
+              throw new Error('Caminho invalido: '+key);
+            if(!fs.existsSync(info.path.replace(/^\.\//,''))) throw new Error('Foto ausente: '+info.path);
+            original[key]=info.path;
+          }
+          fs.writeFileSync(currentFile,
+            '/* Imagens principais: atualizadas por fonte, sem substituir imagens de outros livros. */\n'+
+            'window.NEX_THREAT_PRIMARY_IMAGES='+JSON.stringify(original,null,2)+';\n');
+          for(const filename of ['ameacas.html','ameaca-ficha.html']){
+            const html=fs.readFileSync(filename,'utf8');
+            const replaced=html.replace(/nex-ameacas-imagens-principais\.js\?v=[^"']+/g,
+              'nex-ameacas-imagens-principais.js?v=20261114sah1');
+            if(html===replaced) throw new Error('Referencia de imagens nao encontrada em '+filename);
+            fs.writeFileSync(filename,replaced);
+          }
+          const v=JSON.parse(fs.readFileSync('version.json','utf8'));
+          v.version='2026.11.14-ameacas-24';
+          v.build='20261114ameacas24';
+          v.description='12 retratos de Sobrevivendo ao Horror instalados, sem alterar as imagens do Livro Basico ou outros arquivos.';
+          fs.writeFileSync('version.json',JSON.stringify(v,null,2)+'\n');
+          console.log('12 retratos incluidos, demais fotos preservadas');
+          NODE
+      - name: Publicar apenas novas imagens e referencias
+        shell: bash
+        run: |
+          set -euo pipefail
+          if ! compgen -G 'NEX_sobrevivendo_ao_horror_assets*.zip' >/dev/null; then exit 0; fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add assets/ameacas/sobrevivendo-ao-horror/*.png nex-ameacas-imagens-principais.js nex-ameacas-imagens-sah.js ameacas.html ameaca-ficha.html version.json
+          if ! git diff --cached --quiet; then
+            git commit -m 'Instalar 12 retratos de Sobrevivendo ao Horror sem afetar outros livros'
+            git push
+          fi
