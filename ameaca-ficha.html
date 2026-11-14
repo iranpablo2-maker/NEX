@@ -234,10 +234,47 @@ function render(){
  (skills?'<h2>Perícias</h2><div class="skills">'+skills+'</div>':"")+
  renderSenses(d.senses)+section("Elementos secundários",d.secondary)+section("Imunidades",d.immunities)+section("Resistências",d.resistances)+section("Vulnerabilidades",d.weaknesses);
 
+
+// Texto de consulta autoral: organiza todos os efeitos registrados sem criar números,
+// DTs, alcances ou durações que ainda não existam nos dados da ameaça.
+function explainThreatAbility(ability,threatData){
+ const effect=String(ability.effect||ability.description||'').trim();
+ const name=String(ability.name||'').trim();
+ const lower=(name+' '+effect).toLocaleLowerCase('pt-BR');
+ const paragraphs=[];
+ if(effect)paragraphs.push(effect);
+ const details=[];
+ if(ability.type)details.push('Tipo de uso registrado: '+ability.type+'.');
+ if(ability.cost!=null&&String(ability.cost).trim())details.push('Custo registrado: '+ability.cost+'.');
+ if(ability.range!=null&&String(ability.range).trim())details.push('Alcance registrado: '+ability.range+'.');
+ if(ability.duration!=null&&String(ability.duration).trim())details.push('Duração registrada: '+ability.duration+'.');
+ if(ability.test)details.push('Teste indicado: '+ability.test+'.');
+ if(ability.damage)details.push('Dano indicado: '+ability.damage+'.');
+ if(details.length)paragraphs.push(details.join(' '));
+ let guidance='';
+ if(/enigma de medo/.test(lower))guidance='Esta é uma habilidade relacionada ao Enigma de Medo da ameaça. Para conduzir a cena, diferencie a descoberta de pistas, a interpretação do enigma e os efeitos efetivamente descritos acima. O enigma não é automaticamente resolvido por um único teste, a menos que isso esteja indicado na regra cadastrada.';
+ else if(/invis[ií]v|impercept[ií]v|camuflag|ocult|escond/.test(lower))guidance='Durante o encontro, considere que perceber a presença da ameaça e conseguir identificar exatamente sua posição são situações diferentes. Use as condições de percepção, testes e limitações registradas na habilidade; não transforme a descrição em invisibilidade absoluta quando isso não estiver especificado.';
+ else if(/parasita|infec|contamin|doen[cç]|parasitose/.test(lower))guidance='Esta habilidade envolve um efeito que pode continuar depois do primeiro contato. Registre separadamente o momento em que é desencadeada, os testes mencionados e qualquer progressão explicitamente indicada. Não aplique estágios, penalidades ou duração adicionais que não estejam definidos no efeito cadastrado.';
+ else if(/regenera|cura|recuper|restaura/.test(lower))guidance='Acompanhe os pontos ou recursos recuperados de acordo com o efeito acima e verifique se a recuperação depende de uma condição, ação ou início de turno. A capacidade de recuperação não implica imunidade a dano nem permite ultrapassar o máximo de PV sem indicação expressa.';
+ else if(/agarr|prend|constri|imobil|aprision|engol|captur/.test(lower))guidance='Esta habilidade interfere na liberdade de movimento ou no posicionamento do alvo. Durante a resolução, separe o efeito inicial das condições que continuam ativas e use apenas os testes e meios de escapar expressamente cadastrados. Ela não concede automaticamente dano contínuo ou uma condição extra.';
+ else if(/transform|metamorf|muda|fase|ato [0-9]|faceta/.test(lower))guidance='Trate cada transformação ou fase como uma alteração do estado da ameaça. Anote em que situação ela acontece e quais valores, ações ou características realmente mudam. Não reinicie PV, efeitos ou recursos por conta própria se a habilidade não determinar isso.';
+ else if(/medo|mental|pavor|terror|louc|susto/.test(lower))guidance='Este efeito pode alterar o comportamento ou a condição do alvo. Aplique apenas o teste de resistência, a DT, o resultado e a duração que estiverem escritos na habilidade; não considere que toda manifestação de medo causa dano mental automaticamente.';
+ else if(/invoca|convoca|cria|surge|chama/.test(lower))guidance='Identifique o que é criado ou chamado e as circunstâncias de sua manifestação. Qualquer criatura adicional, quantidade, duração ou custo deve vir do efeito registrado, e não de uma suposição baseada apenas no nome do poder.';
+ else if(/resist|imun|vulner|fraqueza|prote[cç]/.test(lower))guidance='Para resolver a proteção ou vulnerabilidade, confira o tipo de dano ou efeito mencionado. Resistência, imunidade e vulnerabilidade são propriedades diferentes; a habilidade não deve ser aplicada fora do escopo descrito.';
+ else if(/ataque|golpe|garra|mord|disparo|impact|sangue|ferimento/.test(lower))guidance='Ao usar o efeito em combate, diferencie o teste de ataque do dano e dos efeitos adicionais. Caso a habilidade não informe uma rolagem própria, não crie valores extras: considere somente os ataques e números verificados da ficha.';
+ else guidance='Na mesa, a consequência descrita acima deve ser aplicada quando ocorrer a condição indicada pela habilidade. Mantenha separados seus efeitos narrativos e suas regras numéricas: não acrescente bônus, penalidades ou testes que não estejam registrados.';
+ if(effect||details.length)paragraphs.push(guidance);
+ else paragraphs.push('Esta habilidade está identificada pelo nome, mas seus parâmetros mecânicos ainda não constam nos dados cadastrados. Não há um efeito confirmado para aplicar automaticamente.');
+ if(threatData?.weaknesses?.length&&/enigma de medo|vulner|fraqueza/.test(lower)){
+  paragraphs.push('Vulnerabilidades registradas nesta ficha: '+threatData.weaknesses.join('; ')+'. Essas informações não substituem condições adicionais da habilidade.');
+ }
+ return paragraphs.filter(Boolean).map(p=>'<p class="lines" style="margin:8px 0 10px;line-height:1.65">'+esc(p)+'</p>').join('');
+}
+
  const abilities=Array.isArray(d.abilities)?d.abilities.filter(a=>a&&hasValue(a.name)):[];
- const abilityRows=abilities.length?'<h2>Habilidades especiais</h2>'+abilities.map(a=>'<div class="action"><strong style="display:block">'+esc(a.name)+'</strong>'+(hasValue(a.effect)?'<p class="lines">'+esc(a.effect)+'</p>':"")+'</div>').join(""):"";
+ const abilityRows=abilities.length?'<h2>Habilidades especiais</h2>'+abilities.map(a=>'<div class="action"><strong style="display:block">'+esc(a.name)+'</strong>'+explainThreatAbility(a,d)+'</div>').join(""):"";
  $("combat").innerHTML=(actionRows||hasValue(d.attacks)?'<h2>Ataques e habilidades</h2>':"")+actionRows+abilityRows+(hasValue(d.attacks)?'<div class="action"><p class="lines">'+esc(d.attacks)+'</p></div>':'')+
- '<div class="note">Os valores disponíveis são referências para a mesa. Para condições, gatilhos e efeitos completos, consulte a fonte indicada na aba Descrição. A ficha é somente para consulta e seus valores não podem ser alterados aqui.</div>';
+ '<div class="note">As descrições desta tela organizam os efeitos já registrados no NEX. Quando algum número ou condição ainda não está cadastrado, a ficha não inventa regras. A ficha é somente para consulta.</div>';
  const narrative=(window.NEX_THREAT_NARRATIVES||{})[threatKey(threat)]||(threat.name==="O Anfitrião"&&(window.NEX_THREAT_NARRATIVES||{})["Livro Básico::O Anfitrião"])||d.description||"";
  const characteristics=[];
  if(hasValue(d.size))characteristics.push("Porte: "+d.size);
