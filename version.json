@@ -1,5 +1,5 @@
 {
-  "version": "2026.11.14-ameacas-17",
-  "build": "20261114ameacas17",
-  "description": "Rolagens de Percepção e Iniciativa sem edição; descrições originais ampliadas e características verificadas, sem transcrição integral dos livros."
+  "version": "2026.11.14-ameacas-18",
+  "build": "20261114ameacas18",
+  "description": "Biblioteca pronta para retratos dos dois livros, com caminhos de imagens e fallback; arquivos JPG ainda precisam ser enviados para assets/ameacas no repositório."
 }
