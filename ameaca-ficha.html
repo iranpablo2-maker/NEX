@@ -50,7 +50,21 @@ h2{font-size:18px;font-weight:600;margin:22px 0 9px}.skills{display:grid;gap:6px
 .sense-roll-result{margin-top:9px;background:#24151e;border:1px solid #8a4356;border-radius:6px;padding:10px;font-weight:600}
 .sense-roll-result[hidden]{display:none}
 </style>
-<style id="threat-embedded-ui">body:has(.shell) .shell{width:100%}body:has(.shell) nav{padding-top:3px}body:has(.shell) .card{box-shadow:none}@media(max-width:650px){.brand{font-size:16px}}</style></head>
+<style id="threat-embedded-ui">body:has(.shell) .shell{width:100%}body:has(.shell) nav{padding-top:3px}body:has(.shell) .card{box-shadow:none}@media(max-width:650px){.brand{font-size:16px}}</style>
+<style id="nex-threat-action-fold-v2">
+#combat .threat-action-fold{padding:0;overflow:hidden}
+#combat .threat-action-heading{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:13px 15px;cursor:pointer;list-style:none;min-height:45px}
+#combat .threat-action-heading::-webkit-details-marker{display:none}
+#combat .threat-action-heading:focus-visible{outline:2px solid #eb7786;outline-offset:-3px}
+#combat .threat-action-heading:hover{background:#35202a}
+#combat .threat-action-name{font-weight:700;color:#f9eff2}
+#combat .threat-action-arrow{color:#f27c8b;font-size:24px;line-height:1;transition:transform .15s}
+#combat .threat-action-fold[open] .threat-action-arrow{transform:rotate(180deg)}
+#combat .threat-action-fold[open] .threat-action-heading{border-bottom:1px solid #49323a}
+#combat .threat-action-content{padding:13px 15px 17px}
+#combat .threat-action-kind{font-size:12px;color:#d2aab6;margin-bottom:8px}
+#combat .threat-action-content>div{margin-bottom:5px}
+</style></head>
 <body>
 <div class="shell">
 <nav><a id="back" href="./ameacas.html">‹ Voltar às Ameaças</a><span class="brand">N E X</span></nav>
@@ -255,9 +269,11 @@ function render(){
 
  const actionRows=Array.isArray(d.actions)&&d.actions.length?d.actions.map(a=>{
  const name=a.name||"Ação",test=String(a.test||""),dmg=String(a.damage||"");
- return '<div class="action"><small class="muted">'+esc(a.type||"Ação")+'</small><strong style="display:block;margin:3px 0 5px">'+esc(name)+'</strong>'+
- (test?'<div>Teste: '+esc(test)+'</div>':'')+
- (dmg?'<div>Dano: '+esc(dmg)+'</div>':'')+'<p class="lines" style="margin:10px 0 0;color:#e5d8dd;line-height:1.7;font-size:13px">'+esc(actionSummary(a))+'</p></div>';
+ return '<details class="action threat-action-fold"><summary class="threat-action-heading"><span class="threat-action-name">'+esc(name)+'</span><span class="threat-action-arrow" aria-hidden="true">⌄</span></summary><div class="threat-action-content">'+
+ '<div class="threat-action-kind">'+esc(a.type||"Ação")+'</div>'+
+ (test?'<div><strong>Teste:</strong> '+esc(test)+'</div>':'')+
+ (dmg?'<div><strong>Dano:</strong> '+esc(dmg)+'</div>':'')+
+ '<p class="lines" style="margin:10px 0 0;color:#e5d8dd;line-height:1.7;font-size:13px">'+esc(actionSummary(a))+'</p></div></details>';
  }).join(""):'';
  const statItems=[["Defesa",d.defense],["Deslocamento",d.movement],["PV máximos",d.pv]].filter(([name,value])=>hasValue(value));
  const stats=statItems.length?'<div class="stats">'+statItems.map(([name,value])=>'<div class="stat"><small>'+esc(name)+'</small><strong>'+esc(value)+'</strong></div>').join("")+'</div>':"";
@@ -308,7 +324,7 @@ function explainThreatAbility(ability,threatData){
 }
 
  const abilities=Array.isArray(d.abilities)?d.abilities.filter(a=>a&&hasValue(a.name)):[];
- const abilityRows=abilities.length?'<h2>Habilidades especiais</h2>'+abilities.map(a=>'<div class="action"><strong style="display:block">'+esc(a.name)+'</strong>'+explainThreatAbility(a,d)+'</div>').join(""):"";
+ const abilityRows=abilities.length?'<h2>Habilidades especiais</h2>'+abilities.map(a=>'<details class="action threat-action-fold"><summary class="threat-action-heading"><span class="threat-action-name">'+esc(a.name)+'</span><span class="threat-action-arrow" aria-hidden="true">⌄</span></summary><div class="threat-action-content">'+explainThreatAbility(a,d)+'</div></details>').join(""):"";
  $("combat").innerHTML=(actionRows||hasValue(d.attacks)?'<h2>Ataques e habilidades</h2>':"")+actionRows+abilityRows+(hasValue(d.attacks)?'<div class="action"><p class="lines">'+esc(d.attacks)+'</p></div>':'')+
  '<div class="note">As descrições desta tela organizam os efeitos já registrados no NEX. Quando algum número ou condição ainda não está cadastrado, a ficha não inventa regras. A ficha é somente para consulta.</div>';
  const narrative=(window.NEX_THREAT_NARRATIVES||{})[threatKey(threat)]||(threat.name==="O Anfitrião"&&(window.NEX_THREAT_NARRATIVES||{})["Livro Básico::O Anfitrião"])||d.description||"";
