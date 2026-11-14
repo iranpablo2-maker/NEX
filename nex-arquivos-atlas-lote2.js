@@ -5,5 +5,14 @@ window.NEX_ARQUIVOS_FOTOS_LOTE2={
   'Arquivos Secretos — Junho::Hikikomori':1,
   'Arquivos Secretos — Junho::Marca-Passo':2,
   'Arquivos Secretos — Junho::Estímulo':3,
-  'Arquivos Secretos — Junho::Experimento Ssabáka':4
+  'Arquivos Secretos — Junho::Experimento Ssabáka':4,
+  'Arquivos Secretos — Janeiro::Investido':5,
+  'Arquivos Secretos — Janeiro::Assecla Wip':6,
+  'Arquivos Secretos — Janeiro::Apóstolo do Sangue':7,
+  'Arquivos Secretos — Janeiro::Giovanni Opspor':8,
+  'Arquivos Secretos — Janeiro::Mosto':9,
+  'Arquivos Secretos — Janeiro::Tarrafa':10,
+  'Arquivos Secretos — Janeiro::Carrara':11,
+  'Arquivos Secretos — Janeiro::Nando Salles':12,
+  'Arquivos Secretos — Janeiro::Anulado':13
 };
