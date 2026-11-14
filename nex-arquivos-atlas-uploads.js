@@ -7,5 +7,17 @@ window.NEX_ARQUIVOS_FOTOS_CONFIRMADAS={
 "Arquivos Secretos — Fevereiro::Arara-infernal":2,
 "Arquivos Secretos — Fevereiro::Jaguatirica":3,
 "Arquivos Secretos — Fevereiro::Felino-devorado":4,
-"Arquivos Secretos — Fevereiro::Felino-infernal":6
+"Arquivos Secretos — Fevereiro::Felino-infernal":6,
+"Arquivos Secretos — Maio::Hospedeiro Parasitado":8,
+"Arquivos Secretos — Maio::Hospedeiro Aflorado":9,
+"Arquivos Secretos — Maio::Interflorado":10,
+"Arquivos Secretos — Maio::Fummu":11,
+"Arquivos Secretos — Maio::Doppelganger Civil":12,
+"Arquivos Secretos — Maio::Doppelganger Cultista":13,
+"Arquivos Secretos — Maio::Doppelganger Monstruoso":14,
+"Arquivos Secretos — Maio::Rastropoda":15,
+"Arquivos Secretos — Maio::Memoflígico":16,
+"Arquivos Secretos — Maio::Doppelganger Combatente":17,
+"Arquivos Secretos — Junho::Cientista da Panacea":18,
+"Arquivos Secretos — Junho::Manda-Chuva da Panacea":19
 };
