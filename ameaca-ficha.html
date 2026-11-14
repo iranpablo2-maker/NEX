@@ -33,6 +33,16 @@ h2{font-size:18px;font-weight:600;margin:22px 0 9px}.skills{display:grid;gap:6px
 .action{border:1px solid #49323a;background:#23181e;padding:14px;border-radius:7px;margin-bottom:10px}
 #missing{padding:40px;text-align:center}
 @media(max-width:620px){.shell{padding:12px 9px 36px}.hero{padding:12px;gap:11px;min-height:122px}.portrait{flex-basis:96px;height:96px;font-size:40px}.hero h1{font-size:19px}.page{padding:16px 12px}.hp{margin:12px 12px 5px}.stats{grid-template-columns:repeat(2,minmax(0,1fr))}.tabs{gap:2px}.tabs button{padding:10px 8px}.form-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+ .hp-track{height:9px;background:#512630;border-radius:8px;margin:0 20px;overflow:hidden}
+.hp-fill{height:100%;width:100%;background:#e1455d;transition:width .25s}
+.hp-controls{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:10px 20px}
+.hp-controls input{width:96px;border:1px solid #874657;background:#160d13;color:white;border-radius:6px;padding:7px}
+.hp-controls button,.dice-button{border:1px solid #9f4050;background:#752a38;color:white;padding:7px 10px;border-radius:6px;cursor:pointer;font-size:12px}
+.hp-controls[hidden],.hp-track[hidden],.dice-output[hidden]{display:none}
+.attributes button{background:transparent;border:1px solid #513743;color:white;width:100%;border-radius:7px;cursor:pointer;padding:7px 0}
+.attributes button:hover{background:#3b202d}.attributes button small{display:block}
+.dice-output{margin:12px 20px;border:1px solid #985365;background:#21161d;padding:12px;border-radius:8px}
+.dice-output strong{font-size:18px}.dice-button{margin:8px 5px 0 0}
 </style>
 <style id="threat-embedded-ui">body:has(.shell) .shell{width:100%}body:has(.shell) nav{padding-top:3px}body:has(.shell) .card{box-shadow:none}@media(max-width:650px){.brand{font-size:16px}}</style></head>
 <body>
@@ -41,6 +51,9 @@ h2{font-size:18px;font-weight:600;margin:22px 0 9px}.skills{display:grid;gap:6px
 <div class="card" id="screen" hidden>
 <header class="hero" id="hero"><div class="portrait" id="portrait" aria-label="Retrato"></div><div><div class="eyebrow" id="source"></div><h1 id="name"></h1><div id="kind" class="muted"></div><div class="tags"><span id="element"></span><span id="vdBadge"></span></div></div></header>
 <div class="hp" id="hpBar" hidden><button type="button" data-change="-10" aria-label="Diminuir dez pontos">«</button><button type="button" data-change="-1" aria-label="Diminuir um ponto">‹</button><strong id="hpLabel"></strong><button type="button" data-change="1" aria-label="Aumentar um ponto">›</button><button type="button" data-change="10" aria-label="Aumentar dez pontos">»</button></div>
+<div class="hp-track" id="hpTrack" hidden><div class="hp-fill" id="hpFill"></div></div>
+<div class="hp-controls" id="hpControls" hidden><label for="hpAmount">PV</label><input id="hpAmount" type="number" min="1" value="1" step="1"><button type="button" data-hp-action="damage">Aplicar dano</button><button type="button" data-hp-action="heal">Curar</button><button type="button" data-hp-action="reset">Restaurar tudo</button></div>
+<div class="dice-output" id="diceOutput" role="status" aria-live="polite" hidden></div>
 <div class="tabs" role="tablist" aria-label="Seções da ficha">
 <button type="button" data-tab="status" aria-selected="true">Status</button><button type="button" data-tab="combat" aria-selected="false">Combate</button><button type="button" data-tab="description" aria-selected="false">Descrição</button>
 </div>
@@ -81,7 +94,21 @@ const images={Sangue:"./assets/rituais/sangue-fundo.svg",Morte:"./assets/rituais
 const $=id=>document.getElementById(id), esc=value=>String(value??"").replace(/[&<>"']/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));
 const key=new URLSearchParams(location.search).get("id");
 const threat=records.find(x=>threatKey(x)===key);
-let hpNow=null,hpMax=null,activeTab="status";
+let hpNow=null,hpMax=null,activeTab="status",hpReady=false;
+const combatHpKey="nex_ameaca_pv_sessao::"+key;
+function savedHp(max){try{const v=sessionStorage.getItem(combatHpKey);return v===null?max:Math.max(0,Math.min(max,Number(v)||0))}catch(e){return max}}
+function rollDice(label,expression,kind){
+ const exp=String(expression||"").trim().replaceAll("O","d20").replaceAll("–","-").replaceAll("−","-").replaceAll(" ","");
+ const m=exp.match(/^(-)?(\d*)d(\d+)([+-]\d+)?$/i);
+ const out=$("diceOutput");out.hidden=false;
+ if(!m){out.textContent=label+": dado indisponível ("+exp+")";return}
+ const count=Number(m[2]||1),sides=Number(m[3]),bonus=Number(m[4]||0);
+ if(count>100||count<1||sides>1000||sides<2)return;
+ const values=Array.from({length:count},()=>Math.floor(Math.random()*sides)+1);
+ const value=kind==="test"&&sides===20?(m[1]?Math.min(...values):Math.max(...values))+bonus:values.reduce((a,b)=>a+b,0)+bonus;
+ out.innerHTML="<div>"+esc(label)+" · "+esc(exp)+"</div><strong>"+esc(value)+"</strong><div class='muted'>Dados: "+esc(values.join(", "))+(bonus?" | Bônus: "+bonus:"")+"</div>";
+}
+
 function n(v){return v===null||v===undefined||v===""?"—":v;}
 function lines(arr){return Array.isArray(arr)&&arr.length?arr.map(v=>esc(v)).join("<br>"):'<span class="muted">Não cadastrado</span>'}
 function section(title,data){return '<h2>'+esc(title)+'</h2><div class="lines">'+lines(data)+'</div>'}
@@ -95,9 +122,16 @@ function render(){
  $("kind").textContent=[d.variant?"Variação de criatura":threat.category||"Criatura",d.size].filter(Boolean).join(" · ");$("vdBadge").textContent="VD "+n(d.vd);
  $("portrait").style.backgroundImage=img?"url("+img+")":"";$("portrait").textContent=img?"":threat.name.slice(0,1);
  const rollRows=items=>Array.isArray(items)&&items.length?items.map(v=>'<div class="skill"><span>'+esc(v[0])+'</span><button type="button" data-roll="'+esc(v[1])+'" aria-label="Rolar '+esc(v[0])+'">'+esc(v[1])+' ⚄</button></div>').join(""):'<p class="muted">Não informado no material consultado.</p>';
- const actionRows=Array.isArray(d.actions)&&d.actions.length?d.actions.map(a=>'<div class="action"><small class="muted">'+esc(a.type||"Ação")+'</small><strong style="display:block;margin:3px 0 5px">'+esc(a.name||"Ação")+'</strong>'+(a.test?'<div>Teste: <b>'+esc(a.test)+'</b></div>':'')+(a.damage?'<div>Dano: <b>'+esc(a.damage)+'</b></div>':'')+'</div>').join(""):'';
+ const actionRows=Array.isArray(d.actions)&&d.actions.length?d.actions.map(a=>{
+ const name=a.name||"Ação",test=String(a.test||""),dmg=String(a.damage||"");
+ const diceMatch=dmg.match(/\d+d\d+(?:\s*[+-]\s*\d+)?/i);
+ return '<div class="action"><small class="muted">'+esc(a.type||"Ação")+'</small><strong style="display:block;margin:3px 0 5px">'+esc(name)+'</strong>'+
+ (test?'<div>Teste: '+esc(test)+'</div><button type="button" class="dice-button" data-action-roll="test" data-dice="'+esc(test)+'" data-label="'+esc(name)+'">⚄ Rolar ataque</button>':'')+
+ (dmg?'<div>Dano: '+esc(dmg)+'</div>':'')+
+ (diceMatch?'<button type="button" class="dice-button" data-action-roll="damage" data-dice="'+esc(diceMatch[0])+'" data-label="'+esc(name)+'">⚄ Rolar dano</button>':'')+'</div>';
+ }).join(""):'';
  const stats='<div class="stats"><div class="stat"><small>Defesa</small><strong>'+esc(n(d.defense))+'</strong></div><div class="stat"><small>Deslocamento</small><strong>'+esc(n(d.movement))+'</strong></div><div class="stat"><small>PV máximos</small><strong>'+esc(n(d.pv))+'</strong></div></div>';
- $("status").innerHTML='<div class="attributes">'+["AGI","FOR","INT","PRE","VIG"].map(x=>'<div><small>'+x+'</small><strong>'+esc(n(d.attributes?.[x]))+'</strong></div>').join("")+'</div>'+
+ $("status").innerHTML='<div class="attributes">'+["AGI","FOR","INT","PRE","VIG"].map(x=>'<div><small>'+x+'</small><button type="button" data-attr="'+x+'"><strong>'+esc(n(d.attributes?.[x]))+'</strong><small>⚄ Rolar</small></button></div>').join("")+'</div>'+
  stats+(d.presence?'<div class="note"><strong>Presença perturbadora:</strong> '+esc(d.presence)+'</div>':'')+
  (d.extraMovement?.length?section("Outros deslocamentos",d.extraMovement):"")+
  '<h2>Testes de resistência</h2><div class="skills">'+rollRows(d.saves)+'</div>'+
@@ -109,22 +143,33 @@ function render(){
  $("description").innerHTML='<h2>'+esc(threat.name)+'</h2><p class="muted">'+esc(threat.source)+(d.pdfPage?' · PDF, página '+d.pdfPage:threat.page?' · livro, página '+threat.page:'')+'</p>'+
  '<p class="lines">'+esc(d.description||"Ficha de consulta com dados do catálogo. As descrições narrativas e os efeitos completos das habilidades estão no livro indicado.")+'</p>'+
  (d.pdfPage?'<p class="note">Dados numéricos e nomes de ações conferidos na página informada do PDF fornecido.</p>':'<p class="note">Os valores ausentes não foram preenchidos sem conferência da fonte original.</p>');
- hpMax=Number(d.pv)>0?Number(d.pv):null;hpNow=hpMax;
- $("hpBar").hidden=hpMax===null;updateHP();
+ hpMax=Number(d.pv)>0?Number(d.pv):null;if(!hpReady){hpNow=hpMax===null?null:savedHp(hpMax);hpReady=true}
+ $("hpBar").hidden=hpMax===null;$("hpTrack").hidden=hpMax===null;$("hpControls").hidden=hpMax===null;updateHP();
  activate(activeTab);
 }
-function updateHP(){if(hpMax!==null)$("hpLabel").textContent=hpNow+" / "+hpMax}
+function updateHP(){
+ if(hpMax===null)return;
+ $("hpLabel").textContent=hpNow+" / "+hpMax+" PV";
+ $("hpFill").style.width=Math.max(0,Math.min(100,100*hpNow/hpMax))+"%";
+ try{sessionStorage.setItem(combatHpKey,String(hpNow))}catch(e){}
+}
 document.querySelector(".tabs").addEventListener("click",e=>{const b=e.target.closest("[data-tab]");if(b)activate(b.dataset.tab)});
 $("hpBar").addEventListener("click",e=>{const b=e.target.closest("[data-change]");if(!b||hpMax===null)return;hpNow=Math.max(0,Math.min(hpMax,hpNow+Number(b.dataset.change)));updateHP()});
+$("hpControls").addEventListener("click",e=>{
+ const b=e.target.closest("[data-hp-action]");if(!b||hpMax===null)return;
+ const amount=Math.max(1,Math.min(100000,Math.floor(Number($("hpAmount").value)||1)));
+ if(b.dataset.hpAction==="damage")hpNow=Math.max(0,hpNow-amount);
+ if(b.dataset.hpAction==="heal")hpNow=Math.min(hpMax,hpNow+amount);
+ if(b.dataset.hpAction==="reset")hpNow=hpMax;updateHP();
+});
 $("status").addEventListener("click",e=>{
- const b=e.target.closest("[data-roll]");if(!b)return;
- const expr=b.dataset.roll.trim().replace(/–/g,"-");
- const m=expr.match(/^(-)?(\d+)d20(?:\+(\d+))?$/i);
- if(!m)return;
- const dice=Math.max(1,Math.min(20,Number(m[2]))),bonus=Number(m[3]||0);
- const rolls=Array.from({length:dice},()=>1+Math.floor(Math.random()*20));
- const chosen=m[1]?Math.min(...rolls):Math.max(...rolls);
- b.textContent=(chosen+bonus)+" ✓";b.title=rolls.join(", ")+" + "+bonus;
+ const attr=e.target.closest("[data-attr]");
+ if(attr){const value=getData().attributes?.[attr.dataset.attr];if(value===undefined||value===null||value==="—"||Number(value)<0)return;rollDice("Atributo "+attr.dataset.attr,Math.max(1,Number(value))+"d20","test");return}
+ const b=e.target.closest("[data-roll]");if(b)rollDice("Perícia ou resistência",b.dataset.roll,"test");
+});
+$("combat").addEventListener("click",e=>{
+ const b=e.target.closest("[data-action-roll]");if(!b)return;
+ rollDice(b.dataset.label,b.dataset.dice,b.dataset.actionRoll);
 });
 
 const embedded=new URLSearchParams(location.search).get("embedded")==="1";
