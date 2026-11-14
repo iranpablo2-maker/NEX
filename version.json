@@ -1,5 +1,5 @@
 {
-  "version": "2026.11.14-ameacas-18",
-  "build": "20261114ameacas18",
-  "description": "Biblioteca pronta para retratos dos dois livros, com caminhos de imagens e fallback; arquivos JPG ainda precisam ser enviados para assets/ameacas no repositório."
+  "version": "2026.11.14-ameacas-19",
+  "build": "20261114ameacas19",
+  "description": "61 imagens oficiais dos livros instaladas em assets/ameacas. Fotos no catálogo e nas fichas, com fallback para imagens ausentes; fichas sem edição."
 }
