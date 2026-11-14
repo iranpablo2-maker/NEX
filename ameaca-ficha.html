@@ -170,9 +170,23 @@ function render(){
  const abilityRows=abilities.length?'<h2>Habilidades especiais</h2>'+abilities.map(a=>'<div class="action"><strong style="display:block">'+esc(a.name)+'</strong>'+(hasValue(a.effect)?'<p class="lines">'+esc(a.effect)+'</p>':"")+'</div>').join(""):"";
  $("combat").innerHTML=(actionRows||hasValue(d.attacks)?'<h2>Ataques e habilidades</h2>':"")+actionRows+abilityRows+(hasValue(d.attacks)?'<div class="action"><p class="lines">'+esc(d.attacks)+'</p></div>':'')+
  '<div class="note">Os valores disponíveis são referências para a mesa. Para condições, gatilhos e efeitos completos, consulte a fonte indicada na aba Descrição. A ficha é somente para consulta e seus valores não podem ser alterados aqui.</div>';
+ const narrative=(window.NEX_THREAT_NARRATIVES||{})[threatKey(threat)]||(threat.name==="O Anfitrião"&&(window.NEX_THREAT_NARRATIVES||{})["Livro Básico::O Anfitrião"])||d.description||"";
+ const characteristics=[];
+ if(hasValue(d.size))characteristics.push("Porte: "+d.size);
+ if(hasValue(d.movement))characteristics.push("Movimentação: "+d.movement);
+ if(hasValue(d.presence))characteristics.push("Presença perturbadora: "+d.presence);
+ if(hasValue(d.resistances))characteristics.push("Resistências: "+d.resistances.join("; "));
+ if(hasValue(d.weaknesses))characteristics.push("Vulnerabilidades: "+d.weaknesses.join("; "));
+ const maneuvers=(d.actions||[]).filter(a=>hasValue(a.name)).map(a=>a.name).slice(0,16);
+ const specials=(d.abilities||[]).filter(a=>hasValue(a.name)).map(a=>a.name).slice(0,10);
+ const profile=[characteristics.length?"Condições e características verificadas: "+characteristics.join(". ")+".":"",
+ maneuvers.length?"Ações registradas para consulta: "+maneuvers.join("; ")+".":"",
+ specials.length?"Habilidades próprias identificadas: "+specials.join("; ")+".":""].filter(Boolean);
+ const descriptionText=narrative||("Registro de ameaça da fonte "+threat.source+". A apresentação narrativa do material original deve ser consultada na página identificada nesta ficha.");
  $("description").innerHTML='<h2>'+esc(threat.name)+'</h2><p class="muted">'+esc(threat.source)+(d.pdfPage?' · PDF, página '+d.pdfPage:threat.page?' · livro, página '+threat.page:'')+'</p>'+
- '<p class="lines">'+esc((window.NEX_THREAT_NARRATIVES||{})[threatKey(threat)]||(threat.name==="O Anfitrião"&&(window.NEX_THREAT_NARRATIVES||{})["Livro Básico::O Anfitrião"])||d.description||"Ainda não há uma descrição narrativa original ampliada desta criatura. Consulte a página do livro indicada acima para a apresentação integral.")+'</p>'+
- (d.pdfPage?'<p class="note">Dados numéricos e nomes de ações conferidos na página informada do PDF fornecido.</p>':'<p class="note">Os valores ausentes não foram preenchidos sem conferência da fonte original.</p>');
+ '<p class="lines">'+esc(descriptionText)+'</p>'+
+ (profile.length?'<h2>Características e comportamento em jogo</h2><p class="lines">'+esc(profile.join("\\n\\n"))+'</p>':"")+
+ '<p class="note">Apresentação original para consulta, não transcrição do texto do livro. Para a narrativa integral e as condições completas, use a página indicada da obra.</p>';
  const visiblePV=Number(d.pv);
  $("hpBar").hidden=!(Number.isFinite(visiblePV)&&visiblePV>0);
  $("hpTrack").hidden=!(Number.isFinite(visiblePV)&&visiblePV>0);
