@@ -120,7 +120,7 @@ function legacyThreatPhoto(x){
  }catch(error){return "";}
 }
 function hasCoreStats(x){
- const key=threatKey(x);
+ const key=(x.name==="O Anfitrião"&&x.source==="Arquivos Secretos — Abril")?"Livro Básico::O Anfitrião":threatKey(x);
  const d=(window.NEX_BASIC_THREATS_EXTRA||{})[key]||(window.NEX_BASIC_THREATS||{})[key]||(window.NEX_THREAT_DETAILS||{})[key]||null;
  return !!(d&&d.vd!=null&&d.pv!=null&&d.defense!=null)||(x.source==="Livro Básico"&&x.name==="O Diabo");
 }
