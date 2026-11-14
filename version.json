@@ -1,5 +1,5 @@
 {
-  "version": "2026.11.14-arquivos-28",
-  "build": "20261114arquivos28",
-  "description": "Ampliadas descrições verificadas de origens, poderes, itens, trilha e rituais dos Arquivos Secretos, inclusive custos, duração e pré-requisitos quando conferidos; integração parcial, demais registros mantidos."
+  "version": "2026.11.14-descricoes-29",
+  "build": "20261114descricoes29",
+  "description": "Revisão de descrições longas verificadas: classe Especialista, Combatente, Ocultista; poder Visão do Oculto; habilidades Monstruoso e recuperação de descrições para poderes da origem Cultista Arrependido. Demais entradas continuam em revisão."
 }
