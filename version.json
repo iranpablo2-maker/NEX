@@ -1,5 +1,5 @@
 {
-  "version": "2026.11.14-ameacas-19",
-  "build": "20261114ameacas19",
-  "description": "61 imagens oficiais dos livros instaladas em assets/ameacas. Fotos no catálogo e nas fichas, com fallback para imagens ausentes; fichas sem edição."
+  "version": "2026.11.14-ameacas-20",
+  "build": "20261114ameacas20",
+  "description": "Catálogo e fichas preparados para 44 imagens principais PNG da Wiki, sem fallback para fotos anteriores. Aguardando publicar o pacote nex_wiki_main_images.zip no GitHub."
 }
