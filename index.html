@@ -5180,36 +5180,4 @@ window.addEventListener('nex-cloud-sync-state',event=>{
  if(small)small.textContent=message;
 });
 </script>
-<script id="nex-mobile-version-check">
-(()=>{
- const currentVersion='2026.11.14-ameacas-22';
- let lastCheck=0,shown=false;
- async function checkForUpdate(){
-  if(shown||Date.now()-lastCheck<15000)return;
-  lastCheck=Date.now();
-  try{
-   const response=await fetch('./version.json?check='+Date.now(),{cache:'no-store'});
-   if(!response.ok)return;
-   const remote=await response.json();
-   if(!remote?.version||remote.version===currentVersion)return;
-   shown=true;
-   const note=document.createElement('div');
-   note.id='nexUpdateNotice';
-   note.setAttribute('role','status');
-   note.innerHTML='<span>Nova versão do NEX disponível.</span><button type="button" data-update>Atualizar</button><button type="button" data-later aria-label="Fechar aviso">×</button>';
-   Object.assign(note.style,{position:'fixed',zIndex:'2147483000',left:'12px',right:'12px',bottom:'calc(12px + env(safe-area-inset-bottom))',maxWidth:'440px',margin:'0 auto',display:'flex',alignItems:'center',gap:'10px',flexWrap:'wrap',padding:'12px',border:'1px solid #ab3748',borderRadius:'9px',background:'#1b1519',color:'#fff',boxShadow:'0 8px 35px #0009',fontSize:'13px'});
-   note.querySelectorAll('button').forEach(b=>Object.assign(b.style,{background:'#973040',color:'#fff',border:'1px solid #b64c5a',borderRadius:'5px',padding:'7px 10px',cursor:'pointer'}));
-   note.querySelector('[data-update]').onclick=()=>{
-    const url=new URL(location.href);
-    url.searchParams.set('nex_build',String(remote.build||remote.version));
-    location.replace(url.href);
-   };
-   note.querySelector('[data-later]').onclick=()=>note.remove();
-   document.body.append(note);
-  }catch(error){console.debug('Verificação de versão do NEX indisponível',error);}
- }
- window.addEventListener('pageshow',()=>{checkForUpdate();});
- document.addEventListener('visibilitychange',()=>{if(!document.hidden)checkForUpdate();});
-})();
-</script>
 </body></html>
