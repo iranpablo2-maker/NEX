@@ -116,7 +116,7 @@ function draw(){
  $("count").textContent=items.length+" ameaça(s)";
  list.innerHTML=items.length?items.map(x=>
  '<article class="monster" style="--art:'+art(x.element)+'"><div class="emblem" aria-hidden="true">'+escape(x.name[0])+'</div><div class="details"><strong>'+escape(x.name)+'</strong><small>'+escape(x.element)+' · '+escape(x.category||"Criatura")+'</small><span class="source">'+escape(x.source)+'</span></div><button type="button" class="threat-link" data-show-threat="'+encodeURIComponent(threatKey(x))+'" title="Abrir ficha dentro do NEX">Ficha</button></article>'
-:'<div class="empty">Nenhuma ameaça encontrada nesta combinação. Algumas fontes ainda estão em revisão.</div>';
+).join(""):'<div class="empty">Nenhuma ameaça encontrada nesta combinação. Algumas fontes ainda estão em revisão.</div>';
 }
 sourceEl.addEventListener("click",e=>{const b=e.target.closest("[data-source]");if(!b)return;source=b.dataset.source;draw()});
 elementsEl.addEventListener("click",e=>{const b=e.target.closest("[data-element]");if(!b)return;element=b.dataset.element;draw()});
