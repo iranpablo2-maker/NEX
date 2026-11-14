@@ -1,4 +1,4 @@
-/* Referência estruturada dos Arquivos Secretos. Descrições originais resumidas; consultar livros para regras completas. */
+/* Catálogo de opções e resumos originais, com mecânicas detalhadas verificadas nos PDFs quando disponíveis; não substitui os livros. */
 window.NEX_ARQUIVOS={
   "origins": [
     {
@@ -7,7 +7,7 @@ window.NEX_ARQUIVOS={
         "Ocultismo"
       ],
       "ability": "Mácula Ritualística",
-      "description": "Escolha um elemento e a segunda perícia conforme a opção ritualística. Recebe acesso a um ritual do elemento; consulte os custos e restrições na edição.",
+      "description": "Ao criar o personagem, escolha Sangue, Morte, Conhecimento ou Energia. Treina Ocultismo e uma perícia relacionada ao elemento: Fortitude para Sangue, Vontade para Morte ou Conhecimento, e Reflexos para Energia. Aprende um ritual de 1º círculo desse elemento, além do limite normal de rituais. Uma vez por cena pode conjurar esse ritual sem o custo básico de PE; aprimoramentos ainda custam PE. Em troca, recebe uma penalidade em resistências contra efeitos do elemento escolhido.",
       "source": "Arquivos Secretos · Janeiro/2026 · p. 43",
       "month": "Janeiro",
       "page": 43,
@@ -20,7 +20,7 @@ window.NEX_ARQUIVOS={
         "Ocultismo"
       ],
       "ability": "Sofrimento de Sangue",
-      "description": "Concede proteção contra dano mental e altera a qualidade do descanso.",
+      "description": "Treina Luta e Ocultismo. Sua resistência a dano mental começa em 2 e aumenta em 1 a cada dois rituais ou poderes paranormais de Sangue que possuir. Como desvantagem permanente, a qualidade de qualquer descanso é reduzida em uma categoria.",
       "source": "Arquivos Secretos · Janeiro/2026 · p. 43",
       "month": "Janeiro",
       "page": 43,
@@ -150,7 +150,7 @@ window.NEX_ARQUIVOS={
       "category": "Ocultista",
       "month": "Janeiro",
       "page": 44,
-      "description": "Acrescenta Presença às rolagens pertinentes de rituais.",
+      "description": "Ao causar dano ou recuperar vida por meio de um ritual, acrescente seu valor de Presença à rolagem correspondente. Requisito: Presença 2.",
       "source": "Arquivos Secretos · Janeiro/2026 · p. 44"
     },
     {
@@ -158,7 +158,7 @@ window.NEX_ARQUIVOS={
       "category": "Ocultista",
       "month": "Janeiro",
       "page": 44,
-      "description": "Concede pontos de vida temporários com gasto de esforço.",
+      "description": "Uma vez por cena, pode gastar uma ação de movimento e 3 PE para receber PV temporários equivalentes a dez vezes seu valor de Presença. Essa proteção termina no fim da cena e não se acumula consigo mesma. Requisitos: Intelecto 2, Presença 2 e capacidade de conjurar ritual de 1º círculo.",
       "source": "Arquivos Secretos · Janeiro/2026 · p. 44"
     },
     {
@@ -166,7 +166,7 @@ window.NEX_ARQUIVOS={
       "category": "Ocultista",
       "month": "Janeiro",
       "page": 44,
-      "description": "Adapta o personagem aos efeitos de maldições elementais.",
+      "description": "Escolha Sangue, Morte, Conhecimento ou Energia. Ao falhar no teste que poderia causar perda de Sanidade pelo preço de uma maldição de item desse elemento, evita apenas essa perda de Sanidade; outros efeitos negativos continuam valendo. Requisitos: Intelecto 2 e conjurar ritual de 2º círculo do elemento escolhido.",
       "source": "Arquivos Secretos · Janeiro/2026 · p. 44"
     },
     {
@@ -174,7 +174,7 @@ window.NEX_ARQUIVOS={
       "category": "Geral",
       "month": "Janeiro",
       "page": 46,
-      "description": "Aprimora a dificuldade de resistência contra uma habilidade escolhida.",
+      "description": "Escolha uma habilidade ou ritual com DT de resistência: essa DT recebe +2. O poder pode ser adquirido novamente para outras opções e até duas vezes para a mesma; duas escolhas para o mesmo efeito concedem aumento total de +5.",
       "source": "Arquivos Secretos · Janeiro/2026 · p. 46"
     },
     {
@@ -182,7 +182,7 @@ window.NEX_ARQUIVOS={
       "category": "Geral",
       "month": "Janeiro",
       "page": 46,
-      "description": "Favorece testes de Crime e análise de ambientes urbanos.",
+      "description": "Recebe treinamento em Crime, ou bônus +2 se já possuir o treinamento. Em ambientes fechados, pode realizar Crime DT 20 para localizar uma rota de fuga. Se encontrar uma rota, ao fugir ganha movimento extra no primeiro turno e +2 em Defesa até escapar. Caso não exista rota identificável, recebe +2 em Defesa enquanto permanecer no local. Requisito: Agilidade 2.",
       "source": "Arquivos Secretos · Janeiro/2026 · p. 46"
     },
     {
@@ -190,7 +190,7 @@ window.NEX_ARQUIVOS={
       "category": "Paranormal",
       "month": "Janeiro",
       "page": 47,
-      "description": "Associa munição especial aos efeitos de Sangue.",
+      "description": "Com uma ação de movimento e o custo de 2 PV, pode encantar um único projétil. Seu próximo acerto com essa munição acrescenta 1d6 de Sangue. Com afinidade, esse acréscimo aumenta para 1d8.",
       "source": "Arquivos Secretos · Janeiro/2026 · p. 47"
     },
     {
@@ -198,7 +198,7 @@ window.NEX_ARQUIVOS={
       "category": "Paranormal",
       "month": "Janeiro",
       "page": 47,
-      "description": "Concede defesa associada a rituais de Sangue.",
+      "description": "Após conjurar um ritual de Sangue, ganha bônus na Defesa igual ao círculo do ritual até o começo do próximo turno. Com afinidade, acrescenta mais 2 ao bônus. Requisito: conseguir conjurar rituais de Sangue.",
       "source": "Arquivos Secretos · Janeiro/2026 · p. 47"
     },
     {
@@ -478,7 +478,7 @@ window.NEX_ARQUIVOS={
       "category": "Ocultista",
       "month": "Janeiro",
       "page": 44,
-      "description": "Permite manter alguns efeitos de rituais em situações de interrupção.",
+      "description": "Usando a regra opcional Reter Ritual, permite prolongar certos efeitos negativos já mantidos quando o alvo sai da linha de efeito. Também pode gastar uma reação e 1 PE por ritual retido para preservar seus efeitos ao sofrer uma condição que encerraria a retenção. Requisitos: Intelecto 2 e conjurar ritual de 1º círculo.",
       "source": "Arquivos Secretos · Janeiro/2026 · p. 44"
     },
     {
@@ -486,7 +486,7 @@ window.NEX_ARQUIVOS={
       "category": "Geral",
       "month": "Janeiro",
       "page": 46,
-      "description": "Troca vulnerabilidade emocional por maior impacto de golpes.",
+      "description": "Ao expor uma cicatriz marcante com uma ação de movimento, aumenta em 1d8 o dano que causa, mas sofre desvantagem em Vontade e em ações que exigem calma. Os efeitos permanecem até o fim da cena; também podem ser desencadeados por outra pessoa. Requisito: ter cicatrizes.",
       "source": "Arquivos Secretos · Janeiro/2026 · p. 46"
     },
     {
@@ -494,7 +494,7 @@ window.NEX_ARQUIVOS={
       "category": "Paranormal",
       "month": "Janeiro",
       "page": 47,
-      "description": "Permite responder a agressões próximas com dano associado a Sangue.",
+      "description": "Pode gastar uma ação de movimento e 1 PE para ativar uma proteção corrosiva pelo restante da cena. Quando sofre dano de um adversário adjacente, o agressor recebe 1d10 de Sangue; com afinidade, 2d10.",
       "source": "Arquivos Secretos · Janeiro/2026 · p. 47"
     },
     {
@@ -502,7 +502,7 @@ window.NEX_ARQUIVOS={
       "category": "Paranormal",
       "month": "Janeiro",
       "page": 47,
-      "description": "Efeito paranormal de Sangue com contrapartidas.",
+      "description": "Enquanto estiver machucado, recebe RD 5. Com afinidade, também pode obter 20 PV temporários uma vez por cena. Requisito: Sangue 1.",
       "source": "Arquivos Secretos · Janeiro/2026 · p. 47"
     },
     {
@@ -640,6 +640,22 @@ window.NEX_ARQUIVOS={
       "page": 71,
       "description": "Manipula dados mediante conexão com Energia.",
       "source": "Arquivos Secretos · Junho/2026 · p. 71"
+    },
+    {
+      "name": "Curiosidade Oculta",
+      "category": "Geral",
+      "month": "Janeiro",
+      "page": 46,
+      "description": "Recebe treinamento em Ocultismo ou +2 caso já seja treinado. Ao realizar um teste de Vontade, pode gastar 2 PE para substituir a perícia por Ocultismo. Requisito: Intelecto 2.",
+      "source": "Arquivos Secretos · Janeiro/2026 · p. 46"
+    },
+    {
+      "name": "Especialista Esotérico",
+      "category": "Geral",
+      "month": "Janeiro",
+      "page": 46,
+      "description": "Ao conjurar um ritual, pode combinar os benefícios de até três catalisadores ritualísticos diferentes. Requisitos: Intelecto 3, conjurar ritual de 2º círculo e o poder Domínio Esotérico.",
+      "source": "Arquivos Secretos · Janeiro/2026 · p. 46"
     }
   ],
   "items": [
@@ -648,7 +664,7 @@ window.NEX_ARQUIVOS={
       "section": "Itens Amaldiçoados",
       "month": "Janeiro",
       "page": 54,
-      "description": "Amuleto que sinaliza manifestações de um elemento.",
+      "description": "Ao adquirir o amuleto, escolha Sangue, Morte, Conhecimento ou Energia. Enquanto vestido, ele manifesta um sinal próprio quando uma criatura do elemento escolhido se aproxima em alcance longo, mesmo que existam barreiras entre ela e o portador.",
       "source": "Arquivos Secretos · Janeiro/2026 · p. 54"
     },
     {
@@ -656,7 +672,7 @@ window.NEX_ARQUIVOS={
       "section": "Itens Amaldiçoados",
       "month": "Janeiro",
       "page": 54,
-      "description": "Objeto relacionado à organização de componentes e catalisadores.",
+      "description": "Pequeno suporte para componentes e catalisadores. Uma ação padrão permite prender um item nele, até o máximo de quatro. Ao empunhar o agrupador, considera-se que os componentes e catalisadores acoplados também estão empunhados.",
       "source": "Arquivos Secretos · Janeiro/2026 · p. 54"
     },
     {
@@ -664,7 +680,7 @@ window.NEX_ARQUIVOS={
       "section": "Armas",
       "month": "Janeiro",
       "page": 55,
-      "description": "Arma especial associada ao elemento Sangue.",
+      "description": "Arma simples de uma mão, utilizável corpo a corpo ou arremessada em alcance curto. Dano: 1d8 de perfuração mais 1d12 de Sangue; crítico 20/x3. Ao atingir com arremesso, o alvo fica lento até remover a arma com uma ação padrão e um teste de Atletismo contra DT baseada em Força.",
       "source": "Arquivos Secretos · Janeiro/2026 · p. 55"
     },
     {
@@ -904,6 +920,22 @@ window.NEX_ARQUIVOS={
       "category": "I",
       "spaces": 1,
       "description": "Barreira consumível usada para impedir a passagem de manifestações mais fracas de Energia."
+    },
+    {
+      "name": "Combustível de Sangue",
+      "section": "Geral",
+      "month": "Janeiro",
+      "page": 55,
+      "description": "Munição especial para equipamentos incendiários: converte o tipo de dano causado pelo equipamento em Sangue e aumenta o tamanho de seus dados de dano em um passo, conforme a regra do suplemento.",
+      "source": "Arquivos Secretos · Janeiro/2026 · p. 55"
+    },
+    {
+      "name": "Marreta Transtornada",
+      "section": "Armas",
+      "month": "Janeiro",
+      "page": 55,
+      "description": "Arma tática de duas mãos: 2d10 de impacto mais 2d12 de Sangue, crítico 20/x4. Seu uso causa perda de PV ao portador. Acertos críticos podem impor uma condição debilitante ao alvo que falhe na resistência de Fortitude; os limites e o tratamento seguem as regras do suplemento.",
+      "source": "Arquivos Secretos · Janeiro/2026 · p. 55"
     }
   ],
   "rules": [
@@ -1011,22 +1043,22 @@ window.NEX_ARQUIVOS={
       "stages": [
         [
           "Identificação Macabra",
-          "Melhora a identificação de itens amaldiçoados e rituais."
+          "NEX 10%: gaste 1 PE para adicionar 1d10 a um teste de identificação de item amaldiçoado ou ritual."
         ],
         [
           "Compreensão de Maldições",
-          "Permite estudar e transferir efeitos de itens amaldiçoados."
+          "NEX 40%: em interlúdio, estude um item por 3 PE e teste Ocultismo. Pode absorver um ritual armazenado ou transferir uma maldição mediante custos e riscos."
         ],
         [
           "Reproduzir Maldição",
-          "Permite aplicar temporariamente uma maldição já estudada."
+          "NEX 65%: memorize uma maldição já conhecida; durante um interlúdio, use 3 PE e teste Ocultismo para reproduzi-la temporariamente em outro item."
         ],
         [
           "Maldição Suprema",
-          "Aprimora os limites da reprodução de maldições."
+          "NEX 99%: ao reproduzir uma maldição, considera a categoria efetiva do item três níveis menor, respeitando o limite final de categoria IV."
         ]
       ],
-      "description": "Trilha de Ocultista dedicada a identificar, analisar e manipular maldições ligadas a itens paranormais. Suas habilidades progridem da identificação à reprodução temporária de efeitos estudados, sujeitas aos limites do estágio."
+      "description": "Trilha de Ocultista voltada ao estudo e manipulação de objetos amaldiçoados. No NEX 10%, pode gastar 1 PE para receber +1d10 em identificação de itens ou rituais. No NEX 40%, pode estudar um item durante interlúdio, gastando 3 PE e fazendo Ocultismo contra DT definida pela categoria: um sucesso pode permitir aprender um ritual armazenado ou transferir uma maldição, com perda de Sanidade e consumo do item. No NEX 65%, memoriza maldições e pode aplicá-las temporariamente a outros itens por testes e custos. No NEX 99%, reduz em três categorias o valor efetivo usado para calcular a reprodução de uma maldição."
     },
     {
       "name": "Criptologista do Oculto",
