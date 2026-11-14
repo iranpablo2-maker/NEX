@@ -90,6 +90,15 @@ dialog{width:min(95vw,680px);max-height:89vh;overflow:auto;background:#151114;co
 .monster .threat-link{display:inline-flex;align-items:center;justify-content:center;text-decoration:none;align-self:end;margin:0 13px 13px 0;padding:8px 20px;border:1px solid #cc5560;border-radius:5px;background:#ac2938;color:#fff;font-size:12px;font-weight:700}
 .monster .threat-link:hover{background:#cf3a4c}
 .monster .emblem.has-photo{background-position:center;background-size:cover;color:transparent}
+</style><style id="threat-inline-detail-v1">
+.threat-detail-view[hidden]{display:none!important}
+body.detail-open main>.heading,body.detail-open main>.hint,body.detail-open main>.filters,body.detail-open main>.search,body.detail-open main>.meta,body.detail-open main>#list,body.detail-open main>.note{display:none!important}
+body.detail-open main{width:min(1250px,100%);padding:8px 10px 28px}
+.threat-detail-view{width:100%}
+.threat-detail-nav{padding:10px 3px}
+.threat-detail-nav button{background:#2b1921;color:#f5d8df;border:1px solid #884052;padding:9px 15px;border-radius:7px;font-weight:700}
+#threatDetailFrame{display:block;width:100%;height:calc(100vh - 215px);min-height:650px;border:0;background:#0b090c;border-radius:9px}
+@media(max-width:650px){body.detail-open main{padding:4px}#threatDetailFrame{height:calc(100vh - 200px);min-height:520px}}
 </style></head><body>
 <main><div class="heading"><div><div class="eyebrow">Biblioteca paranormal</div><h1>Ameaças</h1></div><span id="total" class="hint"></span></div>
 <p class="hint">Catálogo de referência por obra e elemento. As fichas completas dos livros não são reproduzidas; consulte o material de origem para as regras e valores oficiais.</p>
@@ -98,6 +107,7 @@ dialog{width:min(95vw,680px);max-height:89vh;overflow:auto;background:#151114;co
 <input id="search" class="search" placeholder="⌕ Buscar ameaça..." aria-label="Buscar ameaça">
 <div class="meta"><span id="count"></span><span>Fichas por fonte</span></div>
 <div id="list" aria-live="polite"></div>
+<section id="threatDetailView" class="threat-detail-view" hidden aria-label="Ficha da ameaça"><div class="threat-detail-nav"><button id="backToThreats" type="button">‹ Voltar à biblioteca de Ameaças</button></div><iframe id="threatDetailFrame" title="Ficha da ameaça"></iframe></section>
 <p class="note" style="margin-top:18px">Os nomes estão organizados por fonte. Alguns suplementos ainda precisam de conferência página a página para completar o índice. VD, atributos e habilidades não verificados não são inventados.</p></main>
 
 <script>
@@ -118,7 +128,7 @@ function draw(){
  $("total").textContent=records.length+" registros de referência";
  $("count").textContent=items.length+" ameaça(s)";
  list.innerHTML=items.length?items.map(x=>{
- const photo=userThreatChanges[threatKey(x)]?.photo;return '<article class="monster" style="--art:'+art(x.element)+'"><div class="emblem'+(photo?' has-photo':'')+'" '+(photo?'style="background-image:url('+photo+')"':'')+' aria-hidden="true">'+escape(x.name[0])+'</div><div class="details"><strong>'+escape(x.name)+'</strong><small>'+escape(x.element)+' · '+escape(x.category||"Criatura")+'</small><span class="source">'+escape(x.source)+'</span></div><a class="threat-link" href="./ameaca-ficha.html?id='+encodeURIComponent(threatKey(x))+'" target="_blank" rel="noopener noreferrer" title="Abrir ficha em uma página separada">Ficha</a></article>';
+ const photo=userThreatChanges[threatKey(x)]?.photo;return '<article class="monster" style="--art:'+art(x.element)+'"><div class="emblem'+(photo?' has-photo':'')+'" '+(photo?'style="background-image:url('+photo+')"':'')+' aria-hidden="true">'+escape(x.name[0])+'</div><div class="details"><strong>'+escape(x.name)+'</strong><small>'+escape(x.element)+' · '+escape(x.category||"Criatura")+'</small><span class="source">'+escape(x.source)+'</span></div><button type="button" class="threat-link" data-show-threat="'+encodeURIComponent(threatKey(x))+'" title="Abrir ficha dentro do NEX">Ficha</button></article>';
  }).join(""):'<div class="empty">Nenhuma ameaça encontrada nesta combinação. Algumas fontes ainda estão em revisão.</div>';
 }
 sourceEl.addEventListener("click",e=>{const b=e.target.closest("[data-source]");if(!b)return;source=b.dataset.source;draw()});
@@ -128,5 +138,31 @@ $("search").addEventListener("input",e=>{search=e.target.value.trim().toLocaleLo
 
 const userThreatChanges=(()=>{try{const v=JSON.parse(localStorage.getItem("nex_ameacas_personalizadas_v1")||"{}");return v&&typeof v==="object"?v:{};}catch(e){return {};}})();
 function threatKey(x){return x.source+"::"+x.name;}
+
+const threatDetailView=$("threatDetailView");
+const threatDetailFrame=$("threatDetailFrame");
+function openThreatDetail(key){
+ if(!records.some(x=>threatKey(x)===key))return;
+ document.body.classList.add("detail-open");
+ threatDetailView.hidden=false;
+ threatDetailFrame.src="./ameaca-ficha.html?id="+encodeURIComponent(key)+"&embedded=1";
+ window.scrollTo(0,0);
+}
+function closeThreatDetail(){
+ threatDetailFrame.removeAttribute("src");
+ threatDetailView.hidden=true;
+ document.body.classList.remove("detail-open");
+ draw();window.scrollTo(0,0);
+}
+$("list").addEventListener("click",e=>{
+ const button=e.target.closest("[data-show-threat]");
+ if(!button)return;
+ try{openThreatDetail(decodeURIComponent(button.dataset.showThreat));}catch(error){console.error(error);}
+});
+$("backToThreats").onclick=closeThreatDetail;
+window.addEventListener("message",e=>{
+ if(e.origin!==location.origin||e.source!==threatDetailFrame.contentWindow)return;
+ if(e.data?.type==="nex-threat-back")closeThreatDetail();
+});
 draw();
 </script></body></html>
