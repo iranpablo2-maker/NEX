@@ -128,7 +128,7 @@ function draw(){
  list.innerHTML=items.length?items.map(x=>{
  const photo=threatIllustration(x);
  const visual=photo?'<img src="'+escape(photo)+'" alt="" loading="lazy" onerror="this.remove()" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover">':"";
- return '<article class="monster" style="--art:'+art(x.element)+'"><div class="emblem" style="position:relative;overflow:hidden">'+escape(x.name[0])+visual+'</div><div class="details"><strong>'+escape(x.name)+'</strong><small>'+escape(x.element)+' · '+escape(x.category||"Criatura")+'</small><span class="source">'+escape(x.source)+'</span><small class="source">'+(((window.NEX_THREAT_DETAILS||{})[threatKey(x)]?.variant?"Variação · bônus aplicáveis":hasCoreStats(x)?"Dados básicos disponíveis":"Ficha em conferência"))+'</small></div><button type="button" class="threat-link" data-show-threat="'+encodeURIComponent(threatKey(x))+'" title="Abrir ficha dentro do NEX">Ficha</button></article>';
+ return '<article class="monster" style="--art:'+art(x.element)+'"><div class="emblem" style="position:relative;overflow:hidden">'+visual+'</div><div class="details"><strong>'+escape(x.name)+'</strong><small>'+escape(x.element)+' · '+escape(x.category||"Criatura")+'</small><span class="source">'+escape(x.source)+'</span><small class="source">'+(((window.NEX_THREAT_DETAILS||{})[threatKey(x)]?.variant?"Variação · bônus aplicáveis":hasCoreStats(x)?"Dados básicos disponíveis":"Ficha em conferência"))+'</small></div><button type="button" class="threat-link" data-show-threat="'+encodeURIComponent(threatKey(x))+'" title="Abrir ficha dentro do NEX">Ficha</button></article>';
 
  }).join(""):'<div class="empty">Nenhuma ameaça encontrada nesta combinação. Algumas fontes ainda estão em revisão.</div>';
 }
@@ -145,7 +145,7 @@ function openThreatDetail(key){
  if(!records.some(x=>threatKey(x)===key))return;
  document.body.classList.add("detail-open");
  threatDetailView.hidden=false;
- threatDetailFrame.src="./ameaca-ficha.html?id="+encodeURIComponent(key)+"&embedded=1&v=20261114ameacas21";
+ threatDetailFrame.src="./ameaca-ficha.html?id="+encodeURIComponent(key)+"&embedded=1&v=20261114ameacas22";
  window.scrollTo(0,0);
 }
 function closeThreatDetail(){
