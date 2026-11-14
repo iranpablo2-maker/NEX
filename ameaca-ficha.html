@@ -164,7 +164,7 @@ $("hpControls").addEventListener("click",e=>{
 });
 $("status").addEventListener("click",e=>{
  const attr=e.target.closest("[data-attr]");
- if(attr){const value=getData().attributes?.[attr.dataset.attr];if(value===undefined||value===null||value==="—"||Number(value)<0)return;rollDice("Atributo "+attr.dataset.attr,Math.max(1,Number(value))+"d20","test");return}
+ if(attr){const value=getData().attributes?.[attr.dataset.attr];if(value===undefined||value===null||value==="—"||!Number.isFinite(Number(value)))return;const n=Number(value);rollDice("Atributo "+attr.dataset.attr,n>0?n+"d20":"-"+(2-n)+"d20","test");return}
  const b=e.target.closest("[data-roll]");if(b)rollDice("Perícia ou resistência",b.dataset.roll,"test");
 });
 $("combat").addEventListener("click",e=>{
