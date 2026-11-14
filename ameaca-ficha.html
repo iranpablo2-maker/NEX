@@ -94,11 +94,42 @@ function threatIllustration(x){return (window.NEX_THREAT_PRIMARY_IMAGES||{})[x.s
 function threatFacts(x){
  const original=x.source==="Sobrevivendo ao Horror"?(verifiedThreats[x.name]||{}):verifiedAdditionalThreats[threatKey(x)]||verifiedNewThreats[threatKey(x)]||verifiedFollowupThreats[threatKey(x)]||verifiedRemainingThreats[threatKey(x)]||(x.name===screenshotExample.name&&x.source===screenshotExample.source?screenshotExample:{});
  const baseKey=(x.name==="O Anfitrião"&&x.source==="Arquivos Secretos — Abril")?"Livro Básico::O Anfitrião":threatKey(x);
- const extra={...((window.NEX_BASIC_THREATS||{})[baseKey]||{}),...((window.NEX_BASIC_THREATS_EXTRA||{})[baseKey]||{}),...((window.NEX_THREAT_DETAILS||{})[threatKey(x)]||{}),...((window.NEX_JULY_THREAT_DETAILS||{})[threatKey(x)]||{})};
+ const sources=[
+  original,
+  (window.NEX_BASIC_THREATS||{})[baseKey],
+  (window.NEX_BASIC_THREATS_EXTRA||{})[baseKey],
+  (window.NEX_THREAT_DETAILS||{})[threatKey(x)],
+  (window.NEX_JULY_THREAT_DETAILS||{})[threatKey(x)]
+ ].filter(v=>v&&typeof v==="object");
+ const extra=Object.assign({},...sources.slice(1));
+ // A atualização das descrições nunca deve apagar habilidades ou ações cadastradas.
+ // Une os registros das diversas fontes e prefere a descrição mais informativa.
+ const preserveEntries=(field)=>{
+  const combined=new Map();
+  for(const data of sources){
+   if(!Array.isArray(data[field]))continue;
+   for(const entry of data[field]){
+    if(!entry || typeof entry!=="object" || !String(entry.name||"").trim())continue;
+    const id=String(entry.name).trim().toLocaleLowerCase("pt-BR");
+    const previous=combined.get(id);
+    if(!previous){combined.set(id,{...entry});continue;}
+    const merged={...previous,...entry};
+    for(const part of ["effect","description","test","damage","type"]){
+     const oldText=String(previous[part]||"").trim();
+     const newText=String(entry[part]||"").trim();
+     if(oldText.length>newText.length)merged[part]=previous[part];
+    }
+    combined.set(id,merged);
+   }
+  }
+  return Array.from(combined.values());
+ };
+ const restoredAbilities=preserveEntries("abilities");
+ const restoredActions=preserveEntries("actions");
  let photo="";
  try{const saved=JSON.parse(localStorage.getItem("nex_ameacas_personalizadas_v1")||"{}");const prior=saved?.[threatKey(x)]?.photo;if(typeof prior==="string"&&/^data:image\/(?:png|jpeg|webp);base64,/i.test(prior))photo=prior;}catch(error){}
  if(photo)extra.photo=photo;
- return {...original,...extra,attributes:{...(original.attributes||{}),...(extra.attributes||{})}};
+ return {...original,...extra,attributes:{...(original.attributes||{}),...(extra.attributes||{})},abilities:restoredAbilities,actions:restoredActions};
 }
 
 const images={Sangue:"./assets/rituais/sangue-fundo.svg",Morte:"./assets/rituais/morte-fundo.svg",Energia:"./assets/rituais/energia-fundo.svg",Conhecimento:"./assets/rituais/conhecimento-fundo.svg",Medo:"./assets/rituais/medo-fundo.svg"};
