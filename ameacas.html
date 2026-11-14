@@ -244,6 +244,64 @@ $("panelStatus").addEventListener("click",e=>{
  setTimeout(()=>{if(b.isConnected){b.textContent=match[0]+" ⚄"}},2500);
 });
 
+
+$("threatEditButton").addEventListener("click",()=>{
+ const form=$("threatEditForm");form.hidden=!form.hidden;
+ if(form.hidden||!currentThreat)return;
+ const d=threatFacts(currentThreat);
+ for(const k of ["vd","pv","defense","movement","description","attacks"])$("te-"+k).value=d[k]??"";
+ for(const k of ["AGI","FOR","INT","PRE","VIG"])$("te-"+k).value=d.attributes?.[k]??"";
+ for(const k of ["senses","secondary","immunities","resistances","weaknesses"])$("te-"+k).value=(d[k]||[]).join("\n");
+ $("te-skills").value=(d.skills||[]).map(row=>row.join(" | ")).join("\n");
+});
+async function shrinkPortrait(file){
+ if(file.size>15*1024*1024)throw new Error("A imagem deve ter menos de 15 MB.");
+ return new Promise((resolve,reject)=>{
+  const reader=new FileReader();
+  reader.onerror=()=>reject(new Error("Falha ao carregar a foto."));
+  reader.onload=()=>{
+   const img=new Image();
+   img.onerror=()=>reject(new Error("Imagem inválida."));
+   img.onload=()=>{
+    const can=document.createElement("canvas"),ctx=can.getContext("2d");
+    can.width=240;can.height=240;
+    const scale=Math.max(240/img.width,240/img.height);
+    ctx.drawImage(img,(240-img.width*scale)/2,(240-img.height*scale)/2,img.width*scale,img.height*scale);
+    resolve(can.toDataURL("image/jpeg",0.72));
+   };
+   img.src=String(reader.result);
+  };
+  reader.readAsDataURL(file);
+ });
+}
+$("threatEditForm").addEventListener("submit",async event=>{
+ event.preventDefault();
+ if(!currentThreat)return;
+ const num=id=>{const value=$(id).value.trim();return value===""?null:Number(value)};
+ const lines=id=>$(id).value.split("\n").map(v=>v.trim()).filter(Boolean);
+ const data={
+  vd:num("te-vd"),pv:num("te-pv"),defense:num("te-defense"),movement:$("te-movement").value.trim(),
+  attributes:Object.fromEntries(["AGI","FOR","INT","PRE","VIG"].map(k=>[k,num("te-"+k)])),
+  skills:lines("te-skills").map(v=>v.split("|").map(t=>t.trim())).filter(x=>x.length===2&&/^\d+d20\+\d+$/.test(x[1])),
+  senses:lines("te-senses"),secondary:lines("te-secondary"),immunities:lines("te-immunities"),
+  resistances:lines("te-resistances"),weaknesses:lines("te-weaknesses"),
+  description:$("te-description").value.trim().slice(0,6000),attacks:$("te-attacks").value.trim().slice(0,6000)
+ };
+ const btn=event.submitter; if(btn)btn.disabled=true;
+ try{
+  const photo=$("te-photo").files?.[0];if(photo)data.photo=await shrinkPortrait(photo);
+  const key=threatKey(currentThreat);
+  const prior=userThreatChanges[key];
+  userThreatChanges[key]={...prior,...data};
+  try{localStorage.setItem("nex_ameacas_personalizadas_v1",JSON.stringify(userThreatChanges))}
+  catch(err){if(prior)userThreatChanges[key]=prior;else delete userThreatChanges[key];throw new Error("Armazenamento do navegador cheio. Tente uma foto menor.");}
+  $("te-photo").value="";
+  renderThreatSections();draw();
+  $("threatEditForm").hidden=true;
+ }catch(err){alert(err.message||"Erro ao salvar a ficha.");}
+ finally{if(btn)btn.disabled=false;}
+});
+
 $("close").onclick=()=>$("sheet").close();
 draw();
 </script></body></html>
