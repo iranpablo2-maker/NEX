@@ -73,19 +73,6 @@ dialog{width:min(95vw,680px);max-height:89vh;overflow:auto;background:#151114;co
 .threat-sheet .threat-action{padding:13px;margin:9px 0;border:1px solid #46323a;border-radius:7px;background:#20181d}
 .threat-sheet .threat-action strong{display:block;margin-bottom:5px}
 @media(max-width:470px){.threat-sheet .threat-avatar{flex-basis:106px;font-size:51px}.threat-sheet .threat-heading h2{font-size:18px}.threat-sheet .threat-tabs{gap:4px}.threat-sheet .threat-vital button{min-width:30px}.threat-sheet .sheet-body{padding:12px}}
-</style><style id="nex-threat-personalization">
-.threat-personal-tools{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:14px}
-.threat-personal-tools button,#threatEditForm button[type="submit"]{background:#a92c3e;border:1px solid #cc5163;color:white;border-radius:6px;padding:9px 12px;font-weight:650}
-.threat-personal-tools span{color:#ae9da6;font-size:10px}
-#threatEditForm{display:grid;gap:10px;padding:15px;margin-bottom:15px;background:#21151c;border:1px solid #693443;border-radius:8px}
-#threatEditForm[hidden]{display:none}
-#threatEditForm label{display:flex;flex-direction:column;gap:5px;font-size:11px;color:#dcc1ca}
-#threatEditForm input,#threatEditForm textarea{width:100%;min-width:0;background:#0d0b10;border:1px solid #784853;color:white;padding:8px;border-radius:5px;font:13px/1.4 system-ui,sans-serif}
-.threat-editor-cols{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
-.threat-editor-cols.five{grid-template-columns:repeat(5,minmax(0,1fr))}
-#threatEditForm button[type="submit"]{justify-self:start}
-.monster .emblem.has-photo{background-position:center;background-size:cover;color:transparent}
-@media(max-width:480px){.threat-editor-cols{grid-template-columns:repeat(2,minmax(0,1fr))}.threat-editor-cols.five{grid-template-columns:repeat(5,minmax(0,1fr))}}
 </style><style id="nex-threat-library-standalone-page">
 .monster .threat-link{display:inline-flex;align-items:center;justify-content:center;text-decoration:none;align-self:end;margin:0 13px 13px 0;padding:8px 20px;border:1px solid #cc5560;border-radius:5px;background:#ac2938;color:#fff;font-size:12px;font-weight:700}
 .monster .threat-link:hover{background:#cf3a4c}
@@ -127,16 +114,15 @@ function draw(){
  const items=records.filter(x=>(source==="Todas as fontes"||x.source===source||(source==="Arquivos Secretos"&&x.source.startsWith("Arquivos Secretos — ")))&&(element==="Todos"||x.element===element)&&(!search||(x.name+" "+x.source+" "+x.element).toLocaleLowerCase("pt-BR").includes(search)));
  $("total").textContent=records.length+" registros de referência";
  $("count").textContent=items.length+" ameaça(s)";
- list.innerHTML=items.length?items.map(x=>{
- const photo=userThreatChanges[threatKey(x)]?.photo;return '<article class="monster" style="--art:'+art(x.element)+'"><div class="emblem'+(photo?' has-photo':'')+'" '+(photo?'style="background-image:url('+photo+')"':'')+' aria-hidden="true">'+escape(x.name[0])+'</div><div class="details"><strong>'+escape(x.name)+'</strong><small>'+escape(x.element)+' · '+escape(x.category||"Criatura")+'</small><span class="source">'+escape(x.source)+'</span></div><button type="button" class="threat-link" data-show-threat="'+encodeURIComponent(threatKey(x))+'" title="Abrir ficha dentro do NEX">Ficha</button></article>';
- }).join(""):'<div class="empty">Nenhuma ameaça encontrada nesta combinação. Algumas fontes ainda estão em revisão.</div>';
+ list.innerHTML=items.length?items.map(x=>
+ '<article class="monster" style="--art:'+art(x.element)+'"><div class="emblem" aria-hidden="true">'+escape(x.name[0])+'</div><div class="details"><strong>'+escape(x.name)+'</strong><small>'+escape(x.element)+' · '+escape(x.category||"Criatura")+'</small><span class="source">'+escape(x.source)+'</span></div><button type="button" class="threat-link" data-show-threat="'+encodeURIComponent(threatKey(x))+'" title="Abrir ficha dentro do NEX">Ficha</button></article>'
+:'<div class="empty">Nenhuma ameaça encontrada nesta combinação. Algumas fontes ainda estão em revisão.</div>';
 }
 sourceEl.addEventListener("click",e=>{const b=e.target.closest("[data-source]");if(!b)return;source=b.dataset.source;draw()});
 elementsEl.addEventListener("click",e=>{const b=e.target.closest("[data-element]");if(!b)return;element=b.dataset.element;draw()});
 $("search").addEventListener("input",e=>{search=e.target.value.trim().toLocaleLowerCase("pt-BR");draw()});
 
 
-const userThreatChanges=(()=>{try{const v=JSON.parse(localStorage.getItem("nex_ameacas_personalizadas_v1")||"{}");return v&&typeof v==="object"?v:{};}catch(e){return {};}})();
 function threatKey(x){return x.source+"::"+x.name;}
 
 const threatDetailView=$("threatDetailView");
@@ -145,7 +131,7 @@ function openThreatDetail(key){
  if(!records.some(x=>threatKey(x)===key))return;
  document.body.classList.add("detail-open");
  threatDetailView.hidden=false;
- threatDetailFrame.src="./ameaca-ficha.html?id="+encodeURIComponent(key)+"&embedded=1";
+ threatDetailFrame.src="./ameaca-ficha.html?id="+encodeURIComponent(key)+"&embedded=1&v=20261114ameacas10";
  window.scrollTo(0,0);
 }
 function closeThreatDetail(){
