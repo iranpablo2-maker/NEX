@@ -1,49 +1,45 @@
-name: Instalar fotos das ameaças do NEX
+name: Instalar fotos principais da Wiki no NEX
 on:
   push:
     paths:
-      - 'nex-ameacas-fotos.zip'
-      - 'NEX_imagens_61_corrigidas.zip'
+      - 'nex_wiki_main_images.zip'
       - '.github/workflows/instalar-imagens-ameacas.yml'
   workflow_dispatch:
 permissions:
   contents: write
 jobs:
-  instalar-imagens:
+  instalar-retratos:
     runs-on: ubuntu-latest
     steps:
-      - name: Obter o projeto
+      - name: Carregar projeto
         uses: actions/checkout@v4
         with:
           persist-credentials: true
-      - name: Verificar e extrair JPG das ameaças
+      - name: Instalar somente fotos principais novas
         shell: bash
         run: |
           set -euo pipefail
-          if test -f nex-ameacas-fotos.zip; then
-            archive=nex-ameacas-fotos.zip
-          elif test -f NEX_imagens_61_corrigidas.zip; then
-            archive=NEX_imagens_61_corrigidas.zip
-          else
-            echo "Nenhum dos dois ZIPs foi encontrado" >&2
-            exit 1
+          if [ ! -f nex_wiki_main_images.zip ]; then
+            echo "Aguardando envio do pacote nex_wiki_main_images.zip"
+            exit 0
           fi
-          echo "Pacote encontrado: $archive"
-          count="$(unzip -Z1 "$archive" | grep -Ec '^assets/ameacas/(livro-basico|sobrevivendo-ao-horror)/[^/]+\.jpg$')"
-          echo "Fotos JPG encontradas: $count"
-          test "$count" -eq 61
-          unzip -o -q "$archive" 'assets/ameacas/*/*.jpg' -d .
-          test "$(find assets/ameacas -type f -name '*.jpg' | wc -l)" -ge 61
-      - name: Publicar as 61 imagens
+          count="$(unzip -Z1 nex_wiki_main_images.zip | grep -Ec '^assets/ameacas/(livro-basico|sobrevivendo-ao-horror)/[^/]+\.png$')"
+          echo "Novos retratos principais encontrados: $count"
+          test "$count" -eq 44
+          unzip -o -q nex_wiki_main_images.zip 'assets/ameacas/*/*.png' -d .
+          find assets/ameacas -type f \( -iname '*.jpg' -o -iname '*.jpeg' \) -delete
+          test "$(find assets/ameacas -type f -name '*.png' | wc -l)" -ge 44
+      - name: Publicar e remover imagens antigas
         shell: bash
         run: |
           set -euo pipefail
+          if [ ! -f nex_wiki_main_images.zip ]; then exit 0; fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add assets/ameacas
+          git add -A assets/ameacas
           if ! git diff --cached --quiet; then
-            git commit -m "Instalar 61 fotos das ameaças do Livro Básico e Sobrevivendo ao Horror"
+            git commit -m "Instalar 44 retratos principais PNG e retirar fotos antigas"
             git push
           else
-            echo "61 imagens já estavam instaladas."
+            echo "Retratos já instalados."
           fi
