@@ -1,4 +1,4 @@
-/* Catálogo de opções de personagem e referências; resumos originais, não reproduz os suplementos. */
+/* Referência estruturada dos Arquivos Secretos. Descrições originais resumidas; consultar livros para regras completas. */
 window.NEX_ARQUIVOS={
   "origins": [
     {
@@ -115,6 +115,32 @@ window.NEX_ARQUIVOS={
       "source": "Arquivos Secretos · Junho/2026 · p. 66",
       "month": "Junho",
       "page": 66,
+      "official": true
+    },
+    {
+      "name": "Exorcizado",
+      "skills": [
+        "Fortitude",
+        "Ocultismo"
+      ],
+      "ability": "O Que Restou",
+      "description": "Escolhe uma afinidade elemental não relacionada a Medo e recebe resistência associada, com um custo de Sanidade quando se depara com esse elemento.",
+      "month": "Julho",
+      "page": 80,
+      "source": "Arquivos Secretos · Julho/2026 · p. 80",
+      "official": true
+    },
+    {
+      "name": "Sensitivo Rebelde",
+      "skills": [
+        "Intuição",
+        "Vontade"
+      ],
+      "ability": "Sussurros e Vultos",
+      "description": "Pode gastar Sanidade para receber bônus em testes de interação social ou Intuição.",
+      "month": "Julho",
+      "page": 80,
+      "source": "Arquivos Secretos · Julho/2026 · p. 80",
       "official": true
     }
   ],
@@ -838,6 +864,46 @@ window.NEX_ARQUIVOS={
       "source": "Arquivos Secretos · Junho/2026 · p. 73",
       "tier": "III",
       "spaces": 2
+    },
+    {
+      "name": "Carranca Caçadora",
+      "section": "Itens Amaldiçoados",
+      "month": "Julho",
+      "page": 78,
+      "source": "Arquivos Secretos · Julho/2026 · p. 78",
+      "category": "I",
+      "spaces": 2,
+      "description": "Usa um vestígio de criatura para indicar por tempo limitado seu trajeto, sem garantir uma rota segura."
+    },
+    {
+      "name": "Cajado da Cruz de Sangue",
+      "section": "Armas",
+      "month": "Julho",
+      "page": 78,
+      "source": "Arquivos Secretos · Julho/2026 · p. 78",
+      "category": "III",
+      "spaces": 2,
+      "description": "Arma corpo a corpo de duas mãos com propriedades relacionadas a Sangue."
+    },
+    {
+      "name": "Pé de Coelho",
+      "section": "Itens Amaldiçoados",
+      "month": "Julho",
+      "page": 79,
+      "source": "Arquivos Secretos · Julho/2026 · p. 79",
+      "category": "I",
+      "spaces": 1,
+      "description": "Acessório que acrescenta um bônus aleatório aos testes de uma cena, sujeito a consequências desfavoráveis."
+    },
+    {
+      "name": "Sal Dourado",
+      "section": "Itens Amaldiçoados",
+      "month": "Julho",
+      "page": 79,
+      "source": "Arquivos Secretos · Julho/2026 · p. 79",
+      "category": "I",
+      "spaces": 1,
+      "description": "Barreira consumível usada para impedir a passagem de manifestações mais fracas de Energia."
     }
   ],
   "rules": [
@@ -912,6 +978,20 @@ window.NEX_ARQUIVOS={
       "month": "Junho",
       "page": 76,
       "description": "Substâncias e efeitos no sistema."
+    },
+    {
+      "name": "Resguardar Espírito",
+      "month": "Julho",
+      "page": 80,
+      "source": "Arquivos Secretos · Julho/2026 · p. 80",
+      "description": "Uso treinado da perícia Religião para conceder um bônus circunstancial de Vontade mediante teste e ação completa."
+    },
+    {
+      "name": "Regras Debaixo d’Água",
+      "month": "Julho",
+      "page": 92,
+      "source": "Arquivos Secretos · Julho/2026 · p. 92",
+      "description": "Reúne restrições de deslocamento, respiração e combate em ambiente submerso."
     }
   ],
   "editions": [
@@ -997,6 +1077,58 @@ window.NEX_ARQUIVOS={
         ]
       ],
       "description": "Trilha de Especialista voltada ao uso de explosivos próprios em combate. As habilidades desenvolvem a criação, o posicionamento e a improvisação de explosivos, incluindo riscos e limitações da técnica."
+    },
+    {
+      "name": "Monstruoso — Especialista",
+      "className": "Especialista",
+      "month": "Julho",
+      "page": 81,
+      "source": "Arquivos Secretos · Julho/2026 · p. 81",
+      "description": "Variante da trilha Monstruoso para Especialista, com progressão própria ligada ao elemento escolhido. Requer as regras opcionais e restrições indicadas no suplemento.",
+      "stages": [
+        [
+          "Ser Experimentado",
+          "No primeiro estágio, passa a usar benefícios situacionais relacionados a um elemento."
+        ],
+        [
+          "Ser Testado",
+          "Amplia os recursos e efeitos de sua transformação paranormal."
+        ],
+        [
+          "Ser Expurgado",
+          "Desenvolve novas opções de combate conforme o elemento escolhido."
+        ],
+        [
+          "Ser Apavorante",
+          "Aprofunda os benefícios e as limitações da transformação."
+        ]
+      ]
+    },
+    {
+      "name": "Monstruoso — Ocultista",
+      "className": "Ocultista",
+      "month": "Julho",
+      "page": 85,
+      "source": "Arquivos Secretos · Julho/2026 · p. 85",
+      "description": "Variante da trilha Monstruoso para Ocultista, baseada em marcas e conexão elemental, com progressão e custos próprios do suplemento.",
+      "stages": [
+        [
+          "Ser Escarificado",
+          "Ganha relação ampliada com Ocultismo e escolhe um elemento."
+        ],
+        [
+          "Ser Perfurado",
+          "Aprimora a conexão elemental e os recursos de conjuração."
+        ],
+        [
+          "Ser Rasgado",
+          "Expande os benefícios de rituais conforme o elemento."
+        ],
+        [
+          "Ser Mutilado",
+          "Etapa final, com efeitos de duração e restrições especiais."
+        ]
+      ]
     }
   ],
   "rituals": [
@@ -1026,6 +1158,16 @@ window.NEX_ARQUIVOS={
       "month": "Janeiro",
       "page": 49,
       "description": "Ritual de múltiplos elementos com efeito relacionado à transferência de consciência.",
+      "ritualType": "Suporte"
+    },
+    {
+      "name": "Vampirismo",
+      "circle": 2,
+      "element": "Sangue",
+      "month": "Julho",
+      "page": 76,
+      "source": "Arquivos Secretos · Julho/2026 · p. 76",
+      "description": "Ritual de Sangue que permite adquirir benefícios temporários associados às lembranças e características de uma pessoa. Sujeito às condições e restrições da fonte.",
       "ritualType": "Suporte"
     }
   ]
