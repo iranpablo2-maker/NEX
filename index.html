@@ -3776,7 +3776,28 @@ $('nexHomebrewFilter')?.addEventListener('input',()=>nex12RenderHomebrew());
       const required=[10,40,65,99][i];
       if(int(state.nex)>=required && abilities[i]?.[0])entries.push({name:abilities[i][0],source:`Trilha: ${trail} · NEX ${required}%`,detail:abilities[i][1]||'Descrição não cadastrada.',id:null});
    }
-   for(const p of state.powers||[])entries.push({name:p.name||'Poder',source:p.source==='origin-cultista'?'Origem: Cultista Arrependido · Poder Paranormal':`Poder — NEX ${int(p.nex)}%`,detail:(p.source==='origin-cultista'?(PARANORMAL.find(entry=>entry[0]===p.name)?.[1]||p.note||'Poder escolhido pela origem Cultista Arrependido. A descrição mecânica desta opção ainda não foi cadastrada; consulte o livro para confirmar os requisitos e os efeitos.'):(p.note||PARANORMAL.find(entry=>entry[0]===p.name)?.[1]||'Descrição ainda não cadastrada para este poder. Consulte o livro de origem para verificar as regras.')),id:null});
+   // Busca descrições em fontes acessíveis a esta camada, sem depender de variáveis
+   // privadas de outros scripts (o que fazia toda a lista desaparecer).
+   const findPowerDescription=(name)=>{
+     const key=String(name||'').trim().toLocaleLowerCase('pt-BR');
+     const sourceRecords=[
+       ...(window.NEX_SAH?.paranormal||[]),
+       ...(window.NEX_SAH?.generalPowers||[]),
+       ...(window.NEX_ARQUIVOS?.powers||[])
+     ];
+     const match=sourceRecords.find(x=>String(x?.name||'').trim().toLocaleLowerCase('pt-BR')===key);
+     return match?.description||'';
+   };
+   for(const p of state.powers||[]){
+     if(!p)continue;
+     const paranormal=p.source==='origin-cultista';
+     entries.push({
+       name:p.name||'Poder',
+       source:paranormal?'Origem: Cultista Arrependido · Poder Paranormal':`Poder — NEX ${int(p.nex)}%`,
+       detail:p.note||findPowerDescription(p.name)||(paranormal?'Poder escolhido pela origem Cultista Arrependido. Consulte as regras de origem para confirmar os efeitos.':'Descrição ainda não cadastrada para este poder.'),
+       id:null
+     });
+   }
    for(const a of state.n16.abilities)entries.push({name:a.name,source:a.source||'Personalizada',detail:a.description||'Sem descrição.',id:a.id});
    return entries;
  }
