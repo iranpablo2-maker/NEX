@@ -135,7 +135,7 @@ function nexArchiveAtlasIndex(x){
 }
 function nexArchiveAtlasStyle(index){
  const n=Number(index),col=n%4,row=Math.floor(n/4);
- return 'background-image:url("'+(window.NEX_ARQUIVOS_ATLAS||'')+'");background-size:400% 500%;background-position:'+(col*100/3)+'% '+(row*25)+'%;';
+ return 'background-image:url('+(window.NEX_ARQUIVOS_ATLAS||'')+');background-size:400% 500%;background-position:'+(col*100/3)+'% '+(row*25)+'%;';
 }
 function nexDrawArchiveGallery(){
  const gallery=document.getElementById('arquivoFotosGallery'),grid=document.getElementById('arquivoFotosGrid');
